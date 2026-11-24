@@ -1,0 +1,41 @@
+{
+  "version": "1.0.0",
+  "description": "Known legacy K2 client startup noise patterns excluded from ErrorsSinceHandler unbaselined fault count (still tracked in BaselinedNoiseCount and visible via includeBaselinedNoise=true).",
+  "patterns": [
+    {
+      "id": "NOISE-001",
+      "regex": "Unable to load entity definitions for bot(?:AIHelperBot|DefaultTeamBotBrain)!",
+      "reason": "Legacy K2 bot entity definition lookup during startup when bot practice entities are not preloaded."
+    },
+    {
+      "id": "NOISE-002",
+      "regex": "IResourceLibrary::Register\\(/heroes/[^)]+\\)\\s*-\\s*Name collision for \"",
+      "reason": "Legacy hero resource registration name collisions across base HoN archives."
+    },
+    {
+      "id": "NOISE-003",
+      "regex": "CFileManager::GetFile\\(\\)\\s*\\[/(?:ui/fe2/elements/store2/(?:combobox/|selectedeffect/invis\\.material)|ui/info/combobox_|shared/effects/screen_efx/unnamed\\.material)[^\\]]*\\]\\s*-\\s*Invalid file type",
+      "reason": "Known legacy store2 combobox and placeholder material directory/file probes during main_v2.interface load."
+    },
+    {
+      "id": "NOISE-004",
+      "regex": "CXMLManager::ReadBuffer\\(\\)\\s*-\\s*Invalid root node 'model',\\s*expected 'effect'",
+      "reason": "Known legacy K2 XML effect probe on a .model resource during initial UI load."
+    },
+    {
+      "id": "NOISE-005",
+      "regex": "CBitmap::LoadPNG\\(\\)\\s*-\\s*Could not open file",
+      "reason": "Known legacy missing optional PNG thumbnail probes during initial startup."
+    },
+    {
+      "id": "NOISE-006",
+      "regex": "Could not load submodule nexus_(?:core|match|graphics|scene|capture|world|action)\\.lua",
+      "reason": "Expected optional Nexus submodule probe log before fallback path resolution."
+    },
+    {
+      "id": "NOISE-007",
+      "regex": "Could not find a value for symbol:\\s*ui_commonTriggersRegistered",
+      "reason": "Initial startup symbol check before ui_commonTriggersRegistered CVar is initialized."
+    }
+  ]
+}

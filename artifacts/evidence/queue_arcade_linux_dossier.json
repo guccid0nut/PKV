@@ -1,0 +1,242 @@
+{
+  "schema_version": "2.0.0",
+  "dossier_id": "DOSSIER-QUEUE-ARCADE-SLOT-SWAP-LINUX",
+  "status": "satisfied",
+  "created_utc": "2026-11-10T22:30:00Z",
+  "authority_scope": "server_authoritative",
+  "target": {
+    "binary_name": "libgame_shared-x86_64-server.so / libk2-x86_64.so / game-x86_64-server.so",
+    "base_address": "0x0",
+    "rva": "0x00C99C90",
+    "sha256": "22a243a9ddb36a7a83251f80c83b410a374e3d4e8658118599319d2283277223",
+    "symbol_name": "CPlayer::SpawnHero / CHostServer::GenerateClientID / CPlayer::RemoveBot / CGame::SetupClientConnection",
+    "calling_convention": "System V AMD64 ABI (rdi=this, rsi, rdx, rcx, r8, r9)"
+  },
+  "triangulation": {
+    "static_source": "ELF x86_64 Capstone disassembly of games/server/linux-x64/libk2-x86_64.so (CHostServer::GenerateClientID @ 0x00CC8AA0), libgame_shared-x86_64-server.so (CPlayer::SpawnHero @ 0x00C99C90, CPlayer::RemoveBot @ 0x00C953A0, CPlayer::Terminate @ 0x00C98E90, CPlayer::Initialize @ 0x00C94A70, IGame::s_pGame @ 0x017CE960), and game-x86_64-server.so (CGameServer::AddBot @ 0x00104050, CGameServer::EndHeroLoading @ 0x000E4A40, CGame::SetupClientConnection @ 0x000A0ACE)",
+    "dynamic_source": "QueueArcadeSimulationTests protocol verification / native_guard unit tests + Linux hon-x86_64-server disassembly"
+  },
+  "counterevidence_searched": "Evaluated whether Windows PE struct offsets could be carried over to Linux ELF binaries with a constant delta (-0x50 or -0x10); falsified by Capstone disassembly which proved non-uniform struct layout shifts: CPlayer::m_iClientNumber is shifted by -0xC (+0x9C on Linux vs +0xA8 on Win64), CPlayer::m_yFlags is shifted by -0x10 (+0x3CE on Linux vs +0x3DE on Win64), CPlayer::m_bMatchmakingPostInitialized and m_bIsBot are shifted by -0x18 (+0x650 and +0x653 on Linux vs +0x668 and +0x66B on Win64), while CPlayer::m_iAccountID (+0x2D0), CPlayer::m_pBotBrain (+0x730), CBotBrain::m_uiHeroIndex (+0x10), and IGame::m_pEntityDirectory (+0x28) have ZERO shift. Also searched for dlsym(RTLD_NEXT) interposition of CPlayer::SpawnHero and verified that K2 loads libgame_shared-x86_64-server.so via dlopen(..., RTLD_LOCAL), bypassing standard LD_PRELOAD interposition and requiring /proc/self/maps scanning and inline trampolines.",
+  "negative_control": "Invalid IGame pointer (0xDEADBEEFULL) or unmapped unit address, intercepted by POSIX siglongjmp fault guard; non-arcade server instances (QueueArcadeMode == 0) executing zero trampolines; connectionless slot takeover attempt on already terminated player (flags & 0x0080); unprivileged IPC commands rejected by CmdSanitizer; and SafeMode/disarmed state cleanly bailing out without mutating CPlayer state.",
+  "obligations": [
+    {
+      "id": "OBL-QA-LINUX-00",
+      "category": "fault_resilience",
+      "description": "Under -fno-exceptions -fno-rtti C++17 on Linux, provide a thread-local sigjmp_buf + sig_atomic_t armed guard (t_callFaultGuard) and kernel-validated pointer probing via process_vm_readv(getpid(), ...), integrated cleanly into the top of NativeGuardCrashSignalHandler in linux_native_guard.cpp so SIGSEGV/SIGBUS during an armed Queue Arcade operation triggers siglongjmp back to safe recovery without crashing the server or suppressing unarmed engine crashes.",
+      "status": "satisfied",
+      "satisfied_in": "native/proxies/native_guard/linux_native_guard.cpp",
+      "verified_by_test": "native/proxies/native_guard/tests/linux_queue_arcade_tests.cpp",
+      "blocked_by": [],
+      "owned_region": "linux_guard_siglongjmp_fault_guard",
+      "evidence_tier": "triangulated_disassembly",
+      "evidence_source": "elf64_capstone",
+      "evidence_rva": "0x00000000",
+      "thread_safety_invariant": "Main server game thread only; NET_CHAT_GS_REMOTE_COMMAND and CGameServer frame loops execute sequentially on the engine main thread"
+    },
+    {
+      "id": "OBL-QA-LINUX-01",
+      "category": "lifecycle_isolation",
+      "description": "Gate ReapConnectionlessBotsIfNoActiveHumans() in linux_native_guard.cpp when Kongor::IsQueueArcadeModeActive() is true so 0-human intervals on Queue Arcade servers never mark pre-allocated bot/placeholder CPlayer slots terminated (0x0080 at offset +0x3CE).",
+      "status": "satisfied",
+      "satisfied_in": "native/proxies/native_guard/linux_native_guard.cpp",
+      "verified_by_test": "native/proxies/native_guard/tests/linux_queue_arcade_tests.cpp",
+      "blocked_by": [
+        "OBL-QA-LINUX-00"
+      ],
+      "owned_region": "linux_guard_reap_connectionless_gate",
+      "evidence_tier": "triangulated_disassembly",
+      "evidence_source": "elf64_capstone",
+      "evidence_rva": "0x00C98EA4",
+      "thread_safety_invariant": "Main server game thread only; NET_CHAT_GS_REMOTE_COMMAND and CGameServer frame loops execute sequentially on the engine main thread"
+    },
+    {
+      "id": "OBL-QA-LINUX-02",
+      "category": "slot_takeover_invariant",
+      "description": "Under Linux call fault guard (with page-spanning process_vm_readv check and maxSteps <= 256 loop bound), Kongor::ArcadeReserveSlot traverses IGame+0x210 (LLVM libc++ std::__tree m_mapClients on Linux: __begin_node_ = *(void**)(pGame+0x210), inline end sentinel = (uint8_t*)pGame+0x218, nullptr-terminated node layout __left_ +0x00, __right_ +0x08, __parent_ +0x10, key int +0x20, CPlayer* +0x28 per BotFrame 0x000CCA31..0x000CCAE0), selects an active non-terminated connectionless CPlayer ((flags & 0x0200) != 0 && (flags & 0x0080) == 0 at offset +0x3CE && m_iAccountID <= 0 at offset +0x2D0) preferring preferredTeam (1 or 2 at offset +0x0A0), calls CPlayer::RemoveBot (RVA 0x00C953A0 in libgame_shared-x86_64-server.so) if m_pBotBrain (+0x730) != nullptr, clears flag 0x0200 (+0x3CE) and override byte (+0x50A on Linux), stamps m_iAccountID (+0x2D0), and records (accountId, clientNum, playerName) in the reservation table.",
+      "status": "satisfied",
+      "satisfied_in": "native/proxies/native_guard/linux_native_guard.cpp",
+      "verified_by_test": "native/proxies/native_guard/tests/linux_queue_arcade_tests.cpp",
+      "blocked_by": [
+        "OBL-QA-LINUX-00",
+        "OBL-QA-LINUX-06",
+        "OBL-QA-LINUX-07",
+        "OBL-QA-LINUX-08"
+      ],
+      "owned_region": "linux_guard_arcade_reserve_slot",
+      "evidence_tier": "triangulated_disassembly",
+      "evidence_source": "elf64_capstone",
+      "evidence_rva": "0x00C94A70",
+      "thread_safety_invariant": "Main server game thread only; NET_CHAT_GS_REMOTE_COMMAND and CGameServer frame loops execute sequentially on the engine main thread"
+    },
+    {
+      "id": "OBL-QA-LINUX-03",
+      "category": "handshake_clientnum_invariant",
+      "description": "Detour CHostServer::GenerateClientID (_ZN11CHostServer16GenerateClientIDERti, RVA 0x00CC8AA0 in libk2-x86_64.so, prologue: 55 41 57 41 56 41 55 41 54 53 48 83 EC 18) only when Queue Arcade mode is active, matching reserved accountId (> 0) or libc++ 24-byte std::wstring player name at (uint8_t*)pConnId + 0x08 (exact or clan-tag-stripped) and returning the reserved CPlayer::m_iClientNumber (+0x9C on Linux) before packet P serialization so SetupClientConnection passes *(int*)(pPlayer+0x9C) == *(int*)(pConn+0x10).",
+      "status": "satisfied",
+      "satisfied_in": "native/proxies/native_guard/linux_native_guard.cpp",
+      "verified_by_test": "native/proxies/native_guard/tests/linux_queue_arcade_tests.cpp",
+      "blocked_by": [
+        "OBL-QA-LINUX-00",
+        "OBL-QA-LINUX-02",
+        "OBL-QA-LINUX-11"
+      ],
+      "owned_region": "linux_guard_generate_client_id_detour",
+      "evidence_tier": "triangulated_disassembly",
+      "evidence_source": "elf64_capstone",
+      "evidence_rva": "0x00CC8AA0",
+      "original_bytes_hex": "55 41 57 41 56 41 55 41 54 53 48 83 EC 18",
+      "thread_safety_invariant": "Main server game thread only; NET_CHAT_GS_REMOTE_COMMAND and CGameServer frame loops execute sequentially on the engine main thread"
+    },
+    {
+      "id": "OBL-QA-LINUX-04",
+      "category": "slot_release_and_dormancy",
+      "description": "Under Linux call fault guard, Kongor::ArcadeReleaseSlot clears m_iAccountID = 0 (+0x2D0) and restores connectionless bit 0x0200 (+0x3CE) without setting 0x0080 or deleting CPlayer, removes the reservation entry, and in Mode 2 (Party Dormant Slots) Kongor::ArcadeParkUnreservedBots removes CBotBrain from unreserved connectionless slots so custom maps keep placeholder seats stationary.",
+      "status": "satisfied",
+      "satisfied_in": "native/proxies/native_guard/linux_native_guard.cpp",
+      "verified_by_test": "native/proxies/native_guard/tests/linux_queue_arcade_tests.cpp",
+      "blocked_by": [
+        "OBL-QA-LINUX-00",
+        "OBL-QA-LINUX-02",
+        "OBL-QA-LINUX-06",
+        "OBL-QA-LINUX-07",
+        "OBL-QA-LINUX-08"
+      ],
+      "owned_region": "linux_guard_arcade_release_slot",
+      "evidence_tier": "triangulated_disassembly",
+      "evidence_source": "elf64_capstone",
+      "evidence_rva": "0x00C98E07",
+      "thread_safety_invariant": "Main server game thread only; NET_CHAT_GS_REMOTE_COMMAND and CGameServer frame loops execute sequentially on the engine main thread"
+    },
+    {
+      "id": "OBL-QA-LINUX-05",
+      "category": "security_boundary",
+      "description": "Register kongor_arcade_mode, kongor_arcade_reserve, and kongor_arcade_release in Kongor::BaseCmdTable on Linux so ChatServer can execute them on the main server thread via NET_CHAT_GS_REMOTE_COMMAND while CmdSanitizer::ShouldAllowCommand blocks unprivileged IPC callers via the kongor_ prefix firewall.",
+      "status": "satisfied",
+      "satisfied_in": "native/proxies/native_guard/linux_native_guard.cpp",
+      "verified_by_test": "native/proxies/native_guard/tests/linux_queue_arcade_tests.cpp",
+      "blocked_by": [
+        "OBL-QA-LINUX-00"
+      ],
+      "owned_region": "linux_guard_base_cmd_registration",
+      "evidence_tier": "triangulated_disassembly",
+      "evidence_source": "elf64_capstone",
+      "evidence_rva": "0x00000000",
+      "thread_safety_invariant": "Main server game thread only; NET_CHAT_GS_REMOTE_COMMAND and CGameServer frame loops execute sequentially on the engine main thread"
+    },
+    {
+      "id": "OBL-QA-LINUX-06",
+      "category": "bot_brain_uaf_prevention",
+      "description": "Unconditionally zero *(void**)(pPlayer + 0x730) = nullptr and clear bit 0x0048 on *(uint16_t*)(pPlayer + 0x3D0 on Linux) immediately after CPlayer::RemoveBot (libgame_shared-x86_64-server.so RVA 0x00C953A0) in both ArcadeReserveSlot and ArcadeParkUnreservedBots, because CPlayer::RemoveBot frees m_pBotBrain without nulling +0x730 and CGameServer::BotFrame (game-x86_64-server.so RVA 0x000CCA69) collects every CPlayer with non-null +0x730 into CBotBrain::GenerateUnitCollections.",
+      "status": "satisfied",
+      "satisfied_in": "native/proxies/native_guard/linux_native_guard.cpp",
+      "verified_by_test": "native/proxies/native_guard/tests/linux_queue_arcade_tests.cpp",
+      "blocked_by": [
+        "OBL-QA-LINUX-00"
+      ],
+      "owned_region": "linux_guard_bot_brain_uaf_zeroing",
+      "evidence_tier": "triangulated_disassembly",
+      "evidence_source": "elf64_capstone",
+      "evidence_rva": "0x00C953A0",
+      "original_bytes_hex": "53 48 89 FB 48 8B BB 30 07 00 00 48 85 FF",
+      "thread_safety_invariant": "Main server game thread only; NET_CHAT_GS_REMOTE_COMMAND and CGameServer frame loops execute sequentially on the engine main thread"
+    },
+    {
+      "id": "OBL-QA-LINUX-07",
+      "category": "player_identity_and_safemode_fail_closed",
+      "description": "Clear m_bIsBot (*(uint8_t*)(pPlayer + 0x653 on Linux) = 0) and update CNetworkResourceManager strings (+0x2D8 clan-prefixed [TAG]Name matching CPlayer::Initialize at libgame_shared RVA 0x00C94A70, +0x2DA/+0x2DC TSNULL empty strings) on slot reservation (restoring +0x653 = 1 and saved bot name on release), while failing closed (arcade_hooks_disarmed / clean Quit retirement without re-arming) if RuntimePatchController Safe Mode is active or CHostServer::GenerateClientID is disarmed.",
+      "status": "satisfied",
+      "satisfied_in": "native/proxies/native_guard/linux_native_guard.cpp",
+      "verified_by_test": "native/proxies/native_guard/tests/linux_queue_arcade_tests.cpp",
+      "blocked_by": [
+        "OBL-QA-LINUX-00"
+      ],
+      "owned_region": "linux_guard_player_identity_safemode",
+      "evidence_tier": "triangulated_disassembly",
+      "evidence_source": "elf64_capstone",
+      "evidence_rva": "0x00C94A9B",
+      "thread_safety_invariant": "Main server game thread only; NET_CHAT_GS_REMOTE_COMMAND and CGameServer frame loops execute sequentially on the engine main thread"
+    },
+    {
+      "id": "OBL-QA-LINUX-08",
+      "category": "disconnect_and_ping_state_hygiene",
+      "description": "Keep m_bMatchmakingPostInitialized (*(uint8_t*)(pPlayer + 0x650 on Linux) = 1) in both ArcadeReserveSlot and ArcadeReleaseSlot so EndHeroLoading (game-x86_64-server.so RVA 0x000E4EC5, Phase 4->5) never invokes CPlayer::Disconnected when sv_precreateArrangedPlayers == 0, while clearing 0x0101 (DISCONNECTED | WAS_DISCONNECTED) and 0x0040 (LOADING) on +0x3CE (Linux) and resetting m_unPing (+0x3F4 on Linux = 0), m_uiDisconnectTime (+0x420 on Linux = 0xFFFFFFFF), m_uiTotalDisconnectedTime (+0x424 on Linux = 0), and m_uiDisconnectTerminalTime (+0x428 on Linux = 0xFFFFFFFF) on both reservation and release.",
+      "status": "satisfied",
+      "satisfied_in": "native/proxies/native_guard/linux_native_guard.cpp",
+      "verified_by_test": "native/proxies/native_guard/tests/linux_queue_arcade_tests.cpp",
+      "blocked_by": [
+        "OBL-QA-LINUX-00"
+      ],
+      "owned_region": "linux_guard_disconnect_ping_hygiene",
+      "evidence_tier": "triangulated_disassembly",
+      "evidence_source": "elf64_capstone",
+      "evidence_rva": "0x000E4EC5",
+      "thread_safety_invariant": "Main server game thread only; NET_CHAT_GS_REMOTE_COMMAND and CGameServer frame loops execute sequentially on the engine main thread"
+    },
+    {
+      "id": "OBL-QA-LINUX-09",
+      "category": "pre_phase5_duplicate_spawn_guard",
+      "description": "Suppress duplicate CPlayer::SpawnHero calls in Hooked_CPlayer_SpawnHero (libgame_shared RVA 0x00C99C90, prologue: 55 41 57 41 56 41 55 41 54 53 48 81 EC 58 02 00 00) via Kongor::ShouldSuppressPreMatchDuplicateHeroSpawn when m_pGameInfo->m_eGamePhase (+0x0A8 on Linux, via CGameServer + 0x0C0) < 5 and CPlayer::m_uiHeroIndex (+0x0A4 on Linux) != 0xFFFFFFFFu resolves via IGame+0x28 vtable+0x18 (GetEntityFromIndex on Linux) and vtable+0x178 (GetAsUnit) to a live hero unit (preventing EndHeroLoading at game-server RVA 0x000E4D23 from spawning a twin after Phase 3/4 CGameServer::AddBot at 0x00104050), while leaving Phase >= 5 repicks untouched and still invoking ArcadeParkUnreservedBots in Mode 2.",
+      "status": "satisfied",
+      "satisfied_in": "native/proxies/native_guard/linux_native_guard.cpp",
+      "verified_by_test": "native/proxies/native_guard/tests/linux_queue_arcade_tests.cpp",
+      "blocked_by": [
+        "OBL-QA-LINUX-00",
+        "OBL-QA-LINUX-11"
+      ],
+      "owned_region": "linux_guard_pre_phase5_spawn_guard",
+      "evidence_tier": "triangulated_disassembly",
+      "evidence_source": "elf64_capstone",
+      "evidence_rva": "0x00C99C90",
+      "original_bytes_hex": "55 41 57 41 56 41 55 41 54 53 48 81 EC 58 02 00 00",
+      "thread_safety_invariant": "Main server game thread only; NET_CHAT_GS_REMOTE_COMMAND and CGameServer frame loops execute sequentially on the engine main thread"
+    },
+    {
+      "id": "OBL-QA-LINUX-10",
+      "category": "active_bot_brain_park_restore_and_safe_teardown",
+      "description": "In Mode 1 (ActiveBots), ArcadeReserveSlot parks m_pBotBrain (+0x730) into ArcadeReservationEntry::parkedBotBrain (nulling +0x730 and clearing 0x0048 on +0x3D0 on Linux without calling CPlayer::RemoveBot), ArcadeReleaseSlot restores +0x730, syncs CBotBrain::m_uiHeroIndex (+0x10) from CPlayer+0x0A4, and sets +0x3D0 |= 0x0008 so vacated heroes immediately resume fighting, and Hooked_CPlayer_Terminate (libgame_shared RVA 0x00C98E90, prologue: 55 41 57 41 56 41 55 41 54 53 48 81 EC B8 00 00 00) / ClearAllArcadeReservations re-docks and frees any parked CBotBrain via CPlayer::RemoveBot while IGame::s_pGame and CLuaScriptManager are still live (before UnloadWorld tears down the Lua VM queried by ~CBotBrain at libgame_shared RVA 0x00F644B0).",
+      "status": "satisfied",
+      "satisfied_in": "native/proxies/native_guard/linux_native_guard.cpp",
+      "verified_by_test": "native/proxies/native_guard/tests/linux_queue_arcade_tests.cpp",
+      "blocked_by": [
+        "OBL-QA-LINUX-00",
+        "OBL-QA-LINUX-02",
+        "OBL-QA-LINUX-04",
+        "OBL-QA-LINUX-06"
+      ],
+      "owned_region": "linux_guard_mode1_bot_brain_lifecycle",
+      "evidence_tier": "triangulated_disassembly",
+      "evidence_source": "elf64_capstone",
+      "evidence_rva": "0x00C98E90",
+      "original_bytes_hex": "55 41 57 41 56 41 55 41 54 53 48 81 EC B8 00 00 00",
+      "thread_safety_invariant": "Main server game thread only; NET_CHAT_GS_REMOTE_COMMAND and CGameServer frame loops execute sequentially on the engine main thread"
+    },
+    {
+      "id": "OBL-QA-LINUX-11",
+      "category": "inline_hooking_engine",
+      "description": "Implement RTLD_LOCAL inline trampoline engine for Linux x86_64 DSOs: resolve module base addresses via /proc/self/maps scanning (FindModuleBaseByName), allocate executable trampoline pages within +-2 GiB near-jump range using mmap(NULL, 4096, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) followed by mprotect(PROT_READ|PROT_EXEC), copy displaced prologue instructions (min 14 bytes for FF 25 abs64 or 5 bytes for E9 rel32), write jump back to target + displaced_len, hook target function with mprotect + atomic 64-bit/instruction write, and flush instruction cache via __builtin___clear_cache.",
+      "status": "satisfied",
+      "satisfied_in": "native/proxies/native_guard/linux_native_guard.cpp",
+      "verified_by_test": "native/proxies/native_guard/tests/linux_queue_arcade_tests.cpp",
+      "blocked_by": [
+        "OBL-QA-LINUX-00"
+      ],
+      "owned_region": "linux_guard_rtld_local_trampoline_engine",
+      "evidence_tier": "triangulated_disassembly",
+      "evidence_source": "elf64_capstone",
+      "evidence_rva": "0x00000000",
+      "thread_safety_invariant": "Main server game thread only; NET_CHAT_GS_REMOTE_COMMAND and CGameServer frame loops execute sequentially on the engine main thread"
+    }
+  ],
+  "limitations_and_unknowns": {
+    "triangulation_status": "dynamically_confirmed",
+    "triangulation_notes": "Dynamically confirmed in Linux x86_64 Docker runtime harness (linux_queue_arcade_tests executing POSIX sigaction/siglongjmp, process_vm_readv, and mmap/mprotect inline trampolines + hon-x86_64-server LD_PRELOAD=libkongor_native_guard.so smoke).",
+    "unknown_offsets": [
+      {
+        "offset": "CHostServer::m_vClientIDs (+0x250 Linux vs +0x270 Win64 server)",
+        "status": "waived",
+        "rationale": "Avoided direct CHostServer::m_vClientIDs struct offset access completely by detouring the exported CHostServer::GenerateClientID method and resolving reserved clientNum from NativeGuard self-owned reservation table."
+      }
+    ],
+    "indirect_calls": []
+  }
+}

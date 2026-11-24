@@ -1,0 +1,94 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="clr-namespace:ReplayStudio.GUI.ViewModels"
+             mc:Ignorable="d" d:DesignWidth="600" d:DesignHeight="450"
+             x:Class="ReplayStudio.GUI.Views.ExportModalView"
+             x:DataType="vm:ExportModalViewModel"
+             IsVisible="{Binding IsVisible}">
+
+    <!-- Dark Backdrop -->
+    <Grid Background="#B0000000">
+        <!-- Modal Card -->
+        <Border Classes="glass-card" Width="520" VerticalAlignment="Center" HorizontalAlignment="Center"
+                Background="#0F172A" BorderBrush="#0284C7" BorderThickness="1" CornerRadius="10" Padding="20">
+            <StackPanel Spacing="16">
+                <!-- Modal Title -->
+                <Grid ColumnDefinitions="*, Auto">
+                    <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="8">
+                        <TextBlock Text="🎥" FontSize="18" VerticalAlignment="Center" />
+                        <TextBlock Text="EXPORT HIGH-RES VIDEO" FontSize="16" FontWeight="Bold" Foreground="#38BDF8" VerticalAlignment="Center" />
+                    </StackPanel>
+                    <Button Grid.Column="1" Command="{Binding CloseModalCommand}" Classes="action-btn" Padding="6, 2" Content="✕" />
+                </Grid>
+
+                <Separator Background="#1E293B" Height="1" />
+
+                <!-- Render Backend Mode -->
+                <StackPanel Spacing="6">
+                    <Label Foreground="#94A3B8" FontSize="12" FontWeight="SemiBold">Render Backend</Label>
+                    <ComboBox ItemsSource="{Binding AvailableBackendModes}" SelectedItem="{Binding SelectedBackendMode}"
+                              HorizontalAlignment="Stretch" Background="#1E293B" Foreground="#F8FAFC" Height="36" />
+                    <TextBlock Text="{Binding BackendModeDescription}" Foreground="#64748B" FontSize="11"
+                               TextWrapping="Wrap" />
+                </StackPanel>
+
+                <!-- Resolution & Encoding Preset -->
+                <StackPanel Spacing="6">
+                    <Label Foreground="#94A3B8" FontSize="12" FontWeight="SemiBold">Encoding Quality Preset</Label>
+                    <ComboBox ItemsSource="{Binding AvailablePresets}" SelectedItem="{Binding SelectedPreset}"
+                              HorizontalAlignment="Stretch" Background="#1E293B" Foreground="#F8FAFC" Height="36" />
+                </StackPanel>
+
+                <!-- Output File Destination -->
+                <StackPanel Spacing="6">
+                    <Label Foreground="#94A3B8" FontSize="12" FontWeight="SemiBold">Output Destination MP4</Label>
+                    <TextBox Text="{Binding OutputFilePath}" Watermark="C:\Replays\Export\match_clip.mp4"
+                             Background="#1E293B" Foreground="#F8FAFC" BorderBrush="#334155" Height="34" />
+                </StackPanel>
+
+                <!-- Timeline Range -->
+                <Grid ColumnDefinitions="*, *" Margin="0, 4">
+                    <StackPanel Grid.Column="0" Spacing="4" Margin="0, 0, 8, 0">
+                        <Label Foreground="#94A3B8" FontSize="11">IN Marker (Start)</Label>
+                        <Border Classes="inset-card" Padding="8, 4">
+                            <TextBlock Text="{Binding InMarkerFormatted}" Foreground="#38BDF8" FontWeight="Bold" FontFamily="Cascadia Mono, Consolas, monospace" />
+                        </Border>
+                    </StackPanel>
+                    <StackPanel Grid.Column="1" Spacing="4" Margin="8, 0, 0, 0">
+                        <Label Foreground="#94A3B8" FontSize="11">OUT Marker (End)</Label>
+                        <Border Classes="inset-card" Padding="8, 4">
+                            <TextBlock Text="{Binding OutMarkerFormatted}" Foreground="#F87171" FontWeight="Bold" FontFamily="Cascadia Mono, Consolas, monospace" />
+                        </Border>
+                    </StackPanel>
+                </Grid>
+
+                <!-- Audio Checkbox -->
+                <CheckBox IsChecked="{Binding IncludeAudio}" Foreground="#F8FAFC" FontSize="12">
+                    <TextBlock Text="Include Synchronized 48kHz Audio Stream" VerticalAlignment="Center" />
+                </CheckBox>
+
+                <!-- Progress Section -->
+                <StackPanel Spacing="6">
+                    <Grid ColumnDefinitions="*, Auto">
+                        <TextBlock Grid.Column="0" Text="{Binding ExportStatusText}" Foreground="#34D399" FontSize="11" TextTrimming="CharacterEllipsis" />
+                        <TextBlock Grid.Column="1" Text="{Binding ExportProgressPercent, StringFormat='{}{0:F0}%'}" Foreground="#38BDF8" FontSize="11" FontWeight="Bold" />
+                    </Grid>
+                    <ProgressBar Value="{Binding ExportProgressPercent}" Minimum="0" Maximum="100" Height="8"
+                                 Foreground="#059669" Background="#1E293B" CornerRadius="4" />
+                    <TextBlock Text="{Binding ProgressDetailsText}" Foreground="#94A3B8" FontSize="11"
+                               FontFamily="Cascadia Mono, Consolas, monospace" TextTrimming="CharacterEllipsis" />
+                </StackPanel>
+
+                <!-- Action Buttons -->
+                <Grid ColumnDefinitions="*, Auto, Auto" Margin="0, 8, 0, 0">
+                    <Button Grid.Column="1" Command="{Binding CancelExportCommand}" IsVisible="{Binding IsExporting}"
+                            Classes="btn-crimson" Margin="0, 0, 10, 0" Content="Cancel Export" />
+                    <Button Grid.Column="2" Command="{Binding StartExportCommand}" IsEnabled="{Binding !IsExporting}"
+                            Classes="btn-emerald" Content="▶ Start Export" Height="36" Padding="18, 6" />
+                </Grid>
+            </StackPanel>
+        </Border>
+    </Grid>
+</UserControl>

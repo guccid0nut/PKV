@@ -1,0 +1,152 @@
+#version 450
+// ============================================================================
+// File: rgba_to_nv12.comp
+// Purpose: GPU-side RGBA8 -> NV12 (BT.709 Full-Range & Studio-Range) 2x2
+//          subsampling compute shader with CuTe Swizzle<3,2,3> bank-conflict-free
+//          shared-memory staging and non-multiple-of-4 row-stride alignment
+//          guard (#95, #127 cute-swizzled-smem-nv12-shader).
+//          Cuts PCIe readback bandwidth by 62.5% (4.0 B/px -> 1.5 B/px).
+// ============================================================================
+
+layout(local_size_x = 16, local_size_y = 16, local_size_z = 1) in;
+
+layout(set = 0, binding = 0, rgba8) uniform readonly image2D uInputRgba;
+layout(set = 0, binding = 1) buffer OutputNv12 {
+    uint data[];
+} bOutputNv12;
+
+layout(push_constant) uniform PushConstants {
+    uint width;
+    uint height;
+    uint fullRange;
+} pc;
+
+// CuTe Swizzle<3, 2, 3> shared-memory tile for 64x32 pixel workgroup macro-tile
+shared vec3 s_rgbaTile[32][64];
+
+uint cute_swizzle_col(uint col, uint row) {
+    return col ^ ((row & 7u) << 3u);
+}
+
+uint rgb_to_y_bt709(vec3 rgb, uint fullRange) {
+    if (fullRange != 0u) {
+        float yFull = 255.0 * (0.2126 * rgb.r + 0.7152 * rgb.g + 0.0722 * rgb.b);
+        return clamp(uint(yFull + 0.5), 0u, 255u);
+    }
+    float yStudio = 255.0 * (0.182586 * rgb.r + 0.614231 * rgb.g + 0.062007 * rgb.b) + 16.0;
+    return clamp(uint(yStudio + 0.5), 16u, 235u);
+}
+
+uvec2 rgb_to_uv_bt709(vec3 rgb, uint fullRange) {
+    if (fullRange != 0u) {
+        float uFull = 255.0 * (-0.114572 * rgb.r - 0.385428 * rgb.g + 0.500000 * rgb.b) + 128.0;
+        float vFull = 255.0 * ( 0.500000 * rgb.r - 0.454153 * rgb.g - 0.045847 * rgb.b) + 128.0;
+        return uvec2(clamp(uint(uFull + 0.5), 0u, 255u), clamp(uint(vFull + 0.5), 0u, 255u));
+    }
+    float uStudio = 255.0 * (-0.100644 * rgb.r - 0.338572 * rgb.g + 0.439216 * rgb.b) + 128.0;
+    float vStudio = 255.0 * ( 0.439216 * rgb.r - 0.398942 * rgb.g - 0.040274 * rgb.b) + 128.0;
+    return uvec2(clamp(uint(uStudio + 0.5), 16u, 240u), clamp(uint(vStudio + 0.5), 16u, 240u));
+}
+
+// Writes a 16-bit pair (2 bytes) at an even byte offset without corrupting the adjacent half-word
+// when pc.width is even but not divisible by 4 (e.g. 1366x768 where width % 4 == 2).
+void store_nv12_halfword(uint byteOffset, uint packed16) {
+    uint wordIndex = byteOffset >> 2u;
+    uint bitShift = (byteOffset & 2u) << 3u;
+    uint clearMask = ~(0xFFFFu << bitShift);
+    atomicAnd(bOutputNv12.data[wordIndex], clearMask);
+    atomicOr(bOutputNv12.data[wordIndex], (packed16 & 0xFFFFu) << bitShift);
+}
+
+// Writes 4 bytes (two 16-bit pairs) using direct 32-bit word stores when 4-byte aligned,
+// or split 16-bit half-word stores when row stride causes a 2-byte phase shift.
+void store_nv12_quad(uint byteOffset, uint packed32) {
+    if ((byteOffset & 3u) == 0u) {
+        bOutputNv12.data[byteOffset >> 2u] = packed32;
+    } else {
+        store_nv12_halfword(byteOffset, packed32 & 0xFFFFu);
+        store_nv12_halfword(byteOffset + 2u, (packed32 >> 16u) & 0xFFFFu);
+    }
+}
+
+void main() {
+    // Each invocation processes up to a 4x2 pixel macro-block (two 2x2 sub-blocks)
+    uint blockX = gl_GlobalInvocationID.x * 4u;
+    uint blockY = gl_GlobalInvocationID.y * 2u;
+    if (blockX >= pc.width || blockY >= pc.height) {
+        return;
+    }
+
+    uint localColBase = gl_LocalInvocationID.x * 4u;
+    uint localRow0 = gl_LocalInvocationID.y * 2u;
+    uint localRow1 = localRow0 + 1u;
+    bool hasRightPair = (blockX + 2u) < pc.width;
+
+    vec3 c00 = imageLoad(uInputRgba, ivec2(blockX + 0u, blockY + 0u)).rgb;
+    vec3 c10 = imageLoad(uInputRgba, ivec2(blockX + 1u, blockY + 0u)).rgb;
+    vec3 c01 = imageLoad(uInputRgba, ivec2(blockX + 0u, blockY + 1u)).rgb;
+    vec3 c11 = imageLoad(uInputRgba, ivec2(blockX + 1u, blockY + 1u)).rgb;
+
+    s_rgbaTile[localRow0][cute_swizzle_col(localColBase + 0u, localRow0)] = c00;
+    s_rgbaTile[localRow0][cute_swizzle_col(localColBase + 1u, localRow0)] = c10;
+    s_rgbaTile[localRow1][cute_swizzle_col(localColBase + 0u, localRow1)] = c01;
+    s_rgbaTile[localRow1][cute_swizzle_col(localColBase + 1u, localRow1)] = c11;
+
+    vec3 c20 = c00;
+    vec3 c30 = c10;
+    vec3 c21 = c01;
+    vec3 c31 = c11;
+    if (hasRightPair) {
+        c20 = imageLoad(uInputRgba, ivec2(blockX + 2u, blockY + 0u)).rgb;
+        c30 = imageLoad(uInputRgba, ivec2(blockX + 3u, blockY + 0u)).rgb;
+        c21 = imageLoad(uInputRgba, ivec2(blockX + 2u, blockY + 1u)).rgb;
+        c31 = imageLoad(uInputRgba, ivec2(blockX + 3u, blockY + 1u)).rgb;
+
+        s_rgbaTile[localRow0][cute_swizzle_col(localColBase + 2u, localRow0)] = c20;
+        s_rgbaTile[localRow0][cute_swizzle_col(localColBase + 3u, localRow0)] = c30;
+        s_rgbaTile[localRow1][cute_swizzle_col(localColBase + 2u, localRow1)] = c21;
+        s_rgbaTile[localRow1][cute_swizzle_col(localColBase + 3u, localRow1)] = c31;
+    }
+
+    barrier();
+
+    vec3 s00 = s_rgbaTile[localRow0][cute_swizzle_col(localColBase + 0u, localRow0)];
+    vec3 s10 = s_rgbaTile[localRow0][cute_swizzle_col(localColBase + 1u, localRow0)];
+    vec3 s01 = s_rgbaTile[localRow1][cute_swizzle_col(localColBase + 0u, localRow1)];
+    vec3 s11 = s_rgbaTile[localRow1][cute_swizzle_col(localColBase + 1u, localRow1)];
+
+    uint yLeft0 = rgb_to_y_bt709(s00, pc.fullRange) | (rgb_to_y_bt709(s10, pc.fullRange) << 8u);
+    uint yLeft1 = rgb_to_y_bt709(s01, pc.fullRange) | (rgb_to_y_bt709(s11, pc.fullRange) << 8u);
+
+    uint yByteOffset0 = blockY * pc.width + blockX;
+    uint yByteOffset1 = (blockY + 1u) * pc.width + blockX;
+    uint yPlaneBytes = pc.width * pc.height;
+    uint uvByteOffset = yPlaneBytes + ((blockY >> 1u) * pc.width + blockX);
+
+    vec3 avgLeft = 0.25 * (s00 + s10 + s01 + s11);
+    uvec2 uv0 = rgb_to_uv_bt709(avgLeft, pc.fullRange);
+    uint uvLeft16 = uv0.x | (uv0.y << 8u);
+
+    if (hasRightPair) {
+        vec3 s20 = s_rgbaTile[localRow0][cute_swizzle_col(localColBase + 2u, localRow0)];
+        vec3 s30 = s_rgbaTile[localRow0][cute_swizzle_col(localColBase + 3u, localRow0)];
+        vec3 s21 = s_rgbaTile[localRow1][cute_swizzle_col(localColBase + 2u, localRow1)];
+        vec3 s31 = s_rgbaTile[localRow1][cute_swizzle_col(localColBase + 3u, localRow1)];
+
+        uint yRight0 = rgb_to_y_bt709(s20, pc.fullRange) | (rgb_to_y_bt709(s30, pc.fullRange) << 8u);
+        uint yRight1 = rgb_to_y_bt709(s21, pc.fullRange) | (rgb_to_y_bt709(s31, pc.fullRange) << 8u);
+
+        store_nv12_quad(yByteOffset0, yLeft0 | (yRight0 << 16u));
+        store_nv12_quad(yByteOffset1, yLeft1 | (yRight1 << 16u));
+
+        vec3 avgRight = 0.25 * (s20 + s30 + s21 + s31);
+        uvec2 uv1 = rgb_to_uv_bt709(avgRight, pc.fullRange);
+        uint uvRight16 = uv1.x | (uv1.y << 8u);
+        store_nv12_quad(uvByteOffset, uvLeft16 | (uvRight16 << 16u));
+    } else {
+        // Right-edge 2x2 tail block when width % 4 == 2
+        store_nv12_halfword(yByteOffset0, yLeft0);
+        store_nv12_halfword(yByteOffset1, yLeft1);
+        store_nv12_halfword(uvByteOffset, uvLeft16);
+    }
+}

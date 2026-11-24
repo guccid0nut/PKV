@@ -1,0 +1,54 @@
+{
+  "schema_version": "2.0.0",
+  "dossier_id": "DOSSIER-NG-K2-SOUND-LOADSAMPLE-NEGCACHE",
+  "created_utc": "2026-11-01T23:30:00Z",
+  "status": "active",
+  "authority_scope": "client_cosmetic_only",
+  "target": {
+    "binary_name": "k2_x64.dll",
+    "rva": "0x009E7260",
+    "function_name": "CSoundManager::LoadSample",
+    "symbol_name": "?LoadSample@CSoundManager@@QEAAPEAVSound@FMOD@@AEBV?$basic_string@_WU?$char_traits@_W@std@@V?$K2StringAllocator@_W@@@std@@H@Z",
+    "calling_convention": "__fastcall (Win64 ABI)"
+  },
+  "cleanroom_mapping": {
+    "source_file": "native/proxies/native_guard/vfs_and_hooks.cpp"
+  },
+  "triangulation": {
+    "static_source": "Ghidra ProjectKongor.rep disassembly of k2_x64.dll + 0x9E7260 (15-byte RIP-free prologue 48 8B C4 48 89 58 10 44 89 40 18 48 89 48 08 and m_bInitialized guard at this+0x20)",
+    "dynamic_source": "Live client console.log profiling of repeated missing UI/hero sample VFS archive scans + HDE64 prologue boundary verification in native_guard_unit_tests"
+  },
+  "counterevidence_searched": "Checked CSoundManager::Start and CSoundManager::LoadSample in k2_x64.dll (+0x9E7260..+0x9E72A0) to ensure pre-initialization calls (this+0x20 == 0) or runtime ReloadRes/SetMod archive swaps cannot permanently poison valid samples in the negative cache.",
+  "negative_control": "When CSoundManager::m_bInitialized (this+0x20) is 0 or after ReloadRes/SoundRestart/SetMod/ReloadInterfaces executes, negative-cache insertion is skipped or cleared so subsequent valid sample loads succeed.",
+  "obligations": [
+    {
+      "id": "OBL-NG-LOADSAMPLE-01",
+      "category": "hook_safety_and_abi",
+      "description": "Verify exact 15-byte RIP-free prologue (48 8B C4 48 89 58 10 44 89 40 18 48 89 48 08) at CSoundManager::LoadSample (k2_x64.dll + 0x9E7260) via PatchController::InstallManagedInlineHook64 and normalize wide sample paths in a fixed-capacity SRWLOCK-guarded open-addressed table with exact wcscmp + flags matching and zero heap allocations inside __try frames.",
+      "status": "satisfied",
+      "satisfied_in": "native/proxies/native_guard/vfs_and_hooks.cpp",
+      "verified_by_test": "native/proxies/native_guard/tests/native_guard_unit_tests.cpp"
+    },
+    {
+      "id": "OBL-NG-LOADSAMPLE-02",
+      "category": "initialization_ordering_guard",
+      "description": "Only record nullptr returns from CSoundManager::LoadSample in the negative cache when CSoundManager::m_bInitialized (*((const uint8_t*)pThis + 0x20) != 0) is true so pre-FMOD-init calls never poison valid sound paths.",
+      "status": "satisfied",
+      "satisfied_in": "native/proxies/native_guard/native_guard_internal.h",
+      "verified_by_test": "native/proxies/native_guard/tests/native_guard_unit_tests.cpp"
+    },
+    {
+      "id": "OBL-NG-LOADSAMPLE-03",
+      "category": "cache_invalidation_invariant",
+      "description": "Clear the CSoundManager::LoadSample negative sample cache whenever ReloadRes, SoundRestart, SetMod, ReloadInterfaces, or ResourceCmd is dispatched through Hooked_CConsole_Execute.",
+      "status": "satisfied",
+      "satisfied_in": "native/proxies/native_guard/vfs_and_hooks.cpp",
+      "verified_by_test": "native/proxies/native_guard/tests/native_guard_unit_tests.cpp"
+    }
+  ],
+  "limitations_and_unknowns": {
+    "triangulation_status": "dynamically_confirmed",
+    "unknown_offsets": [],
+    "indirect_calls": []
+  }
+}

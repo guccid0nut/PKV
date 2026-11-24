@@ -1,0 +1,120 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1150 780" width="100%" height="100%" style="background-color: #0d1117; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#161b22"/>
+      <stop offset="100%" stop-color="#0d1117"/>
+    </linearGradient>
+    <marker id="arrowPurple" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 8 5 L 0 9 z" fill="#bc8cff"/>
+    </marker>
+    <marker id="arrowRed" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 8 5 L 0 9 z" fill="#f85149"/>
+    </marker>
+    <marker id="arrowBlue" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 8 5 L 0 9 z" fill="#58a6ff"/>
+    </marker>
+    <marker id="arrowGreen" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 8 5 L 0 9 z" fill="#3fb950"/>
+    </marker>
+    <filter id="shadow" x="-5%" y="-5%" width="110%" height="110%">
+      <feDropShadow dx="0" dy="4" stdDeviation="5" flood-color="#000000" flood-opacity="0.5"/>
+    </filter>
+  </defs>
+
+  <rect width="100%" height="100%" fill="url(#bgGrad)" rx="12"/>
+  <rect width="100%" height="100%" fill="none" stroke="#30363d" stroke-width="1.5" rx="12"/>
+
+  <!-- TITLE -->
+  <text x="575" y="40" text-anchor="middle" fill="#f0f6fc" font-size="18" font-weight="700">💥 Combat Feel &amp; Visual Polish Suite (Juice &amp; UMPH Architecture)</text>
+
+  <!-- SUBGRAPH 1: CAMERA TRAUMA & SHAKE -->
+  <g filter="url(#shadow)">
+    <rect x="40" y="65" width="1070" height="205" rx="10" fill="#161b22" stroke="#bc8cff" stroke-width="1.5"/>
+    <rect x="40" y="65" width="1070" height="30" rx="10" fill="#bc8cff" fill-opacity="0.25"/>
+    <text x="60" y="86" fill="#d2a8ff" font-size="13" font-weight="700">🎥 Non-Linear Camera Trauma &amp; 6-DOF Shake Engine</text>
+
+    <!-- Node 1 -->
+    <rect x="60" y="110" width="310" height="85" rx="8" fill="#21262d" stroke="#bc8cff" stroke-width="1.2"/>
+    <text x="215" y="138" text-anchor="middle" fill="#f0f6fc" font-size="13" font-weight="700">📉 Non-Linear Trauma Accumulator</text>
+    <text x="215" y="160" text-anchor="middle" fill="#8b949e" font-size="11">Decay: Trauma² / Trauma³ Curve</text>
+    <text x="215" y="180" text-anchor="middle" fill="#d2a8ff" font-size="10">Heavy Ultimates, Explosions &amp; Crits</text>
+
+    <!-- Node 2 -->
+    <rect x="420" y="110" width="310" height="85" rx="8" fill="#21262d" stroke="#bc8cff" stroke-width="1.2"/>
+    <text x="575" y="138" text-anchor="middle" fill="#f0f6fc" font-size="13" font-weight="700">🌊 Perlin Noise 6-DOF Shake</text>
+    <text x="575" y="160" text-anchor="middle" fill="#8b949e" font-size="11">Smooth Translational &amp; Rotational</text>
+    <text x="575" y="180" text-anchor="middle" fill="#d2a8ff" font-size="10">Pitch, Yaw, Roll &amp; Z-Displacement</text>
+
+    <!-- Node 3 -->
+    <rect x="780" y="110" width="310" height="85" rx="8" fill="#21262d" stroke="#bc8cff" stroke-width="1.2"/>
+    <text x="935" y="138" text-anchor="middle" fill="#f0f6fc" font-size="13" font-weight="700">📏 3D Distance Falloff Evaluator</text>
+    <text x="935" y="160" text-anchor="middle" fill="#8b949e" font-size="11">Epicenter-to-Camera Attenuation</text>
+    <text x="935" y="180" text-anchor="middle" fill="#d2a8ff" font-size="10">Inverse Square Falloff Modeling</text>
+
+    <text x="60" y="222" fill="#c9d1d9" font-size="11">• Eliminates disorienting linear camera snapping in favor of organic, filmic trauma impulses</text>
+    <text x="60" y="244" fill="#c9d1d9" font-size="11">• Automatically clamps maximum rotational deflection to preserve tactical visibility during teamfights</text>
+  </g>
+
+  <!-- SUBGRAPH 2: DYNAMIC FLOATERS & KILL BANNERS -->
+  <g filter="url(#shadow)">
+    <rect x="40" y="295" width="1070" height="235" rx="10" fill="#161b22" stroke="#f85149" stroke-width="1.5"/>
+    <rect x="40" y="295" width="1070" height="30" rx="10" fill="#f85149" fill-opacity="0.25"/>
+    <text x="60" y="316" fill="#ff7b72" font-size="13" font-weight="700">✨ Dynamic Damage Floaters, Kill Banners &amp; Impact Polish</text>
+
+    <!-- Node 1 -->
+    <rect x="60" y="340" width="230" height="90" rx="8" fill="#21262d" stroke="#f85149" stroke-width="1.2"/>
+    <text x="175" y="368" text-anchor="middle" fill="#f0f6fc" font-size="12" font-weight="700">🔢 Physics Damage Floaters</text>
+    <text x="175" y="390" text-anchor="middle" fill="#8b949e" font-size="11">Physical, Magic &amp; True Damage</text>
+    <text x="175" y="410" text-anchor="middle" fill="#ff7b72" font-size="10">Velocity Bouncing &amp; Fade Curves</text>
+
+    <!-- Node 2 -->
+    <rect x="320" y="340" width="230" height="90" rx="8" fill="#21262d" stroke="#f85149" stroke-width="1.2"/>
+    <text x="435" y="368" text-anchor="middle" fill="#f0f6fc" font-size="12" font-weight="700">🏆 Multi-Kill Banner System</text>
+    <text x="435" y="390" text-anchor="middle" fill="#8b949e" font-size="11">Hat Trick, Bloodbath, ANNIHILATION</text>
+    <text x="435" y="410" text-anchor="middle" fill="#ff7b72" font-size="10">Screen-Filling Particle Shockwaves</text>
+
+    <!-- Node 3 -->
+    <rect x="580" y="340" width="230" height="90" rx="8" fill="#21262d" stroke="#f85149" stroke-width="1.2"/>
+    <text x="695" y="368" text-anchor="middle" fill="#f0f6fc" font-size="12" font-weight="700">⚡ Hit Stop &amp; Micro-Freeze</text>
+    <text x="695" y="390" text-anchor="middle" fill="#8b949e" font-size="11">30ms–50ms Colossal Hit Pause</text>
+    <text x="695" y="410" text-anchor="middle" fill="#ff7b72" font-size="10">Tactile Weight on Heavy Blows</text>
+
+    <!-- Node 4 -->
+    <rect x="840" y="340" width="250" height="90" rx="8" fill="#21262d" stroke="#f85149" stroke-width="1.2"/>
+    <text x="965" y="368" text-anchor="middle" fill="#f0f6fc" font-size="12" font-weight="700">🌈 Post-Process Impact FX</text>
+    <text x="965" y="390" text-anchor="middle" fill="#8b949e" font-size="11">Radial Blur &amp; Vignette Pulse</text>
+    <text x="965" y="410" text-anchor="middle" fill="#ff7b72" font-size="10">Subtle Chromatic Aberration</text>
+
+    <text x="60" y="460" fill="#c9d1d9" font-size="11">• Distinctive typography and color-coding for critical strikes, hero heals, and execution thresholds</text>
+    <text x="60" y="482" fill="#c9d1d9" font-size="11">• Micro-freeze adds fighting-game punch to game-turning abilities (e.g. Deadwood Willow Punch, Behemoth Fissure)</text>
+    <text x="60" y="504" fill="#c9d1d9" font-size="11">• Real-time audio ducking lets announcer callouts and impact thuds cut through ambient battle sounds</text>
+  </g>
+
+  <!-- SUBGRAPH 3: TELEMETRY & HIGHLIGHT FEED -->
+  <g filter="url(#shadow)">
+    <rect x="40" y="555" width="1070" height="195" rx="10" fill="#161b22" stroke="#58a6ff" stroke-width="1.5"/>
+    <rect x="40" y="555" width="1070" height="30" rx="10" fill="#1f6feb" fill-opacity="0.25"/>
+    <text x="60" y="576" fill="#79c0ff" font-size="13" font-weight="700">📡 Combat Juice Telemetry, Replay Highlights &amp; Web Spectator Feed</text>
+
+    <!-- Node 1 -->
+    <rect x="60" y="600" width="310" height="85" rx="8" fill="#21262d" stroke="#58a6ff" stroke-width="1.2"/>
+    <text x="215" y="628" text-anchor="middle" fill="#f0f6fc" font-size="12" font-weight="700">📡 Structured Telemetry Dispatcher</text>
+    <text x="215" y="650" text-anchor="middle" fill="#8b949e" font-size="11">Named Pipe Event Emission</text>
+    <text x="215" y="670" text-anchor="middle" fill="#79c0ff" font-size="10">Low-Latency JSON Event Stream</text>
+
+    <!-- Node 2 -->
+    <rect x="420" y="600" width="310" height="85" rx="8" fill="#21262d" stroke="#58a6ff" stroke-width="1.2"/>
+    <text x="575" y="628" text-anchor="middle" fill="#f0f6fc" font-size="12" font-weight="700">🎬 Automated Highlight Trigger</text>
+    <text x="575" y="650" text-anchor="middle" fill="#8b949e" font-size="11">Feeds Replay Video Renderer</text>
+    <text x="575" y="670" text-anchor="middle" fill="#79c0ff" font-size="10">Autonomous Clip Extraction</text>
+
+    <!-- Node 3 -->
+    <rect x="780" y="600" width="310" height="85" rx="8" fill="#21262d" stroke="#58a6ff" stroke-width="1.2"/>
+    <text x="935" y="628" text-anchor="middle" fill="#f0f6fc" font-size="12" font-weight="700">🌐 Live Spectator Hub (SignalR)</text>
+    <text x="935" y="650" text-anchor="middle" fill="#8b949e" font-size="11">DAWNBRINGER Live Web Spectator</text>
+    <text x="935" y="670" text-anchor="middle" fill="#79c0ff" font-size="10">Real-Time Teamfight Notifications</text>
+
+    <text x="60" y="715" fill="#c9d1d9" font-size="11">• Real-time telemetry allows external broadcasting tools and tournament overlays to trigger effects</text>
+    <text x="60" y="735" fill="#c9d1d9" font-size="11">• Bridges gameplay combat feel directly to automated social clip generators and post-game reviews</text>
+  </g>
+</svg>

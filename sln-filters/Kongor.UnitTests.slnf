@@ -1,0 +1,21 @@
+{
+  "solution": {
+    "path": "..\\ProjectKongor.slnx",
+    "projects": [
+      "tests\\unit\\apps\\COMPEL.Tests\\COMPEL.Tests.csproj",
+      "tests\\unit\\apps\\NEXUS.ControlPanel.Tests\\NEXUS.ControlPanel.Tests.csproj",
+      "tests\\unit\\apps\\WILLOWMAKER.Tests\\WILLOWMAKER.Tests.csproj",
+      "tests\\unit\\extensions\\Kongor.Modding.Tests\\Kongor.Modding.Tests.csproj",
+      "tests\\unit\\extensions\\ReplayRenderer.Tests\\ReplayRenderer.Tests.csproj",
+      "tests\\unit\\libs\\Kongor.Core.Tests\\Kongor.Core.Tests.csproj",
+      "tests\\unit\\libs\\MERRICK.DatabaseContext.Tests\\MERRICK.DatabaseContext.Tests.csproj",
+      "tests\\unit\\libs\\NEXUS.Contracts.Tests\\NEXUS.Contracts.Tests.csproj",
+      "tests\\unit\\services\\KONGOR.MasterServer.Tests\\KONGOR.MasterServer.Tests.csproj",
+      "tests\\unit\\services\\TRANSMUTANSTEIN.ChatServer.Tests\\TRANSMUTANSTEIN.ChatServer.Tests.csproj",
+      "tests\\unit\\services\\ZORGATH.WebPortal.API.Tests\\ZORGATH.WebPortal.API.Tests.csproj",
+      "tests\\unit\\tools\\Kongor.Cli.Tests\\Kongor.Cli.Tests.csproj",
+      "tests\\unit\\tools\\Kongor.Mcp.Tests\\Kongor.Mcp.Tests.csproj",
+      "tests\\unit\\tools\\ReplayStudio.Tests\\ReplayStudio.Tests.csproj"
+    ]
+  }
+}

@@ -1,0 +1,241 @@
+@import "tailwindcss";
+@source "../Views";
+@source "../wwwroot/js";
+@source not "../tools";
+@source not "../bin";
+@source not "../obj";
+@source not "../wwwroot/lib";
+@source not "../wwwroot/images";
+@source not "../wwwroot/models";
+
+/* Metric-stabilized typography fallback (visually-stable-font-fallbacks) */
+body {
+    font-size-adjust: from-font;
+}
+
+/* Cross-document MPA View Transitions gated on motion preference (cross-document-transitions) */
+@media (prefers-reduced-motion: no-preference) {
+    @view-transition {
+        navigation: auto;
+    }
+}
+
+/* Below-the-fold layout containment for heavy catalogs & tables (defer-rendering-heavy-content) */
+.kongor-cv-card {
+    content-visibility: auto;
+    contain-intrinsic-size: auto none auto 168px;
+}
+
+.kongor-cv-item {
+    content-visibility: auto;
+    contain-intrinsic-size: auto none auto 176px;
+}
+
+.kongor-cv-row {
+    content-visibility: auto;
+    contain-intrinsic-size: auto none auto 96px;
+}
+
+/* Below-the-fold layout containment for Clan Directory cards (defer-rendering-heavy-content) */
+.kongor-cv-clan {
+    content-visibility: auto;
+    contain-intrinsic-size: auto none auto 216px;
+}
+
+/* Clan Card Container Query & Stretched Link Pattern (card) */
+.kongor-clan-card {
+    container-type: inline-size;
+    position: relative;
+}
+
+.kongor-clan-card a.card-link::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+}
+
+.kongor-clan-card:has(a.card-link) a:not(.card-link),
+.kongor-clan-card:has(a.card-link) button {
+    position: relative;
+    z-index: 1;
+}
+
+.kongor-clan-card a.card-link:focus-visible {
+    outline: none !important;
+}
+
+.kongor-clan-card:has(a.card-link:focus-visible) {
+    outline: 2px solid rgb(245 158 11);
+    outline-offset: 2px;
+}
+
+@container (max-width: 320px) {
+    .kongor-clan-card-stats {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+/* Accessible Sortable & Container-Responsive Clan Member Roster Table (responsive-table + sortable-table) */
+.kongor-roster-wrapper {
+    container-type: inline-size;
+    overflow-x: auto;
+    max-inline-size: 100%;
+}
+
+.kongor-roster-table th[aria-sort="ascending"] .kongor-sort-indicator::after {
+    content: " ▲";
+    color: rgb(251 191 36);
+}
+
+.kongor-roster-table th[aria-sort="descending"] .kongor-sort-indicator::after {
+    content: " ▼";
+    color: rgb(251 191 36);
+}
+
+.kongor-roster-table th:not([aria-sort]) .kongor-sort-indicator::after {
+    content: " ⇅";
+    opacity: 0.4;
+}
+
+@container (max-width: 640px) {
+    .kongor-roster-table {
+        min-inline-size: 0 !important;
+        width: 100% !important;
+    }
+
+    .kongor-roster-table,
+    .kongor-roster-table caption,
+    .kongor-roster-table thead,
+    .kongor-roster-table tbody,
+    .kongor-roster-table tr,
+    .kongor-roster-table th,
+    .kongor-roster-table td {
+        display: block;
+    }
+
+    .kongor-roster-table caption {
+        width: 100%;
+    }
+
+    .kongor-roster-table thead {
+        display: none;
+    }
+
+    .kongor-roster-table tbody {
+        padding: 0.75rem;
+    }
+
+    .kongor-roster-table tbody tr {
+        margin-block-end: 0.75rem;
+        border: 1px solid rgb(51 65 85 / 0.7);
+        border-radius: 1rem;
+        background: rgb(15 23 42 / 0.85);
+        padding: 0.5rem 0.75rem;
+    }
+
+    .kongor-roster-table tbody th,
+    .kongor-roster-table tbody td {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.75rem;
+        padding: 0.375rem 0.25rem;
+        text-align: right;
+    }
+
+    .kongor-roster-table tbody th {
+        justify-content: flex-start;
+        text-align: left;
+        border-bottom: 1px solid rgb(51 65 85 / 0.6);
+        padding-bottom: 0.5rem;
+        margin-bottom: 0.25rem;
+    }
+
+    .kongor-roster-table tbody td::before {
+        content: attr(data-label);
+        font-size: 0.6875rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: rgb(148 163 184);
+        text-align: left;
+    }
+}
+
+/* Native top-layer <dialog> entry/exit transitions & scroll containment (dialog + animate-to-from-top-layer) */
+dialog.kongor-dialog {
+    opacity: 0;
+    transition-property: opacity, scale, overlay, display;
+    transition-duration: 0.18s;
+    transition-timing-function: ease-out;
+    transition-behavior: allow-discrete;
+}
+
+dialog.kongor-dialog:modal {
+    overscroll-behavior: contain;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+    dialog.kongor-dialog {
+        scale: 0.97;
+    }
+}
+
+dialog.kongor-dialog[open] {
+    opacity: 1;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+    dialog.kongor-dialog[open] {
+        scale: 1;
+    }
+}
+
+@starting-style {
+    dialog.kongor-dialog[open] {
+        opacity: 0;
+    }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+    @starting-style {
+        dialog.kongor-dialog[open] {
+            scale: 0.97;
+        }
+    }
+}
+
+dialog.kongor-dialog::backdrop {
+    background: rgb(2 6 23 / 0);
+    backdrop-filter: blur(0px);
+    overflow: hidden;
+    overscroll-behavior: contain;
+    transition-property: background, backdrop-filter, overlay, display;
+    transition-duration: 0.18s;
+    transition-timing-function: ease-out;
+    transition-behavior: allow-discrete;
+}
+
+dialog.kongor-dialog[open]::backdrop {
+    background: rgb(2 6 23 / 0.85);
+    backdrop-filter: blur(12px);
+}
+
+@starting-style {
+    dialog.kongor-dialog[open]::backdrop {
+        background: rgb(2 6 23 / 0);
+        backdrop-filter: blur(0px);
+    }
+}
+
+/* Central WCAG 2.3.3 / 2.2.2 Reduced-Motion Guard (motion) */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+}

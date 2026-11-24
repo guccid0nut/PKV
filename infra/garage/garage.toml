@@ -1,0 +1,51 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# SPDX-FileCopyrightText: 2026 guccidonut and Project KONGOR V Contributors
+# Project KONGOR V (https://github.com/guccidonut/PKV)
+#
+# Project Kongor Self-Hosted Content-Addressed Storage (CAS) - Garage v1.0.1
+#
+# Single-node / community-node template for self-hosted S3-compatible CAS
+# backing Project Kongor binary assets, .s2z archives, .kpatch deltas, and
+# large asset manifests outside Git history.
+#
+# SECURITY:
+# - Never commit real secrets here.
+# - Inject `GARAGE_RPC_SECRET` (64 hex chars: `openssl rand -hex 32`),
+#   `GARAGE_ADMIN_TOKEN` (`openssl rand -base64 32`), and optionally
+#   `GARAGE_METRICS_TOKEN` via environment variables in
+#   `infra/docker/docker-compose.garage-cas.yml` or an untracked `.env` file.
+#
+# Quick bootstrap (after `docker compose -f infra/docker/docker-compose.garage-cas.yml up -d`):
+#   docker exec kongor-garage-cas /garage status
+#   docker exec kongor-garage-cas /garage layout assign -z dc1 -c 50G <NODE_ID>
+#   docker exec kongor-garage-cas /garage layout apply --version 1
+#   docker exec kongor-garage-cas /garage bucket create kongor-cas
+#   docker exec kongor-garage-cas /garage key create kongor-cas-rw
+#   docker exec kongor-garage-cas /garage bucket allow --read --write --owner kongor-cas --key kongor-cas-rw
+
+metadata_dir = "/var/lib/garage/meta"
+data_dir = "/var/lib/garage/data"
+db_engine = "lmdb"
+
+# Single-node community default. Raise to 3 for multi-node replicated clusters.
+replication_factor = 1
+compression_level = 1
+
+# Internal cluster RPC transport (secret injected via GARAGE_RPC_SECRET env var).
+rpc_bind_addr = "[::]:3901"
+rpc_public_addr = "127.0.0.1:3901"
+
+[s3_api]
+s3_region = "garage"
+api_bind_addr = "[::]:3900"
+root_domain = ".s3.kongor.local"
+
+[s3_web]
+bind_addr = "[::]:3902"
+root_domain = ".web.kongor.local"
+index = "index.html"
+
+[admin]
+api_bind_addr = "[::]:3903"
+# Admin/metrics bearer tokens are injected via GARAGE_ADMIN_TOKEN and
+# GARAGE_METRICS_TOKEN environment variables so zero secrets live in Git.

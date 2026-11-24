@@ -1,0 +1,13 @@
+[Desktop Entry]
+Name=Project KONGOR (WILLOWMAKER)
+GenericName=MOBA Game Launcher
+Comment=Play Heroes of Newerth on Project KONGOR servers
+Exec=willowmaker %U
+Icon=net.kongor.Willowmaker
+Terminal=false
+Type=Application
+Categories=Game;ActionGame;StrategyGame;
+Keywords=HoN;Heroes of Newerth;Kongor;MOBA;Willowmaker;
+StartupWMClass=WILLOWMAKER
+PrefersNonDefaultGPU=true
+X-KDE-RunOnDiscreteGpu=true

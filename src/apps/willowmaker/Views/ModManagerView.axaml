@@ -1,0 +1,260 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="clr-namespace:WILLOWMAKER.Core.ViewModels"
+             mc:Ignorable="d" d:DesignWidth="1100" d:DesignHeight="650"
+             x:Class="WILLOWMAKER.Core.Views.ModManagerView"
+             x:DataType="vm:ModManagerViewModel">
+
+    <Design.DataContext>
+        <vm:ModManagerViewModel />
+    </Design.DataContext>
+
+    <Grid RowDefinitions="Auto, *, Auto" Margin="20" Background="#131722">
+        <!-- Section Header & Filter Toolbar -->
+        <Grid Grid.Row="0" RowDefinitions="Auto, Auto" Margin="0, 0, 0, 15">
+            <!-- Header Title and Counts -->
+            <Grid Grid.Row="0" ColumnDefinitions="*, Auto" Margin="0, 0, 0, 10">
+                <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                    <TextBlock Text="🎮 PROJECT KONGOR MOD MANAGER &amp; HERO AVATARS" FontSize="16" FontWeight="Bold"
+                               Foreground="#38BDF8" FontFamily="Cascadia Mono, Consolas, Courier New, monospace"
+                               VerticalAlignment="Center" />
+                    <Border Background="#1E293B" CornerRadius="10" Padding="8, 2" VerticalAlignment="Center">
+                        <TextBlock Text="{Binding ActiveModsCount, StringFormat='{}{0} Active'}" Foreground="#34D399"
+                                   FontSize="11" FontWeight="Bold" />
+                    </Border>
+                    <Border Background="#1E293B" CornerRadius="10" Padding="8, 2" VerticalAlignment="Center">
+                        <TextBlock Text="{Binding TotalModsCount, StringFormat='{}{0} Total'}" Foreground="#94A3B8"
+                                   FontSize="11" FontWeight="SemiBold" />
+                    </Border>
+                </StackPanel>
+
+                <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8">
+                    <Button Command="{Binding OpenLiveLogsCommand}" Background="#1E1B4B" Foreground="#A5B4FC"
+                            Height="30" CornerRadius="4" Padding="10, 4" Cursor="Hand"
+                            ToolTip.Tip="Open Real-time Live Console filtered by Mod Manager logs">
+                        <StackPanel Orientation="Horizontal" Spacing="4">
+                            <TextBlock Text="📋" FontSize="11" VerticalAlignment="Center" />
+                            <TextBlock Text="View Logs" FontSize="11" FontWeight="Bold" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </Button>
+                    <Button Command="{Binding EnableAllCommand}" Background="#1E293B" Foreground="#34D399" Height="30"
+                            CornerRadius="4" Padding="10, 4" Cursor="Hand">
+                        <TextBlock Text="✔ Enable All" FontSize="11" FontWeight="Bold" VerticalAlignment="Center" />
+                    </Button>
+                    <Button Command="{Binding DisableAllCommand}" Background="#1E293B" Foreground="#F87171" Height="30"
+                            CornerRadius="4" Padding="10, 4" Cursor="Hand">
+                        <TextBlock Text="✕ Disable All" FontSize="11" FontWeight="Bold" VerticalAlignment="Center" />
+                    </Button>
+                    <Button Command="{Binding OpenModsFolderCommand}" Background="#334155" Foreground="#CBD5E1"
+                            Height="30" CornerRadius="4" Padding="10, 4" Cursor="Hand"
+                            ToolTip.Tip="Open local game/mods directory in Explorer">
+                        <TextBlock Text="📂 Open Folder" FontSize="11" FontWeight="Bold" VerticalAlignment="Center" />
+                    </Button>
+                </StackPanel>
+            </Grid>
+
+            <!-- Error / Warning Banner -->
+            <Border Background="#450A0A" BorderBrush="#EF4444" BorderThickness="1" CornerRadius="6" Padding="10, 6"
+                    Margin="0, 0, 0, 8" IsVisible="{Binding HasError}">
+                <Grid ColumnDefinitions="Auto, *">
+                    <TextBlock Grid.Column="0" Text="⚠️ " FontSize="12" VerticalAlignment="Center" />
+                    <TextBlock Grid.Column="1" Text="{Binding ErrorMessage}" Foreground="#FCA5A5" FontSize="11"
+                               FontWeight="SemiBold" VerticalAlignment="Center" TextWrapping="Wrap" />
+                </Grid>
+            </Border>
+
+            <!-- Search and Category Filter Bar -->
+            <Grid Grid.Row="1" ColumnDefinitions="*, 200" Margin="0, 0, 0, 5">
+                <TextBox Grid.Column="0" Text="{Binding SearchQuery}"
+                         Watermark="🔍 Search mods by name, author, or description..." Margin="0, 0, 10, 0"
+                         Background="#1E293B" Foreground="#F8FAFC" BorderBrush="#334155" Height="34" Padding="10, 6"
+                         FontSize="12" />
+                <ComboBox Grid.Column="1" SelectedItem="{Binding SelectedCategoryFilter}"
+                          ItemsSource="{Binding AvailableCategoryFilters}" HorizontalAlignment="Stretch"
+                          Background="#1E293B" Foreground="#F8FAFC" Height="34" Cursor="Hand" />
+            </Grid>
+        </Grid>
+
+        <!-- Main Content Area: Left Mod List, Right Detail Inspector -->
+        <Grid Grid.Row="1" ColumnDefinitions="3*, 2*" Margin="0, 0, 0, 15">
+            <!-- Left Pane: Mods ListBox -->
+            <Border Grid.Column="0" Background="#0A0D14" BorderBrush="#1E293B" BorderThickness="1" CornerRadius="8"
+                    Padding="6" Margin="0, 0, 10, 0">
+                <ListBox ItemsSource="{Binding FilteredMods}" SelectedItem="{Binding SelectedMod}"
+                         Background="Transparent" BorderThickness="0" CornerRadius="6">
+                    <ListBox.ItemTemplate>
+                        <DataTemplate DataType="vm:ModItemViewModel">
+                            <Border Background="#131722" BorderBrush="#1E293B" BorderThickness="1" CornerRadius="6"
+                                    Padding="10, 8" Margin="0, 3">
+                                <Grid ColumnDefinitions="Auto, Auto, Auto, *, Auto">
+                                    <!-- Toggle CheckBox -->
+                                    <CheckBox Grid.Column="0" IsChecked="{Binding IsEnabled}"
+                                              VerticalAlignment="Center" Margin="0, 0, 6, 0" Cursor="Hand" />
+
+                                    <!-- Favorite Pin Star Button -->
+                                    <Button Grid.Column="1"
+                                            Command="{Binding $parent[UserControl].DataContext.ToggleFavoriteCommand}"
+                                            CommandParameter="{Binding}"
+                                            Background="Transparent" BorderThickness="0"
+                                            Padding="4, 2" Cursor="Hand" Margin="0, 0, 6, 0"
+                                            ToolTip.Tip="{Binding FavoriteToolTip}">
+                                        <TextBlock Text="{Binding FavoriteGlyph}" Foreground="{Binding FavoriteColor}"
+                                                   FontSize="16" VerticalAlignment="Center" />
+                                    </Button>
+
+                                    <!-- Category Icon Glyph -->
+                                    <TextBlock Grid.Column="2" Text="{Binding DisplayGlyph}" FontSize="16"
+                                               VerticalAlignment="Center" Margin="0, 0, 10, 0" />
+
+                                    <!-- Mod Info -->
+                                    <StackPanel Grid.Column="3" VerticalAlignment="Center">
+                                        <TextBlock Text="{Binding Name}" FontWeight="Bold" FontSize="13"
+                                                   Foreground="#F8FAFC" TextTrimming="CharacterEllipsis" />
+                                        <StackPanel Orientation="Horizontal" Spacing="8" Margin="0, 2, 0, 0">
+                                            <TextBlock Text="{Binding Category}" FontSize="11" Foreground="#94A3B8" />
+                                            <TextBlock Text="•" FontSize="11" Foreground="#475569" />
+                                            <TextBlock Text="{Binding Author, StringFormat='{}by {0}'}" FontSize="11"
+                                                       Foreground="#64748B" />
+                                            <TextBlock Text="•" FontSize="11" Foreground="#475569" />
+                                            <TextBlock Text="{Binding Version, StringFormat='{}v{0}'}" FontSize="11"
+                                                       Foreground="#64748B" />
+                                        </StackPanel>
+                                    </StackPanel>
+
+                                    <!-- Status Badge -->
+                                    <Border Grid.Column="4" Background="#1E293B" CornerRadius="10" Padding="8, 3"
+                                            VerticalAlignment="Center" Margin="8, 0, 0, 0">
+                                        <TextBlock Text="{Binding CompatibilityStatus}"
+                                                   Foreground="{Binding StatusBadgeColor}" FontSize="10"
+                                                   FontWeight="SemiBold" />
+                                    </Border>
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+            </Border>
+
+            <!-- Right Pane: Mod Details & Repair Inspector -->
+            <Border Grid.Column="1" Background="#0A0D14" BorderBrush="#1E293B" BorderThickness="1" CornerRadius="8"
+                    Padding="15">
+                <Grid RowDefinitions="Auto, Auto, *, Auto" DataContext="{Binding SelectedMod}">
+                    <!-- Title, Category Icon & Interactive Favorite Pin Button -->
+                    <Grid Grid.Row="0" ColumnDefinitions="*, Auto" Margin="0, 0, 0, 12">
+                        <StackPanel Grid.Column="0">
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <TextBlock Text="{Binding DisplayGlyph}" FontSize="22" VerticalAlignment="Center" />
+                                <TextBlock Text="{Binding Name}" FontSize="15" FontWeight="Bold" Foreground="#38BDF8"
+                                           VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
+                            </StackPanel>
+                            <Border Background="#1E293B" CornerRadius="4" Padding="6, 2" Margin="0, 6, 0, 0"
+                                    HorizontalAlignment="Left">
+                                <TextBlock Text="{Binding CompatibilityStatus}" Foreground="{Binding StatusBadgeColor}"
+                                           FontSize="11" FontWeight="Bold" />
+                            </Border>
+                        </StackPanel>
+
+                        <!-- Favorite Toggle Button in Details Pane -->
+                        <Button Grid.Column="1"
+                                Command="{Binding $parent[UserControl].DataContext.ToggleFavoriteCommand}"
+                                CommandParameter="{Binding}"
+                                Background="#1E293B" BorderBrush="{Binding FavoriteColor}" BorderThickness="1"
+                                CornerRadius="6" Padding="10, 6" Cursor="Hand"
+                                ToolTip.Tip="{Binding FavoriteToolTip}" VerticalAlignment="Top">
+                            <StackPanel Orientation="Horizontal" Spacing="6">
+                                <TextBlock Text="{Binding FavoriteGlyph}" Foreground="{Binding FavoriteColor}" FontSize="15" VerticalAlignment="Center" />
+                                <TextBlock Text="Favorite" Foreground="{Binding FavoriteColor}" FontSize="11" FontWeight="Bold" VerticalAlignment="Center" />
+                            </StackPanel>
+                        </Button>
+                    </Grid>
+
+                    <!-- Meta Grid -->
+                    <Grid Grid.Row="1" ColumnDefinitions="Auto, *" RowDefinitions="Auto, Auto, Auto, Auto"
+                          Margin="0, 0, 0, 12">
+                        <TextBlock Grid.Row="0" Grid.Column="0" Text="Author:" Foreground="#64748B" FontSize="12"
+                                   Margin="0, 2, 8, 2" />
+                        <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding Author}" Foreground="#E2E8F0"
+                                   FontSize="12" Margin="0, 2, 0, 2" />
+
+                        <TextBlock Grid.Row="1" Grid.Column="0" Text="Version:" Foreground="#64748B" FontSize="12"
+                                   Margin="0, 2, 8, 2" />
+                        <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding Version}" Foreground="#E2E8F0"
+                                   FontSize="12" Margin="0, 2, 0, 2" />
+
+                        <TextBlock Grid.Row="2" Grid.Column="0" Text="Category:" Foreground="#64748B" FontSize="12"
+                                   Margin="0, 2, 8, 2" />
+                        <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding Category}" Foreground="#E2E8F0"
+                                   FontSize="12" Margin="0, 2, 0, 2" />
+
+                        <TextBlock Grid.Row="3" Grid.Column="0" Text="Type:" Foreground="#64748B" FontSize="12"
+                                   Margin="0, 2, 8, 2" />
+                        <TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding Type}" Foreground="#E2E8F0"
+                                   FontSize="12" Margin="0, 2, 0, 2" />
+                    </Grid>
+
+                    <!-- Description Box -->
+                    <Border Grid.Row="2" Background="#131722" BorderBrush="#1E293B" BorderThickness="1"
+                            CornerRadius="6" Padding="10" Margin="0, 0, 0, 12">
+                        <ScrollViewer VerticalScrollBarVisibility="Auto">
+                            <TextBlock Text="{Binding Description}" Foreground="#94A3B8" TextWrapping="Wrap"
+                                       FontSize="12" LineHeight="18" />
+                        </ScrollViewer>
+                    </Border>
+
+                    <!-- Mod Action Tools -->
+                    <StackPanel Grid.Row="3" Spacing="8">
+                        <Button
+                            Command="{Binding [UserControl].((vm:ModManagerViewModel)DataContext).RepairSelectedModCommand}"
+                            Background="#0284C7" Foreground="White" Height="36" CornerRadius="6" Cursor="Hand"
+                            FontWeight="Bold" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"
+                            VerticalContentAlignment="Center">
+                            <StackPanel Orientation="Horizontal" Spacing="6">
+                                <TextBlock Text="🔧" FontSize="13" VerticalAlignment="Center" />
+                                <TextBlock Text="Repair / Upgrade Legacy Mod" FontSize="12" VerticalAlignment="Center" />
+                            </StackPanel>
+                        </Button>
+                    </StackPanel>
+                </Grid>
+            </Border>
+        </Grid>
+
+        <!-- Bottom Action Ribbon -->
+        <Grid Grid.Row="2" ColumnDefinitions="*, Auto">
+            <!-- Status & Progress -->
+            <StackPanel Grid.Column="0" VerticalAlignment="Center" Margin="0, 0, 15, 0">
+                <TextBlock Text="{Binding StatusMessage}" Foreground="{Binding StatusColor}" FontSize="12"
+                           FontWeight="SemiBold" TextTrimming="CharacterEllipsis" Margin="0, 0, 0, 4" />
+                <ProgressBar Value="{Binding ProgressPercent}" Minimum="0" Maximum="100" Height="6"
+                             Foreground="#0284C7" Background="#1E293B" CornerRadius="3" IsVisible="{Binding IsBusy}" />
+            </StackPanel>
+
+            <!-- Action Buttons -->
+            <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
+                <Button Command="{Binding RollbackModsCommand}" IsEnabled="{Binding !IsBusy}" Background="#7F1D1D"
+                        Foreground="#FCA5A5" Height="40" Padding="15, 0" CornerRadius="6" Cursor="Hand"
+                        FontWeight="Bold" HorizontalContentAlignment="Center" VerticalContentAlignment="Center">
+                    <StackPanel Orientation="Horizontal" Spacing="6">
+                        <TextBlock Text="⏪" FontSize="13" VerticalAlignment="Center" />
+                        <TextBlock Text="Revert All Mods" FontSize="12" VerticalAlignment="Center" />
+                    </StackPanel>
+                </Button>
+
+                <Button Command="{Binding ApplyModsCommand}" IsEnabled="{Binding !IsBusy}" Background="#047857"
+                        Foreground="White" Height="40" Padding="20, 0" CornerRadius="6" Cursor="Hand" FontWeight="Bold"
+                        HorizontalContentAlignment="Center" VerticalContentAlignment="Center">
+                    <Button.Styles>
+                        <Style Selector="Button:pointerover /template/ ContentPresenter">
+                            <Setter Property="Background" Value="#059669" />
+                        </Style>
+                    </Button.Styles>
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <TextBlock Text="💾" FontSize="14" VerticalAlignment="Center" />
+                        <TextBlock Text="Apply Active Mods (VFS)" FontSize="13" VerticalAlignment="Center" />
+                    </StackPanel>
+                </Button>
+            </StackPanel>
+        </Grid>
+    </Grid>
+</UserControl>

@@ -1,0 +1,22 @@
+schema_version = "1.0.0"
+
+id = "io_scene_hon"
+version = "5.0.2"
+name = "Heroes of Newerth Model & Animation Pipeline (SMDL/CLIP/MDF/GLTF)"
+tagline = "Import, export, and convert Heroes of Newerth 3D models, skeletons, clips, and materials to glTF 2.0"
+maintainer = "guccidonut (Project KONGOR V)"
+type = "add-on"
+website = "https://github.com/guccidonut/PKV"
+
+blender_version_min = "4.2.0"
+license = [
+    "SPDX:GPL-3.0-or-later",
+]
+copyright = [
+    "2026 guccidonut and Project KONGOR V Contributors",
+    "2011-2024 Anton Romanov (Theli) and K2-Blender Contributors (MIT portions)",
+]
+
+permissions = [
+    "files",
+]

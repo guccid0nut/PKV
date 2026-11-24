@@ -1,0 +1,103 @@
+{
+  "Ranked": {
+    "Map": "caldavar",
+    "Regions": [
+      "EU",
+      "USE",
+      "USW",
+      "AU",
+      "BR",
+      "RU",
+      "TH",
+      "SEA",
+      "NEWERTH"
+    ],
+    "Modes": [
+      "rb"
+    ],
+    "Match": {
+      "MaximumPlayerRatingDifference": 250,
+      "IsRanked": true,
+      "TeamSize": 5
+    },
+    "DisabledHeroes": [
+      "Hero_Gwynplaine"
+    ]
+  },
+  "Unranked": {
+    "Map": "caldavar",
+    "Regions": [
+      "EU",
+      "USE",
+      "USW",
+      "AU",
+      "BR",
+      "RU",
+      "TH",
+      "SEA",
+      "NEWERTH"
+    ],
+    "Modes": [
+      "rb"
+    ],
+    "Match": {
+      "MaximumPlayerRatingDifference": 2500,
+      "IsRanked": false,
+      "TeamSize": 5
+    },
+    "DisabledHeroes": [
+      "Hero_Gwynplaine"
+    ]
+  },
+  "MidWars": {
+    "Map": "midwars",
+    "Regions": [
+      "EU",
+      "USE",
+      "USW",
+      "AU",
+      "BR",
+      "RU",
+      "TH",
+      "SEA",
+      "NEWERTH"
+    ],
+    "Modes": [
+      "ap",
+      "sd",
+      "ar"
+    ],
+    "Match": {
+      "MaximumPlayerRatingDifference": 250,
+      "IsRanked": true,
+      "TeamSize": 5
+    },
+    "DisabledHeroes": [
+      "Hero_Gwynplaine"
+    ]
+  },
+  "RiftWars": {
+    "Map": "riftwars",
+    "Regions": [
+      "EU",
+      "USE",
+      "USW",
+      "AU",
+      "BR",
+      "RU",
+      "TH",
+      "SEA",
+      "NEWERTH"
+    ],
+    "Modes": [
+      "ap",
+      "km"
+    ],
+    "Match": {
+      "MaximumPlayerRatingDifference": 2500,
+      "IsRanked": false,
+      "TeamSize": 5
+    },
+    "DisabledHeroes": []
+  }
+}

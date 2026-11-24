@@ -1,0 +1,25 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# SPDX-FileCopyrightText: 2026 guccidonut and Project KONGOR V Contributors
+# Project KONGOR V (https://github.com/guccidonut/PKV)
+# ============================================================================
+# File: wrangler.toml
+# System: Project Kongor - Together as One (TAO) Edge Master Gateway & BYOCDN
+# ============================================================================
+
+name = "kongor-edge-master-gateway"
+main = "patch-cdn-worker.js"
+compatibility_date = "2026-09-01"
+compatibility_flags = ["nodejs_compat"]
+workers_dev = true
+
+[vars]
+CDN_ENV = "production"
+DEFAULT_CHANNEL = "release"
+MASTER_SERVER_ORIGIN = "https://master.example.com"
+# Set via: wrangler secret put CACHE_PURGE_SECRET
+
+# Cloudflare R2 Zero-Egress Storage Bucket Binding (Enable in Cloudflare Dashboard first)
+# [[r2_buckets]]
+# binding = "PATCH_BUCKET"
+# bucket_name = "kongor-game-patches"
+# preview_bucket_name = "kongor-game-patches-preview"

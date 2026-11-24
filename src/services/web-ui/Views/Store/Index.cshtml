@@ -1,0 +1,2411 @@
+@model StaffStoreViewModel
+@{
+    ViewData["Title"] = "Heroes of Newerth In-Game Store";
+    var mainCat = Model.MainCategory ?? "alt_avatars";
+    var subCat = Model.SubCategory ?? mainCat switch
+    {
+        "game_vanity" => "taunts",
+        "account_vanity" => "icons",
+        _ => ""
+    };
+
+    string GetMainCatClass(string catKey)
+    {
+        var active = string.Equals(mainCat, catKey, StringComparison.OrdinalIgnoreCase);
+        return active
+            ? "bg-gradient-to-r from-amber-600 via-amber-500 to-amber-600 text-slate-950 font-black shadow-lg shadow-amber-500/25 border-amber-400"
+            : "bg-slate-900/90 text-slate-300 hover:text-white hover:bg-slate-800 border-slate-700/80";
+    }
+
+    string GetSubCatClass(string subKey)
+    {
+        var active = string.Equals(Model.SelectedCategory, subKey, StringComparison.OrdinalIgnoreCase) ||
+                     (string.IsNullOrEmpty(Model.SelectedCategory) && string.Equals(subCat, subKey, StringComparison.OrdinalIgnoreCase));
+        return active
+            ? "bg-amber-500 text-slate-950 font-black shadow-md shadow-amber-500/20"
+            : "bg-slate-950/80 text-slate-400 hover:text-slate-100 hover:bg-slate-800 border border-slate-800";
+    }
+
+    var firstItem = Model.Items.FirstOrDefault();
+}
+
+<div class="w-full max-w-[1750px] mx-auto px-3 sm:px-6 lg:px-8 py-4 space-y-5 animate-fadeIn">
+
+    <!-- Top In-Game Store Ribbon & Category Bar -->
+    <div
+        class="bg-slate-950/95 rounded-2xl border border-amber-900/40 p-3 sm:p-4 shadow-2xl space-y-4 backdrop-blur-xl relative overflow-hidden">
+        <div
+            class="absolute -right-20 -top-20 w-64 h-64 bg-amber-500/10 rounded-full blur-3xl pointer-events-none"></div>
+
+        <!-- Top Row: Main HoN Shop Ribbons & Currency Bar -->
+        <div class="flex flex-wrap items-center justify-between gap-4 border-b border-slate-800/80 pb-3">
+
+            <!-- In-Game Main Navigation Tabs -->
+            <nav class="flex flex-wrap items-center gap-1.5 sm:gap-2">
+                <a asp-controller="Store" asp-action="Index" asp-route-category="featured"
+                   class="px-4 py-1.5 rounded-xl text-xs uppercase tracking-wider transition-all border @GetMainCatClass("featured")">
+                    Featured
+                </a>
+                <a asp-controller="Store" asp-action="Index" asp-route-category="avatars"
+                   class="px-4 py-1.5 rounded-xl text-xs uppercase tracking-wider transition-all border @GetMainCatClass("alt_avatars")">
+                    🦸 Alt Avatars (@Model.TotalAvatars)
+                </a>
+                <a asp-controller="Store" asp-action="Index" asp-route-category="announcers"
+                   class="px-4 py-1.5 rounded-xl text-xs uppercase tracking-wider transition-all border @GetMainCatClass("announcers")">
+                    🎙️ Announcers (@Model.TotalAnnouncers)
+                </a>
+                <a asp-controller="Store" asp-action="Index" asp-route-category="taunts"
+                   class="px-4 py-1.5 rounded-xl text-xs uppercase tracking-wider transition-all border @GetMainCatClass("taunts")">
+                    💀 Taunts (@Model.TotalTaunts)
+                </a>
+                <a asp-controller="Store" asp-action="Index" asp-route-category="couriers"
+                   class="px-4 py-1.5 rounded-xl text-xs uppercase tracking-wider transition-all border @GetMainCatClass("game_vanity")">
+                    🐎 Couriers & Wards
+                </a>
+                <a asp-controller="Store" asp-action="Index" asp-route-category="account_vanity"
+                   class="px-4 py-1.5 rounded-xl text-xs uppercase tracking-wider transition-all border @GetMainCatClass("account_vanity")">
+                    🎖️ Account Vanity
+                </a>
+                <a asp-controller="Store" asp-action="Index" asp-route-category="bundles"
+                   class="px-4 py-1.5 rounded-xl text-xs uppercase tracking-wider transition-all border @GetMainCatClass("bundles")">
+                    📦 Bundles (@Model.TotalBundles)
+                </a>
+                <a asp-controller="Store" asp-action="Index" asp-route-category="other"
+                   class="px-4 py-1.5 rounded-xl text-xs uppercase tracking-wider transition-all border @GetMainCatClass("other")">
+                    Other
+                </a>
+                <a asp-controller="Store" asp-action="Index" asp-route-category="plinko"
+                   class="px-4 py-1.5 rounded-xl text-xs uppercase tracking-wider transition-all border @GetMainCatClass("plinko") flex items-center gap-1.5">
+                    <span>🎪</span>
+                    <span>Plinko & Daily Drop</span>
+                    <span class="w-2 h-2 rounded-full bg-amber-400 animate-ping inline-block"></span>
+                </a>
+            </nav>
+
+            <!-- Top Right: Currency, Vault & Actions -->
+            <div class="flex items-center gap-3">
+                @if (Model.IsAuthenticated)
+                {
+                    <div
+                        class="flex items-center gap-3 bg-slate-900/90 border border-slate-800 rounded-xl px-4 py-1.5 text-xs font-black shadow-inner">
+                        <div class="flex items-center gap-1.5 text-amber-400">
+                            <i class="fas fa-coins text-amber-500"></i>
+                            <span id="userGoldDisplay">@Model.UserGold.ToString("N0")</span>
+                            <span class="text-[10px] text-amber-500/70 uppercase">Gold</span>
+                        </div>
+                        <span class="text-slate-700">|</span>
+                        <div class="flex items-center gap-1.5 text-slate-300">
+                            <i class="fas fa-circle text-slate-400 text-[10px]"></i>
+                            <span id="userSilverDisplay">@Model.UserSilver.ToString("N0")</span>
+                            <span class="text-[10px] text-slate-400 uppercase">Silver</span>
+                        </div>
+                    </div>
+                }
+                else
+                {
+                    <form asp-controller="Account" asp-action="LoginDiscord" method="post" class="inline">
+                        <button type="submit"
+                                class="px-4 py-1.5 rounded-xl bg-[#5865F2] hover:bg-[#4752C4] text-white font-bold text-xs flex items-center gap-2 shadow-lg shadow-[#5865F2]/20 glow-discord transition-all">
+                            <i class="fab fa-discord"></i>
+                            <span>Connect with Discord</span>
+                        </button>
+                    </form>
+                }
+
+                @if (Model.IsStaff)
+                {
+                    <a asp-controller="Staff" asp-action="Inventory"
+                       class="px-3.5 py-1.5 rounded-xl bg-purple-500/20 hover:bg-purple-500/30 text-purple-300 border border-purple-500/40 text-xs font-bold transition-all flex items-center gap-1.5 shadow-md">
+                        <i class="fas fa-boxes"></i>
+                        <span>Staff Inventory</span>
+                    </a>
+                    <a asp-controller="Staff" asp-action="Reports"
+                       class="px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-700 text-xs font-bold transition-all flex items-center gap-1">
+                        <i class="fas fa-user-shield"></i>
+                        <span>Staff Hub</span>
+                    </a>
+                }
+            </div>
+        </div>
+
+        <!-- Sub-Category, Ownership & Breadcrumb Bar -->
+        <div class="flex flex-wrap items-center justify-between gap-3 pt-1">
+
+            <!-- Left Side: Ownership Vault Filter Pills (DIRECTLY UNDER CATEGORIES) + Breadcrumbs -->
+            <div class="flex flex-wrap items-center gap-3">
+                @if (Model.IsAuthenticated)
+                {
+                    <!-- Ownership Vault Filter -->
+                    <div
+                        class="flex items-center gap-1 bg-slate-950/90 p-1 rounded-xl border border-slate-800 shadow-inner">
+                        <span class="text-[10px] font-black text-slate-400 uppercase tracking-wider px-2 font-mono"><i
+                                class="fas fa-vault text-amber-400 mr-1"></i>Vault:</span>
+                        @if (Model.IsUnlockAllItemsEnabled)
+                        {
+                            <a asp-controller="Store" asp-action="Index" asp-route-category="@Model.SelectedCategory"
+                               asp-route-search="@Model.SearchQuery" asp-route-ownership="all"
+                               class="px-2.5 py-1 rounded-lg text-xs font-bold transition-all @(Model.OwnershipFilter == "all" ? "bg-emerald-500 text-slate-950 shadow-md shadow-emerald-500/20" : "text-slate-400 hover:text-white")">
+                                ✨ All Unlocked (@Model.TotalOwnedInFilter)
+                            </a>
+                            <a asp-controller="Store" asp-action="Index" asp-route-category="@Model.SelectedCategory"
+                               asp-route-search="@Model.SearchQuery" asp-route-ownership="equipped"
+                               class="px-2.5 py-1 rounded-lg text-xs font-bold transition-all @(Model.OwnershipFilter == "equipped" ? "bg-amber-500 text-slate-950 shadow-md shadow-amber-500/20" : "text-slate-400 hover:text-white")">
+                                ⚡ Equipped (@Model.TotalEquippedInFilter)
+                            </a>
+                        }
+                        else
+                        {
+                            <a asp-controller="Store" asp-action="Index" asp-route-category="@Model.SelectedCategory"
+                               asp-route-search="@Model.SearchQuery" asp-route-ownership="all"
+                               class="px-2.5 py-1 rounded-lg text-xs font-bold transition-all @(Model.OwnershipFilter == "all" ? "bg-amber-500 text-slate-950 shadow-md shadow-amber-500/20" : "text-slate-400 hover:text-white")">
+                                All
+                            </a>
+                            <a asp-controller="Store" asp-action="Index" asp-route-category="@Model.SelectedCategory"
+                               asp-route-search="@Model.SearchQuery" asp-route-ownership="unowned"
+                               class="px-2.5 py-1 rounded-lg text-xs font-bold transition-all @(Model.OwnershipFilter == "unowned" ? "bg-amber-500 text-slate-950 shadow-md shadow-amber-500/20" : "text-slate-400 hover:text-white")">
+                                Unowned (@Model.TotalUnownedInFilter)
+                            </a>
+                            <a asp-controller="Store" asp-action="Index" asp-route-category="@Model.SelectedCategory"
+                               asp-route-search="@Model.SearchQuery" asp-route-ownership="owned"
+                               class="px-2.5 py-1 rounded-lg text-xs font-bold transition-all @(Model.OwnershipFilter == "owned" ? "bg-emerald-500 text-slate-950 shadow-md shadow-emerald-500/20" : "text-slate-400 hover:text-white")">
+                                Owned (@Model.TotalOwnedInFilter)
+                            </a>
+                        }
+                    </div>
+                }
+
+                <!-- Breadcrumbs -->
+                <div class="flex items-center gap-2 text-xs font-bold text-slate-400">
+                    <span class="text-amber-500 flex items-center gap-1"><i class="fas fa-store"></i> Store</span>
+                    <span class="text-slate-600">\</span>
+                    <span class="text-slate-300 uppercase font-mono">@(mainCat.Replace("_", " "))</span>
+                    @if (!string.IsNullOrEmpty(Model.SelectedCategory) && Model.SelectedCategory != "all")
+                    {
+                        <span class="text-slate-600">\</span>
+                        <span class="text-amber-400 uppercase font-mono">@Model.SelectedCategory</span>
+                    }
+                </div>
+            </div>
+
+            <!-- Right Side: Subcategory Pills -->
+            <div class="flex flex-wrap items-center gap-2">
+                @if (mainCat == "announcers")
+                {
+                    <a asp-controller="Store" asp-action="Index" asp-route-category="announcers"
+                       asp-route-ownership="@Model.OwnershipFilter"
+                       class="px-3 py-1 rounded-lg text-xs font-bold transition-all @GetSubCatClass("announcers")">
+                        🎙️ All Announcer Packs (@Model.TotalAnnouncers)
+                    </a>
+                }
+                else if (mainCat == "taunts")
+                {
+                    <a asp-controller="Store" asp-action="Index" asp-route-category="taunts"
+                       asp-route-ownership="@Model.OwnershipFilter"
+                       class="px-3 py-1 rounded-lg text-xs font-bold transition-all @GetSubCatClass("taunts")">
+                        💀 All Battlefield Taunts (@Model.TotalTaunts)
+                    </a>
+                }
+                else if (mainCat == "game_vanity")
+                {
+                    <a asp-controller="Store" asp-action="Index" asp-route-category="couriers"
+                       asp-route-ownership="@Model.OwnershipFilter"
+                       class="px-3 py-1 rounded-lg text-xs font-bold transition-all @GetSubCatClass("couriers")">
+                        🐎 Couriers (@Model.TotalCouriers)
+                    </a>
+                    <a asp-controller="Store" asp-action="Index" asp-route-category="wards"
+                       asp-route-ownership="@Model.OwnershipFilter"
+                       class="px-3 py-1 rounded-lg text-xs font-bold transition-all @GetSubCatClass("wards")">
+                        👁️ Wards (@Model.TotalWards)
+                    </a>
+                    <a asp-controller="Store" asp-action="Index" asp-route-category="announcers"
+                       asp-route-ownership="@Model.OwnershipFilter"
+                       class="px-3 py-1 rounded-lg text-xs font-bold transition-all @GetSubCatClass("announcers")">
+                        🎙️ Announcers (@Model.TotalAnnouncers)
+                    </a>
+                    <a asp-controller="Store" asp-action="Index" asp-route-category="taunts"
+                       asp-route-ownership="@Model.OwnershipFilter"
+                       class="px-3 py-1 rounded-lg text-xs font-bold transition-all @GetSubCatClass("taunts")">
+                        💀 Taunts (@Model.TotalTaunts)
+                    </a>
+                }
+                else if (mainCat == "account_vanity")
+                {
+                    <a asp-controller="Store" asp-action="Index" asp-route-category="icons"
+                       asp-route-ownership="@Model.OwnershipFilter"
+                       class="px-3 py-1 rounded-lg text-xs font-bold transition-all @GetSubCatClass("icons")">
+                        🎖️ Account Icons (@Model.TotalIcons)
+                    </a>
+                    <a asp-controller="Store" asp-action="Index" asp-route-category="colors"
+                       asp-route-ownership="@Model.OwnershipFilter"
+                       class="px-3 py-1 rounded-lg text-xs font-bold transition-all @GetSubCatClass("colors")">
+                        🎨 Name Colors & Shields (@Model.TotalUpgrades)
+                    </a>
+                    <a asp-controller="Store" asp-action="Index" asp-route-category="services"
+                       asp-route-ownership="@Model.OwnershipFilter"
+                       class="px-3 py-1 rounded-lg text-xs font-bold transition-all @GetSubCatClass("services")">
+                        ⚡ Account Services
+                    </a>
+                }
+                else if (mainCat == "alt_avatars")
+                {
+                    <a asp-controller="Store" asp-action="Index" asp-route-category="avatars"
+                       asp-route-ownership="@Model.OwnershipFilter"
+                       class="px-3 py-1 rounded-lg text-xs font-bold transition-all @GetSubCatClass("avatars")">
+                        All Alt Avatars (@Model.TotalAvatars)
+                    </a>
+                }
+            </div>
+        </div>
+    </div>
+
+    @if (mainCat == "plinko")
+    {
+        <!-- Goblin Plinko & Daily Spin Arena -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start animate-fadeIn">
+            <!-- Left Side: Plinko Canvas Game Board (7 cols) -->
+            <div class="lg:col-span-7 space-y-4">
+                <div
+                    class="bg-slate-950/90 rounded-3xl p-5 border border-amber-500/30 shadow-2xl backdrop-blur-2xl space-y-4 relative overflow-hidden">
+                    <div
+                        class="absolute -right-20 -top-20 w-60 h-60 bg-amber-500/10 rounded-full blur-3xl pointer-events-none"></div>
+
+                    <!-- Plinko Header & Action Controls -->
+                    <div class="flex flex-wrap items-center justify-between gap-4 border-b border-slate-800 pb-4">
+                        <div class="space-y-0.5">
+                            <div class="flex items-center gap-2">
+                                <span
+                                    class="text-xs font-black uppercase tracking-wider text-amber-400 bg-amber-950/50 px-2 py-0.5 rounded-lg border border-amber-500/30">🎪 Goblin King's Board</span>
+                                <span id="plinkoDailyTimer"
+                                      class="text-xs font-mono text-amber-400/90">Loading...</span>
+                            </div>
+                            <h2 class="text-2xl font-black text-white tracking-tight">Daily Plinko Drop</h2>
+                        </div>
+
+                        <div class="flex flex-wrap items-center gap-2">
+                            <button id="plinkoDailyBtn" onclick="window.PlinkoGame.dropDaily()"
+                                    class="px-4 py-2 rounded-2xl bg-gradient-to-r from-emerald-500 via-teal-500 to-emerald-600 hover:from-emerald-400 hover:to-teal-400 text-slate-950 font-black text-xs shadow-lg shadow-emerald-500/30 flex items-center gap-1.5 hover:scale-105 active:scale-95 transition-all">
+                                <span>@(Model.IsUnlockAllItemsEnabled ? "🎁 Free Drop" : "🎁 Free Daily")</span>
+                            </button>
+                            <button id="plinkoTicketBtn" onclick="window.PlinkoGame.dropTicket()"
+                                    class="px-3.5 py-2 rounded-2xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-black text-xs shadow-lg shadow-purple-600/30 flex items-center gap-1.5 hover:scale-105 active:scale-95 transition-all">
+                                @if (Model.IsUnlockAllItemsEnabled)
+                                {
+                                    <span>🎟️ Free Bonus (<span id="plinkoTicketCount">0</span>)</span>
+                                }
+                                else
+                                {
+                                    <span>🎟️ 100 Tickets (<span id="plinkoTicketCount">0</span>)</span>
+                                }
+                            </button>
+                            <button id="plinkoGoldBtn" onclick="window.PlinkoGame.dropGold()"
+                                    class="px-3.5 py-2 rounded-2xl bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-400 hover:to-yellow-400 text-slate-950 font-black text-xs shadow-lg shadow-amber-500/30 flex items-center gap-1.5 hover:scale-105 active:scale-95 transition-all">
+                                <span>@(Model.IsUnlockAllItemsEnabled ? "🪙 Free Gold Drop" : "🪙 50 Gold")</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Canvas Physics Container -->
+                    <div
+                        class="relative rounded-2xl overflow-hidden bg-slate-900/90 border border-slate-800 shadow-inner flex justify-center items-center">
+                        <canvas id="plinkoCanvas" class="w-full h-[510px] max-w-[650px]" role="img" aria-label="Goblin Plinko arcade physics board">Your browser does not support HTML5 Canvas.</canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Side: Unlocked Cosmetics & Loot Vault (5 cols) -->
+            <div class="lg:col-span-5 space-y-4">
+                <div
+                    class="bg-slate-950/90 rounded-3xl p-5 border border-purple-500/30 shadow-2xl backdrop-blur-2xl space-y-4">
+                    <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                        <div class="flex items-center gap-2.5">
+                            <div
+                                class="w-8 h-8 rounded-xl bg-purple-500/20 border border-purple-500/40 flex items-center justify-center text-purple-300 text-sm">
+                                ✨
+                            </div>
+                            <h3 class="text-base font-black text-white tracking-tight">Cosmetics & Prestige Vault</h3>
+                        </div>
+                        <span
+                            class="text-[10px] text-amber-400 font-bold bg-amber-950/40 px-2 py-0.5 rounded border border-amber-500/30">Plinko Exclusive</span>
+                    </div>
+
+                    <!-- Live Container for Unlocked Avatar Frames & Titles -->
+                    <div id="plinkoCosmeticsVault" class="space-y-3 min-h-[220px]">
+                        <div class="text-center py-8 text-slate-500 text-xs">
+                            <i class="fas fa-spinner fa-spin mr-2"></i> Loading unlocked cosmetics...
+                        </div>
+                    </div>
+
+                    <!-- Drop Rates Card -->
+                    <div class="p-4 rounded-2xl bg-slate-900/60 border border-slate-800 text-xs space-y-2">
+                        <div
+                            class="font-bold text-slate-300 uppercase text-[11px] tracking-wider flex items-center gap-1.5">
+                            <span>📊</span>
+                            <span>Plinko Drop Rates & Odds</span>
+                        </div>
+                        <div class="grid grid-cols-2 gap-2 text-[11px] text-slate-400">
+                            <div>🥈 100 - 500 Silver: <span class="text-slate-200 font-bold">60%</span></div>
+                            <div>🎟️ 1x - 3x Tickets: <span class="text-purple-300 font-bold">25%</span></div>
+                            <div>🪙 250 Gold Coins: <span class="text-amber-300 font-bold">10%</span></div>
+                            <div>👑 Ultra-Rare Cosmetics: <span class="text-pink-400 font-bold">5%</span></div>
+                        </div>
+                        <p class="text-[10px] text-slate-500 pt-1">Free daily drops reset every 24 hours. Extra drops
+                            can be launched using Plinko Tickets earned in-game or from rewards.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+    else
+    {
+        <!-- Main In-Game Store Arena: Left Shelf (Alt Avatar Name & 4x2 Avatars Grid) + Right Pedestal Showcase -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+
+            <!-- Left Side: Alt Avatar Name + Voice Button + 4x2 Avatars Matrix (6 cols) -->
+            <div class="lg:col-span-6 space-y-4">
+
+                <!-- Alt Avatar Title & Voice Preview Header Banner -->
+                <div id="stageNameplateBanner"
+                     class="bg-slate-950/80 rounded-2xl p-4 shadow-xl border border-slate-800/80 flex items-center justify-between gap-3 backdrop-blur-xl">
+                    <div>
+                    <span id="stageItemCategory"
+                          class="text-[10px] font-mono font-black uppercase tracking-widest text-amber-400/90 flex items-center gap-1.5">
+                        <i class="fas fa-sparkles text-amber-500"></i>
+                        <span>@(firstItem?.TypeName ?? "ALT AVATAR")</span>
+                    </span>
+                        <h2 id="stageItemTitle"
+                            class="text-xl sm:text-2xl font-black text-slate-100 tracking-tight leading-tight mt-0.5">
+                            @(firstItem?.Name ?? "Select Alt Avatar")
+                        </h2>
+                    </div>
+
+                    <button onclick="playStageAudio(stageActiveAction ? stageActiveAction.getClip().name : 'idle')"
+                            title="Play Character Voice Line"
+                            class="px-4 py-2 rounded-xl bg-slate-900/90 hover:bg-slate-800 text-amber-400 border border-amber-500/50 text-xs font-black transition-all flex items-center gap-2 shadow-lg cursor-pointer hover:scale-105 active:scale-95 flex-shrink-0">
+                        <i class="fas fa-volume-up text-amber-400 text-sm"></i>
+                        <span>Voice</span>
+                    </button>
+                </div>
+
+                @if (Model.Items.Count == 0)
+                {
+                    <div class="bg-slate-950/80 border border-slate-800 rounded-2xl p-12 text-center space-y-3">
+                        <div
+                            class="w-16 h-16 rounded-full bg-slate-900 border border-slate-800 flex items-center justify-center mx-auto text-slate-500 text-2xl">
+                            <i class="fas fa-box-open"></i>
+                        </div>
+                        <h3 class="text-base font-bold text-slate-200">No items found</h3>
+                        <p class="text-xs text-slate-400">Try selecting a different category or clearing ownership
+                            filters.</p>
+                    </div>
+                }
+                else
+                {
+                    <!-- Section Header: Avatars -->
+                    <div class="flex items-center justify-between px-1">
+                    <span
+                        class="text-xs font-black text-amber-400 uppercase tracking-widest font-mono flex items-center gap-2">
+                        <i class="fas fa-mask"></i>
+                        <span>Avatars Matrix</span>
+                    </span>
+                        <span class="text-xs font-mono font-bold text-slate-400">
+                        Showing @Model.Items.Count of @Model.TotalCount items
+                    </span>
+                    </div>
+
+                    <!-- 4 Columns x 2 Rows = 8 Slots Grid -->
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                        @for (var i = 0; i < 8; i++)
+                        {
+                            if (i < Model.Items.Count)
+                            {
+                                var item = Model.Items[i];
+                                var isFirst = i == 0;
+                                var cleanHero = item.HeroName.Replace("Hero_", "").ToLowerInvariant();
+
+                                var cardBaseClass = item.IsOwnedByUser
+                                    ? isFirst
+                                        ? "shop-item-card is-owned group relative bg-gradient-to-b from-stone-900/95 via-slate-950/95 to-stone-950/95 border-2 border-emerald-400 ring-2 ring-emerald-400/50 shadow-xl shadow-emerald-500/20 rounded-xl p-2 cursor-pointer transition-all flex flex-col justify-between"
+                                        : "shop-item-card is-owned group relative bg-gradient-to-b from-stone-900/90 via-slate-950/90 to-stone-950/90 border-2 border-emerald-500/40 hover:border-emerald-400 shadow-md shadow-slate-950/40 hover:shadow-emerald-500/20 rounded-xl p-2 cursor-pointer transition-all flex flex-col justify-between"
+                                    : isFirst
+                                        ? "shop-item-card is-unowned group relative bg-gradient-to-b from-stone-900/95 via-slate-950/95 to-stone-950/95 border-2 border-amber-400 ring-2 ring-amber-400/60 shadow-xl shadow-amber-500/25 rounded-xl p-2 cursor-pointer transition-all flex flex-col justify-between"
+                                        : "shop-item-card is-unowned group relative bg-gradient-to-b from-stone-900/90 via-slate-950/90 to-stone-950/90 border-2 border-amber-500/60 hover:border-amber-400 shadow-md shadow-amber-950/30 hover:shadow-amber-500/20 rounded-xl p-2 cursor-pointer transition-all flex flex-col justify-between";
+
+                                <div id="shop-card-@item.Id"
+                                     class="@cardBaseClass"
+                                     onclick="selectShopItem(@item.Id, '@item.Name.Replace("'", "\\'")', '@cleanHero', '@item.AltAvatarSuffix', '@item.Resource.Replace("'", "\\'")', @item.GoldCost, @item.SilverCost, @(item.IsOwnedByUser ? "true" : "false"), @(item.CanPreview3D ? "true" : "false"), @(item.IsEnabled ? "true" : "false"), @(item.Purchasable ? "true" : "false"), '@item.TypeName', '@item.Code', '@item.Description.Replace("'", "\\'")', @(item.IsEquippedByUser ? "true" : "false"))">
+
+                                    <!-- Thumbnail Area -->
+                                    <div
+                                        class="relative aspect-square rounded-lg overflow-hidden bg-slate-950 @(item.IsOwnedByUser ? "border border-emerald-500/30 shadow-inner" : "border border-amber-500/40 shadow-inner") mb-1.5 group-hover:scale-[1.02] transition-transform">
+                                        <img src="@Url.Action("GetIcon", "Assets3D", new { path = item.Resource })"
+                                             alt="@item.Name"
+                                             width="160" height="160" @(i == 0 ? Html.Raw("fetchpriority=\"high\" decoding=\"async\"") : i < 4 ? Html.Raw("decoding=\"async\"") : Html.Raw("loading=\"lazy\" decoding=\"async\""))
+                                             class="w-full h-full object-cover"
+                                             onerror="this.src='/images/icons/hero_default.png'"/>
+
+                                        @if (item.IsOwnedByUser)
+                                        {
+                                            <div
+                                                class="card-owned-badge absolute top-1 right-1 px-1.5 py-0.5 rounded bg-emerald-500/90 text-slate-950 flex items-center gap-1 text-[8px] font-black shadow-md tracking-wider">
+                                                <i class="fas fa-unlock text-[7px]"></i>
+                                                <span>@(Model.IsUnlockAllItemsEnabled ? "FREE" : "OWNED")</span>
+                                            </div>
+                                        }
+
+                                        @if (item.IsEquippedByUser)
+                                        {
+                                            <div
+                                                class="card-equipped-badge absolute top-1 left-1 px-1.5 py-0.5 rounded bg-emerald-600/90 text-white flex items-center gap-1 text-[7px] font-black shadow-md tracking-wider">
+                                                <i class="fas fa-bolt text-[6px]"></i>
+                                                <span>ACTIVE</span>
+                                            </div>
+                                        }
+                                        else if (item.CanPreview3D)
+                                        {
+                                            <div
+                                                class="absolute top-1 left-1 px-1.5 py-0.5 rounded bg-slate-950/80 border border-sky-500/40 text-[8px] font-mono font-bold text-sky-300">
+                                                3D
+                                            </div>
+                                        }
+                                    </div>
+
+                                    <!-- Name -->
+                                    <div
+                                        class="text-[11px] font-bold @(item.IsOwnedByUser ? "text-slate-100 group-hover:text-emerald-300" : "text-slate-100 group-hover:text-amber-300") truncate transition-colors text-center">
+                                        @item.Name
+                                    </div>
+
+                                    <!-- Pricing -->
+                                    <div
+                                        class="card-price-container flex items-center justify-center gap-1.5 mt-1 pt-1 border-t border-slate-900 text-[10px] font-mono">
+                                        @if (item.IsOwnedByUser)
+                                        {
+                                            <span class="text-emerald-400 font-bold text-[9px] flex items-center gap-1">
+                                            <i class="fas fa-check-circle text-[8px]"></i>
+                                            <span>@(item.IsEquippedByUser ? "Equipped" : Model.IsUnlockAllItemsEnabled ? "Unlocked • Free" : "Vault")</span>
+                                        </span>
+                                        }
+                                        else
+                                        {
+                                            @if (item.GoldCost > 0)
+                                            {
+                                                <span class="flex items-center gap-0.5 text-amber-400 font-bold">
+                                                <i class="fas fa-coins text-[9px] text-amber-500"></i>
+                                                <span>@item.GoldCost</span>
+                                            </span>
+                                            }
+
+                                            @if (item.SilverCost > 0)
+                                            {
+                                                <span class="flex items-center gap-0.5 text-slate-300 font-bold">
+                                                <i class="fas fa-circle text-[7px] text-slate-400"></i>
+                                                <span>@item.SilverCost</span>
+                                            </span>
+                                            }
+
+                                            @if (item is { GoldCost: 0, SilverCost: 0 })
+                                            {
+                                                <span class="text-emerald-400 font-semibold text-[9px]">@(Model.IsUnlockAllItemsEnabled ? "Free" : "Unavailable")</span>
+                                            }
+                                        }
+                                    </div>
+                                </div>
+                            }
+                            else
+                            {
+                                <!-- Authentic Embossed Empty Slot Placeholder -->
+                                <div
+                                    class="relative bg-slate-950/40 border-2 border-dashed border-slate-800/60 rounded-xl p-2 flex flex-col items-center justify-center opacity-40 select-none aspect-square">
+                                    <div
+                                        class="w-10 h-10 rounded-full border border-slate-700/50 flex items-center justify-center text-slate-600 text-sm font-black font-mono">
+                                        HON
+                                    </div>
+                                </div>
+                            }
+                        }
+                    </div>
+
+                    <!-- Bottom Pagination & Goblin Shopkeeper Footer -->
+                    <div
+                        class="flex flex-wrap items-center justify-between gap-4 bg-slate-950/90 border border-slate-800 rounded-2xl p-3.5 shadow-lg">
+                        <div class="flex items-center gap-3">
+                            <div
+                                class="relative w-11 h-11 rounded-xl bg-gradient-to-br from-amber-500/20 to-amber-950/60 border border-amber-500/40 p-1 flex items-center justify-center text-amber-400 font-bold shadow-inner overflow-hidden group">
+                                <img
+                                    src="@Url.Action("GetIcon", "Assets3D", new { path = "/shared/automated_courier/couriers/goblin_fly/icon.tga" })"
+                                    alt="Merrick" width="44" height="44" loading="lazy" decoding="async"
+                                    class="w-full h-full object-contain rounded-lg drop-shadow transition-transform group-hover:scale-110"
+                                    onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"/>
+                                <div class="hidden w-full h-full items-center justify-center text-amber-400">
+                                    <i class="fas fa-coins text-base animate-pulse"></i>
+                                </div>
+                            </div>
+                            <div>
+                            <span class="text-xs font-bold text-slate-100 flex items-center gap-1.5">
+                                <span>Merrick's Vault</span>
+                                <span
+                                    class="text-[9px] px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-400 font-mono font-bold">MERCHANT</span>
+                            </span>
+                                <p class="text-[10px] text-slate-400 font-mono">
+                                    Page @Model.Page of @Model.TotalPages</p>
+                            </div>
+                        </div>
+
+                        <!-- Gold Pagination Controls -->
+                        <div class="flex items-center gap-2">
+                            @if (Model.Page > 1)
+                            {
+                                <a asp-controller="Store" asp-action="Index" asp-route-page="@(Model.Page - 1)"
+                                   asp-route-category="@Model.SelectedCategory" asp-route-search="@Model.SearchQuery"
+                                   asp-route-ownership="@Model.OwnershipFilter"
+                                   class="px-3.5 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-amber-400 border border-amber-500/40 text-xs font-black uppercase tracking-wider transition-all shadow-md flex items-center gap-1 cursor-pointer">
+                                    <i class="fas fa-chevron-left text-[10px]"></i>
+                                    <span>Prev</span>
+                                </a>
+                            }
+
+                            <form method="get" asp-controller="Store" asp-action="Index"
+                                  class="flex items-center gap-1.5 font-mono text-xs px-2.5 py-1 rounded-xl bg-slate-900/90 border border-amber-500/60 text-amber-300 shadow-inner">
+                                <input type="hidden" name="category" value="@Model.SelectedCategory"/>
+                                <input type="hidden" name="search" value="@Model.SearchQuery"/>
+                                <input type="hidden" name="ownership" value="@Model.OwnershipFilter"/>
+                                <input type="number" name="page" min="1" max="@Model.TotalPages" value="@Model.Page"
+                                       class="w-12 bg-slate-950/80 border border-amber-500/40 rounded px-1.5 py-0.5 text-center font-black text-amber-400 focus:outline-none focus:border-amber-400 text-xs font-mono"
+                                       onchange="this.form.submit()"
+                                       title="Type page number and press Enter"/>
+                                <span class="text-amber-500/60">/</span>
+                                <span class="font-bold text-amber-300 pr-1">@Model.TotalPages</span>
+                            </form>
+
+                            @if (Model.Page < Model.TotalPages)
+                            {
+                                <a asp-controller="Store" asp-action="Index" asp-route-page="@(Model.Page + 1)"
+                                   asp-route-category="@Model.SelectedCategory" asp-route-search="@Model.SearchQuery"
+                                   asp-route-ownership="@Model.OwnershipFilter"
+                                   class="px-3.5 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-amber-400 border border-amber-500/40 text-xs font-black uppercase tracking-wider transition-all shadow-md flex items-center gap-1 cursor-pointer">
+                                    <span>Next</span>
+                                    <i class="fas fa-chevron-right text-[10px]"></i>
+                                </a>
+                            }
+                        </div>
+                    </div>
+                }
+            </div>
+
+            <!-- Right Side: The Showcase Stage & Action Pedestal (6 cols - Extra Large & Open) -->
+            <div class="lg:col-span-6 space-y-4 sticky top-6">
+
+                <div
+                    class="bg-gradient-to-b from-slate-950/80 via-stone-950/80 to-slate-950/80 rounded-3xl shadow-2xl p-3 sm:p-4 space-y-3 backdrop-blur-2xl relative overflow-hidden">
+                    <div
+                        class="absolute -right-16 -top-16 w-72 h-72 bg-amber-500/10 rounded-full blur-3xl pointer-events-none"></div>
+
+                    <!-- Showcase Stage Viewport - Open & Extra Large -->
+                    <div
+                        class="relative w-full h-[560px] sm:h-[620px] lg:h-[650px] rounded-2xl overflow-hidden shadow-2xl flex items-center justify-center bg-slate-950/40">
+
+                        <!-- 3D Canvas Stage -->
+                        <div id="stage3DContainer"
+                             class="absolute inset-0 w-full h-full @(firstItem?.CanPreview3D == true ? "" : "hidden")">
+                            <canvas id="stage3DCanvas" role="region" aria-label="Webstore interactive 3D hero model stage"
+                                    class="w-full h-full block cursor-grab active:cursor-grabbing">Your browser does not support HTML5 Canvas.</canvas>
+
+                            <div id="stage3DLoading"
+                                 class="absolute inset-0 bg-slate-950/80 backdrop-blur-sm z-20 flex flex-col items-center justify-center space-y-2">
+                                <div
+                                    class="w-10 h-10 border-4 border-amber-500/20 border-t-amber-500 rounded-full animate-spin"></div>
+                                <span
+                                    class="text-xs font-bold text-slate-200 font-mono">Rendering Character Model...</span>
+                            </div>
+                        </div>
+
+                        <!-- 2D Winged Bronze Shield Stage -->
+                        <div id="stage2DContainer"
+                             class="relative z-10 flex flex-col items-center justify-center p-6 @(firstItem?.CanPreview3D == true ? "hidden" : "")">
+                            <div
+                                class="relative w-48 h-48 rounded-2xl bg-gradient-to-b from-amber-950/80 via-stone-900 to-black p-3.5 border-2 border-amber-600/60 shadow-2xl shadow-amber-500/10 flex items-center justify-center">
+                                <div
+                                    class="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-0.5 rounded-full bg-amber-600 text-slate-950 font-black text-[9px] uppercase tracking-wider shadow">
+                                    KONGOR
+                                </div>
+
+                                <img id="stage2DImage"
+                                     src="@Url.Action("GetIcon", "Assets3D", new { path = firstItem?.Resource ?? "" })"
+                                     alt="@(firstItem?.Name ?? "Item")" width="192" height="192" fetchpriority="high" decoding="async"
+                                     class="w-full h-full object-contain drop-shadow-[0_10px_20px_rgba(0,0,0,0.8)]"
+                                     onerror="this.src='/images/icons/hero_default.png'"/>
+                            </div>
+                        </div>
+
+                        <!-- Top Stage Controls -->
+                        <div
+                            class="absolute top-3 left-3 right-3 flex items-center justify-between z-10 pointer-events-none">
+                            <div class="flex items-center gap-2 pointer-events-auto">
+                            <span
+                                class="px-3 py-1 rounded-xl bg-gradient-to-b from-amber-400/90 via-amber-500/90 to-amber-600/90 text-slate-950 font-black text-[10px] uppercase tracking-wider shadow-lg shadow-amber-500/20">
+                                Pedestal Showcase
+                            </span>
+                            </div>
+
+                            <div id="stage3DControls"
+                                 class="flex items-center gap-2 pointer-events-auto @(firstItem?.CanPreview3D == true ? "" : "hidden")">
+                                <button id="stageArBtn" onclick="openCurrentItemInAR()" title="View in Tabletop AR (Turn on Camera)"
+                                        class="px-2.5 h-9 rounded-xl bg-slate-900/90 hover:bg-slate-800 text-sky-400 hover:text-white border border-sky-500/40 text-xs font-black shadow-md flex items-center gap-1.5 cursor-pointer active:scale-95 transition-all">
+                                    <i class="fas fa-camera text-sky-400"></i>
+                                    <span class="hidden sm:inline">AR</span>
+                                </button>
+                                <button id="stagePlayPauseBtn" onclick="toggleStagePlayPause()"
+                                        title="Pause / Resume Animation"
+                                        class="w-9 h-9 rounded-xl bg-slate-900/90 hover:bg-slate-800 text-amber-400 border border-amber-500/40 text-sm font-black shadow-md flex items-center justify-center cursor-pointer">
+                                    <i id="stagePlayPauseIcon" class="fas fa-pause"></i>
+                                </button>
+                                <button id="stageMuteBtn" onclick="toggleStageSound()" title="Mute / Unmute Audio"
+                                        class="w-9 h-9 rounded-xl bg-slate-900/90 hover:bg-slate-800 text-amber-400 border border-amber-500/40 text-sm font-black shadow-md flex items-center justify-center cursor-pointer">
+                                    <i id="stageMuteIcon" class="fas fa-volume-up"></i>
+                                </button>
+                                <button id="stageResetCamBtn" onclick="resetStageCamera()" title="Reset Camera Framing"
+                                        class="w-9 h-9 rounded-xl bg-slate-900/90 hover:bg-slate-800 text-amber-400 border border-amber-500/40 text-sm font-black shadow-md flex items-center justify-center cursor-pointer">
+                                    <i class="fas fa-crosshairs"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Bottom Animation Bar for 3D Viewport with Rich Gold Aesthetic -->
+                        <div id="stageAnimBar"
+                             class="absolute bottom-3 left-3 right-3 z-10 pointer-events-auto @(firstItem?.CanPreview3D == true ? "" : "hidden")">
+                            <div
+                                class="flex items-center justify-between gap-2.5 bg-slate-950/90 border border-amber-500/60 p-2 rounded-2xl backdrop-blur-xl shadow-2xl">
+
+                                <!-- Animation Dropdown with Custom Gold Styling -->
+                                <div class="flex items-center gap-2 flex-1 min-w-0">
+                                <span
+                                    class="hidden sm:flex items-center gap-1.5 text-amber-400 font-mono font-black text-[11px] uppercase tracking-wider pl-1.5 flex-shrink-0">
+                                    <i class="fas fa-play text-amber-500 text-[10px]"></i>
+                                    <span>Action:</span>
+                                </span>
+                                    <div class="relative flex-1 min-w-0">
+                                        <select id="stageAnimSelect" onchange="playStageAnim(this.value)"
+                                                class="w-full bg-slate-900/90 border border-amber-500/60 hover:border-amber-400 text-amber-300 font-black text-xs rounded-xl px-3 py-1.5 pr-8 focus:outline-none focus:ring-2 focus:ring-amber-400 font-mono shadow-inner cursor-pointer appearance-none truncate">
+                                            <option value="">Animations...</option>
+                                        </select>
+                                        <div
+                                            class="absolute inset-y-0 right-0 flex items-center pr-2.5 pointer-events-none text-amber-400">
+                                            <i class="fas fa-chevron-down text-[10px]"></i>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Speed Slider -->
+                                <div
+                                    class="flex items-center gap-2 bg-slate-900/90 border border-amber-500/60 px-2.5 py-1 rounded-xl shadow-inner flex-shrink-0">
+                                    <span
+                                        class="text-[9px] font-black text-amber-400 uppercase tracking-wider font-mono">Speed</span>
+                                    <input id="stageSpeedSlider" type="range" min="0.5" max="1.75" step="0.25"
+                                           value="1.0"
+                                           class="w-14 sm:w-16 accent-amber-500 cursor-pointer h-2"/>
+                                    <span id="stageSpeedLabel"
+                                          class="text-xs font-mono font-black text-amber-300 w-8 text-right">1.0x</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Grand Golden Purchase Button -->
+                    <div id="stageActionBox" class="pt-1">
+                        @if (firstItem != null)
+                        {
+                            @if (firstItem.IsOwnedByUser)
+                            {
+                                @if (firstItem.IsEquippedByUser)
+                                {
+                                    <div
+                                        class="w-full py-4 px-6 rounded-2xl bg-slate-900/90 border border-slate-800 text-slate-500 text-base font-black text-center flex items-center justify-center gap-2 shadow-inner cursor-default opacity-80 select-none">
+                                        <i class="fas fa-check-circle text-emerald-500"></i>
+                                        <span>✓ IN LOADOUT</span>
+                                    </div>
+                                }
+                                else
+                                {
+                                    <button onclick="equipCurrentSelectedItem()"
+                                            class="w-full py-4 px-6 rounded-2xl bg-gradient-to-b from-amber-400 via-amber-500 to-amber-600 hover:from-amber-300 hover:to-amber-500 text-slate-950 text-base font-black uppercase tracking-wider text-center flex items-center justify-center gap-2 shadow-2xl shadow-amber-500/30 transition-all cursor-pointer">
+                                        <i class="fas fa-bolt"></i>
+                                        <span>Equip in Loadout</span>
+                                    </button>
+                                }
+                            }
+                            else if (!Model.IsAuthenticated)
+                            {
+                                <a asp-controller="Account" asp-action="LoginDiscord"
+                                   class="w-full py-4 px-6 rounded-2xl bg-[#5865F2] hover:bg-[#4752C4] text-white text-base font-black text-center flex items-center justify-center gap-2 shadow-2xl shadow-[#5865F2]/20 transition-all">
+                                    <i class="fab fa-discord"></i>
+                                    <span>Connect with Discord to Purchase</span>
+                                </a>
+                            }
+                            else if (!firstItem.IsEnabled || !firstItem.Purchasable)
+                            {
+                                <button disabled
+                                        class="w-full py-4 px-6 rounded-2xl bg-slate-800 text-slate-500 text-base font-bold text-center cursor-not-allowed">
+                                    Unavailable
+                                </button>
+                            }
+                            else
+                            {
+                                <div class="grid grid-cols-2 gap-3">
+                                    @if (firstItem.GoldCost > 0)
+                                    {
+                                        <button
+                                            onclick="openPurchaseModal(@firstItem.Id, '@firstItem.Name.Replace("'", "\\'")', @firstItem.GoldCost, 'gold')"
+                                            class="py-3.5 px-4 rounded-2xl bg-gradient-to-b from-amber-400 via-amber-500 to-amber-600 hover:from-amber-300 hover:to-amber-500 text-slate-950 font-black text-sm shadow-xl shadow-amber-500/30 border-2 border-amber-200 hover:border-white transition-all flex items-center justify-center gap-2 cursor-pointer transform hover:scale-[1.02] active:scale-98">
+                                            <i class="fas fa-coins text-base"></i>
+                                            <span>@firstItem.GoldCost Gold</span>
+                                        </button>
+                                    }
+                                    @if (firstItem.SilverCost > 0)
+                                    {
+                                        <button
+                                            onclick="openPurchaseModal(@firstItem.Id, '@firstItem.Name.Replace("'", "\\'")', @firstItem.SilverCost, 'silver')"
+                                            class="py-3.5 px-4 rounded-2xl bg-slate-900 hover:bg-slate-800 text-slate-100 font-black text-sm border-2 border-slate-700 hover:border-amber-400 transition-all flex items-center justify-center gap-2 cursor-pointer transform hover:scale-[1.02] active:scale-98">
+                                            <i class="fas fa-circle text-slate-400 text-xs"></i>
+                                            <span>@firstItem.SilverCost Silver</span>
+                                        </button>
+                                    }
+                                </div>
+                            }
+                        }
+                    </div>
+
+                    <!-- Staff Price & Visibility Quick Editor -->
+                    @if (Model.IsStaff)
+                    {
+                        <div class="pt-2 border-t border-slate-800/80 flex items-center justify-between gap-2">
+                        <span id="stageStaffItemId"
+                              class="text-xs text-slate-500 font-mono">Product ID: #@(firstItem?.Id ?? 0)</span>
+                            <div class="flex items-center gap-2">
+                                <button onclick="openBulkDiscountModal()"
+                                        class="px-3 py-1.5 rounded-xl bg-gradient-to-r from-purple-900/80 to-indigo-950/80 hover:from-purple-800 hover:to-indigo-900 text-purple-200 border border-purple-600/50 text-xs font-bold transition-all flex items-center gap-1.5 shadow-md">
+                                    <i class="fas fa-tags text-purple-400"></i>
+                                    <span>Weekend Sale</span>
+                                </button>
+                                <button onclick="openStaffPriceEditorFromStage()"
+                                        class="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-amber-400 border border-slate-700 text-xs font-bold transition-all flex items-center gap-1.5 shadow-md">
+                                    <i class="fas fa-pencil-alt"></i>
+                                    <span>Price Editor</span>
+                                </button>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+<!-- Purchase Confirmation Modal -->
+<div id="purchaseModal"
+     class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-950/80 backdrop-blur-md p-4 animate-fadeIn">
+    <div class="relative w-full max-w-md bg-slate-900 border border-amber-500/30 rounded-2xl shadow-2xl p-6 space-y-5">
+        <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+            <h3 class="text-base font-bold text-slate-100 flex items-center gap-2">
+                <i class="fas fa-lock text-amber-400"></i>
+                <span>Confirm Vault Unlock</span>
+            </h3>
+            <button type="button" onclick="closePurchaseModal()" aria-label="Close purchase modal" title="Close" class="text-slate-400 hover:text-white"><i class="fas fa-times"></i>
+            </button>
+        </div>
+
+        <div class="space-y-3 text-xs text-slate-300">
+            <p>You are about to unlock <strong id="buyItemTitle" class="text-amber-300 text-sm"></strong>.</p>
+            <div class="p-3 bg-slate-950/80 rounded-xl border border-slate-800 flex items-center justify-between">
+                <span class="text-slate-400">Deduction:</span>
+                <span id="buyCostDisplay" class="font-black text-sm text-slate-100"></span>
+            </div>
+            <p id="buyStatusMsg" class="hidden text-xs font-semibold"></p>
+        </div>
+
+        <input type="hidden" id="buyItemId"/>
+        <input type="hidden" id="buyCurrency"/>
+
+        <div class="flex items-center justify-end gap-3 pt-2">
+            <button onclick="closePurchaseModal()"
+                    class="px-4 py-2 rounded-xl bg-slate-800 text-slate-300 text-xs font-bold hover:bg-slate-700">Cancel
+            </button>
+            <button id="confirmBuyBtn" onclick="executePurchase()"
+                    class="px-5 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-black shadow-lg transition-all flex items-center gap-2">
+                <i class="fas fa-check"></i>
+                <span id="confirmBuyBtnText">Confirm Purchase</span>
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Staff Weekend Sale / Bulk Discount Modal -->
+@if (Model.IsStaff)
+{
+    <div id="bulkDiscountModal"
+         class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-950/85 backdrop-blur-md p-4 animate-fadeIn">
+        <div
+            class="relative w-full max-w-lg bg-slate-900 border border-purple-500/40 rounded-2xl shadow-2xl p-6 space-y-5">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                <div class="flex items-center gap-2">
+                    <div
+                        class="w-8 h-8 rounded-xl bg-purple-500/20 border border-purple-500/40 flex items-center justify-center text-purple-400">
+                        <i class="fas fa-tags text-sm"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-sm font-bold text-slate-100">Weekend Sale / Bulk Discount Tool</h3>
+                        <p class="text-[10px] text-purple-300">Quickly apply store-wide or category discounts with
+                            1-click restore.</p>
+                    </div>
+                </div>
+                <button type="button" onclick="closeBulkDiscountModal()" aria-label="Close bulk discount modal" title="Close" class="text-slate-400 hover:text-white"><i
+                        class="fas fa-times"></i></button>
+            </div>
+
+            <div class="space-y-4 text-xs">
+                <div>
+                    <label class="block text-slate-400 font-bold mb-1">Target Category</label>
+                    <select id="bulkCategory"
+                            class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-slate-100 focus:border-purple-500 focus:outline-none font-medium">
+                        <option value="all">Entire Store (All Items)</option>
+                        <option value="avatars">All Alt Avatars</option>
+                        <option value="taunts">All Taunts</option>
+                        <option value="couriers">All Couriers</option>
+                        <option value="wards">All Wards</option>
+                        <option value="announcers">All Announcers</option>
+                        <option value="icons">All Account Icons</option>
+                        <option value="colors">All Name Colors</option>
+                        <option value="bundles">All Bundles</option>
+                    </select>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-slate-400 font-bold mb-1">Currency</label>
+                        <select id="bulkCurrency"
+                                class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-slate-100 focus:border-purple-500 focus:outline-none font-medium">
+                            <option value="both">Both Gold & Silver</option>
+                            <option value="silver">Silver Only</option>
+                            <option value="gold">Gold Only</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-slate-400 font-bold mb-1">Discount %</label>
+                        <input id="bulkDiscountPercent" type="number" min="1" max="90" value="20"
+                               class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-slate-100 font-mono font-bold focus:border-purple-500 focus:outline-none"/>
+                    </div>
+                </div>
+
+                <!-- Quick Preset Discount Buttons -->
+                <div>
+                    <label class="block text-slate-400 font-bold mb-1.5">Quick Presets</label>
+                    <div class="flex items-center gap-2">
+                        <button type="button" onclick="setBulkPercent(10)"
+                                class="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 font-mono font-bold text-xs border border-slate-700">
+                            10%
+                        </button>
+                        <button type="button" onclick="setBulkPercent(20)"
+                                class="px-2.5 py-1 rounded-lg bg-purple-900/60 hover:bg-purple-800 text-purple-200 font-mono font-bold text-xs border border-purple-600/50">
+                            20%
+                        </button>
+                        <button type="button" onclick="setBulkPercent(25)"
+                                class="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 font-mono font-bold text-xs border border-slate-700">
+                            25%
+                        </button>
+                        <button type="button" onclick="setBulkPercent(33)"
+                                class="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 font-mono font-bold text-xs border border-slate-700">
+                            33%
+                        </button>
+                        <button type="button" onclick="setBulkPercent(50)"
+                                class="px-2.5 py-1 rounded-lg bg-amber-900/60 hover:bg-amber-800 text-amber-200 font-mono font-bold text-xs border border-amber-600/50">
+                            50%
+                        </button>
+                    </div>
+                </div>
+
+                <p id="bulkStatusMsg" class="hidden text-xs font-semibold"></p>
+            </div>
+
+            <div class="flex items-center justify-between gap-3 pt-3 border-t border-slate-800">
+                <button type="button" id="restorePricesBtn" onclick="executeRestorePrices()"
+                        class="px-3.5 py-2 rounded-xl bg-rose-950/60 hover:bg-rose-900 text-rose-300 text-xs font-bold border border-rose-800/60 transition-all flex items-center gap-1.5">
+                    <i class="fas fa-undo"></i>
+                    <span>Restore Baseline Prices</span>
+                </button>
+                <div class="flex items-center gap-2">
+                    <button onclick="closeBulkDiscountModal()"
+                            class="px-4 py-2 rounded-xl bg-slate-800 text-slate-300 text-xs font-bold hover:bg-slate-700">
+                        Cancel
+                    </button>
+                    <button id="applyBulkBtn" onclick="executeBulkDiscount()"
+                            class="px-5 py-2 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-xs font-black shadow-lg shadow-purple-600/30 transition-all flex items-center gap-2">
+                        <i class="fas fa-bolt"></i>
+                        <span>Apply Discount</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+<!-- Staff Price Editor Modal -->
+@if (Model.IsStaff)
+{
+    <div id="priceEditorModal"
+         class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-950/80 backdrop-blur-md p-4 animate-fadeIn">
+        <div class="relative w-full max-w-md bg-slate-900 border border-slate-700 rounded-2xl shadow-2xl p-6 space-y-4">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                <div>
+                    <h3 class="text-sm font-bold text-slate-100">Edit Price & Visibility</h3>
+                    <p id="editItemId" class="text-[10px] font-mono text-amber-400"></p>
+                </div>
+                <button type="button" onclick="closePriceEditor()" aria-label="Close price editor" title="Close" class="text-slate-400 hover:text-white"><i
+                        class="fas fa-times"></i></button>
+            </div>
+
+            <input type="hidden" id="editItemHiddenId"/>
+
+            <div class="space-y-3 text-xs">
+                <div>
+                    <label class="block text-slate-400 font-bold mb-1">Gold Cost</label>
+                    <input id="editGoldCost" type="number" min="0"
+                           class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-slate-100 font-mono focus:border-amber-500 focus:outline-none"/>
+                </div>
+                <div>
+                    <label class="block text-slate-400 font-bold mb-1">Silver Cost</label>
+                    <input id="editSilverCost" type="number" min="0"
+                           class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-slate-100 font-mono focus:border-amber-500 focus:outline-none"/>
+                </div>
+                <div class="flex items-center gap-6 pt-1">
+                    <label class="flex items-center gap-2 text-slate-300 cursor-pointer">
+                        <input id="editIsEnabled" type="checkbox" class="w-4 h-4 accent-amber-500 rounded"/>
+                        <span>Enabled</span>
+                    </label>
+                    <label class="flex items-center gap-2 text-slate-300 cursor-pointer">
+                        <input id="editPurchasable" type="checkbox" class="w-4 h-4 accent-amber-500 rounded"/>
+                        <span>Purchasable</span>
+                    </label>
+                </div>
+                <p id="editStatusMsg" class="hidden text-xs font-semibold"></p>
+            </div>
+
+            <div class="flex items-center justify-end gap-3 pt-3 border-t border-slate-800">
+                <button onclick="closePriceEditor()"
+                        class="px-4 py-2 rounded-xl bg-slate-800 text-slate-300 text-xs font-bold hover:bg-slate-700">
+                    Cancel
+                </button>
+                <button id="savePriceBtn" onclick="saveStoreItemChanges()"
+                        class="px-5 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-black shadow-lg transition-all">
+                    Save Changes
+                </button>
+            </div>
+        </div>
+    </div>
+}
+
+<!-- Three.js Dependencies for Interactive Showcase Stage -->
+<script src="/lib/three/three.r16x.bundle.js" defer asp-append-version="true"></script>
+
+<script>
+    let stageScene, stageCamera, stageRenderer, stageControls, stageMixer, stageClock;
+    let stageModelGroup = null;
+    let currentStageModel = null;
+    let stageActiveAction = null;
+    let stageActions = {};
+    let currentStageAudio = null;
+    let stageAudioTimeout = null;
+    let stageAnimSpeed = 1.0;
+    let isStageAudioMuted = false;
+    let stageLoadCounter = 0;
+    let stageFetchController = null;
+    let currentSelectedItem = {
+        id: @(firstItem?.Id ?? 0),
+        name: '@(firstItem?.Name.Replace("'", "\\'") ?? "")',
+        hero: '@(firstItem?.HeroName.Replace("Hero_", "").ToLowerInvariant() ?? "")',
+        alt: '@(firstItem?.AltAvatarSuffix ?? "")',
+        resource: '@(firstItem?.Resource.Replace("'", "\\'") ?? "")',
+        gold: @(firstItem?.GoldCost ?? 0),
+        silver: @(firstItem?.SilverCost ?? 0),
+        isOwned: @(firstItem?.IsOwnedByUser == true ? "true" : "false"),
+        isEquipped: @(firstItem?.IsEquippedByUser == true ? "true" : "false"),
+        can3d: @(firstItem?.CanPreview3D == true ? "true" : "false"),
+        isEnabled: @(firstItem?.IsEnabled == true ? "true" : "false"),
+        purchasable: @(firstItem?.Purchasable == true ? "true" : "false"),
+        typeName: '@(firstItem?.TypeName ?? "")',
+        code: '@(firstItem?.Code ?? "")',
+        desc: '@(firstItem?.Description.Replace("'", "\\'") ?? "")'
+    };
+
+    window.addEventListener('DOMContentLoaded', () => {
+        initStage3D();
+        const isTrue3D = currentSelectedItem.can3d && currentSelectedItem.hero && (currentSelectedItem.typeName === 'Alt Avatar' || currentSelectedItem.typeName === 'Avatar' || currentSelectedItem.typeName === 'Hero' || currentSelectedItem.typeName === 'AltAvatar');
+        if (isTrue3D) {
+            loadStage3DModel(currentSelectedItem.hero, currentSelectedItem.alt, currentSelectedItem.resource);
+        }
+        if (currentSelectedItem && currentSelectedItem.hero) {
+            updateHeroHeader(currentSelectedItem.hero);
+        }
+    });
+
+    async function updateHeroHeader(heroName) {
+        if (!heroName) return;
+        const cleanHero = heroName.replace(/^Hero_/i, '').toLowerCase().trim();
+
+        // 1. Single source of truth for Hero Portrait (matching Codex / HeroDetail)
+        const portrait = document.getElementById('heroHeaderPortrait');
+        if (portrait) {
+            portrait.onerror = function () {
+                this.onerror = null;
+                this.src = '/images/heroes/default.png';
+            };
+            portrait.src = `/images/heroes/${cleanHero}.png`;
+        }
+
+        // 2. Single source of truth for 4 Ability Icons (matching Codex / HeroDetail)
+        for (let i = 1; i <= 4; i++) {
+            const abIcon = document.getElementById(`heroAbility${i - 1}`);
+            if (abIcon) {
+                abIcon.onerror = function () {
+                    this.onerror = function () {
+                        this.onerror = null;
+                        this.src = '/images/heroes/default.png';
+                    };
+                    this.src = `/images/abilities/hero_${cleanHero}_${i}.png`;
+                };
+                abIcon.src = `/images/abilities/${cleanHero}_${i}.png`;
+            }
+        }
+
+        // 3. Dynamic metadata (Display Name, Primary Attribute, Difficulty, Combat Roles)
+        try {
+            const resp = await fetch(`/api/v1/assets/hero-info/${encodeURIComponent(cleanHero)}`);
+            if (!resp.ok) return;
+            const data = await resp.json();
+
+            const nameEl = document.getElementById('heroHeaderName');
+            if (nameEl) nameEl.innerText = data.displayName || cleanHero;
+
+            const attrEl = document.getElementById('heroHeaderAttrBadge');
+            if (attrEl) {
+                attrEl.innerText = data.primaryAttribute || 'Agility';
+                attrEl.className = data.primaryAttribute === 'Strength'
+                    ? 'px-2 py-0.5 rounded bg-red-500/20 text-red-400 font-mono text-[10px] font-black uppercase tracking-wider'
+                    : (data.primaryAttribute === 'Intelligence'
+                        ? 'px-2 py-0.5 rounded bg-blue-500/20 text-blue-400 font-mono text-[10px] font-black uppercase tracking-wider'
+                        : 'px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400 font-mono text-[10px] font-black uppercase tracking-wider');
+            }
+
+            const diffEl = document.getElementById('heroHeaderDifficulty');
+            if (diffEl) {
+                const diff = Math.round(data.difficulty || 2);
+                let diffHtml = '';
+                for (let d = 1; d <= 5; d++) {
+                    diffHtml += d <= diff
+                        ? '<i class="fas fa-diamond mx-0.5 text-amber-400"></i>'
+                        : '<i class="far fa-diamond mx-0.5 text-amber-400/30"></i>';
+                }
+                diffEl.innerHTML = diffHtml;
+            }
+
+            const rolesEl = document.getElementById('heroHeaderRoles');
+            if (rolesEl) rolesEl.innerText = data.roles || 'Carry';
+        } catch (e) {
+            console.warn("Failed updating hero header:", e);
+        }
+    }
+
+    function resizeStage() {
+        const container = document.getElementById('stage3DContainer');
+        const canvas = document.getElementById('stage3DCanvas');
+        if (!container || !canvas || !stageRenderer || !stageCamera) return;
+
+        const width = container.clientWidth;
+        const height = container.clientHeight;
+        if (width > 0 && height > 0) {
+            stageCamera.aspect = width / height;
+            stageCamera.updateProjectionMatrix();
+            stageRenderer.setSize(width, height, false);
+            stageRenderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+        }
+    }
+
+    function initStage3D() {
+        const container = document.getElementById('stage3DContainer');
+        const canvas = document.getElementById('stage3DCanvas');
+        if (!container || !canvas) return;
+
+        stageScene = new THREE.Scene();
+        stageDefaultCameraPos = new THREE.Vector3(0, 50, 150);
+        stageDefaultTarget = new THREE.Vector3(0, 40, 0);
+        stageScene.background = new THREE.Color(0x070b14);
+
+        stageModelGroup = new THREE.Group();
+        stageScene.add(stageModelGroup);
+
+        const initialW = container.clientWidth || 800;
+        const initialH = container.clientHeight || 600;
+
+        stageCamera = new THREE.PerspectiveCamera(42, initialW / initialH, 0.1, 1000);
+        stageCamera.position.set(0, 48, 165);
+
+        stageRenderer = new THREE.WebGLRenderer({canvas: canvas, antialias: true, powerPreference: "high-performance"});
+        stageRenderer.setSize(initialW, initialH, false);
+        stageRenderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+        if (window.KongorViewerCore) {
+            window.KongorViewerCore.configureRendererColorSpace(stageRenderer);
+        } else if ('outputColorSpace' in stageRenderer && THREE.SRGBColorSpace) {
+            stageRenderer.outputColorSpace = THREE.SRGBColorSpace;
+        }
+
+        stageControls = new THREE.OrbitControls(stageCamera, stageRenderer.domElement);
+        stageControls.enableDamping = true;
+        stageControls.dampingFactor = 0.05;
+
+        window.addEventListener('resize', resizeStage);
+        if (window.ResizeObserver) {
+            new ResizeObserver(() => {
+                resizeStage();
+            }).observe(container);
+        }
+        resizeStage();
+
+        // Dramatic HoN Studio Lighting Setup
+        const ambient = new THREE.AmbientLight(0xfff7ed, 0.9);
+        stageScene.add(ambient);
+
+        const key = new THREE.DirectionalLight(0xffedd5, 1.25);
+        key.position.set(70, 130, 100);
+        stageScene.add(key);
+
+        const fill = new THREE.DirectionalLight(0x93c5fd, 0.65);
+        fill.position.set(-90, 70, 80);
+        stageScene.add(fill);
+
+        const rim = new THREE.DirectionalLight(0xfbbf24, 0.75);
+        rim.position.set(0, 110, -120);
+        stageScene.add(rim);
+
+        const floorGlow = new THREE.PointLight(0xd97706, 0.5, 100);
+        floorGlow.position.set(0, 1, 0);
+        stageScene.add(floorGlow);
+
+        // Authentic 3-Tier Bronze & Stone Dais Pedestal (Surface top at y = 0)
+        const pedestalGroup = new THREE.Group();
+        pedestalGroup.name = "hon_pedestal";
+
+        // Floor Contact Shadow Disk
+        const shadowGeo = new THREE.CircleGeometry(46, 32);
+        const shadowMat = new THREE.MeshBasicMaterial({color: 0x010204, opacity: 0.88, transparent: true});
+        const shadowDisk = new THREE.Mesh(shadowGeo, shadowMat);
+        shadowDisk.rotation.x = -Math.PI / 2;
+        shadowDisk.position.y = -3.98;
+        pedestalGroup.add(shadowDisk);
+
+        // Tier 1: Base Dark Stone
+        const tier1Geo = new THREE.CylinderGeometry(38, 42, 3, 48);
+        const tier1Mat = new THREE.MeshStandardMaterial({color: 0x111827, roughness: 0.9, metalness: 0.1});
+        const tier1 = new THREE.Mesh(tier1Geo, tier1Mat);
+        tier1.position.y = -2.5;
+        pedestalGroup.add(tier1);
+
+        // Tier 2: Bronze Beveled Ring
+        const tier2Geo = new THREE.CylinderGeometry(36, 39, 1.2, 48);
+        const tier2Mat = new THREE.MeshStandardMaterial({color: 0xb45309, roughness: 0.35, metalness: 0.8});
+        const tier2 = new THREE.Mesh(tier2Geo, tier2Mat);
+        tier2.position.y = -1.0;
+        pedestalGroup.add(tier2);
+
+        // Tier 3: Polished Stone Platform
+        const tier3Geo = new THREE.CylinderGeometry(34, 36, 0.8, 48);
+        const tier3Mat = new THREE.MeshStandardMaterial({color: 0x1f2937, roughness: 0.75, metalness: 0.25});
+        const tier3 = new THREE.Mesh(tier3Geo, tier3Mat);
+        tier3.position.y = -0.4;
+        pedestalGroup.add(tier3);
+
+        // Glowing Rune Ring on Platform Surface
+        const runeRingGeo = new THREE.RingGeometry(20, 31, 48);
+        const runeRingMat = new THREE.MeshBasicMaterial({
+            color: 0xf59e0b,
+            side: THREE.DoubleSide,
+            opacity: 0.85,
+            transparent: true
+        });
+        const runeRing = new THREE.Mesh(runeRingGeo, runeRingMat);
+        runeRing.rotation.x = -Math.PI / 2;
+        runeRing.position.y = 0.02;
+        pedestalGroup.add(runeRing);
+
+        stageScene.add(pedestalGroup);
+
+        stageAbilityPropGroup = new THREE.Group();
+        stageScene.add(stageAbilityPropGroup);
+
+        stageAbilityFXGroup = new THREE.Group();
+        stageScene.add(stageAbilityFXGroup);
+
+        stageClock = new THREE.Clock();
+        animateStage();
+
+        document.getElementById('stageSpeedSlider')?.addEventListener('input', (e) => {
+            stageAnimSpeed = parseFloat(e.target.value) || 1.0;
+            document.getElementById('stageSpeedLabel').innerText = stageAnimSpeed.toFixed(2) + 'x';
+            if (currentStageAudio) currentStageAudio.playbackRate = stageAnimSpeed;
+        });
+
+        document.getElementById('stageAnimSelect')?.addEventListener('change', (e) => {
+            playStageAnim(e.target.value);
+        });
+    }
+
+    let currentHeroMetadata = null;
+    let stageAbilityPropGroup = null;
+    let stageAbilityFXGroup = null;
+    let activeAbilityPropModel = null;
+    let activeAbilityPropType = null;
+    let activeAbilityPropAnimTime = 0;
+    let activeLightningLines = [];
+    let activeSlashMesh = null;
+
+    function clearAbilityPropsAndFX() {
+        if (stageAbilityPropGroup) {
+            stageAbilityPropGroup.traverse((c) => {
+                if (c.isMesh) {
+                    if (c.geometry) c.geometry.dispose();
+                    if (c.material) {
+                        if (Array.isArray(c.material)) c.material.forEach(m => m.dispose());
+                        else c.material.dispose();
+                    }
+                }
+            });
+            stageAbilityPropGroup.clear();
+        }
+        if (stageAbilityFXGroup) {
+            stageAbilityFXGroup.traverse((c) => {
+                if (c.geometry) c.geometry.dispose();
+                if (c.material) c.material.dispose();
+            });
+            stageAbilityFXGroup.clear();
+        }
+        activeAbilityPropModel = null;
+        activeAbilityPropType = null;
+        activeAbilityPropAnimTime = 0;
+        activeLightningLines = [];
+        activeSlashMesh = null;
+    }
+
+    function clearCurrentStageModel() {
+        if (stageAudioTimeout) {
+            clearTimeout(stageAudioTimeout);
+            stageAudioTimeout = null;
+        }
+        if (currentStageAudio) {
+            currentStageAudio.pause();
+            currentStageAudio = null;
+        }
+        if (stageActiveAction) {
+            stageActiveAction.stop();
+            stageActiveAction = null;
+        }
+        if (stageMixer) {
+            stageMixer.stopAllAction();
+            stageMixer = null;
+        }
+        if (stageModelGroup) {
+            stageModelGroup.traverse((child) => {
+                if (child.isMesh) {
+                    if (child.geometry) child.geometry.dispose();
+                    if (child.material) {
+                        if (Array.isArray(child.material)) {
+                            child.material.forEach(m => {
+                                if (m.map) m.map.dispose();
+                                if (m.normalMap) m.normalMap.dispose();
+                                if (m.roughnessMap) m.roughnessMap.dispose();
+                                if (m.metalnessMap) m.metalnessMap.dispose();
+                                if (m.emissiveMap) m.emissiveMap.dispose();
+                                m.dispose();
+                            });
+                        } else {
+                            if (child.material.map) child.material.map.dispose();
+                            if (child.material.normalMap) child.material.normalMap.dispose();
+                            if (child.material.roughnessMap) child.material.roughnessMap.dispose();
+                            if (child.material.metalnessMap) child.material.metalnessMap.dispose();
+                            if (child.material.emissiveMap) child.material.emissiveMap.dispose();
+                            child.material.dispose();
+                        }
+                    }
+                }
+            });
+            stageModelGroup.clear();
+        }
+        clearAbilityPropsAndFX();
+        currentStageModel = null;
+        stageActions = {};
+    }
+
+    function getFriendlyAnimName(clipName) {
+        const lower = clipName.toLowerCase().replace(/_/g, ' ').trim();
+        if (lower.includes('idle')) return `💤 ${clipName.toUpperCase().replace(/_/g, ' ')}`;
+        if (lower.includes('attack')) return `⚔️ ${clipName.toUpperCase().replace(/_/g, ' ')}`;
+        if (lower.includes('ability')) return `✨ ${clipName.toUpperCase().replace(/_/g, ' ')}`;
+        if (lower.includes('walk') || lower.includes('run')) return `🚶 ${clipName.toUpperCase().replace(/_/g, ' ')}`;
+        if (lower.includes('death') || lower.includes('die')) return `💀 ${clipName.toUpperCase().replace(/_/g, ' ')}`;
+        if (lower.includes('knock') || lower.includes('stun')) return `💥 ${clipName.toUpperCase().replace(/_/g, ' ')}`;
+        if (lower.includes('getup')) return `🛡️ ${clipName.toUpperCase().replace(/_/g, ' ')}`;
+        if (lower.includes('taunt')) return `🎭 ${clipName.toUpperCase().replace(/_/g, ' ')}`;
+        if (lower.includes('bored')) return `⏳ ${clipName.toUpperCase().replace(/_/g, ' ')}`;
+        if (lower.includes('portrait')) return `🖼️ ${clipName.toUpperCase().replace(/_/g, ' ')}`;
+        if (lower.includes('item')) return `🎒 ${clipName.toUpperCase().replace(/_/g, ' ')}`;
+        return `🎬 ${clipName.toUpperCase().replace(/_/g, ' ')}`;
+    }
+
+    async function loadStage3DModel(hero, alt, resource) {
+        if (!stageScene) return;
+
+        const thisLoadId = ++stageLoadCounter;
+
+        if (stageFetchController) {
+            stageFetchController.abort();
+        }
+        stageFetchController = new AbortController();
+
+        clearCurrentStageModel();
+
+        // Fetch dynamic hero metadata (ability props, frameevents)
+        fetch(`/api/v1/assets/hero-info/${encodeURIComponent(hero)}`)
+            .then(r => r.ok ? r.json() : null)
+            .then(info => {
+                currentHeroMetadata = info;
+            })
+            .catch(() => {
+            });
+
+        const loading = document.getElementById('stage3DLoading');
+        if (loading) loading.style.display = 'flex';
+
+        const altParam = alt ? `/${encodeURIComponent(alt)}` : '';
+        const resQuery = resource ? `?resource=${encodeURIComponent(resource)}` : (currentSelectedItem?.resource ? `?resource=${encodeURIComponent(currentSelectedItem.resource)}` : '');
+        const url = `/api/v1/assets/3d/hero/${encodeURIComponent(hero)}${altParam}${resQuery}`;
+
+        try {
+            const resp = await fetch(url, {signal: stageFetchController.signal});
+            if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+            const buffer = await resp.arrayBuffer();
+
+            if (thisLoadId !== stageLoadCounter) {
+                return;
+            }
+
+            const loader = new THREE.GLTFLoader();
+            loader.parse(buffer, '', (gltf) => {
+                if (thisLoadId !== stageLoadCounter) {
+                    return;
+                }
+
+                if (stageModelGroup) {
+                    stageModelGroup.clear();
+                }
+
+                currentStageModel = gltf.scene;
+
+                // Configure Shadows & PBR Materials with Normal & Specular Sheen
+                currentStageModel.traverse((child) => {
+                    if (child.isMesh) {
+                        child.castShadow = true;
+                        child.receiveShadow = true;
+                        if (child.material) {
+                            const configureMaterial = (mat) => {
+                                if (!mat) return;
+                                mat.side = THREE.DoubleSide;
+                                mat.roughness = 0.8;
+                                mat.metalness = 0.1;
+                                mat.transparent = false;
+                                mat.depthWrite = true;
+                                mat.color = new THREE.Color(0xffffff);
+
+                                if (mat.map) {
+                                    if (window.KongorViewerCore) {
+                                        window.KongorViewerCore.configureTextureColorSpace(mat.map);
+                                    } else if ('colorSpace' in mat.map && THREE.SRGBColorSpace) {
+                                        mat.map.colorSpace = THREE.SRGBColorSpace;
+                                    }
+                                    mat.map.generateMipmaps = true;
+                                    mat.map.minFilter = THREE.LinearMipmapLinearFilter;
+                                    mat.map.magFilter = THREE.LinearFilter;
+                                    mat.map.needsUpdate = true;
+                                }
+                                if (mat.normalMap) {
+                                    mat.normalScale = new THREE.Vector2(1.0, 1.0);
+                                    mat.normalMap.generateMipmaps = true;
+                                    mat.normalMap.needsUpdate = true;
+                                }
+                                if (mat.emissiveMap) {
+                                    if (window.KongorViewerCore) {
+                                        window.KongorViewerCore.configureTextureColorSpace(mat.emissiveMap);
+                                    } else if ('colorSpace' in mat.emissiveMap && THREE.SRGBColorSpace) {
+                                        mat.emissiveMap.colorSpace = THREE.SRGBColorSpace;
+                                    }
+                                    mat.emissive = new THREE.Color(0xffffff);
+                                    mat.emissiveIntensity = 1.5;
+                                    mat.emissiveMap.needsUpdate = true;
+                                }
+                                mat.needsUpdate = true;
+                            };
+
+                            if (Array.isArray(child.material)) {
+                                child.material.forEach(configureMaterial);
+                            } else {
+                                configureMaterial(child.material);
+                            }
+                        }
+                    }
+                });
+
+                // Reset transform
+                currentStageModel.position.set(0, 0, 0);
+                currentStageModel.rotation.set(0, 0, 0);
+                currentStageModel.scale.set(1, 1, 1);
+                currentStageModel.updateMatrixWorld(true);
+
+                // Center horizontally and position feet squarely atop the Dais Platform (Platform surface at y = 0)
+                const bbox = new THREE.Box3().setFromObject(currentStageModel);
+                const center = new THREE.Vector3();
+                bbox.getCenter(center);
+                const size = new THREE.Vector3();
+                bbox.getSize(size);
+                const maxDim = Math.max(size.x, size.y, size.z, 50);
+
+                currentStageModel.position.x = -center.x;
+                currentStageModel.position.z = -center.z;
+                // Position feet at pedestal surface (y = 0), safeguarding against floating offsets
+                if (bbox.min.y < -0.1 && bbox.min.y > -15) {
+                    currentStageModel.position.y = -bbox.min.y;
+                } else {
+                    currentStageModel.position.y = 0;
+                }
+                currentStageModel.updateMatrixWorld(true);
+
+                if (stageModelGroup) {
+                    stageModelGroup.add(currentStageModel);
+                } else {
+                    stageScene.add(currentStageModel);
+                }
+
+                resizeStage();
+
+                // Centered Heroic Pedestal Perspective: Character model and dais vertically centered in viewport
+                const targetY = Math.max(20, Math.min(size.y * 0.45, 36));
+                stageControls.target.set(0, targetY, 0);
+
+                // Perfectly framed sweet spot on load (matches 8 scroll wheel notches back)
+                const cameraDist = Math.max(160, Math.min(maxDim * 1.55, 185));
+                const cameraY = targetY + 12;
+                stageCamera.position.set(0, cameraY, cameraDist);
+                stageDefaultCameraPos.set(0, cameraY, cameraDist);
+                stageDefaultTarget.set(0, targetY, 0);
+                stageControls.minDistance = 20;
+                stageControls.maxDistance = 1500;
+                stageControls.update();
+
+                // Process embedded animations with player-friendly names
+                stageActions = {};
+                const select = document.getElementById('stageAnimSelect');
+                if (select) {
+                    select.innerHTML = '';
+                    select.disabled = false;
+                }
+
+                if (gltf.animations && gltf.animations.length > 0) {
+                    stageMixer = new THREE.AnimationMixer(currentStageModel);
+                    stageMixer.timeScale = stageAnimSpeed;
+                    stageMixer.addEventListener('finished', (e) => {
+                        onActionAnimationFinished(e.action);
+                    });
+
+                    let defaultActionName = '';
+                    gltf.animations.forEach((clip, idx) => {
+                        const action = stageMixer.clipAction(clip);
+                        const cleanName = clip.name || `Animation_${idx + 1}`;
+                        stageActions[cleanName] = action;
+
+                        if (select) {
+                            const opt = document.createElement('option');
+                            opt.value = cleanName;
+                            opt.textContent = getFriendlyAnimName(cleanName);
+                            select.appendChild(opt);
+                        }
+
+                        if (!defaultActionName) {
+                            defaultActionName = cleanName;
+                        }
+                        if (cleanName.toLowerCase().includes('idle')) {
+                            defaultActionName = cleanName;
+                        }
+                    });
+
+                    if (select && defaultActionName) {
+                        select.value = defaultActionName;
+                    }
+                    if (defaultActionName) {
+                        playStageAnim(defaultActionName);
+                    }
+                } else if (select) {
+                    const opt = document.createElement('option');
+                    opt.value = 'default';
+                    opt.textContent = 'REST POSE';
+                    select.appendChild(opt);
+                }
+
+                if (loading) loading.style.display = 'none';
+            }, (xhr) => {
+                // Progress
+            }, (error) => {
+                if (thisLoadId === stageLoadCounter) {
+                    if (loading) loading.style.display = 'none';
+                }
+            });
+        } catch (err) {
+            if (thisLoadId === stageLoadCounter) {
+                if (loading) loading.style.display = 'none';
+            }
+        }
+    }
+
+    let stageActionCycleTimeout = null;
+    let stageCurrentPlayingAnim = 'idle';
+
+    function getHeroWeaponPoint() {
+        let weaponPos = new THREE.Vector3();
+        let foundBone = false;
+
+        if (currentStageModel) {
+            currentStageModel.traverse((child) => {
+                if (foundBone) return;
+                const name = (child.name || '').toLowerCase();
+                if (child.isBone && (name.includes('weapon') || name.includes('staff') || name.includes('r hand') || name.includes('righthand') || name.includes('fx'))) {
+                    child.getWorldPosition(weaponPos);
+                    foundBone = true;
+                }
+            });
+        }
+
+        if (!foundBone && currentStageModel) {
+            const bbox = new THREE.Box3().setFromObject(currentStageModel);
+            const size = new THREE.Vector3();
+            bbox.getSize(size);
+            weaponPos.set(size.x * 0.22, size.y * 0.65, size.z * 0.25);
+        }
+
+        if (weaponPos.y < 20) {
+            weaponPos.y = 35;
+        }
+        return weaponPos;
+    }
+
+    function playStageAnim(animName) {
+        if (!stageMixer || !stageActions[animName]) return;
+
+        if (stageActionCycleTimeout) {
+            clearTimeout(stageActionCycleTimeout);
+            stageActionCycleTimeout = null;
+        }
+
+        stageCurrentPlayingAnim = animName;
+        const nextAction = stageActions[animName];
+        const rawAction = (animName || 'idle').toLowerCase().trim();
+        const isContinuous = rawAction.includes('idle') || rawAction.includes('walk') || rawAction.includes('run');
+
+        if (stageActiveAction && stageActiveAction !== nextAction) {
+            stageActiveAction.fadeOut(0.25);
+        }
+
+        nextAction.reset();
+        nextAction.fadeIn(0.25);
+
+        if (isContinuous) {
+            nextAction.setLoop(THREE.LoopRepeat);
+            nextAction.clampWhenFinished = false;
+        } else {
+            nextAction.setLoop(THREE.LoopOnce, 1);
+            nextAction.clampWhenFinished = true;
+        }
+
+        nextAction.play();
+        stageActiveAction = nextAction;
+
+        clearAbilityPropsAndFX();
+        triggerAbilityPropsAndFX(animName);
+        playStageAudio(animName);
+    }
+
+    function onActionAnimationFinished(action) {
+        if (isStagePaused) return;
+        const currentClipName = stageCurrentPlayingAnim;
+        const raw = currentClipName.toLowerCase().trim();
+        const isContinuous = raw.includes('idle') || raw.includes('walk') || raw.includes('run');
+
+        if (isContinuous) return;
+
+        // Immediately hide ability visual effects when action finishes
+        clearAbilityPropsAndFX();
+
+        // Crossfade to idle pose for natural rest break
+        let idleActionName = Object.keys(stageActions).find(k => k.toLowerCase().includes('idle'));
+        if (idleActionName && stageActions[idleActionName]) {
+            const idleAction = stageActions[idleActionName];
+            if (stageActiveAction) stageActiveAction.fadeOut(0.25);
+            idleAction.reset().fadeIn(0.25).play();
+            stageActiveAction = idleAction;
+        }
+
+        // Wait 1.4 seconds in idle rest before re-playing the action
+        stageActionCycleTimeout = setTimeout(() => {
+            if (isStagePaused || stageCurrentPlayingAnim !== currentClipName) return;
+            playStageAnim(currentClipName);
+        }, 1400);
+    }
+
+    function triggerAbilityPropsAndFX(animName) {
+        const raw = (animName || 'idle').toLowerCase().trim();
+        const heroName = (currentSelectedItem?.hero || currentHeroMetadata?.heroName || '').toLowerCase();
+
+        let targetSlot = null;
+        if (raw.includes('ability_1') || raw.includes('ability1')) targetSlot = 'ability_1';
+        else if (raw.includes('ability_2') || raw.includes('ability2')) targetSlot = 'ability_2';
+        else if (raw.includes('ability_3') || raw.includes('ability3')) targetSlot = 'ability_3';
+        else if (raw.includes('ability_4') || raw.includes('ability4')) targetSlot = 'ability_4';
+
+        if (targetSlot === 'ability_4') {
+            if (heroName.includes('pollywog')) {
+                spawnSerpentWardsOnDais();
+            }
+        }
+    }
+
+    function spawnSerpentWardsOnDais() {
+        if (!stageAbilityPropGroup) return;
+
+        const loader = new THREE.GLTFLoader();
+        loader.load('/api/v1/assets/3d/hero/pollywogpriest/ability_04/wards/high.model', (gltf) => {
+            const ward = gltf.scene;
+            ward.scale.set(0.35, 0.35, 0.35);
+            ward.traverse((c) => {
+                if (c.isMesh && c.material) {
+                    c.material.side = THREE.DoubleSide;
+                    c.material.emissive = new THREE.Color(0xf59e0b);
+                    c.material.emissiveIntensity = 1.5;
+                }
+            });
+            activeAbilityPropType = 'summon_wards';
+            const angles = [Math.PI / 4, 3 * Math.PI / 4, 5 * Math.PI / 4, 7 * Math.PI / 4];
+            const radius = 22;
+            angles.forEach((ang) => {
+                const wardClone = ward.clone();
+                wardClone.position.set(Math.cos(ang) * radius, 0, Math.sin(ang) * radius);
+                wardClone.rotation.y = -ang + Math.PI / 2;
+                stageAbilityPropGroup.add(wardClone);
+            });
+        }, undefined, () => {
+        });
+    }
+
+    function updateAbilityPropsAndFX(delta) {
+        if (!stageActiveAction) return;
+
+        const clip = stageActiveAction.getClip();
+        const animDuration = clip.duration > 0 ? clip.duration : 1.5;
+        const currentAnimTime = stageActiveAction.time;
+        const progress = Math.min(1.0, Math.max(0.0, currentAnimTime / animDuration));
+
+        // Update Serpent Wards Visibility
+        if (activeAbilityPropType === 'summon_wards') {
+            if (progress >= 0.25 && progress <= 0.85) {
+                stageAbilityPropGroup.visible = true;
+            } else {
+                stageAbilityPropGroup.visible = false;
+            }
+        }
+    }
+
+    function playStageAudio(actionName) {
+        if (stageAudioTimeout) {
+            clearTimeout(stageAudioTimeout);
+            stageAudioTimeout = null;
+        }
+
+        if (isStageAudioMuted || isStagePaused || !currentSelectedItem || !currentSelectedItem.hero) return;
+
+        try {
+            if (currentStageAudio) {
+                currentStageAudio.pause();
+                currentStageAudio.currentTime = 0;
+                currentStageAudio = null;
+            }
+
+            const rawAction = (actionName || 'idle').toLowerCase().trim();
+            let delayMs = rawAction.includes('attack') ? 350 : (rawAction.includes('ability') ? 250 : 0);
+            let customSoundPath = null;
+
+            if (currentHeroMetadata && currentHeroMetadata.animations) {
+                const animDetail = currentHeroMetadata.animations.find(a => a.name.toLowerCase() === rawAction);
+                if (animDetail && animDetail.frameEvents && animDetail.frameEvents.length > 0) {
+                    const soundEvent = animDetail.frameEvents.find(fe => fe.soundAction);
+                    if (soundEvent) {
+                        const fps = animDetail.fps > 0 ? animDetail.fps : 30;
+                        delayMs = Math.round((soundEvent.frame / fps) * 1000);
+                        customSoundPath = soundEvent.soundAction;
+                    }
+                }
+            }
+
+            stageAudioTimeout = setTimeout(() => {
+                if (isStageAudioMuted || isStagePaused || !currentSelectedItem || !currentSelectedItem.hero) return;
+
+                const pathParam = customSoundPath ? `&path=${encodeURIComponent(customSoundPath)}` : '';
+                const soundUrl = `/api/v1/assets/sound?hero=${encodeURIComponent(currentSelectedItem.hero)}&alt=${encodeURIComponent(currentSelectedItem.alt || '')}&action=${encodeURIComponent(rawAction)}${pathParam}&_t=${Date.now()}`;
+                currentStageAudio = new Audio(soundUrl);
+                currentStageAudio.onerror = () => { /* gracefully ignore missing audio */
+                };
+                currentStageAudio.volume = 0.75;
+                currentStageAudio.loop = false;
+                currentStageAudio.playbackRate = stageAnimSpeed;
+                currentStageAudio.play().catch(() => {
+                });
+            }, delayMs);
+        } catch (err) {
+        }
+    }
+
+    let isStagePaused = false;
+
+    function toggleStagePlayPause() {
+        isStagePaused = !isStagePaused;
+        const icon = document.getElementById('stagePlayPauseIcon');
+        if (icon) {
+            icon.className = isStagePaused ? 'fas fa-play' : 'fas fa-pause';
+        }
+        if (isStagePaused) {
+            if (stageAudioTimeout) {
+                clearTimeout(stageAudioTimeout);
+                stageAudioTimeout = null;
+            }
+            if (currentStageAudio) currentStageAudio.pause();
+        } else {
+            if (!isStageAudioMuted && stageActiveAction) {
+                const clipName = stageActiveAction.getClip().name;
+                playStageAudio(clipName);
+            }
+        }
+    }
+
+    function toggleStageSound() {
+        isStageAudioMuted = !isStageAudioMuted;
+        const icon = document.getElementById('stageMuteIcon');
+        if (icon) {
+            icon.className = isStageAudioMuted ? 'fas fa-volume-mute opacity-40' : 'fas fa-volume-up';
+        }
+        if (isStageAudioMuted) {
+            if (stageAudioTimeout) {
+                clearTimeout(stageAudioTimeout);
+                stageAudioTimeout = null;
+            }
+            if (currentStageAudio) currentStageAudio.pause();
+        } else {
+            if (!isStagePaused && stageActiveAction) {
+                const currentAnim = stageActiveAction.getClip().name;
+                playStageAudio(currentAnim);
+            }
+        }
+    }
+
+    let stageDefaultCameraPos = null;
+    let stageDefaultTarget = null;
+
+
+    function resetStageCamera() {
+        if (!stageControls || !stageCamera) return;
+        stageControls.target.copy(stageDefaultTarget);
+        stageCamera.position.copy(stageDefaultCameraPos);
+        stageControls.update();
+    }
+
+    function openCurrentItemInAR() {
+        if (!window.KongorStoreAR) return;
+        if (currentSelectedItem && currentSelectedItem.hero) {
+            window.KongorStoreAR.open({
+                hero: currentSelectedItem.hero,
+                alt: currentSelectedItem.alt,
+                name: currentSelectedItem.name,
+                resource: currentSelectedItem.resource
+            });
+        }
+    }
+
+    // Auto-resume audio on first user gesture if blocked by browser policy
+    document.addEventListener('click', () => {
+        if (!isStageAudioMuted && !isStagePaused && currentStageAudio && currentStageAudio.paused && currentSelectedItem && currentSelectedItem.can3d) {
+            currentStageAudio.play().catch(() => {
+            });
+        }
+    }, {once: true});
+
+    let stageRafId = 0;
+    function ensureStageAnimating() {
+        if (!stageRafId && !document.hidden && stageRenderer) {
+            if (stageClock) stageClock.getDelta();
+            stageRafId = requestAnimationFrame(animateStage);
+        }
+    }
+    document.addEventListener('visibilitychange', () => {
+        if (!document.hidden) ensureStageAnimating();
+    });
+    function animateStage() {
+        if (document.hidden) {
+            stageRafId = 0;
+            return;
+        }
+        stageRafId = requestAnimationFrame(animateStage);
+        const delta = stageClock ? stageClock.getDelta() : 0;
+        if (stageMixer && !isStagePaused) stageMixer.update(delta * stageAnimSpeed);
+        if (!isStagePaused) updateAbilityPropsAndFX(delta);
+        if (stageControls) stageControls.update();
+        if (stageRenderer && stageScene && stageCamera) stageRenderer.render(stageScene, stageCamera);
+    }
+
+    // Dynamic Shop Item Selection (Changes Right Pedestal Viewport)
+    function selectShopItem(id, name, hero, alt, resource, gold, silver, isOwned, can3d, isEnabled, purchasable, typeName, code, desc, isEquipped) {
+        currentSelectedItem = {
+            id,
+            name,
+            hero,
+            alt,
+            resource,
+            gold,
+            silver,
+            isOwned,
+            isEquipped: !!isEquipped,
+            can3d,
+            isEnabled,
+            purchasable,
+            typeName,
+            code,
+            desc
+        };
+
+        // Highlight selected card
+        document.querySelectorAll('.shop-item-card').forEach(c => {
+            if (c.classList.contains('is-owned')) {
+                c.className = 'shop-item-card is-owned group relative bg-gradient-to-b from-stone-900/90 via-slate-950/90 to-stone-950/90 border-2 border-emerald-500/40 hover:border-emerald-400 shadow-md shadow-slate-950/40 hover:shadow-emerald-500/20 rounded-xl p-2 cursor-pointer transition-all flex flex-col justify-between';
+            } else {
+                c.className = 'shop-item-card is-unowned group relative bg-gradient-to-b from-stone-900/90 via-slate-950/90 to-stone-950/90 border-2 border-amber-500/60 hover:border-amber-400 shadow-md shadow-amber-950/30 hover:shadow-amber-500/20 rounded-xl p-2 cursor-pointer transition-all flex flex-col justify-between';
+            }
+        });
+        const activeCard = document.getElementById(`shop-card-${id}`);
+        if (activeCard) {
+            if (isOwned) {
+                activeCard.className = 'shop-item-card is-owned group relative bg-gradient-to-b from-stone-900/95 via-slate-950/95 to-stone-950/95 border-2 border-emerald-400 ring-2 ring-emerald-400/50 shadow-xl shadow-emerald-500/20 rounded-xl p-2 cursor-pointer transition-all flex flex-col justify-between';
+            } else {
+                activeCard.className = 'shop-item-card is-unowned group relative bg-gradient-to-b from-stone-900/95 via-slate-950/95 to-stone-950/95 border-2 border-amber-400 ring-2 ring-amber-400/60 shadow-xl shadow-amber-500/25 rounded-xl p-2 cursor-pointer transition-all flex flex-col justify-between';
+            }
+        }
+
+        // Update Title & Category
+        const titleEl = document.getElementById('stageItemTitle');
+        if (titleEl) titleEl.innerText = name;
+        const catEl = document.getElementById('stageItemCategory');
+        if (catEl) catEl.innerText = typeName;
+
+        // Switch 3D vs 2D Stage Viewport (Strictly 3D only for genuine Alt Avatars with 3D model rigs)
+        const stage3D = document.getElementById('stage3DContainer');
+        const stage2D = document.getElementById('stage2DContainer');
+        const stage3DControls = document.getElementById('stage3DControls');
+        const stageAnimBar = document.getElementById('stageAnimBar');
+
+        const isTrue3D = can3d && hero && (typeName === 'Alt Avatar' || typeName === 'Avatar' || typeName === 'Hero' || typeName === 'AltAvatar');
+
+        if (isTrue3D) {
+            if (stage3D) stage3D.classList.remove('hidden');
+            if (stage2D) stage2D.classList.add('hidden');
+            if (stage3DControls) stage3DControls.classList.remove('hidden');
+            if (stageAnimBar) stageAnimBar.classList.remove('hidden');
+            loadStage3DModel(hero, alt, resource);
+        } else {
+            if (stage3D) stage3D.classList.add('hidden');
+            if (stage2D) stage2D.classList.remove('hidden');
+            if (stage3DControls) stage3DControls.classList.add('hidden');
+            if (stageAnimBar) stageAnimBar.classList.add('hidden');
+            clearCurrentStageModel();
+            const imgEl = document.getElementById('stage2DImage');
+            if (imgEl) imgEl.src = `/api/v1/assets/icon?path=${encodeURIComponent(resource)}`;
+        }
+
+        const staffIdEl = document.getElementById('stageStaffItemId');
+        if (staffIdEl) staffIdEl.innerText = 'Product ID: #' + id;
+
+        // Update Action Box
+        const actionBox = document.getElementById('stageActionBox');
+        if (actionBox) {
+            if (isOwned) {
+                if (isEquipped) {
+                    actionBox.innerHTML = `
+                        <div class="w-full py-4 px-6 rounded-2xl bg-slate-900/90 border border-slate-800 text-slate-500 text-base font-black text-center flex items-center justify-center gap-2 shadow-inner cursor-default opacity-80 select-none">
+                            <i class="fas fa-check-circle text-emerald-500"></i>
+                            <span>✓ IN LOADOUT</span>
+                        </div>
+                    `;
+                } else {
+                    actionBox.innerHTML = `
+                        <button onclick="equipCurrentSelectedItem()" class="w-full py-4 px-6 rounded-2xl bg-gradient-to-b from-amber-400 via-amber-500 to-amber-600 hover:from-amber-300 hover:to-amber-500 text-slate-950 text-base font-black uppercase tracking-wider text-center flex items-center justify-center gap-2 shadow-2xl shadow-amber-500/30 transition-all cursor-pointer">
+                            <i class="fas fa-bolt"></i>
+                            <span>Equip in Loadout</span>
+                        </button>
+                    `;
+                }
+            } else if (!@(Model.IsAuthenticated ? "true" : "false")) {
+                actionBox.innerHTML = `
+                    <form action="/login" method="get" class="w-full">
+                        <input type="hidden" name="returnUrl" value="/store" />
+                        <button type="submit" class="w-full py-4 px-6 rounded-2xl bg-[#5865F2] hover:bg-[#4752C4] text-white text-base font-black text-center flex items-center justify-center gap-2 shadow-2xl shadow-[#5865F2]/20 transition-all">
+                            <i class="fab fa-discord"></i>
+                            <span>Connect with Discord to Purchase</span>
+                        </button>
+                    </form>
+                `;
+            } else if (!isEnabled || !purchasable) {
+                actionBox.innerHTML = `
+                    <button disabled class="w-full py-4 px-6 rounded-2xl bg-slate-800 text-slate-500 text-base font-bold text-center cursor-not-allowed">
+                        Unavailable
+                    </button>
+                `;
+            } else {
+                let btns = `<div class="grid grid-cols-2 gap-3">`;
+                if (gold > 0) {
+                    btns += `
+                        <button onclick="openPurchaseModal(${id}, '${name.replace(/'/g, "\\'")}', ${gold}, 'gold')" class="py-3.5 px-4 rounded-2xl bg-gradient-to-b from-amber-400 via-amber-500 to-amber-600 hover:from-amber-300 hover:to-amber-500 text-slate-950 font-black text-sm shadow-xl shadow-amber-500/30 border-2 border-amber-200 hover:border-white transition-all flex items-center justify-center gap-2 cursor-pointer transform hover:scale-[1.02] active:scale-98">
+                            <i class="fas fa-coins text-base"></i>
+                            <span>${gold} Gold</span>
+                        </button>
+                    `;
+                }
+                if (silver > 0) {
+                    btns += `
+                        <button onclick="openPurchaseModal(${id}, '${name.replace(/'/g, "\\'")}', ${silver}, 'silver')" class="py-3.5 px-4 rounded-2xl bg-slate-900 hover:bg-slate-800 text-slate-100 font-black text-sm border-2 border-slate-700 hover:border-amber-400 transition-all flex items-center justify-center gap-2 cursor-pointer transform hover:scale-[1.02] active:scale-98">
+                            <i class="fas fa-circle text-slate-400 text-xs"></i>
+                            <span>${silver} Silver</span>
+                        </button>
+                    `;
+                }
+                btns += `</div>`;
+                actionBox.innerHTML = btns;
+            }
+        }
+    }
+
+    // Equip in Loadout Handlers
+    async function equipCurrentSelectedItem() {
+        if (!currentSelectedItem || !currentSelectedItem.id) return;
+        const actionBox = document.getElementById('stageActionBox');
+        if (actionBox) {
+            actionBox.innerHTML = `
+                <div class="w-full py-3.5 px-4 rounded-xl bg-slate-800 text-amber-300 text-xs font-bold text-center flex items-center justify-center gap-2">
+                    <i class="fas fa-spinner fa-spin"></i>
+                    <span>Equipping in in-game loadout...</span>
+                </div>
+            `;
+        }
+
+        try {
+            const resp = await fetch('/store/equip', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({itemId: currentSelectedItem.id, code: currentSelectedItem.code})
+            });
+
+            const data = await resp.json();
+
+            if (resp.ok && data.success) {
+                currentSelectedItem.isEquipped = true;
+                if (actionBox) {
+                    actionBox.innerHTML = `
+                        <div class="w-full py-3.5 px-4 rounded-xl bg-slate-900/90 border border-slate-800 text-slate-500 text-sm font-bold text-center flex items-center justify-center gap-2 shadow-inner cursor-default opacity-80 select-none">
+                            <i class="fas fa-check-circle text-emerald-500"></i>
+                            <span>✓ EQUIPPED</span>
+                        </div>
+                    `;
+                }
+
+                // Add active badge to card
+                const card = document.getElementById('shop-card-' + currentSelectedItem.id);
+                if (card) {
+                    const thumb = card.querySelector('.aspect-square');
+                    if (thumb && !card.querySelector('.card-equipped-badge')) {
+                        const badge = document.createElement('div');
+                        badge.className = 'card-equipped-badge absolute top-1 left-1 px-1.5 py-0.5 rounded bg-emerald-600/90 text-white flex items-center gap-1 text-[8px] font-black shadow-md tracking-wider';
+                        badge.innerHTML = '<i class="fas fa-bolt text-[7px]"></i><span>ACTIVE</span>';
+                        thumb.appendChild(badge);
+                    }
+                }
+
+                showStoreToast("✓ " + data.message, "success");
+            } else {
+                if (actionBox) {
+                    actionBox.innerHTML = `
+                        <button onclick="equipCurrentSelectedItem()" class="w-full py-3.5 px-4 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 text-sm font-black text-center flex items-center justify-center gap-2 shadow-lg shadow-amber-500/20 transition-all cursor-pointer">
+                            <i class="fas fa-bolt"></i>
+                            <span>Equip in Loadout</span>
+                        </button>
+                    `;
+                }
+                showStoreToast("Error: " + (data.error || "Failed to equip item."), "error");
+            }
+        } catch (err) {
+            if (actionBox) {
+                actionBox.innerHTML = `
+                    <button onclick="equipCurrentSelectedItem()" class="w-full py-3.5 px-4 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 text-sm font-black text-center flex items-center justify-center gap-2 shadow-lg shadow-amber-500/20 transition-all cursor-pointer">
+                        <i class="fas fa-bolt"></i>
+                        <span>Equip in Loadout</span>
+                    </button>
+                `;
+            }
+            showStoreToast("Network error: " + err.message, "error");
+        }
+    }
+
+    // Purchase Modal Logic
+    function openPurchaseModal(id, name, cost, currency) {
+        document.getElementById('buyItemId').value = id;
+        document.getElementById('buyItemTitle').innerText = name;
+        document.getElementById('buyCurrency').value = currency;
+        document.getElementById('buyCostDisplay').innerHTML = currency === 'gold'
+            ? `<span class="text-amber-400 font-bold">${cost} Gold Coins</span>`
+            : `<span class="text-slate-300 font-bold">${cost} Silver Coins</span>`;
+
+        const statusMsg = document.getElementById('buyStatusMsg');
+        statusMsg.classList.add('hidden');
+        document.getElementById('purchaseModal').style.display = 'flex';
+    }
+
+    function closePurchaseModal() {
+        document.getElementById('purchaseModal').style.display = 'none';
+    }
+
+    async function executePurchase() {
+        const id = parseInt(document.getElementById('buyItemId').value, 10);
+        const currency = document.getElementById('buyCurrency').value;
+        const buyBtn = document.getElementById('confirmBuyBtn');
+        const buyBtnText = document.getElementById('confirmBuyBtnText');
+        const statusMsg = document.getElementById('buyStatusMsg');
+
+        buyBtn.disabled = true;
+        buyBtnText.innerText = "Unlocking...";
+
+        try {
+            const resp = await fetch('/store/purchase', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({itemId: id, currency: currency})
+            });
+
+            const data = await resp.json();
+
+            if (resp.ok && data.success) {
+                statusMsg.innerText = "✓ " + data.message;
+                statusMsg.className = "text-xs font-semibold text-emerald-400";
+                statusMsg.classList.remove('hidden');
+
+                const goldEl = document.getElementById('userGoldDisplay');
+                if (goldEl && data.newGold !== undefined) goldEl.innerText = Number(data.newGold).toLocaleString();
+
+                const silverEl = document.getElementById('userSilverDisplay');
+                if (silverEl && data.newSilver !== undefined) silverEl.innerText = Number(data.newSilver).toLocaleString();
+
+                // Mark current item as owned in client memory
+                currentSelectedItem.isOwned = true;
+                currentSelectedItem.isEquipped = false;
+
+                // Update card in left shelf grid immediately
+                const card = document.getElementById('shop-card-' + id);
+                if (card) {
+                    card.classList.remove('is-unowned');
+                    card.classList.add('is-owned');
+                    card.className = 'shop-item-card is-owned group relative bg-slate-950/70 opacity-90 border-2 border-emerald-500/60 ring-2 ring-emerald-500/40 rounded-xl p-2.5 cursor-pointer transition-all flex flex-col justify-between';
+
+                    const thumb = card.querySelector('.aspect-square');
+                    if (thumb && !card.querySelector('.card-owned-badge')) {
+                        thumb.className = 'relative aspect-square rounded-lg overflow-hidden bg-slate-950 border border-slate-800/40 opacity-75 group-hover:opacity-100 mb-2 group-hover:scale-[1.02] transition-transform';
+
+                        const badge = document.createElement('div');
+                        badge.className = 'card-owned-badge absolute top-1 right-1 px-1.5 py-0.5 rounded bg-emerald-500/90 text-slate-950 flex items-center gap-1 text-[9px] font-black shadow-md tracking-wider';
+                        badge.innerHTML = '<i class="fas fa-check text-[8px]"></i><span>OWNED</span>';
+                        thumb.appendChild(badge);
+
+                        const check = document.createElement('div');
+                        check.className = 'card-owned-check absolute bottom-1 right-1 w-5 h-5 rounded-full bg-emerald-500 text-slate-950 flex items-center justify-center text-[10px] font-black shadow-md';
+                        check.innerHTML = '<i class="fas fa-check"></i>';
+                        thumb.appendChild(check);
+                    }
+
+                    const nameEl = card.querySelector('.truncate');
+                    if (nameEl) {
+                        nameEl.className = 'text-xs font-bold text-slate-400 group-hover:text-slate-200 truncate transition-colors text-center';
+                    }
+
+                    const priceContainer = card.querySelector('.card-price-container');
+                    if (priceContainer) {
+                        priceContainer.innerHTML = '<span class="text-emerald-400 font-bold text-[10px] flex items-center gap-1"><i class="fas fa-check-circle text-[9px]"></i><span>In Vault</span></span>';
+                    }
+                }
+
+                const actionBox = document.getElementById('stageActionBox');
+                if (actionBox) {
+                    actionBox.innerHTML = `
+                        <button onclick="equipCurrentSelectedItem()" class="w-full py-3.5 px-4 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 text-sm font-black text-center flex items-center justify-center gap-2 shadow-lg shadow-amber-500/20 transition-all cursor-pointer">
+                            <i class="fas fa-bolt"></i>
+                            <span>Equip in Loadout</span>
+                        </button>
+                    `;
+                }
+
+                setTimeout(() => {
+                    closePurchaseModal();
+                    buyBtn.disabled = false;
+                    buyBtnText.innerText = "Confirm Purchase";
+                }, 900);
+            } else {
+                statusMsg.innerText = "Error: " + (data.error || "Purchase failed.");
+                statusMsg.className = "text-xs font-semibold text-red-400";
+                statusMsg.classList.remove('hidden');
+                buyBtn.disabled = false;
+                buyBtnText.innerText = "Confirm Purchase";
+            }
+        } catch (err) {
+            statusMsg.innerText = "Network error: " + err.message;
+            statusMsg.className = "text-xs font-semibold text-red-400";
+            statusMsg.classList.remove('hidden');
+            buyBtn.disabled = false;
+            buyBtnText.innerText = "Confirm Purchase";
+        }
+    }
+
+    // Staff Handlers
+    @if (Model.IsStaff)
+    {
+        <text>
+            function openStaffPriceEditorFromStage() {
+                if (!currentSelectedItem) return;
+                document.getElementById('editItemHiddenId').value = currentSelectedItem.id;
+                document.getElementById('editItemId').innerText = 'Product ID: #' + currentSelectedItem.id + ' (' + currentSelectedItem.name + ')';
+                document.getElementById('editGoldCost').value = currentSelectedItem.gold || 0;
+                document.getElementById('editSilverCost').value = currentSelectedItem.silver || 0;
+                document.getElementById('editIsEnabled').checked = currentSelectedItem.isEnabled !== false;
+                document.getElementById('editPurchasable').checked = currentSelectedItem.purchasable !== false;
+
+                const statusMsg = document.getElementById('editStatusMsg');
+                if (statusMsg) statusMsg.classList.add('hidden');
+
+                document.getElementById('priceEditorModal').style.display = 'flex';
+            }
+
+            function closePriceEditor() {
+                document.getElementById('priceEditorModal').style.display = 'none';
+            }
+
+            async function saveStoreItemChanges() {
+                const id = parseInt(document.getElementById('editItemHiddenId').value, 10);
+                const gold = parseInt(document.getElementById('editGoldCost').value, 10) || 0;
+                const silver = parseInt(document.getElementById('editSilverCost').value, 10) || 0;
+                const isEnabled = document.getElementById('editIsEnabled').checked;
+                const purchasable = document.getElementById('editPurchasable').checked;
+
+                const saveBtn = document.getElementById('savePriceBtn');
+                const statusMsg = document.getElementById('editStatusMsg');
+
+                saveBtn.disabled = true;
+                saveBtn.innerText = "Saving...";
+
+                try {
+                    const resp = await fetch('/staff/store/update', {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify({
+                            id: id,
+                            goldCost: gold,
+                            silverCost: silver,
+                            isEnabled: isEnabled,
+                            purchasable: purchasable
+                        })
+                    });
+
+                    const data = await resp.json();
+
+                    if (resp.ok && data.success) {
+                        statusMsg.innerText = "✓ Saved and synchronized!";
+                        statusMsg.className = "text-xs font-semibold text-emerald-400";
+                        statusMsg.classList.remove('hidden');
+
+                        if (currentSelectedItem && currentSelectedItem.id === id) {
+                            currentSelectedItem.gold = gold;
+                            currentSelectedItem.silver = silver;
+                            currentSelectedItem.isEnabled = isEnabled;
+                            currentSelectedItem.purchasable = purchasable;
+                            selectShopItem(currentSelectedItem.id, currentSelectedItem.name, currentSelectedItem.hero, currentSelectedItem.alt, currentSelectedItem.resource, gold, silver, currentSelectedItem.isOwned, currentSelectedItem.can3d, isEnabled, purchasable, currentSelectedItem.typeName, currentSelectedItem.code, currentSelectedItem.desc, currentSelectedItem.isEquipped);
+                        }
+
+                        setTimeout(() => {
+                            closePriceEditor();
+                            saveBtn.disabled = false;
+                            saveBtn.innerText = "Save Changes";
+                        }, 800);
+                    } else {
+                        statusMsg.innerText = "Error: " + (data.error || "Save failed.");
+                        statusMsg.className = "text-xs font-semibold text-red-400";
+                        statusMsg.classList.remove('hidden');
+                        saveBtn.disabled = false;
+                        saveBtn.innerText = "Save Changes";
+                    }
+                } catch (err) {
+                    statusMsg.innerText = "Network error: " + err.message;
+                    statusMsg.className = "text-xs font-semibold text-red-400";
+                    statusMsg.classList.remove('hidden');
+                    saveBtn.disabled = false;
+                    saveBtn.innerText = "Save Changes";
+                }
+            }
+
+            // Weekend Sale / Bulk Discount Handlers
+            function openBulkDiscountModal() {
+                const statusMsg = document.getElementById('bulkStatusMsg');
+                if (statusMsg) statusMsg.classList.add('hidden');
+                document.getElementById('bulkDiscountModal').style.display = 'flex';
+            }
+
+            function closeBulkDiscountModal() {
+                document.getElementById('bulkDiscountModal').style.display = 'none';
+            }
+
+            function setBulkPercent(val) {
+                document.getElementById('bulkDiscountPercent').value = val;
+            }
+
+            async function executeBulkDiscount() {
+                const category = document.getElementById('bulkCategory').value;
+                const currency = document.getElementById('bulkCurrency').value;
+                const percent = parseInt(document.getElementById('bulkDiscountPercent').value, 10) || 20;
+
+                const applyBtn = document.getElementById('applyBulkBtn');
+                const statusMsg = document.getElementById('bulkStatusMsg');
+
+                applyBtn.disabled = true;
+                applyBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i><span>Applying...</span>';
+
+                try {
+                    const resp = await fetch('/staff/store/bulk-discount', {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify({category: category, currency: currency, discountPercent: percent})
+                    });
+
+                    const data = await resp.json();
+
+                    if (resp.ok && data.success) {
+                        statusMsg.innerText = "✓ " + data.message;
+                        statusMsg.className = "text-xs font-semibold text-emerald-400";
+                        statusMsg.classList.remove('hidden');
+
+                        setTimeout(() => {
+                            window.location.reload();
+                        }, 1000);
+                    } else {
+                        statusMsg.innerText = "Error: " + (data.error || "Failed to apply discount.");
+                        statusMsg.className = "text-xs font-semibold text-red-400";
+                        statusMsg.classList.remove('hidden');
+                        applyBtn.disabled = false;
+                        applyBtn.innerHTML = '<i class="fas fa-bolt"></i><span>Apply Discount</span>';
+                    }
+                } catch (err) {
+                    statusMsg.innerText = "Network error: " + err.message;
+                    statusMsg.className = "text-xs font-semibold text-red-400";
+                    statusMsg.classList.remove('hidden');
+                    applyBtn.disabled = false;
+                    applyBtn.innerHTML = '<i class="fas fa-bolt"></i><span>Apply Discount</span>';
+                }
+            }
+
+            async function executeRestorePrices() {
+                if (!confirm('Are you sure you want to restore all baseline prices?')) return;
+
+                const restoreBtn = document.getElementById('restorePricesBtn');
+                const statusMsg = document.getElementById('bulkStatusMsg');
+
+                restoreBtn.disabled = true;
+                restoreBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i><span>Restoring...</span>';
+
+                try {
+                    const resp = await fetch('/staff/store/restore-prices', {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'}
+                    });
+
+                    const data = await resp.json();
+
+                    if (resp.ok && data.success) {
+                        statusMsg.innerText = "✓ " + data.message;
+                        statusMsg.className = "text-xs font-semibold text-emerald-400";
+                        statusMsg.classList.remove('hidden');
+
+                        setTimeout(() => {
+                            window.location.reload();
+                        }, 1000);
+                    } else {
+                        statusMsg.innerText = "Error: " + (data.error || "Failed to restore prices.");
+                        statusMsg.className = "text-xs font-semibold text-red-400";
+                        statusMsg.classList.remove('hidden');
+                        restoreBtn.disabled = false;
+                        restoreBtn.innerHTML = '<i class="fas fa-undo"></i><span>Restore Baseline Prices</span>';
+                    }
+                } catch (err) {
+                    statusMsg.innerText = "Network error: " + err.message;
+                    statusMsg.className = "text-xs font-semibold text-red-400";
+                    statusMsg.classList.remove('hidden');
+                    restoreBtn.disabled = false;
+                    restoreBtn.innerHTML = '<i class="fas fa-undo"></i><span>Restore Baseline Prices</span>';
+                }
+            }
+        </text>
+    }
+
+    function showStoreToast(message, type) {
+        const toast = document.createElement('div');
+        toast.className = `fixed bottom-6 right-6 z-50 px-4 py-3 rounded-2xl shadow-2xl backdrop-blur-md text-xs font-bold flex items-center gap-2 border transition-all animate-fadeIn ${
+            type === 'success'
+                ? 'bg-emerald-950/90 border-emerald-500/50 text-emerald-200'
+                : 'bg-rose-950/90 border-rose-500/50 text-rose-200'
+        }`;
+        toast.innerHTML = `<i class="fas ${type === 'success' ? 'fa-check-circle text-emerald-400' : 'fa-exclamation-circle text-rose-400'}"></i><span>${message}</span>`;
+        document.body.appendChild(toast);
+        setTimeout(() => {
+            toast.style.opacity = '0';
+            setTimeout(() => toast.remove(), 400);
+        }, 3500);
+    }
+</script>
+
+<!-- Plinko Prize Result Modal -->
+<div id="plinkoResultModal"
+     class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-950/85 backdrop-blur-md p-4 transition-all animate-fadeIn">
+    <div
+        class="glass-panel w-full max-w-md rounded-3xl border border-amber-500/40 p-6 shadow-2xl bg-slate-900/95 space-y-5 text-center">
+        <div
+            class="w-16 h-16 rounded-full bg-amber-500/20 border border-amber-500/50 flex items-center justify-center text-amber-400 text-3xl mx-auto shadow-inner animate-bounce">
+            🎁
+        </div>
+        <div class="space-y-1">
+            <h3 id="plinkoPrizeTitle" class="text-2xl font-black text-white tracking-tight">Prize Claimed!</h3>
+            <div id="plinkoPrizeDesc" class="text-sm text-slate-300"></div>
+        </div>
+        <button onclick="window.PlinkoGame.closeResultModal()"
+                class="w-full py-3 rounded-2xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-black text-sm shadow-xl shadow-amber-500/25 transition-all">
+            Collect Reward
+        </button>
+    </div>
+</div>
+
+<script src="~/js/plinko_game.js" defer asp-append-version="true"></script>

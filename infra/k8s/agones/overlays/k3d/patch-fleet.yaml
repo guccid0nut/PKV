@@ -1,0 +1,44 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# SPDX-FileCopyrightText: 2026 guccidonut and Project KONGOR V Contributors
+
+- op: replace
+  path: /spec/replicas
+  value: 1
+- op: add
+  path: /spec/template/spec/template/spec/hostAliases
+  value:
+    - ip: "192.168.65.254"
+      hostnames:
+        - "host.k3d.internal"
+        - "host.docker.internal"
+        - "host.k3s.internal"
+- op: replace
+  path: /spec/template/spec/template/spec/containers/0/imagePullPolicy
+  value: IfNotPresent
+- op: add
+  path: /spec/template/spec/template/spec/containers/0/volumeMounts
+  value:
+    - name: server-assets
+      mountPath: /app/server
+      readOnly: true
+    - name: shared-assets
+      mountPath: /app/shared
+      readOnly: true
+    - name: server-artefacts
+      mountPath: /app/artefacts
+      readOnly: false
+- op: add
+  path: /spec/template/spec/template/spec/volumes
+  value:
+    - name: server-assets
+      hostPath:
+        path: /opt/kongor/games/server
+        type: DirectoryOrCreate
+    - name: shared-assets
+      hostPath:
+        path: /opt/kongor/games/shared
+        type: DirectoryOrCreate
+    - name: server-artefacts
+      hostPath:
+        path: /opt/kongor/artefacts
+        type: DirectoryOrCreate

@@ -1,0 +1,756 @@
+@* ReSharper disable All *@
+@using System.Text.RegularExpressions
+@using NEXUS.Contracts.Clients
+@using ASPIRE.Common.Utilities
+@model HeroGuideDto
+@{
+    ViewData["Title"] = $"{Model.Name} - {Model.HeroName} Guide";
+    AccountDto? currentAccount = ViewBag.CurrentAccount as AccountDto;
+    bool isStaff = ViewBag.IsStaff is true;
+    bool isDefault = ViewBag.IsDefaultGuide is true;
+    bool isFavorite = ViewBag.IsFavoriteGuide is true;
+    bool isAuthor = currentAccount != null && (Model.AuthorAccountID == currentAccount.ID || (Model.Author != null && Model.Author.ID == currentAccount.ID) || string.Equals(Model.AuthorAccountName, currentAccount.Name, StringComparison.OrdinalIgnoreCase));
+    string cleanHero = Model.HeroIdentifier.Replace("Hero_", "").ToLowerInvariant();
+    string heroPortrait = $"/images/heroes/hero_{cleanHero}.png";
+    string authorDisplayName = !string.IsNullOrWhiteSpace(Model.AuthorAccountName) ? Model.AuthorAccountName : (Model.Author?.Name ?? "Project KONGOR");
+
+    List<string> ParseItems(string? raw)
+    {
+        if (string.IsNullOrWhiteSpace(raw)) return [];
+        return raw.Replace("[", "").Replace("]", "").Replace("\"", "")
+            .Split(['|', ','], StringSplitOptions.RemoveEmptyEntries)
+            .Select(i => i.Trim())
+            .Where(i => !string.IsNullOrEmpty(i))
+            .ToList();
+    }
+
+    string GetCanonicalItemCode(string item)
+    {
+        return HonItemMapping.ToWebSlug(item);
+    }
+
+    string GetItemTitle(string item)
+    {
+        string clean = item.Replace("Item_", "");
+        return clean switch
+        {
+            "Immunity" => "Shrunken Head",
+            "Morph" => "Kuldra's Sheepstick",
+            "Silence" => "Hellflower",
+            "Protect" => "Null Stone",
+            "PushStaff" or "Pushstaff" or "Tabletofcommand" or "TabletOfCommand" => "Tablet of Command",
+            "SandScepter" => "Sand Scepter",
+            "Intelligence6" => "Stormspirit",
+            "Intelligence7" => "Staff of the Master",
+            "Critical1" => "Riftshards",
+            "Freeze" => "Frostwolf's Skull",
+            "Steamboots" => "Steamboots",
+            "ManaBurn1" => "Nullfire Blade",
+            "ManaBurn2" => "Geometer's Bane",
+            "Pierce" => "Shieldbreaker",
+            "Damage10" => "Mock of Brilliance",
+            "Damage9" => "Doom Bringer",
+            "LifeSteal4" => "Symbol of Rage",
+            "LifeSteal5" => "Abyssal Skull",
+            "Nuke" => "Codex",
+            "Evasion" => "Wingbow",
+            "Wingbow" => "Dancing Blade",
+            "Weapon3" => "Savage Mace",
+            "Gloves3" => "Alchemist's Bones",
+            "HealthMana2" => "Icon of the Goddess",
+            "MagicArmor2" => "Shaman's Headdress",
+            "ManaRegen3" => "Ring of the Teacher",
+            "Replenish" => "Ring of Sorcery",
+            "Shield2" => "Helm of the Black Legion",
+            "Splash" => "Runed Cleaver",
+            "Stealth" => "Assassin's Shroud",
+            "Summon" => "Puzzlebox",
+            "Excruciator" => "Barbed Armor",
+            "RunesOfTheBlight" => "Blight Stones",
+            "SpellShards" or "Spellshards" => "Spellshards",
+            "ArcaneBomb" or "Arcanebomb" => "Arcane Bomb",
+            "Lightning1" => "Thunderclaw",
+            "Lightning2" => "Charged Hammer",
+            "EnhancedMarchers" or "GhostMarchers" => "Ghost Marchers",
+            "Fleetfeet" => "Fleetfeet",
+            "Sasuke" or "Genjuro" => "Genjuro",
+            "Voulge" or "Slayer" => "Slayer",
+            "MysticPotpourri" => "Refreshing Ornament",
+            "BlessedArmband" => "Bolstering Armband",
+            "Confluence" => "Blessed Orb",
+            "GlovesOfHaste" => "Gloves of the Swift",
+            "BrainOfMaliken" => "Pickled Brain",
+            "Regen" or "Sustainer" => "Sustainer",
+            "Weapon1" or "Arcana" => "Arcana",
+            "Strength5" or "FortifiedBracer" => "Fortified Bracer",
+            "Intelligence5" or "AmuletOfExile" => "Amulet of Exile",
+            "Strength6" or "Icebrand" => "Icebrand",
+            "Sicarius" or "Firebrand" => "Firebrand",
+            "StrengthAgility" or "Frostburn" => "Frostburn",
+            "SomazsSynchronizer" => "Orb of Zamos",
+            "ElementUsersTome" => "Tome of Elements",
+            "UltorsHeavyPlate" => "Ultor's Heavy Helm",
+            "GroundFamiliar" => "Ground Courier",
+            "FlyingCourier" => "Flying Courier",
+            "Revive" => "Token of Life",
+            "Madfreds_BrassKnuckles" or "MadfredsBrassKnuckles" => "Madfred's Brass Knuckles",
+            "Spell_Sunder" or "SpellSunder" => "Spell Sunder",
+            "ArcaneBoots" => "Sorcery Boots",
+            "PortalKey" or "Portalkey" => "Portal Key",
+            "PowerSupply" or "Powersupply" => "Power Supply",
+            "ManaBattery" or "Manabattery" => "Mana Battery",
+            "HealthPotion" => "Health Potion",
+            "ManaPotion" => "Mana Potion",
+            "GoldenApple" => "Golden Apple",
+            "FlamingEye" or "WardOfSight" => "Ward of Sight",
+            "ManaEye" or "WardOfRevelation" => "Ward of Revelation",
+            "BoundEye" => "Bound Eye",
+            "HomecomingStone" => "Homecoming Stone",
+            "LoggersHatchet" => "Logger's Hatchet",
+            "MinorTotem" => "Minor Totem",
+            "MajorTotem" => "Major Totem",
+            "CrushingClaws" => "Crushing Claws",
+            "DuckBoots" => "Duck Boots",
+            "MarkOfTheNovice" => "Mark of the Novice",
+            "PretendersCrown" => "Pretender's Crown",
+            "ApprenticesRobe" => "Apprentice's Robe",
+            "PlatedGreaves" => "Plated Greaves",
+            "PostHaste" => "Post Haste",
+            "PegasusBoots" => "Pegasus Boots",
+            "BloodChalice" => "Blood Chalice",
+            "GraveLocket" => "Grave Locket",
+            "OpheliasPact" => "Ophelia's Pact",
+            "LexTalionis" => "Lex Talionis",
+            "Astrolabe" => "Astrolabe",
+            "NomesWisdom" => "Nome's Wisdom",
+            "BarrierIdol" => "Barrier Idol",
+            "Energizer" => "Energizer",
+            "Dreamcatcher" => "Dreamcatcher",
+            "VoidTalisman" => "Void Talisman",
+            "SolsBulwark" => "Sol's Bulwark",
+            "HarkonsBlade" => "Harkon's Blade",
+            "GrimoireOfPower" => "Grimoire of Power",
+            "DaemonicBreastplate" => "Daemonic Breastplate",
+            "BehemothsHeart" => "Behemoth's Heart",
+            "Insanitarius" => "Insanitarius",
+            "ElderParasite" => "Elder Parasite",
+            "Dawnbringer" => "Dawnbringer",
+            "Lightbrand" => "Lightbrand",
+            "MastersLegacy" => "Master's Legacy",
+            "TwinBlades" => "Twin Blades",
+            "RestorationStone" => "Restoration Stone",
+            _ => Regex.Replace(clean, "(\\B[A-Z])", " $1")
+        };
+    }
+
+    List<int> abilityQueueList = [];
+    if (!string.IsNullOrWhiteSpace(Model.AbilityQueue))
+    {
+        string[] rawTokens = Model.AbilityQueue.Split(['|', ',', ';', ' '], StringSplitOptions.RemoveEmptyEntries);
+        foreach (string raw in rawTokens)
+        {
+            string t = raw.Trim();
+            if (int.TryParse(t, out int val))
+            {
+                abilityQueueList.Add(val);
+            }
+            else if (t.EndsWith("1") || t.Equals("Q", StringComparison.OrdinalIgnoreCase))
+            {
+                abilityQueueList.Add(1);
+            }
+            else if (t.EndsWith("2") || t.Equals("W", StringComparison.OrdinalIgnoreCase))
+            {
+                abilityQueueList.Add(2);
+            }
+            else if (t.EndsWith("3") || t.Equals("E", StringComparison.OrdinalIgnoreCase))
+            {
+                abilityQueueList.Add(3);
+            }
+            else if (t.EndsWith("4") || t.Equals("R", StringComparison.OrdinalIgnoreCase) || t.Equals("Ultimate", StringComparison.OrdinalIgnoreCase))
+            {
+                abilityQueueList.Add(4);
+            }
+            else if (t.Contains("stat", StringComparison.OrdinalIgnoreCase) || t.Contains("boost", StringComparison.OrdinalIgnoreCase) || t.Contains("+") || t.Equals("5") || t.Equals("Ability_AttributeBoost", StringComparison.OrdinalIgnoreCase))
+            {
+                abilityQueueList.Add(5);
+            }
+            else
+            {
+                abilityQueueList.Add(0);
+            }
+        }
+    }
+}
+
+<div class="w-full max-w-6xl mx-auto py-4 sm:py-6 px-2 sm:px-4 space-y-6 animate-fade-in-up">
+    <!-- Top Nav -->
+    <div class="flex items-center justify-between">
+        <a href="/guides"
+           class="text-xs text-amber-400 hover:text-amber-300 font-semibold flex items-center gap-1.5 transition-colors">
+            <span>←</span> Back to All Hero Guides
+        </a>
+        <div class="flex items-center gap-2">
+            <a href="/hero/@cleanHero"
+               class="text-xs text-purple-400 hover:text-purple-300 font-semibold flex items-center gap-1">
+                View @Model.HeroName in Codex <span>›</span>
+            </a>
+        </div>
+    </div>
+
+    @Html.AntiForgeryToken()
+
+    <!-- Header Guide Card -->
+    <div
+        class="glass-panel p-5 sm:p-8 rounded-3xl relative overflow-hidden border border-slate-700/60 shadow-2xl backdrop-blur-xl bg-gradient-to-r from-slate-900/90 via-slate-900/80 to-purple-950/40">
+        <div class="flex flex-col md:flex-row items-center md:items-start justify-between gap-6 relative z-10">
+            <div class="flex flex-col sm:flex-row items-center sm:items-start gap-5">
+                <a href="/hero/@cleanHero"
+                   class="w-20 h-20 sm:w-24 sm:h-24 rounded-3xl overflow-hidden bg-slate-950 border-2 border-amber-500/50 flex-shrink-0 shadow-2xl shadow-amber-950/50">
+                    <img src="@heroPortrait" onError="this.onerror=null;this.src='/images/heroes/default.png';"
+                         alt="@Model.HeroName" class="w-full h-full object-cover"/>
+                </a>
+
+                <div class="space-y-2 text-center sm:text-left">
+                    <div class="flex flex-wrap items-center justify-center sm:justify-start gap-2">
+                        @if (isDefault)
+                        {
+                            <span
+                                class="px-3 py-1 rounded-full text-xs font-black bg-gradient-to-r from-emerald-500/20 to-teal-500/20 text-emerald-300 border border-emerald-500/40 shadow-sm flex items-center gap-1">
+                                <span>👑</span> YOUR DEFAULT IN-GAME GUIDE
+                            </span>
+                        }
+                        @if (isFavorite)
+                        {
+                            <span
+                                class="px-3 py-1 rounded-full text-xs font-bold bg-amber-500/20 text-amber-300 border border-amber-500/40 shadow-sm flex items-center gap-1">
+                                <span>⭐</span> FAVORITED
+                            </span>
+                        }
+                        @if (Model.Featured)
+                        {
+                            <span
+                                class="px-3 py-1 rounded-full text-xs font-black bg-gradient-to-r from-amber-500/20 to-yellow-500/20 text-amber-300 border border-amber-500/30">
+                                ★ OFFICIAL HERO GUIDE
+                            </span>
+                        }
+                        else if (!Model.Public)
+                        {
+                            <span
+                                class="px-3 py-1 rounded-full text-xs font-bold bg-rose-500/20 text-rose-300 border border-rose-500/40">
+                                🔒 PRIVATE (AUTHOR ONLY)
+                            </span>
+                        }
+                        else
+                        {
+                            <span
+                                class="px-3 py-1 rounded-full text-xs font-bold bg-slate-800 text-slate-300 border border-slate-700">
+                                🌐 COMMUNITY BUILD
+                            </span>
+                        }
+
+                        @if (Model.TargetMap == "caldavar")
+                        {
+                            <span
+                                class="px-3 py-1 rounded-full text-xs font-mono bg-emerald-500/10 text-emerald-300 border border-emerald-500/30">
+                                🌲 Caldavar
+                            </span>
+                        }
+                        else if (Model.TargetMap == "midwars")
+                        {
+                            <span
+                                class="px-3 py-1 rounded-full text-xs font-mono bg-cyan-500/10 text-cyan-300 border border-cyan-500/30">
+                                ⚔️ Mid Wars
+                            </span>
+                        }
+                    </div>
+
+                    <h1 class="text-2xl sm:text-4xl font-black text-white tracking-tight">@Model.Name</h1>
+
+                    <div
+                        class="flex flex-wrap items-center justify-center sm:justify-start gap-3 text-xs text-slate-400 font-mono">
+                        <span>Hero: <strong class="text-white">@Model.HeroName</strong></span>
+                        <span>•</span>
+                        <span>Creator: <strong class="text-slate-200">@authorDisplayName</strong></span>
+                        @if (Model is { Featured: true, Author: not null } && !Model.Author.Name.Equals("KONGOR", StringComparison.OrdinalIgnoreCase))
+                        {
+                            <span>•</span>
+                            <span class="text-amber-400 font-sans font-bold">Endorsed Official Guide</span>
+                        }
+                        <span>•</span>
+                        <span>Updated: <strong
+                                class="text-slate-300">@((Model.TimestampUpdated != default ? Model.TimestampUpdated : Model.TimestampCreated).ToString("MMM dd, yyyy"))</strong></span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Actions & Rating -->
+            <div class="flex flex-col items-center sm:items-end gap-3 w-full md:w-auto">
+                <div
+                    class="flex items-center gap-2 bg-slate-950/80 px-4 py-2 rounded-2xl border border-slate-800 shadow-inner">
+                    <div class="flex items-center gap-1 text-amber-400 font-black text-base">
+                        <span>★</span>
+                        <span id="guide-rating-val">@Model.Rating.ToString("F1")</span>
+                    </div>
+                    <span id="guide-votes-val"
+                          class="text-slate-500 text-xs font-mono">(@(Model.UpVotes + Model.DownVotes) votes)</span>
+                    <button onclick="voteGuide(true)"
+                            class="p-1 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-emerald-400 transition-colors"
+                            title="Upvote">👍
+                    </button>
+                    <button onclick="voteGuide(false)"
+                            class="p-1 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-rose-400 transition-colors"
+                            title="Downvote">👎
+                    </button>
+                </div>
+
+                <div class="flex flex-wrap items-center gap-2">
+                    @if (currentAccount != null)
+                    {
+                        <button onclick="toggleDefaultGuide()" type="button"
+                                class="px-3.5 py-2 rounded-xl @(isDefault ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/40" : "bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700") text-xs font-bold transition-all shadow-sm flex items-center gap-1.5">
+                            <span>👑</span>
+                            <span>@(isDefault ? "Default Guide (In-Game)" : "Set as Default Guide")</span>
+                        </button>
+                        <button onclick="toggleFavoriteGuide()" type="button"
+                                class="px-3.5 py-2 rounded-xl @(isFavorite ? "bg-amber-500/20 text-amber-300 border border-amber-500/40" : "bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700") text-xs font-bold transition-all shadow-sm flex items-center gap-1.5">
+                            <span>@(isFavorite ? "★" : "☆")</span>
+                            <span>@(isFavorite ? "Favorited" : "Favorite")</span>
+                        </button>
+                    }
+
+                    <!-- Staff Official Promotion / Demotion Action -->
+                    @if (isStaff)
+                    {
+                        <button
+                            onclick="toggleOfficialGuide(@Model.ID, '@Model.Name', @Model.Featured.ToString().ToLower())"
+                            type="button"
+                            class="px-3.5 py-2 rounded-xl @(Model.Featured ? "bg-amber-500/20 text-amber-300 border border-amber-500/40" : "bg-purple-500/20 text-purple-300 border border-purple-500/40") text-xs font-bold transition-all shadow-sm">
+                            ★ @(Model.Featured ? "Demote to Community" : "Promote to Official Guide")
+                        </button>
+                    }
+
+                    @if (isAuthor || isStaff)
+                    {
+                        <button onclick="togglePrivacy(@Model.ID, @Model.Public.ToString().ToLower())" type="button"
+                                class="px-3.5 py-2 rounded-xl @(Model.Public ? "bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700" : "bg-rose-500/20 text-rose-300 border border-rose-500/40") text-xs font-bold transition-all shadow-sm">
+                            @(Model.Public ? "🔒 Make Private" : "🌐 Make Public")
+                        </button>
+                    }
+
+                    @if (currentAccount != null)
+                    {
+                        <a href="/guides/builder?templateId=@Model.ID"
+                           class="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold transition-all border border-slate-700">
+                            📋 Clone as Template
+                        </a>
+                    }
+                    <a href="/guides/export/@Model.ID"
+                       class="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold transition-all border border-slate-700">
+                        💾 Download .JSON
+                    </a>
+                    @if (isAuthor || isStaff)
+                    {
+                        <a href="/guides/builder?id=@Model.ID"
+                           class="px-3.5 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-black transition-all shadow-lg shadow-amber-500/20 flex items-center gap-1">
+                            ✏️ Edit Guide
+                        </a>
+                    }
+                    @if (isAuthor && !Model.Featured)
+                    {
+                        <button onclick="deleteThisGuide()" type="button"
+                                class="px-3.5 py-2 rounded-xl bg-rose-500/10 hover:bg-rose-500 text-rose-400 hover:text-white text-xs font-bold transition-all border border-rose-500/20">
+                            🗑️ Delete
+                        </button>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content Grid -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <!-- Left: Item Build Sections & Strategy (7 cols) -->
+        <div class="lg:col-span-7 space-y-6">
+            <!-- Item Progression Categories (Grouped by HoN In-Game Layout) -->
+            <div class="glass-panel p-5 sm:p-6 rounded-3xl border border-slate-800 space-y-6 bg-slate-900/90 shadow-xl">
+                <div class="flex items-center gap-2 border-b border-slate-800 pb-3">
+                    <span class="text-base">🎒</span>
+                    <h2 class="font-extrabold text-white text-sm uppercase tracking-wider">Item Build Progression</h2>
+                </div>
+
+                <!-- Group A: Core Items Box (In-Game Category 1) -->
+                <div class="p-4 rounded-2xl bg-slate-950/60 border border-slate-800 space-y-4">
+                    <div class="flex items-center justify-between px-1">
+                        <span
+                            class="text-xs font-black uppercase tracking-widest text-amber-400">🔷 Core Items (In-Game)</span>
+                        <span class="text-[10px] text-slate-500 font-mono">In-Game Category 1</span>
+                    </div>
+
+                    <!-- 1. Starting Items Section -->
+                    <div class="space-y-2">
+                        <div class="flex items-center gap-2">
+                            <span class="text-sm">🎒</span>
+                            <span
+                                class="text-xs font-bold uppercase tracking-wider text-amber-400">Starting Items</span>
+                            <span class="text-[10px] text-slate-500 font-mono hidden sm:inline">(In-Game: Starting Items)</span>
+                        </div>
+                        <div class="flex flex-wrap gap-2">
+                            @foreach (string item in ParseItems(Model.StartingItems))
+                            {
+                                string icon = GetCanonicalItemCode(item);
+                                string title = GetItemTitle(item);
+                                <div
+                                    class="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-900 border border-amber-500/30 text-xs text-slate-200 shadow-sm">
+                                    <img src="/images/items/@(icon).png"
+                                         onError="this.onerror=null;this.src='/images/items/default.png';"
+                                         class="w-5 h-5 rounded-md object-cover" alt=""/>
+                                    <span class="font-medium">@title</span>
+                                </div>
+                            }
+                        </div>
+                    </div>
+
+                    <!-- 2. Essential / Early Game Items Section -->
+                    @if (!string.IsNullOrWhiteSpace(Model.EarlyGameItems))
+                    {
+                        <div class="space-y-2 pt-3 border-t border-slate-800/80">
+                            <div class="flex items-center gap-2">
+                                <span class="text-sm">🌾</span>
+                                <span class="text-xs font-bold uppercase tracking-wider text-emerald-400">Essential / Early Game</span>
+                                <span class="text-[10px] text-slate-500 font-mono hidden sm:inline">(In-Game: Essential Items)</span>
+                            </div>
+                            <div class="flex flex-wrap gap-2">
+                                @foreach (string item in ParseItems(Model.EarlyGameItems))
+                                {
+                                    string icon = GetCanonicalItemCode(item);
+                                    string title = GetItemTitle(item);
+                                    <div
+                                        class="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-900 border border-emerald-500/30 text-xs text-slate-200 shadow-sm">
+                                        <img src="/images/items/@(icon).png"
+                                             onError="this.onerror=null;this.src='/images/items/default.png';"
+                                             class="w-5 h-5 rounded-md object-cover" alt=""/>
+                                        <span class="font-medium">@title</span>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    }
+                </div>
+
+                <!-- Group B: Situational Items Box (In-Game Category 2) -->
+                <div class="p-4 rounded-2xl bg-slate-950/60 border border-slate-800 space-y-4">
+                    <div class="flex items-center justify-between px-1">
+                        <span class="text-xs font-black uppercase tracking-widest text-purple-400">🔶 Situational Items (In-Game)</span>
+                        <span class="text-[10px] text-slate-500 font-mono">In-Game Category 2</span>
+                    </div>
+
+                    <!-- 3. Offensive Items Section (In-Game: Core Items) -->
+                    @if (!string.IsNullOrWhiteSpace(Model.CoreItems))
+                    {
+                        <div class="space-y-2">
+                            <div class="flex items-center gap-2">
+                                <span class="text-sm">⚔️</span>
+                                <span
+                                    class="text-xs font-bold uppercase tracking-wider text-purple-400">Offensive Items</span>
+                                <span class="text-[10px] text-slate-500 font-mono hidden sm:inline">(In-Game: Offensive Items)</span>
+                            </div>
+                            <div class="flex flex-wrap gap-2">
+                                @foreach (string item in ParseItems(Model.CoreItems))
+                                {
+                                    string icon = GetCanonicalItemCode(item);
+                                    string title = GetItemTitle(item);
+                                    <div
+                                        class="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-900 border border-purple-500/30 text-xs text-slate-200 font-semibold shadow-sm">
+                                        <img src="/images/items/@(icon).png"
+                                             onError="this.onerror=null;this.src='/images/items/default.png';"
+                                             class="w-5 h-5 rounded-md object-cover" alt=""/>
+                                        <span class="font-medium text-purple-300">@title</span>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    }
+
+                    <!-- 4. Defensive Items Section (In-Game: Luxury Items) -->
+                    @if (!string.IsNullOrWhiteSpace(Model.LuxuryItems))
+                    {
+                        <div class="space-y-2 pt-3 border-t border-slate-800/80">
+                            <div class="flex items-center gap-2">
+                                <span class="text-sm">🛡️</span>
+                                <span
+                                    class="text-xs font-bold uppercase tracking-wider text-pink-400">Defensive Items</span>
+                                <span class="text-[10px] text-slate-500 font-mono hidden sm:inline">(In-Game: Defensive Items)</span>
+                            </div>
+                            <div class="flex flex-wrap gap-2">
+                                @foreach (string item in ParseItems(Model.LuxuryItems))
+                                {
+                                    string icon = GetCanonicalItemCode(item);
+                                    string title = GetItemTitle(item);
+                                    <div
+                                        class="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-900 border border-pink-500/30 text-xs text-slate-200 shadow-sm">
+                                        <img src="/images/items/@(icon).png"
+                                             onError="this.onerror=null;this.src='/images/items/default.png';"
+                                             class="w-5 h-5 rounded-md object-cover" alt=""/>
+                                        <span class="font-medium text-pink-300">@title</span>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <!-- Strategy & Tactics Playbook -->
+            <div class="glass-panel p-5 sm:p-6 rounded-3xl border border-slate-800 space-y-4 bg-slate-900/90 shadow-xl">
+                <div class="flex items-center gap-2 border-b border-slate-800 pb-3">
+                    <span class="text-base">📖</span>
+                    <h2 class="font-extrabold text-white text-sm uppercase tracking-wider">Strategy & Tactical
+                        Playbook</h2>
+                </div>
+
+                @if (!string.IsNullOrWhiteSpace(Model.Intro))
+                {
+                    <div class="space-y-1">
+                        <span class="text-[11px] font-bold uppercase tracking-wider text-amber-400">Introduction</span>
+                        <p class="text-xs sm:text-sm text-slate-200 leading-relaxed bg-slate-950/60 p-4 rounded-2xl border border-slate-800">
+                            @Model.Intro
+                        </p>
+                    </div>
+                }
+
+                @if (!string.IsNullOrWhiteSpace(Model.Content))
+                {
+                    <div class="space-y-1">
+                        <span
+                            class="text-[11px] font-bold uppercase tracking-wider text-purple-400">Detailed Strategy</span>
+                        <div
+                            class="text-xs sm:text-sm text-slate-200 leading-relaxed bg-slate-950/60 p-4 rounded-2xl border border-slate-800 whitespace-pre-line">
+                            @Model.Content
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <!-- Right: Ability Leveling Progression Tree (5 cols) -->
+        <div class="lg:col-span-5 space-y-4">
+            <div
+                class="glass-panel p-5 rounded-3xl border border-slate-800 space-y-4 bg-slate-900/90 shadow-xl sticky top-4">
+                <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                    <div class="flex items-center gap-2">
+                        <span class="text-base">⚡</span>
+                        <h2 class="font-extrabold text-white text-sm uppercase tracking-wider">Ability Queue (Levels
+                            1–25)</h2>
+                    </div>
+                    <span
+                        class="text-[11px] font-mono text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded-full border border-amber-500/20">
+                        In-Game Sequence
+                    </span>
+                </div>
+
+                <div class="space-y-1 max-h-[600px] overflow-y-auto pr-1">
+                    @for (int lvl = 1; lvl <= 25; lvl++)
+                    {
+                        int skillKey = (abilityQueueList.Count >= lvl) ? abilityQueueList[lvl - 1] : 0;
+                        <div
+                            class="flex items-center justify-between p-2 rounded-xl bg-slate-950 border border-slate-800/80 text-xs hover:border-slate-700 transition-colors">
+                            <div class="flex items-center gap-2">
+                                <span
+                                    class="w-6 h-6 rounded-lg bg-slate-900 border border-slate-700 text-xs font-mono font-bold flex items-center justify-center text-slate-300">
+                                    @lvl
+                                </span>
+
+                                @if (skillKey is >= 1 and <= 4)
+                                {
+                                    string slotLabel = skillKey switch { 1 => "Q", 2 => "W", 3 => "E", _ => "R" };
+                                    string colorClasses = skillKey switch
+                                    {
+                                        1 => "bg-emerald-500/20 text-emerald-300 border-emerald-500/40",
+                                        2 => "bg-cyan-500/20 text-cyan-300 border-cyan-500/40",
+                                        3 => "bg-purple-500/20 text-purple-300 border-purple-500/40",
+                                        _ => "bg-rose-500/20 text-rose-300 border-rose-500/40"
+                                    };
+                                    string iconPath = $"/images/abilities/hero_{cleanHero}_{skillKey}.png";
+                                    <div
+                                        class="flex items-center gap-1.5 px-2 py-0.5 rounded-md text-[11px] font-bold @colorClasses border">
+                                        <img src="@iconPath"
+                                             onError="this.onerror=null;this.src='/images/heroes/hero_@(cleanHero).png';"
+                                             alt="Ability @slotLabel" class="w-4 h-4 rounded object-cover"/>
+                                        <span class="detail-ability-name"
+                                              data-slot="@skillKey">Ability @slotLabel</span>
+                                        <span class="font-mono font-black text-[9px] opacity-80">(@slotLabel)</span>
+                                    </div>
+                                }
+                                else if (skillKey == 5)
+                                {
+                                    <div
+                                        class="flex items-center gap-1.5 px-2 py-0.5 rounded-md text-[11px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/40">
+                                        <span>💎</span>
+                                        <span>+Attributes</span>
+                                    </div>
+                                }
+                                else
+                                {
+                                    <span class="text-slate-600 font-mono text-[11px] italic">Unassigned</span>
+                                }
+                            </div>
+                            @if (skillKey is >= 1 and <= 4)
+                            {
+                                string slot = skillKey switch { 1 => "Q", 2 => "W", 3 => "E", _ => "R (Ult)" };
+                                <span class="text-[10px] font-mono text-slate-400">@slot</span>
+                            }
+                            else if (skillKey == 5)
+                            {
+                                <span class="text-[10px] font-mono text-amber-400/80">+Stats</span>
+                            }
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', async () => {
+        try {
+            const heroKey = '@cleanHero';
+            const res = await fetch(`/api/heroes/${heroKey}/abilities`);
+            if (res.ok) {
+                const abilities = await res.json();
+                if (abilities && abilities.length >= 4) {
+                    document.querySelectorAll('.detail-ability-name').forEach(elem => {
+                        const slot = parseInt(elem.getAttribute('data-slot'));
+                        if (slot >= 1 && slot <= 4 && abilities[slot - 1]) {
+                            elem.innerText = abilities[slot - 1].name;
+                        }
+                    });
+                }
+            }
+        } catch (e) {
+            console.error("Failed loading hero ability names:", e);
+        }
+    });
+
+    function getVerificationToken() {
+        return document.querySelector('input[name="__RequestVerificationToken"]')?.value || '';
+    }
+
+    async function voteGuide(isUpvote) {
+        try {
+            const res = await fetch(`/guides/vote/@Model.ID?isUpvote=${isUpvote}`, {
+                method: 'POST',
+                headers: { 'RequestVerificationToken': getVerificationToken() }
+            });
+            const data = await res.json();
+            if (data.success) {
+                document.getElementById('guide-rating-val').innerText = Number(data.rating).toFixed(1);
+                document.getElementById('guide-votes-val').innerText = `(${data.upVotes + data.downVotes} votes)`;
+            }
+        } catch (e) {
+            console.error(e);
+        }
+    }
+
+    async function toggleOfficialGuide(guideId, guideName, isCurrentlyFeatured) {
+        const actionText = isCurrentlyFeatured ? "remove Official status from" : "promote to Official status";
+        if (!confirm(`Are you sure you want to ${actionText} "${guideName}"?`)) return;
+
+        try {
+            const res = await fetch(`/guides/feature/${guideId}`, {
+                method: 'POST',
+                headers: { 'RequestVerificationToken': getVerificationToken() }
+            });
+            const data = await res.json();
+            if (data.success) {
+                alert("✓ " + data.message);
+                window.location.reload();
+            } else {
+                alert("⚠️ " + (data.message || "Failed to update status."));
+            }
+        } catch (e) {
+            console.error(e);
+            alert("Error communicating with server.");
+        }
+    }
+
+    async function togglePrivacy(guideId, isCurrentlyPublic) {
+        const actionText = isCurrentlyPublic ? "make this guide PRIVATE (visible only to you)" : "make this guide PUBLIC (visible in community & in-game)";
+        if (!confirm(`Are you sure you want to ${actionText}?`)) return;
+
+        try {
+            const res = await fetch(`/guides/${guideId}/toggle-privacy`, {
+                method: 'POST',
+                headers: { 'RequestVerificationToken': getVerificationToken() }
+            });
+            const data = await res.json();
+            if (data.success) {
+                alert("✓ " + data.message);
+                window.location.reload();
+            } else {
+                alert("⚠️ " + (data.message || "Failed to toggle privacy."));
+            }
+        } catch (e) {
+            console.error(e);
+            alert("Error communicating with server.");
+        }
+    }
+
+    async function deleteThisGuide() {
+        if (!confirm("Are you sure you want to delete this guide? This cannot be undone.")) return;
+        try {
+            const res = await fetch('/guides/delete/@Model.ID', {
+                method: 'POST',
+                headers: { 'RequestVerificationToken': getVerificationToken() }
+            });
+            const data = await res.json();
+            if (data.success) {
+                alert("✓ Guide deleted successfully.");
+                window.location.href = "/guides";
+            } else {
+                alert("⚠️ " + (data.message || "Failed to delete guide."));
+            }
+        } catch (e) {
+            console.error(e);
+            alert("Error communicating with server.");
+        }
+    }
+
+    async function toggleDefaultGuide() {
+        try {
+            const res = await fetch('/guides/@Model.ID/toggle-default', {
+                method: 'POST',
+                headers: { 'RequestVerificationToken': getVerificationToken() }
+            });
+            const data = await res.json();
+            if (data.success) {
+                alert("✓ " + data.message);
+                window.location.reload();
+            } else {
+                alert("⚠️ " + (data.message || "Failed to update default guide."));
+            }
+        } catch (e) {
+            console.error(e);
+            alert("Error communicating with server.");
+        }
+    }
+
+    async function toggleFavoriteGuide() {
+        try {
+            const res = await fetch('/guides/@Model.ID/toggle-favorite', {
+                method: 'POST',
+                headers: { 'RequestVerificationToken': getVerificationToken() }
+            });
+            const data = await res.json();
+            if (data.success) {
+                alert("✓ " + data.message);
+                window.location.reload();
+            } else {
+                alert("⚠️ " + (data.message || "Failed to update favorite guide."));
+            }
+        } catch (e) {
+            console.error(e);
+            alert("Error communicating with server.");
+        }
+    }
+</script>

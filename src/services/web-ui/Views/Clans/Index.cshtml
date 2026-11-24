@@ -1,0 +1,412 @@
+@model DAWNBRINGER.WebPortal.UI.Models.ClanDirectoryViewModel
+@using NEXUS.Contracts.DTOs
+@{
+    ViewData["Title"] = "Clans Directory";
+    ViewData["Description"] = "Explore active Newerth clans, average competitive MMR, win rates, and complete member rosters.";
+
+    ClanDirectoryResultDto dir = Model.Directory;
+    IReadOnlyList<ClanSummaryDto> items = dir.Items;
+    string searchQuery = Model.SearchQuery;
+    string currentSort = Model.CurrentSort;
+    bool isCompetitiveSort = currentSort is "mmr" or "winrate";
+
+    string sortLabel = currentSort switch
+    {
+        "members" => "Member Count",
+        "winrate" => "Combined Win Rate",
+        "matches" => "Member Games",
+        "newest" => "Newest Clans",
+        _ => "Average MMR"
+    };
+
+    // Show Top 3 Podium only on page 1 when unfiltered, and when sorting competitively only for qualified (>=3 ranked) clans
+    List<ClanSummaryDto> podiumClans = [];
+    if (dir.Page == 1 && string.IsNullOrWhiteSpace(searchQuery))
+    {
+        podiumClans = isCompetitiveSort
+            ? items.Where(c => c.IsCompetitiveQualified).Take(3).ToList()
+            : items.Take(3).ToList();
+        if (podiumClans.Count < 3)
+        {
+            podiumClans.Clear();
+        }
+    }
+
+    HashSet<int> podiumIds = podiumClans.Select(c => c.Id).ToHashSet();
+    List<ClanSummaryDto> gridClans = podiumIds.Count > 0
+        ? items.Where(c => !podiumIds.Contains(c.Id)).ToList()
+        : items.ToList();
+
+    int baseRankOffset = (dir.Page - 1) * 24;
+
+    var sortOptions = new (string Key, string Label, string Emoji)[]
+    {
+        ("mmr", "Avg MMR", "🏆"),
+        ("members", "Members", "👥"),
+        ("winrate", "Win Rate", "📈"),
+        ("matches", "Member Games", "⚔️"),
+        ("newest", "Newest", "✨")
+    };
+}
+
+<div class="w-full max-w-[1920px] mx-auto px-3 sm:px-6 lg:px-8 xl:px-10 py-6 space-y-8 pb-16">
+    <!-- Hero Header Banner -->
+    <section class="glass-card p-6 sm:p-10 rounded-3xl border border-indigo-500/30 bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950/30 relative overflow-hidden shadow-2xl">
+        <div class="absolute -right-16 -top-16 w-80 h-80 bg-indigo-500/15 rounded-full blur-3xl pointer-events-none" aria-hidden="true"></div>
+        <div class="absolute -left-16 -bottom-16 w-80 h-80 bg-amber-500/10 rounded-full blur-3xl pointer-events-none" aria-hidden="true"></div>
+
+        <div class="relative z-10 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
+            <div class="space-y-3">
+                <div class="flex flex-wrap items-center gap-2">
+                    <span class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/15 border border-indigo-500/40 text-indigo-300 text-xs font-bold uppercase tracking-wider">
+                        <span aria-hidden="true">🛡️</span> NEWERTH CLANS
+                    </span>
+                    <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-900 border border-slate-800 text-slate-300 text-xs font-bold">
+                        Sorted by @sortLabel
+                    </span>
+                    @if (Model.MyClanId.HasValue && !string.IsNullOrWhiteSpace(Model.MyClanName))
+                    {
+                        <a asp-controller="Clans" asp-action="Detail" asp-route-id="@Model.MyClanId.Value"
+                           class="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-amber-500/20 hover:bg-amber-500/30 border border-amber-400/50 text-amber-200 hover:text-white text-xs font-black transition-all shadow-sm">
+                            <span>My Clan: [@Model.MyClanTag] @Model.MyClanName</span>
+                            <span aria-hidden="true">&rarr;</span>
+                        </a>
+                    }
+                </div>
+
+                <h1 class="text-3xl sm:text-5xl font-black text-white tracking-tight">
+                    CLAN <span class="bg-gradient-to-r from-indigo-400 via-purple-400 to-amber-400 bg-clip-text text-transparent">DIRECTORY</span>
+                </h1>
+                <p class="text-slate-400 text-xs sm:text-sm max-w-2xl leading-relaxed">
+                    Browse active Newerth clans, compare average competitive MMR and combined win rates, and inspect full member rosters. Tip: press <kbd class="px-1.5 py-0.5 rounded bg-slate-800 border border-slate-700 text-[11px] font-mono text-slate-300">Ctrl+K</kbd> and type <code class="text-indigo-300">[TAG]</code> anywhere to jump straight to a clan.
+                </p>
+            </div>
+
+            <!-- Summary Stat Pills -->
+            <div class="grid grid-cols-3 gap-3 w-full lg:w-auto flex-shrink-0">
+                <div class="p-3.5 rounded-2xl bg-slate-900/80 border border-slate-800 text-center">
+                    <span class="text-[10px] text-slate-400 uppercase tracking-wider font-semibold block mb-1">Active Clans</span>
+                    <span class="text-lg font-black text-white tabular-nums">@dir.TotalCount.ToString("N0")</span>
+                </div>
+                <div class="p-3.5 rounded-2xl bg-slate-900/80 border border-slate-800 text-center">
+                    <span class="text-[10px] text-slate-400 uppercase tracking-wider font-semibold block mb-1">Clan Members</span>
+                    <span class="text-lg font-black text-indigo-300 tabular-nums">@dir.TotalActiveMembers.ToString("N0")</span>
+                </div>
+                <div class="p-3.5 rounded-2xl bg-slate-900/80 border border-amber-500/30 bg-amber-500/5 text-center">
+                    <span class="text-[10px] text-amber-400 uppercase tracking-wider font-semibold block mb-1">Top Avg MMR</span>
+                    <span class="text-lg font-black text-amber-300 tabular-nums">
+                        @(dir.HighestQualifiedAvgMmr.HasValue ? $"{dir.HighestQualifiedAvgMmr.Value:F0}" : "—")
+                    </span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Controls Toolbar: Search & Sort Pills -->
+    <section class="glass-card p-5 sm:p-6 rounded-3xl border border-slate-800 shadow-xl space-y-4">
+        <div class="flex flex-col lg:flex-row lg:items-end justify-between gap-4">
+            <form method="get" asp-controller="Clans" asp-action="Index" class="flex-1 max-w-xl flex flex-col sm:flex-row items-stretch sm:items-end gap-2.5">
+                <input type="hidden" name="sort" value="@currentSort" />
+                <div class="flex-1">
+                    <label for="clanSearchInput" class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-1.5">
+                        Search Clans by Name, [TAG], or Leader
+                    </label>
+                    <input id="clanSearchInput"
+                           name="search"
+                           type="search"
+                           value="@searchQuery"
+                           placeholder="e.g. [K], Kongor, Legion..."
+                           class="w-full px-3.5 py-2.5 rounded-xl bg-slate-900/90 border border-slate-700 text-white placeholder-slate-500 text-xs sm:text-sm focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400 transition-all" />
+                </div>
+                <div class="flex items-center gap-2">
+                    <button type="submit"
+                            class="px-4 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs transition-all cursor-pointer min-h-[38px]">
+                        Filter
+                    </button>
+                    @if (!string.IsNullOrWhiteSpace(searchQuery))
+                    {
+                        <a asp-controller="Clans" asp-action="Index" asp-route-sort="@currentSort"
+                           class="px-3.5 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white font-bold text-xs transition-all min-h-[38px] inline-flex items-center">
+                            Clear
+                        </a>
+                    }
+                </div>
+            </form>
+
+            <div class="space-y-1.5">
+                <span class="block text-xs font-bold uppercase tracking-wider text-slate-400">Sort Standings</span>
+                <nav aria-label="Sort clans" class="flex flex-wrap items-center gap-2">
+                    @foreach (var opt in sortOptions)
+                    {
+                        bool isActive = string.Equals(currentSort, opt.Key, StringComparison.OrdinalIgnoreCase);
+                        <a asp-controller="Clans"
+                           asp-action="Index"
+                           asp-route-sort="@opt.Key"
+                           asp-route-search="@(string.IsNullOrWhiteSpace(searchQuery) ? null : searchQuery)"
+                           aria-current="@(isActive ? "true" : null)"
+                           class="px-3.5 py-2 rounded-xl text-xs font-bold transition-all border min-h-[36px] inline-flex items-center gap-1.5 @(isActive ? "bg-amber-500 text-slate-950 border-amber-300 shadow-md shadow-amber-500/20 font-black" : "bg-slate-900 text-slate-300 border-slate-800 hover:bg-slate-800 hover:text-white")">
+                            <span aria-hidden="true">@opt.Emoji</span>
+                            <span>@opt.Label</span>
+                        </a>
+                    }
+                </nav>
+            </div>
+        </div>
+        @if (isCompetitiveSort)
+        {
+            <p class="text-[11px] text-slate-400">
+                Clans with at least <strong class="text-slate-200">3 ranked members</strong> qualify for the Top 3 Podium and primary competitive standings. Smaller clans are shown below with a <span class="text-indigo-300 font-semibold">Provisional</span> badge.
+            </p>
+        }
+    </section>
+
+    <!-- Top 3 Podium (Above the fold — rendered eagerly without content-visibility) -->
+    @if (podiumClans.Count == 3)
+    {
+        <section class="space-y-4">
+            <div class="flex items-center justify-between">
+                <h2 class="text-sm font-black uppercase tracking-widest text-amber-300 flex items-center gap-2">
+                    <span aria-hidden="true">👑</span> Top 3 Podium
+                </h2>
+                <span class="text-xs text-slate-400">Ranked by @sortLabel</span>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+                @for (int i = 0; i < podiumClans.Count; i++)
+                {
+                    ClanSummaryDto clan = podiumClans[i];
+                    int rank = i + 1;
+                    string medal = rank == 1 ? "🥇 #1" : rank == 2 ? "🥈 #2" : "🥉 #3";
+                    string borderAccent = rank == 1
+                        ? "border-amber-400/50 bg-gradient-to-br from-slate-900 via-slate-900/95 to-amber-950/25 shadow-amber-950/30"
+                        : rank == 2
+                            ? "border-slate-400/40 bg-gradient-to-br from-slate-900 via-slate-900/95 to-slate-800/40"
+                            : "border-orange-500/35 bg-gradient-to-br from-slate-900 via-slate-900/95 to-orange-950/20";
+                    bool isUserClan = Model.MyClanId == clan.Id;
+
+                    <article class="kongor-clan-card glass-card rounded-3xl border @borderAccent p-5 sm:p-6 space-y-4 shadow-xl transition-all hover:border-amber-400/70">
+                        <header class="flex items-start justify-between gap-3">
+                            <div class="flex items-center gap-3.5 min-w-0">
+                                <div class="w-12 h-12 rounded-2xl bg-indigo-950/80 border border-indigo-400/40 text-indigo-200 flex items-center justify-center font-black text-xs tracking-tight flex-shrink-0 shadow-inner">
+                                    [@clan.Tag]
+                                </div>
+                                <div class="min-w-0">
+                                    <h3 class="text-base sm:text-lg font-black text-white truncate">
+                                        <a asp-controller="Clans" asp-action="Detail" asp-route-id="@clan.Id"
+                                           class="card-link hover:text-amber-300 transition-colors">
+                                            @clan.Name
+                                        </a>
+                                    </h3>
+                                    <p class="text-xs text-slate-400 truncate">
+                                        Leader: <span class="text-slate-200 font-semibold">@(clan.LeaderName ?? "No Active Leader")</span>
+                                    </p>
+                                </div>
+                            </div>
+                            <div class="flex flex-col items-end gap-1 flex-shrink-0">
+                                <span class="px-2.5 py-1 rounded-full bg-slate-950/80 border border-amber-500/30 text-amber-300 text-xs font-black tabular-nums">
+                                    @medal
+                                </span>
+                                @if (isUserClan)
+                                {
+                                    <span class="px-2 py-0.5 rounded-full bg-amber-500/20 border border-amber-400/40 text-amber-200 text-[10px] font-bold uppercase">
+                                        Your Clan
+                                    </span>
+                                }
+                            </div>
+                        </header>
+
+                        <div class="kongor-clan-card-stats grid grid-cols-4 gap-2 pt-3 border-t border-slate-800/80 text-center">
+                            <div class="p-2 rounded-xl bg-slate-950/70 border border-slate-800/70">
+                                <span class="block text-[10px] uppercase tracking-wider text-slate-400 font-semibold">Avg MMR</span>
+                                <span class="text-sm font-black tabular-nums text-amber-300">
+                                    @(clan.AverageMmr.HasValue ? $"{clan.AverageMmr.Value:F0}" : "Unranked")
+                                </span>
+                            </div>
+                            <div class="p-2 rounded-xl bg-slate-950/70 border border-slate-800/70">
+                                <span class="block text-[10px] uppercase tracking-wider text-slate-400 font-semibold">Members</span>
+                                <span class="text-sm font-black tabular-nums text-white">@clan.MemberCount</span>
+                            </div>
+                            <div class="p-2 rounded-xl bg-slate-950/70 border border-slate-800/70">
+                                <span class="block text-[10px] uppercase tracking-wider text-slate-400 font-semibold">Win Rate</span>
+                                <span class="text-sm font-black tabular-nums text-emerald-300">
+                                    @(clan.CombinedMemberMatches > 0 ? $"{clan.CombinedWinRate:F1}%" : "—")
+                                </span>
+                            </div>
+                            <div class="p-2 rounded-xl bg-slate-950/70 border border-slate-800/70">
+                                <span class="block text-[10px] uppercase tracking-wider text-slate-400 font-semibold">Member Games</span>
+                                <span class="text-sm font-black tabular-nums text-slate-200">@clan.CombinedMemberMatches.ToString("N0")</span>
+                            </div>
+                        </div>
+
+                        <footer class="flex items-center justify-between text-[11px] text-slate-400 pt-1">
+                            <span>Founded @clan.TimestampCreated.ToString("MMM yyyy")</span>
+                            <span class="text-indigo-300 font-semibold">@clan.ActivityBucket</span>
+                        </footer>
+                    </article>
+                }
+            </div>
+        </section>
+    }
+
+    <!-- Ranked Clan Card Grid -->
+    <section class="space-y-4">
+        <div class="flex items-center justify-between">
+            <h2 class="text-sm font-black uppercase tracking-widest text-slate-300">
+                @(podiumClans.Count == 3 ? "All Clans" : "Clan Standings")
+            </h2>
+            <span class="text-xs text-slate-400">
+                @if (dir.TotalCount > 0)
+                {
+                    <text>Page @dir.Page of @dir.TotalPages &bull; @dir.TotalCount.ToString("N0") matching clans</text>
+                }
+                else
+                {
+                    <text>0 clans found</text>
+                }
+            </span>
+        </div>
+
+        @if (items.Count == 0)
+        {
+            <div class="glass-card rounded-3xl border border-slate-800 p-12 text-center space-y-3">
+                <div class="text-4xl" aria-hidden="true">🛡️</div>
+                <h3 class="text-lg font-black text-white">No Clans Found</h3>
+                <p class="text-xs sm:text-sm text-slate-400 max-w-md mx-auto">
+                    @if (!string.IsNullOrWhiteSpace(searchQuery))
+                    {
+                        <text>No active clans matched "<strong>@searchQuery</strong>". Try another clan name, tag, or leader name.</text>
+                    }
+                    else
+                    {
+                        <text>There are currently no active clans with members registered on Project KONGOR.</text>
+                    }
+                </p>
+                @if (!string.IsNullOrWhiteSpace(searchQuery))
+                {
+                    <div class="pt-2">
+                        <a asp-controller="Clans" asp-action="Index" asp-route-sort="@currentSort"
+                           class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs transition-all">
+                            Reset Search
+                        </a>
+                    </div>
+                }
+            </div>
+        }
+        else if (gridClans.Count > 0)
+        {
+            <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                @for (int idx = 0; idx < gridClans.Count; idx++)
+                {
+                    ClanSummaryDto clan = gridClans[idx];
+                    int rank = baseRankOffset + podiumClans.Count + idx + 1;
+                    bool isProvisional = isCompetitiveSort && !clan.IsCompetitiveQualified;
+                    bool isUserClan = Model.MyClanId == clan.Id;
+                    // Apply content-visibility: auto strictly to below-the-fold cards (index >= 6)
+                    string cvClass = idx >= 6 ? "kongor-cv-clan" : string.Empty;
+
+                    <article class="kongor-clan-card @cvClass glass-card rounded-2xl border @(isUserClan ? "border-amber-400/50" : "border-slate-800/90") p-5 space-y-3.5 shadow-lg transition-all hover:border-indigo-400/50">
+                        <header class="flex items-start justify-between gap-3">
+                            <div class="flex items-center gap-3 min-w-0">
+                                <div class="w-11 h-11 rounded-xl bg-slate-900 border border-indigo-500/35 text-indigo-300 flex items-center justify-center font-black text-xs tracking-tight flex-shrink-0">
+                                    [@clan.Tag]
+                                </div>
+                                <div class="min-w-0">
+                                    <h3 class="text-sm sm:text-base font-black text-white truncate">
+                                        <a asp-controller="Clans" asp-action="Detail" asp-route-id="@clan.Id"
+                                           class="card-link hover:text-amber-300 transition-colors">
+                                            @clan.Name
+                                        </a>
+                                    </h3>
+                                    <p class="text-xs text-slate-400 truncate">
+                                        Leader: <span class="text-slate-300 font-medium">@(clan.LeaderName ?? "No Active Leader")</span>
+                                    </p>
+                                </div>
+                            </div>
+                            <div class="flex flex-col items-end gap-1 flex-shrink-0">
+                                @if (isProvisional)
+                                {
+                                    <span title="Requires at least 3 ranked members for competitive standings"
+                                          class="px-2.5 py-0.5 rounded-full bg-indigo-950/80 border border-indigo-500/35 text-indigo-300 text-[10px] font-bold uppercase tracking-wider">
+                                        Provisional
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="px-2.5 py-0.5 rounded-full bg-slate-900 border border-slate-700 text-slate-300 text-xs font-black tabular-nums">
+                                        #@rank
+                                    </span>
+                                }
+                                @if (isUserClan)
+                                {
+                                    <span class="px-2 py-0.5 rounded-full bg-amber-500/20 border border-amber-400/40 text-amber-200 text-[10px] font-bold uppercase">
+                                        Your Clan
+                                    </span>
+                                }
+                            </div>
+                        </header>
+
+                        <div class="kongor-clan-card-stats grid grid-cols-4 gap-2 pt-3 border-t border-slate-800/80 text-center">
+                            <div class="p-2 rounded-xl bg-slate-900/75">
+                                <span class="block text-[10px] text-slate-400 font-semibold">Avg MMR</span>
+                                <span class="text-xs sm:text-sm font-black tabular-nums @(clan.AverageMmr.HasValue ? "text-amber-300" : "text-slate-400")">
+                                    @(clan.AverageMmr.HasValue ? $"{clan.AverageMmr.Value:F0}" : "Unranked")
+                                </span>
+                            </div>
+                            <div class="p-2 rounded-xl bg-slate-900/75">
+                                <span class="block text-[10px] text-slate-400 font-semibold">Members</span>
+                                <span class="text-xs sm:text-sm font-black tabular-nums text-white">@clan.MemberCount</span>
+                            </div>
+                            <div class="p-2 rounded-xl bg-slate-900/75">
+                                <span class="block text-[10px] text-slate-400 font-semibold">Win Rate</span>
+                                <span class="text-xs sm:text-sm font-black tabular-nums text-emerald-300">
+                                    @(clan.CombinedMemberMatches > 0 ? $"{clan.CombinedWinRate:F1}%" : "—")
+                                </span>
+                            </div>
+                            <div class="p-2 rounded-xl bg-slate-900/75">
+                                <span class="block text-[10px] text-slate-400 font-semibold">Member Games</span>
+                                <span class="text-xs sm:text-sm font-black tabular-nums text-slate-200">@clan.CombinedMemberMatches.ToString("N0")</span>
+                            </div>
+                        </div>
+
+                        <footer class="flex items-center justify-between text-[11px] text-slate-400">
+                            <span>Est. @clan.TimestampCreated.ToString("MMM yyyy")</span>
+                            <span>@clan.ActivityBucket</span>
+                        </footer>
+                    </article>
+                }
+            </div>
+        }
+
+        <!-- Pagination -->
+        @if (dir.TotalPages > 1)
+        {
+            <nav aria-label="Clans pagination" class="flex items-center justify-center gap-2 pt-4">
+                @if (dir.Page > 1)
+                {
+                    <a asp-controller="Clans" asp-action="Index"
+                       asp-route-page="@(dir.Page - 1)"
+                       asp-route-sort="@currentSort"
+                       asp-route-search="@(string.IsNullOrWhiteSpace(searchQuery) ? null : searchQuery)"
+                       class="px-4 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700 text-xs font-bold text-slate-200 transition-all">
+                        &larr; Previous
+                    </a>
+                }
+
+                <span class="px-4 py-2 rounded-xl bg-slate-900/70 border border-slate-800 text-xs font-bold text-slate-300 tabular-nums">
+                    Page @dir.Page of @dir.TotalPages
+                </span>
+
+                @if (dir.Page < dir.TotalPages)
+                {
+                    <a asp-controller="Clans" asp-action="Index"
+                       asp-route-page="@(dir.Page + 1)"
+                       asp-route-sort="@currentSort"
+                       asp-route-search="@(string.IsNullOrWhiteSpace(searchQuery) ? null : searchQuery)"
+                       class="px-4 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700 text-xs font-bold text-slate-200 transition-all">
+                        Next &rarr;
+                    </a>
+                }
+            </nav>
+        }
+    </section>
+</div>

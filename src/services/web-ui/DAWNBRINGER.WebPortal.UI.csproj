@@ -1,0 +1,56 @@
+<Project Sdk="Microsoft.NET.Sdk.Web" TreatAsLocalProperty="RazorCompileOnBuild;RazorCompileOnPublish">
+
+  <PropertyGroup>
+    <RazorCompileOnBuild>true</RazorCompileOnBuild>
+    <RazorCompileOnPublish>true</RazorCompileOnPublish>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="ASPIRE.Integration.Tests" />
+    <InternalsVisibleTo Include="Kongor.Mcp.Tests" />
+    <InternalsVisibleTo Include="ZORGATH.WebPortal.API.Tests" />
+  </ItemGroup>
+
+
+  <ItemGroup>
+    <PackageReference Include="AspNet.Security.OAuth.Discord"/>
+    <PackageReference Include="Microsoft.AspNetCore.DataProtection.StackExchangeRedis"/>
+    <PackageReference Include="Microsoft.AspNetCore.SignalR.StackExchangeRedis"/>
+    <PackageReference Include="srp"/>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Remove="Services\I*ApiClient.cs"/>
+    <Compile Remove="Services\ApiClient\ClientInterfaces.cs"/>
+  </ItemGroup>
+
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\libs\service-defaults\ASPIRE.ServiceDefaults.csproj"/>
+    <ProjectReference Include="..\..\libs\protocol-core\Kongor.Core.csproj"/>
+    <ProjectReference Include="..\..\libs\contracts\NEXUS.Contracts.csproj"/>
+    <ProjectReference Include="..\..\libs\database-context\MERRICK.DatabaseContext.csproj"/>
+  </ItemGroup>
+
+  <ItemGroup>
+    <TailwindInputs Include="Styles\**\*.css" />
+    <TailwindInputs Include="Views\**\*.cshtml" />
+    <TailwindInputs Include="wwwroot\js\**\*.js" />
+    <TailwindOutput Include="wwwroot\css\tailwind.css" />
+  </ItemGroup>
+
+  <Target Name="BuildTailwindCSS"
+          BeforeTargets="BeforeBuild"
+          Inputs="@(TailwindInputs)"
+          Outputs="@(TailwindOutput)"
+          Condition="'$(SkipTailwind)' != 'true'">
+    <Message Text="[DAWNBRINGER] Compiling Tailwind CSS v4..." Importance="high" />
+    <Exec Command="&quot;$(ProjectDir)tools\tailwindcss.exe&quot; -i &quot;$(ProjectDir)Styles\input.css&quot; -o &quot;$(ProjectDir)wwwroot\css\tailwind.css&quot; --minify"
+          WorkingDirectory="$(ProjectDir)"
+          Condition="$([MSBuild]::IsOSPlatform('Windows')) and Exists('$(ProjectDir)tools\tailwindcss.exe')" />
+    <Exec Command="&quot;$(ProjectDir)tools/tailwindcss&quot; -i &quot;$(ProjectDir)Styles/input.css&quot; -o &quot;$(ProjectDir)wwwroot/css/tailwind.css&quot; --minify"
+          WorkingDirectory="$(ProjectDir)"
+          Condition="!$([MSBuild]::IsOSPlatform('Windows')) and Exists('$(ProjectDir)tools/tailwindcss')" />
+  </Target>
+
+</Project>

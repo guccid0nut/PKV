@@ -1,0 +1,555 @@
+name: kongor-stack
+
+services:
+  volume-init:
+    image: debian:bookworm-slim
+    container_name: kongor-stack-volume-init
+    user: "0:0"
+    restart: "no"
+    volumes:
+      - kongor-run-server:/vol/run-server
+      - kongor-stack-replays:/vol/replays
+      - kongor-dataprotection-keys:/vol/dataprotection-keys
+      - "${REPO_ROOT_SLASH:-../..}/logs/docker/compel-dedicated:/vol/compel-dedicated"
+      - "${REPO_ROOT_SLASH:-../..}/logs/docker/compel-queue-arcade:/vol/compel-arcade"
+    command:
+      - /bin/sh
+      - -ec
+      - |
+        for d in /vol/run-server /vol/replays /vol/dataprotection-keys; do
+          mkdir -p "$$d"
+          uid=$$(stat -c '%u' "$$d" 2>/dev/null || echo 0)
+          if [ "$$uid" != "10001" ]; then
+            echo "[volume-init] Migrating $$d ownership (uid=$$uid -> 10001:10001)..."
+            chown -R 10001:10001 "$$d"
+          fi
+        done
+        for d in /vol/compel-dedicated /vol/compel-arcade; do
+          mkdir -p "$$d/crashes" "$$d/rl_trajectories" "$$d/artefacts/server/logs"
+          chmod -R a+rwX "$$d" 2>/dev/null || true
+          chown -R 10001:10001 "$$d" 2>/dev/null || true
+        done
+        echo "[volume-init] Verified named volume ownership (10001:10001) and COMPEL logs/config writability."
+
+  garnet:
+    image: valkey/valkey:8.1-alpine
+    container_name: kongor-stack-valkey
+    hostname: valkey
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:${REDIS_HOST_PORT:-28298}:6379"
+    volumes:
+      - kongor-stack-valkey:/data
+    command:
+      - "valkey-server"
+      - "--port"
+      - "6379"
+      - "--bind"
+      - "0.0.0.0"
+      - "--appendonly"
+      - "yes"
+      - "--maxmemory"
+      - "${GARNET_MEMORY:-256mb}"
+      - "--maxmemory-policy"
+      - "volatile-lru"
+      - "--requirepass"
+      - "${GARNET_PASSWORD:-dev-placeholder}"
+    healthcheck:
+      test: ["CMD", "valkey-cli", "-a", "${GARNET_PASSWORD:-dev-placeholder}", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    deploy:
+      resources:
+        limits:
+          cpus: "${INFRA_CPU_LIMIT:-1.0}"
+          memory: "${GARNET_CONTAINER_MEM_LIMIT:-1024M}"
+
+  postgres:
+    image: postgres:17-alpine
+    container_name: kongor-stack-postgres
+    profiles:
+      - local-postgres
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:${POSTGRES_HOST_PORT:-25432}:5432"
+    environment:
+      POSTGRES_USER: merrick
+      POSTGRES_DB: merrick
+      POSTGRES_PASSWORD: "${LOCAL_POSTGRES_PASSWORD:-dev-placeholder}"
+    volumes:
+      - kongor-stack-postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U merrick -d merrick"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+    deploy:
+      resources:
+        limits:
+          cpus: "${INFRA_CPU_LIMIT:-1.5}"
+          memory: "${POSTGRES_MEM_LIMIT:-1024M}"
+
+  aspire-dashboard:
+    image: mcr.microsoft.com/dotnet/aspire-dashboard:latest
+    container_name: kongor-stack-aspire-dashboard
+    user: "0:0"
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:5550:18888"
+      - "127.0.0.1:5551:18891"
+    volumes:
+      - "${HTTPS_CERT_MOUNT_PATH:-./garnet.conf}:/certs/https.pfx:ro"
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      DOTNET_ENVIRONMENT: Development
+      ASPNETCORE_URLS: "https://0.0.0.0:18888;http://0.0.0.0:18891"
+      DOTNET_DASHBOARD_OTLP_ENDPOINT_URL: "http://0.0.0.0:18889"
+      DOTNET_DASHBOARD_OTLP_HTTP_ENDPOINT_URL: "http://0.0.0.0:18890"
+      DOTNET_DASHBOARD_UNSECURED_ALLOW_ANONYMOUS: "true"
+      ASPNETCORE_Kestrel__Certificates__Default__Path: "/certs/https.pfx"
+      ASPNETCORE_Kestrel__Certificates__Default__Password: "${HTTPS_CERT_PASSWORD:-}"
+      DOTNET_gcServer: "0"
+      DOTNET_GCConserveMemory: "7"
+    deploy:
+      resources:
+        limits:
+          cpus: "${INFRA_CPU_LIMIT:-1.0}"
+          memory: "${DASHBOARD_MEM_LIMIT:-256M}"
+
+  master-server:
+    image: projectkongor/master-server:latest
+    container_name: kongor-stack-master-server
+    build:
+      context: ../..
+      dockerfile: infra/docker/Dockerfile.service
+      args:
+        SERVICE_PUBLISH_DIR: artifacts/publish/master-server
+        SERVICE_BINARY: KONGOR.MasterServer
+        HEALTHCHECK_PORT: "55555"
+        KONGOR_SOURCE_STAMP: "${KONGOR_SOURCE_STAMP:-dev}"
+    restart: unless-stopped
+    depends_on:
+      volume-init:
+        condition: service_completed_successfully
+      garnet:
+        condition: service_started
+      aspire-dashboard:
+        condition: service_started
+      postgres:
+        condition: service_healthy
+        required: false
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    ports:
+      - "55555:55555"
+    volumes:
+      - "${REPO_ROOT_SLASH:-../..}/logs/docker/master-server:/app/logs"
+      - kongor-stack-replays:/app/replays
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      DOTNET_ENVIRONMENT: Development
+      ASPNETCORE_URLS: "http://0.0.0.0:55555"
+      DOTNET_gcServer: "${DOTNET_GC_SERVER:-0}"
+      DOTNET_GCConserveMemory: "${DOTNET_GC_CONSERVE_MEMORY:-3}"
+      OTEL_EXPORTER_OTLP_ENDPOINT: "http://aspire-dashboard:18889"
+      OTEL_EXPORTER_OTLP_PROTOCOL: "grpc"
+      OTEL_SERVICE_NAME: "master-server"
+      ConnectionStrings__DISTRIBUTED-CACHE: "garnet:6379,password=${GARNET_PASSWORD:-dev-placeholder},abortConnect=false"
+      Database__Provider: "${DATABASE_PROVIDER:-Supabase}"
+      Supabase__DatabaseConnectionString: "${CONTAINER_DB_CONNECTION_STRING:-}"
+      ConnectionStrings__MERRICK: "${CONTAINER_DB_CONNECTION_STRING:-}"
+      Supabase__Url: "${SUPABASE_URL:-}"
+      Supabase__AnonKey: "${SUPABASE_ANON_KEY:-}"
+      Supabase__ServiceRoleKey: "${SUPABASE_SERVICE_ROLE_KEY:-}"
+      PUBLIC_GAME_SERVER_IP: "${PUBLIC_GAME_SERVER_IP:-127.0.0.1}"
+      CHAT_SERVER_HOST: "${CHAT_SERVER_PUBLIC_HOST:-127.0.0.1}"
+      CHAT_SERVER_PUBLIC_HOST: "${CHAT_SERVER_PUBLIC_HOST:-127.0.0.1}"
+      CHAT_SERVER_LAN_HOST: "${CHAT_SERVER_LAN_HOST:-}"
+      ChatServer__Host: "${CHAT_SERVER_PUBLIC_HOST:-127.0.0.1}"
+      ChatServer__PublicHost: "${CHAT_SERVER_PUBLIC_HOST:-127.0.0.1}"
+      KONGOR_STANDALONE: "${KONGOR_STANDALONE_WEB:-false}"
+      KONGOR_DISCOVER_PUBLIC_IP: "true"
+      CHAT_SERVER_PORT_CLIENT: "11031"
+      CHAT_SERVER_PORT_MATCH_SERVER: "11032"
+      CHAT_SERVER_PORT_MATCH_SERVER_MANAGER: "11033"
+      MasterServer__Address: "http://127.0.0.1:55555"
+      ReplayStorage__Provider: "${REPLAY_STORAGE_PROVIDER:-LocalDisk}"
+      ReplayStorage__LocalDisk__UploadDirectory: "/app/replays"
+      HostAccount__UserName: "${MATCH_HOST_USERNAME:-kongor_host}"
+      HostAccount__Password: "${HOST_PASSWORD:-}"
+      HOST_PASSWORD: "${HOST_PASSWORD:-}"
+      QueueArcade__Enabled: "true"
+      QueueArcade__Instances: "${ARCADE_INSTANCES:-2}"
+    deploy:
+      resources:
+        limits:
+          cpus: "${CLUSTER_CPU_LIMIT:-2.0}"
+          memory: "${MASTER_MEM_LIMIT:-1536M}"
+
+  chat-server:
+    image: projectkongor/chat-server:latest
+    container_name: kongor-stack-chat-server
+    build:
+      context: ../..
+      dockerfile: infra/docker/Dockerfile.service
+      args:
+        SERVICE_PUBLISH_DIR: artifacts/publish/chat-server
+        SERVICE_BINARY: TRANSMUTANSTEIN.ChatServer
+        HEALTHCHECK_PORT: "5554"
+        KONGOR_SOURCE_STAMP: "${KONGOR_SOURCE_STAMP:-dev}"
+    restart: unless-stopped
+    depends_on:
+      garnet:
+        condition: service_started
+      aspire-dashboard:
+        condition: service_started
+      master-server:
+        condition: service_healthy
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    ports:
+      - "127.0.0.1:5554:5554"
+      - "11031:11031"
+      - "127.0.0.1:11032:11032"
+      - "127.0.0.1:11033:11033"
+    volumes:
+      - "${REPO_ROOT_SLASH:-../..}/logs/docker/chat-server:/app/logs"
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      DOTNET_ENVIRONMENT: Development
+      APPLICATION_URL: "http://0.0.0.0:5554"
+      DOTNET_gcServer: "${DOTNET_GC_SERVER:-0}"
+      DOTNET_GCConserveMemory: "${DOTNET_GC_CONSERVE_MEMORY:-3}"
+      OTEL_EXPORTER_OTLP_ENDPOINT: "http://aspire-dashboard:18889"
+      OTEL_EXPORTER_OTLP_PROTOCOL: "grpc"
+      OTEL_SERVICE_NAME: "chat-server"
+      ConnectionStrings__DISTRIBUTED-CACHE: "garnet:6379,password=${GARNET_PASSWORD:-dev-placeholder},abortConnect=false"
+      Database__Provider: "${DATABASE_PROVIDER:-Supabase}"
+      Supabase__DatabaseConnectionString: "${CONTAINER_DB_CONNECTION_STRING:-}"
+      ConnectionStrings__MERRICK: "${CONTAINER_DB_CONNECTION_STRING:-}"
+      CHAT_SERVER_CLIENT_BIND_ADDRESS: "0.0.0.0"
+      CHAT_SERVER_INTERNAL_BIND_ADDRESS: "0.0.0.0"
+      CHAT_SERVER_PORT_CLIENT: "11031"
+      CHAT_SERVER_PORT_MATCH_SERVER: "11032"
+      CHAT_SERVER_PORT_MATCH_SERVER_MANAGER: "11033"
+      PUBLIC_GAME_SERVER_IP: "${PUBLIC_GAME_SERVER_IP:-127.0.0.1}"
+      CHAT_SERVER_PUBLIC_HOST: "${CHAT_SERVER_PUBLIC_HOST:-127.0.0.1}"
+      CHAT_SERVER_LAN_HOST: "${CHAT_SERVER_LAN_HOST:-}"
+      ChatServer__PublicHost: "${CHAT_SERVER_PUBLIC_HOST:-127.0.0.1}"
+      KONGOR_STANDALONE: "${KONGOR_STANDALONE_WEB:-false}"
+      KONGOR_DISCOVER_PUBLIC_IP: "true"
+      MasterServer__Address: "http://master-server:55555"
+      QueueArcade__Enabled: "true"
+      QueueArcade__Instances: "${ARCADE_INSTANCES:-2}"
+    deploy:
+      resources:
+        limits:
+          cpus: "${CLUSTER_CPU_LIMIT:-2.0}"
+          memory: "${CLUSTER_MEM_LIMIT:-1024M}"
+
+  web-api:
+    image: projectkongor/web-api:latest
+    container_name: kongor-stack-web-api
+    build:
+      context: ../..
+      dockerfile: infra/docker/Dockerfile.service
+      args:
+        SERVICE_PUBLISH_DIR: artifacts/publish/web-api
+        SERVICE_BINARY: ZORGATH.WebPortal.API
+        HEALTHCHECK_PORT: "5200"
+        KONGOR_SOURCE_STAMP: "${KONGOR_SOURCE_STAMP:-dev}"
+    restart: unless-stopped
+    depends_on:
+      volume-init:
+        condition: service_completed_successfully
+      garnet:
+        condition: service_started
+      aspire-dashboard:
+        condition: service_started
+      master-server:
+        condition: service_healthy
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    ports:
+      - "127.0.0.1:5200:5200"
+      - "127.0.0.1:5201:5201"
+    volumes:
+      - "${HTTPS_CERT_MOUNT_PATH:-./garnet.conf}:/app/certs/https.pfx:ro"
+      - "${REPO_ROOT_SLASH:-../..}/logs/docker/web-api:/app/logs"
+      - kongor-dataprotection-keys:/app/dataprotection-keys
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      DOTNET_ENVIRONMENT: Development
+      KONGOR_STANDALONE: "${KONGOR_STANDALONE_WEB:-false}"
+      ASPNETCORE_URLS: "https://0.0.0.0:5201;http://0.0.0.0:5200"
+      ASPNETCORE_Kestrel__Certificates__Default__Path: "/app/certs/https.pfx"
+      ASPNETCORE_Kestrel__Certificates__Default__Password: "${HTTPS_CERT_PASSWORD:-}"
+      DOTNET_gcServer: "${DOTNET_GC_SERVER:-0}"
+      DOTNET_GCConserveMemory: "${DOTNET_GC_CONSERVE_MEMORY:-3}"
+      OTEL_EXPORTER_OTLP_ENDPOINT: "http://aspire-dashboard:18889"
+      OTEL_EXPORTER_OTLP_PROTOCOL: "grpc"
+      OTEL_SERVICE_NAME: "web-portal-api"
+      DATA_PROTECTION_KEYS_PATH: "/app/dataprotection-keys"
+      ConnectionStrings__DISTRIBUTED-CACHE: "garnet:6379,password=${GARNET_PASSWORD:-dev-placeholder},abortConnect=false"
+      Database__Provider: "${DATABASE_PROVIDER:-Supabase}"
+      Supabase__DatabaseConnectionString: "${CONTAINER_DB_CONNECTION_STRING:-}"
+      ConnectionStrings__MERRICK: "${CONTAINER_DB_CONNECTION_STRING:-}"
+      Supabase__Url: "${SUPABASE_URL:-}"
+      Supabase__AnonKey: "${SUPABASE_ANON_KEY:-}"
+      Supabase__ServiceRoleKey: "${SUPABASE_SERVICE_ROLE_KEY:-}"
+      jwt-signing-key: "${JWT_SIGNING_KEY:-}"
+      Operational__JWT__SigningKey: "${JWT_SIGNING_KEY:-}"
+      OperationalConfiguration__JWT__SigningKey: "${JWT_SIGNING_KEY:-}"
+      InternalServiceKey: "${INTERNAL_SERVICE_KEY:-}"
+      CORS_ALLOWED_ORIGINS: "${CORS_ALLOWED_ORIGINS:-}"
+      TESTING_DOMAIN: "${TESTING_DOMAIN:-}"
+    deploy:
+      resources:
+        limits:
+          cpus: "${CLUSTER_CPU_LIMIT:-2.0}"
+          memory: "${CLUSTER_MEM_LIMIT:-1024M}"
+
+  web-ui:
+    image: projectkongor/web-ui:latest
+    container_name: kongor-stack-web-ui
+    build:
+      context: ../..
+      dockerfile: infra/docker/Dockerfile.service
+      args:
+        SERVICE_PUBLISH_DIR: artifacts/publish/web-ui
+        SERVICE_BINARY: DAWNBRINGER.WebPortal.UI
+        HEALTHCHECK_PORT: "5266"
+        KONGOR_SOURCE_STAMP: "${KONGOR_SOURCE_STAMP:-dev}"
+    restart: unless-stopped
+    depends_on:
+      volume-init:
+        condition: service_completed_successfully
+      garnet:
+        condition: service_started
+      aspire-dashboard:
+        condition: service_started
+      web-api:
+        condition: service_healthy
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    ports:
+      - "5266:5266"
+      - "5557:5557"
+    volumes:
+      - "${HTTPS_CERT_MOUNT_PATH:-./garnet.conf}:/app/certs/https.pfx:ro"
+      - "${REPO_ROOT_SLASH:-../..}/logs/docker/web-ui:/app/logs"
+      - "${WEB_UI_CLIENT_MOUNT_PATH:-../..}:/app/games/client:ro"
+      - "${WEB_UI_PREBAKED_MOUNT_PATH:-../..}:/app/wwwroot/assets/prebaked:ro"
+      - kongor-dataprotection-keys:/app/dataprotection-keys
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      DOTNET_ENVIRONMENT: Development
+      KONGOR_STANDALONE: "${KONGOR_STANDALONE_WEB:-false}"
+      ASPNETCORE_URLS: "https://0.0.0.0:5557;http://0.0.0.0:5266"
+      ASPNETCORE_Kestrel__Certificates__Default__Path: "/app/certs/https.pfx"
+      ASPNETCORE_Kestrel__Certificates__Default__Password: "${HTTPS_CERT_PASSWORD:-}"
+      DOTNET_gcServer: "${DOTNET_GC_SERVER:-0}"
+      DOTNET_GCConserveMemory: "${DOTNET_GC_CONSERVE_MEMORY:-3}"
+      OTEL_EXPORTER_OTLP_ENDPOINT: "http://aspire-dashboard:18889"
+      OTEL_EXPORTER_OTLP_PROTOCOL: "grpc"
+      OTEL_SERVICE_NAME: "web-portal-ui"
+      DATA_PROTECTION_KEYS_PATH: "/app/dataprotection-keys"
+      ConnectionStrings__DISTRIBUTED-CACHE: "garnet:6379,password=${GARNET_PASSWORD:-dev-placeholder},abortConnect=false"
+      WebPortalApi__BaseUrl: "http://web-api:5200"
+      services__web-portal-api__http__0: "http://web-api:5200"
+      GameClient__Path: "/app/games/client"
+      jwt-signing-key: "${JWT_SIGNING_KEY:-}"
+      Operational__JWT__SigningKey: "${JWT_SIGNING_KEY:-}"
+      InternalServiceKey: "${INTERNAL_SERVICE_KEY:-}"
+      DISCORD_CLIENT_ID: "${DISCORD_CLIENT_ID:-}"
+      DISCORD_CLIENT_SECRET: "${DISCORD_CLIENT_SECRET:-}"
+      Authentication__Discord__ClientId: "${DISCORD_CLIENT_ID:-}"
+      Authentication__Discord__ClientSecret: "${DISCORD_CLIENT_SECRET:-}"
+      TWITCH_CLIENT_ID: "${TWITCH_CLIENT_ID:-}"
+      TWITCH_CLIENT_SECRET: "${TWITCH_CLIENT_SECRET:-}"
+      Authentication__Twitch__ClientId: "${TWITCH_CLIENT_ID:-}"
+      Authentication__Twitch__ClientSecret: "${TWITCH_CLIENT_SECRET:-}"
+      TESTING_DOMAIN: "${TESTING_DOMAIN:-}"
+    deploy:
+      resources:
+        limits:
+          cpus: "${CLUSTER_CPU_LIMIT:-2.0}"
+          memory: "${CLUSTER_MEM_LIMIT:-1024M}"
+
+  compel-dedicated:
+    image: projectkongor/compel-dedicated:latest
+    container_name: kongor-stack-compel-dedicated
+    build:
+      context: ../..
+      dockerfile: infra/docker/Dockerfile.dedicated
+      args:
+        KONGOR_SOURCE_STAMP: "${KONGOR_SOURCE_STAMP:-local}"
+    restart: unless-stopped
+    depends_on:
+      volume-init:
+        condition: service_completed_successfully
+      aspire-dashboard:
+        condition: service_started
+      master-server:
+        condition: service_healthy
+      chat-server:
+        condition: service_healthy
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    ports:
+      - "127.0.0.1:11334:11334/tcp"
+      - "11334:11334/udp"
+      - "11335-11342:11335-11342/udp"
+      - "11835-11842:11835-11842/udp"
+      - "21334-21342:21334-21342/udp"
+      - "21835-21842:21835-21842/udp"
+    volumes:
+      - "${REPO_ROOT_SLASH:-../..}/games/server:/app/server:ro"
+      - kongor-run-server:/app/run-server
+      - "${REPO_ROOT_SLASH:-../..}/games/server/override/bots/rl_runtime:/app/server-rl-runtime"
+      - "${REPO_ROOT_SLASH:-../..}/logs/docker/compel-dedicated:/app/logs"
+      - "${REPO_ROOT_SLASH:-../..}/logs/docker/compel-dedicated/artefacts:/opt/hon/config"
+    environment:
+      OTEL_EXPORTER_OTLP_ENDPOINT: "http://aspire-dashboard:18889"
+      OTEL_EXPORTER_OTLP_PROTOCOL: "grpc"
+      OTEL_SERVICE_NAME: "compel-dedicated"
+      COMPEL_FLEET_TIER: "D"
+      Compel__FleetTier: "D"
+      COMPEL_QUEUE_ARCADE_MODE: "false"
+      Compel__QueueArcadeMode: "false"
+      COMPEL_PORT_RANGE_OFFSET: "100"
+      Compel__PortRangeOffset: "100"
+      COMPEL_CONTROL_PLANE_PORT: "11334"
+      Compel__ControlPlanePort: "11334"
+      COMPEL_CONTROL_PLANE_BIND_ADDRESS: "0.0.0.0"
+      Compel__ControlPlaneBindAddress: "0.0.0.0"
+      COMPEL_INSTANCES: "${MATCH_INSTANCES:-2}"
+      Compel__Instances: "${MATCH_INSTANCES:-2}"
+      Compel__WarmInstancesTarget: "${MATCH_WARM_INSTANCES:-1}"
+      COMPEL_PRIORITY_MODE: "${COMPEL_PRIORITY_MODE:-Adaptive}"
+      Compel__PriorityMode: "${COMPEL_PRIORITY_MODE:-Adaptive}"
+      Compel__InstallationDirectory: "/app/run-server"
+      Compel__RlRuntimeDirectory: "/app/server-rl-runtime"
+      Compel__RlTrajectoryDirectory: "/app/logs/rl_trajectories"
+      Compel__LiveHubUrl: "http://web-ui:5266/hubs/live-matches"
+      InternalServiceKey: "${INTERNAL_SERVICE_KEY:-}"
+      COMPEL_GATEWAY: "127.0.0.1"
+      Compel__Gateway: "127.0.0.1"
+      Compel__MasterServerAddress: "http://master-server:55555"
+      MasterServer__Address: "http://master-server:55555"
+      MASTER_SERVER_ADDRESS: "http://master-server:55555"
+      CHAT_SERVER_INTERNAL_HOST: "chat-server"
+      HostAccount__UserName: "${MATCH_HOST_USERNAME:-kongor_host_dock}"
+      Compel__HostUserName: "${MATCH_HOST_USERNAME:-kongor_host_dock}"
+      COMPEL_USER_NAME: "${MATCH_HOST_USERNAME:-kongor_host_dock}"
+      Compel__UserName: "${MATCH_HOST_USERNAME:-kongor_host_dock}"
+      HOST_USERNAME: "${MATCH_HOST_USERNAME:-kongor_host_dock}"
+      HostAccount__Password: "${HOST_PASSWORD:-}"
+      Compel__HostPassword: "${HOST_PASSWORD:-}"
+      HOST_PASSWORD: "${HOST_PASSWORD:-}"
+      Compel__Password: "${HOST_PASSWORD:-}"
+      COMPEL_AUTHENTICATION_TOKEN: "${COMPEL_AUTH_TOKEN:-}"
+      Compel__AuthenticationToken: "${COMPEL_AUTH_TOKEN:-}"
+      COMPEL_LOCATION: "${COMPEL_LOCATION:-USE}"
+      Compel__Location: "${COMPEL_LOCATION:-USE}"
+      COMPEL_SERVER_NAME_PREFIX: "${MATCH_SERVER_PREFIX:-^c[DOCKER] ^oKONGOR ARENA ^g}"
+      Compel__ServerNamePrefix: "${MATCH_SERVER_PREFIX:-^c[DOCKER] ^oKONGOR ARENA ^g}"
+    deploy:
+      resources:
+        limits:
+          cpus: "${MATCH_CPU_LIMIT:-4.0}"
+          memory: "${MATCH_MEM_LIMIT:-4096M}"
+
+  compel-queue-arcade:
+    image: projectkongor/compel-dedicated:latest
+    container_name: kongor-stack-compel-arcade
+    build:
+      context: ../..
+      dockerfile: infra/docker/Dockerfile.dedicated
+      args:
+        KONGOR_SOURCE_STAMP: "${KONGOR_SOURCE_STAMP:-local}"
+    restart: unless-stopped
+    depends_on:
+      aspire-dashboard:
+        condition: service_started
+      master-server:
+        condition: service_healthy
+      chat-server:
+        condition: service_healthy
+      compel-dedicated:
+        condition: service_healthy
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    ports:
+      - "127.0.0.1:11484:11484/tcp"
+      - "11484:11484/udp"
+      - "11485-11492:11485-11492/udp"
+      - "11985-11992:11985-11992/udp"
+      - "21484-21492:21484-21492/udp"
+      - "21985-21992:21985-21992/udp"
+    volumes:
+      - kongor-run-server:/app/run-server:ro
+      - "${REPO_ROOT_SLASH:-../..}/games/server/override/bots/rl_runtime:/app/server-rl-runtime"
+      - "${REPO_ROOT_SLASH:-../..}/logs/docker/compel-queue-arcade:/app/logs"
+      - "${REPO_ROOT_SLASH:-../..}/logs/docker/compel-queue-arcade/artefacts:/opt/hon/config"
+    environment:
+      OTEL_EXPORTER_OTLP_ENDPOINT: "http://aspire-dashboard:18889"
+      OTEL_EXPORTER_OTLP_PROTOCOL: "grpc"
+      OTEL_SERVICE_NAME: "compel-queue-arcade"
+      COMPEL_FLEET_TIER: "Q"
+      Compel__FleetTier: "Q"
+      COMPEL_QUEUE_ARCADE_MODE: "true"
+      Compel__QueueArcadeMode: "true"
+      KONGOR_QUEUE_ARCADE: "1"
+      Compel__QueueArcadeRoundDurationSeconds: "600"
+      COMPEL_PORT_RANGE_OFFSET: "250"
+      Compel__PortRangeOffset: "250"
+      COMPEL_CONTROL_PLANE_PORT: "11484"
+      Compel__ControlPlanePort: "11484"
+      COMPEL_CONTROL_PLANE_BIND_ADDRESS: "0.0.0.0"
+      Compel__ControlPlaneBindAddress: "0.0.0.0"
+      COMPEL_INSTANCES: "${ARCADE_INSTANCES:-2}"
+      Compel__Instances: "${ARCADE_INSTANCES:-2}"
+      Compel__WarmInstancesTarget: "${ARCADE_WARM_INSTANCES:-1}"
+      COMPEL_PRIORITY_MODE: "${COMPEL_PRIORITY_MODE:-Adaptive}"
+      Compel__PriorityMode: "${COMPEL_PRIORITY_MODE:-Adaptive}"
+      Compel__InstallationDirectory: "/app/run-server"
+      Compel__RlRuntimeDirectory: "/app/server-rl-runtime"
+      Compel__RlTrajectoryDirectory: "/app/logs/rl_trajectories"
+      Compel__LiveHubUrl: "http://web-ui:5266/hubs/live-matches"
+      InternalServiceKey: "${INTERNAL_SERVICE_KEY:-}"
+      COMPEL_GATEWAY: "127.0.0.1"
+      Compel__Gateway: "127.0.0.1"
+      Compel__MasterServerAddress: "http://master-server:55555"
+      MasterServer__Address: "http://master-server:55555"
+      MASTER_SERVER_ADDRESS: "http://master-server:55555"
+      CHAT_SERVER_INTERNAL_HOST: "chat-server"
+      HostAccount__UserName: "${ARCADE_HOST_USERNAME:-kongor_host_arc}"
+      Compel__HostUserName: "${ARCADE_HOST_USERNAME:-kongor_host_arc}"
+      COMPEL_USER_NAME: "${ARCADE_HOST_USERNAME:-kongor_host_arc}"
+      Compel__UserName: "${ARCADE_HOST_USERNAME:-kongor_host_arc}"
+      HOST_USERNAME: "${ARCADE_HOST_USERNAME:-kongor_host_arc}"
+      HostAccount__Password: "${HOST_PASSWORD:-}"
+      Compel__HostPassword: "${HOST_PASSWORD:-}"
+      HOST_PASSWORD: "${HOST_PASSWORD:-}"
+      Compel__Password: "${HOST_PASSWORD:-}"
+      COMPEL_AUTHENTICATION_TOKEN: "${COMPEL_AUTH_TOKEN:-}"
+      Compel__AuthenticationToken: "${COMPEL_AUTH_TOKEN:-}"
+      COMPEL_LOCATION: "${COMPEL_LOCATION:-USE}"
+      Compel__Location: "${COMPEL_LOCATION:-USE}"
+      COMPEL_SERVER_NAME_PREFIX: "${ARCADE_SERVER_PREFIX:-QUEUE ARCADE}"
+      Compel__ServerNamePrefix: "${ARCADE_SERVER_PREFIX:-QUEUE ARCADE}"
+    deploy:
+      resources:
+        limits:
+          cpus: "${ARCADE_CPU_LIMIT:-3.0}"
+          memory: "${ARCADE_MEM_LIMIT:-3584M}"
+
+volumes:
+  kongor-stack-valkey:
+  kongor-stack-postgres:
+  kongor-stack-replays:
+  kongor-dataprotection-keys:
+  kongor-run-server:
+    name: "${KONGOR_SERVER_VOLUME:-kongor-stack-run-server}"

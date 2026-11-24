@@ -1,0 +1,46 @@
+{
+  "schema_version": "2.0.0",
+  "dossier_id": "DOSSIER-NG-VID-D3D9-DRAW2D-SAMPLER-OOB",
+  "created_utc": "2026-11-01T23:30:00Z",
+  "status": "active",
+  "authority_scope": "client_cosmetic_only",
+  "target": {
+    "binary_name": "vid_d3d9_x64.dll",
+    "rva": "0x00029100",
+    "function_name": "D3D_Draw2D",
+    "symbol_name": "D3D_Draw2D+0x29100..0x29355 (diffuse sampler stage index guard)",
+    "calling_convention": "in-body mid-function x64 stub (zero RSP delta)"
+  },
+  "cleanroom_mapping": {
+    "source_file": "native/proxies/native_guard/d3d9_texture_healer.cpp"
+  },
+  "triangulation": {
+    "static_source": "Ghidra ProjectKongor.rep disassembly of vid_d3d9_x64.dll + 0x29100..0x29355 showing MOV EDI, R15D; IMUL RBX, RDI, 0x34; LEA RDX, [vid_d3d9_base]; MOV EAX, [RBX+RDX+0x3e76e0] and skip target BT R14D, 0x9 at +0x29355",
+    "dynamic_source": "WinDbg crash dump analysis of R15D=0xFFFFFFFF -> RDI=0x00000000FFFFFFFF -> RBX=0x33FFFFFFCC (+223 GB OOB read) + live x64 CPU stub execution in native_guard_unit_tests"
+  },
+  "counterevidence_searched": "Verified live register liveness across vid_d3d9_x64.dll + 0x29100..0x2961C: ESI receives R14D, EDI receives R15D, RDX receives vid_d3d9_x64 image base, RBX is dead on entry to +0x29106 and +0x29355, and RSP is untouched so Win64 .pdata unwind metadata remains 100% valid.",
+  "negative_control": "Valid sampler indices 0..15 execute IMUL RBX, RDI, 0x34 and resume at pVidBase + 0x29111 with RDX == pVidBase; invalid indices (0xFFFFFFFF or >= 16) increment g_draw2dDiffuseOobSkipCount and jump to pVidBase + 0x29355 with ESI == R14D, EDI == R15D, RDX == pVidBase, and RSP unchanged.",
+  "obligations": [
+    {
+      "id": "OBL-NG-DRAW2D-01",
+      "category": "bounds_check_crash_guard",
+      "description": "Verify exact 17-byte sequence at vid_d3d9_x64.dll + 0x29100 and 5-byte BT R14D, 0x9 sequence at +0x29355 before patching, and skip diffuse sampler binding to +0x29355 whenever unsigned EDI >= 16 (including 0xFFFFFFFF) without modifying RSP.",
+      "status": "satisfied",
+      "satisfied_in": "native/proxies/native_guard/d3d9_texture_healer.cpp",
+      "verified_by_test": "native/proxies/native_guard/tests/native_guard_unit_tests.cpp"
+    },
+    {
+      "id": "OBL-NG-DRAW2D-02",
+      "category": "rip_relocation_invariant",
+      "description": "Relocate the overwritten 7-byte RIP-relative LEA RDX, [rip - 0x29111] at vid_d3d9_x64.dll + 0x2910A into an exact 64-bit MOVABS RDX, pVidBase load before branching to either +0x29111 or +0x29355.",
+      "status": "satisfied",
+      "satisfied_in": "native/proxies/native_guard/native_guard_internal.h",
+      "verified_by_test": "native/proxies/native_guard/tests/native_guard_unit_tests.cpp"
+    }
+  ],
+  "limitations_and_unknowns": {
+    "triangulation_status": "dynamically_confirmed",
+    "unknown_offsets": [],
+    "indirect_calls": []
+  }
+}

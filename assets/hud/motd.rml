@@ -1,0 +1,82 @@
+<rml>
+<head>
+    <title>NEXUS Panoramic News Feed</title>
+    <link type="text/rcss" href="motd.rcss"/>
+</head>
+<body>
+    <div id="motd-window">
+        <!-- Top Window Header -->
+        <div class="motd-header">
+            <span class="motd-header-title">PROJECT KONGOR V - NEWS &amp; UPDATES (v5.0.2)</span>
+            <span class="motd-close-btn" id="btn-close-motd" onclick="Dismiss">&#215;</span>
+        </div>
+        <div class="clear-fix"></div>
+
+        <!-- 3-Column Panoramic Float Layout -->
+        <div class="motd-columns">
+            <!-- Column 1: Gwynplaine Hero Spotlight -->
+            <div class="hero-card">
+                <span class="badge-red">NEW HERO SPOTLIGHT</span>
+                <div class="hero-portrait-frame">
+                    <img src="/heroes/gwynplaine/icon.tga" width="64" height="64"/>
+                </div>
+                <div class="hero-name" id="hero-name">Gwynplaine</div>
+                <div class="hero-subtitle" id="hero-subtitle">The Man Who Laughs</div>
+                <div class="hero-tags" id="hero-tags">Agility / Magic Assassin</div>
+                <div class="hero-lore" id="hero-lore">
+                    Gwynplaine flings ancient runic chain scythes across the battlefield, reeling in victims with Runic Tether.
+                </div>
+                <div class="abilities-row">
+                    <div class="ability-box"><img src="/heroes/gwynplaine/ability_01/icon.tga" width="34" height="34"/></div>
+                    <div class="ability-box"><img src="/heroes/gwynplaine/ability_02/icon.tga" width="34" height="34"/></div>
+                    <div class="ability-box"><img src="/heroes/gwynplaine/ability_03/icon.tga" width="34" height="34"/></div>
+                    <div class="ability-box ult"><img src="/heroes/gwynplaine/ability_04/icon.tga" width="34" height="34"/></div>
+                </div>
+                <div class="hero-btn-row">
+                    <div class="btn-hero" onclick="PracticeHero">Practice Hero</div>
+                </div>
+            </div>
+
+            <!-- Column 2: Carousel Stage -->
+            <div class="carousel-card">
+                <span class="badge-blue" id="slide-badge">LEGENDARY AVATAR</span>
+                <div class="carousel-title" id="slide-title">Abyssal Bubbles</div>
+                <div class="carousel-subtitle" id="slide-subtitle">Deep-Sea Trench Leviathan * Bioluminescent Chitin</div>
+                <div class="feature-bullets">
+                    <div class="feature-bullet" id="bullet-1">* Bioluminescent Ability Spell Effects (Shell Surf &amp; Kelp Field)</div>
+                    <div class="feature-bullet" id="bullet-2">* Atmospheric Deep-Sea Soundscape &amp; Voice</div>
+                    <div class="feature-bullet" id="bullet-3">* Animated 3D Store Pedestal &amp; Kill Celebrations</div>
+                </div>
+                <div class="carousel-nav-row">
+                    <div class="carousel-arrow" id="btn-prev-slide" onclick="PrevSlide">&lt;</div>
+                    <div class="dot active" id="dot-0" onclick="SelectSlide:0"></div>
+                    <div class="dot" id="dot-1" onclick="SelectSlide:1"></div>
+                    <div class="dot" id="dot-2" onclick="SelectSlide:2"></div>
+                    <div class="dot" id="dot-3" onclick="SelectSlide:3"></div>
+                    <div class="carousel-arrow" id="btn-next-slide" onclick="NextSlide">&gt;</div>
+                </div>
+                <div class="btn-carousel" id="slide-action-btn" onclick="SlideAction">View In Store</div>
+            </div>
+
+            <!-- Column 3: Community & Volunteers -->
+            <div class="vault-card">
+                <span class="badge-gold">UPDATE 5.0.2 LIVE</span>
+                <div class="vault-title">MATCHMAKING &amp; CUSTOM MAPS</div>
+                <div class="vault-subtitle">Queue Arcade Swaps * Custom Stats &amp; Scoreboards</div>
+                <div class="deal-item" id="deal-1" onclick="ViewDeal:1">
+                    <div class="deal-name" id="deal-1-title">What's New in v5.0.2</div>
+                    <div class="deal-price" id="deal-1-price">War Effort Quests * Matchmaking Fix * Bot Swaps</div>
+                    <div class="deal-desc" id="deal-1-desc">War Effort 14-bag quest cycles, Valkey matchmaking fix, seamless Queue Arcade bot/player swaps, custom map stats &amp; scoreboards, Strikers 3-2-1 fix, and avatar polish.</div>
+                </div>
+                <div class="deal-item" id="deal-2" onclick="ViewDeal:2">
+                    <div class="deal-name" id="deal-2-title">Join the Community Discord</div>
+                    <div class="deal-price" id="deal-2-price">discord.gg/projectkongor</div>
+                    <div class="deal-desc" id="deal-2-desc">Connect with players, report bugs, share feedback, or volunteer across C++, C#, and 3D art!</div>
+                </div>
+                <div class="btn-vault" id="btn-visit-store" onclick="OpenStore">Browse Avatars</div>
+            </div>
+            <div class="clear-fix"></div>
+        </div>
+    </div>
+</body>
+</rml>

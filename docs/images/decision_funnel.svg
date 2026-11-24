@@ -1,0 +1,159 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1100 680" width="100%" height="100%" style="background-color: #0d1117; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
+  <defs>
+    <!-- Background Gradient -->
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#161b22"/>
+      <stop offset="100%" stop-color="#0d1117"/>
+    </linearGradient>
+
+    <!-- Card Backgrounds -->
+    <linearGradient id="blueCardGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#1b2838"/>
+      <stop offset="100%" stop-color="#0e1726"/>
+    </linearGradient>
+    <linearGradient id="amberCardGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#2d2215"/>
+      <stop offset="100%" stop-color="#17120a"/>
+    </linearGradient>
+    <linearGradient id="greenCardGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#1a1c36"/>
+      <stop offset="100%" stop-color="#0e1022"/>
+    </linearGradient>
+
+    <!-- Arrow Markers -->
+    <marker id="arrowGray" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 8 5 L 0 9 z" fill="#8b949e"/>
+    </marker>
+    <marker id="arrowBlue" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 8 5 L 0 9 z" fill="#58a6ff"/>
+    </marker>
+    <marker id="arrowAmber" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 8 5 L 0 9 z" fill="#f0883e"/>
+    </marker>
+    <marker id="arrowPurple" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 8 5 L 0 9 z" fill="#a5b4fc"/>
+    </marker>
+
+    <!-- Drop Shadow Filter -->
+    <filter id="shadow" x="-5%" y="-5%" width="110%" height="110%">
+      <feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#000000" flood-opacity="0.6"/>
+    </filter>
+  </defs>
+
+  <!-- Canvas Background -->
+  <rect width="100%" height="100%" fill="url(#bgGrad)" rx="12"/>
+  <rect width="100%" height="100%" fill="none" stroke="#30363d" stroke-width="1.5" rx="12"/>
+
+  <!-- Top Title / Start Node -->
+  <g filter="url(#shadow)">
+    <rect x="260" y="28" width="580" height="52" rx="26" fill="#21262d" stroke="#58a6ff" stroke-width="2"/>
+    <text x="550" y="60" text-anchor="middle" fill="#f0f6fc" font-size="16" font-weight="700">👋 Welcome to ProjectKongor! What is your primary goal?</text>
+  </g>
+
+  <!-- Flow to Choice -->
+  <path d="M 550 80 L 550 112" stroke="#8b949e" stroke-width="2" marker-end="url(#arrowGray)"/>
+
+  <!-- Decision Node -->
+  <g filter="url(#shadow)">
+    <polygon points="550,115 670,145 550,175 430,145" fill="#161b22" stroke="#8b949e" stroke-width="2"/>
+    <text x="550" y="150" text-anchor="middle" fill="#f0f6fc" font-size="14" font-weight="700">Select Your Path</text>
+  </g>
+
+  <!-- Connectors from Decision to 3 Columns -->
+  <!-- Left: Play -> WILLOWMAKER -->
+  <path d="M 430 145 C 230 145, 190 195, 190 225" fill="none" stroke="#58a6ff" stroke-width="2" marker-end="url(#arrowBlue)"/>
+  <g filter="url(#shadow)">
+    <rect x="75" y="170" width="230" height="30" rx="15" fill="#0d1117" stroke="#388bfd" stroke-width="1.5"/>
+    <text x="190" y="190" text-anchor="middle" fill="#79c0ff" font-size="12" font-weight="700">🎮 "I want to PLAY"</text>
+  </g>
+
+  <!-- Center: Host -> COMPEL -->
+  <path d="M 550 175 L 550 225" fill="none" stroke="#f0883e" stroke-width="2" marker-end="url(#arrowAmber)"/>
+  <g filter="url(#shadow)">
+    <rect x="435" y="185" width="230" height="30" rx="15" fill="#0d1117" stroke="#d29922" stroke-width="1.5"/>
+    <text x="550" y="205" text-anchor="middle" fill="#ffab70" font-size="12" font-weight="700">🖥️ "I want to HOST"</text>
+  </g>
+
+  <!-- Right: Run -> CONTROL PANEL GUI -->
+  <path d="M 670 145 C 870 145, 910 195, 910 225" fill="none" stroke="#818cf8" stroke-width="2" marker-end="url(#arrowPurple)"/>
+  <g filter="url(#shadow)">
+    <rect x="795" y="170" width="230" height="30" rx="15" fill="#0d1117" stroke="#6366f1" stroke-width="1.5"/>
+    <text x="910" y="190" text-anchor="middle" fill="#c7d2fe" font-size="12" font-weight="700">⚙️ "I want to RUN / MANAGE"</text>
+  </g>
+
+  <!-- ==================== COLUMN 1: PLAY -> WILLOWMAKER ==================== -->
+  <g filter="url(#shadow)">
+    <rect x="40" y="235" width="300" height="415" rx="12" fill="url(#blueCardGrad)" stroke="#388bfd" stroke-width="1.5"/>
+    
+    <!-- Column Header -->
+    <rect x="40" y="235" width="300" height="50" rx="12" fill="#1f6feb" fill-opacity="0.3"/>
+    <text x="190" y="267" text-anchor="middle" fill="#58a6ff" font-size="16" font-weight="700">🚀 WILLOWMAKER Launcher</text>
+
+    <!-- Step 1 Card -->
+    <rect x="55" y="300" width="270" height="145" rx="8" fill="#161b22" stroke="#30363d" stroke-width="1.2"/>
+    <text x="70" y="328" fill="#f0f6fc" font-size="14" font-weight="700">1. Launch Game Client</text>
+    <text x="70" y="352" fill="#c9d1d9" font-size="12">Automatic CDN sync, 1000 FPS</text>
+    <text x="70" y="370" fill="#c9d1d9" font-size="12">patch, DXVK Vulkan &amp; RTX Remix.</text>
+    <rect x="70" y="392" width="240" height="32" rx="6" fill="#21262d" stroke="#388bfd" stroke-width="1"/>
+    <text x="190" y="413" text-anchor="middle" fill="#79c0ff" font-size="11" font-weight="600">👉 src/apps/willowmaker/README.md</text>
+
+    <!-- Step 2 Card -->
+    <rect x="55" y="465" width="270" height="160" rx="8" fill="#161b22" stroke="#30363d" stroke-width="1.2"/>
+    <text x="70" y="493" fill="#f0f6fc" font-size="14" font-weight="700">2. Mods &amp; Discord RPC</text>
+    <text x="70" y="517" fill="#c9d1d9" font-size="12">Install skins, HUD mods, and sync</text>
+    <text x="70" y="535" fill="#c9d1d9" font-size="12">real-time hero stats to Discord.</text>
+    <rect x="70" y="565" width="240" height="32" rx="6" fill="#21262d" stroke="#388bfd" stroke-width="1"/>
+    <text x="190" y="586" text-anchor="middle" fill="#79c0ff" font-size="11" font-weight="600">📖 Get Started as Player</text>
+  </g>
+
+  <!-- ==================== COLUMN 2: HOST -> COMPEL ==================== -->
+  <g filter="url(#shadow)">
+    <rect x="400" y="235" width="300" height="415" rx="12" fill="url(#amberCardGrad)" stroke="#d29922" stroke-width="1.5"/>
+    
+    <!-- Column Header -->
+    <rect x="400" y="235" width="300" height="50" rx="12" fill="#d29922" fill-opacity="0.25"/>
+    <text x="550" y="267" text-anchor="middle" fill="#f0883e" font-size="16" font-weight="700">🛡️ COMPEL Server Manager</text>
+
+    <!-- Step 1 Card -->
+    <rect x="415" y="300" width="270" height="145" rx="8" fill="#161b22" stroke="#30363d" stroke-width="1.2"/>
+    <text x="430" y="328" fill="#f0f6fc" font-size="14" font-weight="700">1. Run Dedicated Manager</text>
+    <text x="430" y="352" fill="#c9d1d9" font-size="12">Win32 Job Object sandboxing,</text>
+    <text x="430" y="370" fill="#c9d1d9" font-size="12">1.0ms timer pacing, &amp; anti-DDoS.</text>
+    <rect x="430" y="392" width="240" height="32" rx="6" fill="#21262d" stroke="#d29922" stroke-width="1"/>
+    <text x="550" y="413" text-anchor="middle" fill="#ffab70" font-size="11" font-weight="600">👉 src/apps/compel/README.md</text>
+
+    <!-- Step 2 Card -->
+    <rect x="415" y="465" width="270" height="160" rx="8" fill="#161b22" stroke="#30363d" stroke-width="1.2"/>
+    <text x="430" y="493" fill="#f0f6fc" font-size="14" font-weight="700">2. Firewall &amp; Gateway</text>
+    <text x="430" y="517" fill="#c9d1d9" font-size="12">Open UDP 21235+ for match slaves</text>
+    <text x="430" y="535" fill="#c9d1d9" font-size="12">&amp; register heartbeat with Master.</text>
+    <rect x="430" y="565" width="240" height="32" rx="6" fill="#21262d" stroke="#d29922" stroke-width="1"/>
+    <text x="550" y="586" text-anchor="middle" fill="#ffab70" font-size="11" font-weight="600">📖 Get Started as Host</text>
+  </g>
+
+  <!-- ==================== COLUMN 3: RUN -> CONTROL PANEL GUI ==================== -->
+  <g filter="url(#shadow)">
+    <rect x="760" y="235" width="300" height="415" rx="12" fill="url(#greenCardGrad)" stroke="#6366f1" stroke-width="1.5"/>
+    
+    <!-- Column Header -->
+    <rect x="760" y="235" width="300" height="50" rx="12" fill="#6366f1" fill-opacity="0.25"/>
+    <text x="910" y="267" text-anchor="middle" fill="#a5b4fc" font-size="16" font-weight="700">🖥️ NEXUS Control Panel GUI</text>
+
+    <!-- Step 1 Card -->
+    <rect x="775" y="300" width="270" height="145" rx="8" fill="#161b22" stroke="#30363d" stroke-width="1.2"/>
+    <text x="790" y="328" fill="#f0f6fc" font-size="14" font-weight="700">1. Admin Desktop GUI</text>
+    <text x="790" y="352" fill="#c9d1d9" font-size="12">Manage accounts, browse servers,</text>
+    <text x="790" y="370" fill="#c9d1d9" font-size="12">User Secrets, &amp; 3D hero models.</text>
+    <rect x="790" y="392" width="240" height="32" rx="6" fill="#21262d" stroke="#6366f1" stroke-width="1"/>
+    <text x="910" y="413" text-anchor="middle" fill="#c7d2fe" font-size="11" font-weight="600">👉 src/apps/control-panel/README.md</text>
+
+    <!-- Step 2 Card -->
+    <rect x="775" y="465" width="270" height="160" rx="8" fill="#161b22" stroke="#30363d" stroke-width="1.2"/>
+    <text x="790" y="493" fill="#f0f6fc" font-size="14" font-weight="700">2. Cluster &amp; Fleet Control</text>
+    <text x="790" y="517" fill="#c9d1d9" font-size="12">1-command Aspire orchestration</text>
+    <text x="790" y="535" fill="#c9d1d9" font-size="12">&amp; KONGOR Master Server stack.</text>
+    <rect x="790" y="565" width="240" height="32" rx="6" fill="#21262d" stroke="#6366f1" stroke-width="1"/>
+    <text x="910" y="586" text-anchor="middle" fill="#c7d2fe" font-size="11" font-weight="600">📖 Get Started with Admin GUI</text>
+  </g>
+
+</svg>

@@ -1,0 +1,154 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1150 780" width="100%" height="100%" style="background-color: #0d1117; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#161b22"/>
+      <stop offset="100%" stop-color="#0d1117"/>
+    </linearGradient>
+    <marker id="arrowBlue" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 8 5 L 0 9 z" fill="#58a6ff"/>
+    </marker>
+    <marker id="arrowGreen" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 8 5 L 0 9 z" fill="#3fb950"/>
+    </marker>
+    <marker id="arrowPurple" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 8 5 L 0 9 z" fill="#bc8cff"/>
+    </marker>
+    <marker id="arrowOrange" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 8 5 L 0 9 z" fill="#d29922"/>
+    </marker>
+    <filter id="shadow" x="-5%" y="-5%" width="110%" height="110%">
+      <feDropShadow dx="0" dy="4" stdDeviation="5" flood-color="#000000" flood-opacity="0.5"/>
+    </filter>
+  </defs>
+
+  <rect width="100%" height="100%" fill="url(#bgGrad)" rx="12"/>
+  <rect width="100%" height="100%" fill="none" stroke="#30363d" stroke-width="1.5" rx="12"/>
+
+  <!-- TITLE -->
+  <text x="575" y="40" text-anchor="middle" fill="#f0f6fc" font-size="18" font-weight="700">🛡️ COMPEL Dedicated Server Supervision, Sandboxing &amp; Process Lifecycle</text>
+
+  <!-- 6 LIFECYCLE PHASES -->
+
+  <!-- PHASE 1: Startup & Pre-Flight -->
+  <g filter="url(#shadow)">
+    <rect x="40" y="70" width="1070" height="95" rx="10" fill="#161b22" stroke="#1f6feb" stroke-width="1.5"/>
+    <rect x="40" y="70" width="1070" height="26" rx="10" fill="#1f6feb" fill-opacity="0.25"/>
+    <text x="60" y="88" fill="#58a6ff" font-size="12" font-weight="700">PHASE 1: Host Startup &amp; Pre-Flight Environment Checks</text>
+    
+    <rect x="60" y="105" width="320" height="50" rx="6" fill="#21262d" stroke="#388bfd" stroke-width="1"/>
+    <text x="75" y="125" fill="#f0f6fc" font-size="11" font-weight="700">🔒 SingleInstanceGuard</text>
+    <text x="75" y="142" fill="#8b949e" font-size="10">Acquires COMPEL.lock mutex file</text>
+
+    <rect x="400" y="105" width="340" height="50" rx="6" fill="#21262d" stroke="#388bfd" stroke-width="1"/>
+    <text x="415" y="125" fill="#f0f6fc" font-size="11" font-weight="700">⏱️ 1.0ms Precision Timer Pacing</text>
+    <text x="415" y="142" fill="#8b949e" font-size="10">Invokes winmm.dll timeBeginPeriod(1)</text>
+
+    <rect x="760" y="105" width="330" height="50" rx="6" fill="#21262d" stroke="#388bfd" stroke-width="1"/>
+    <text x="775" y="125" fill="#f0f6fc" font-size="11" font-weight="700">🌐 Master Server Connectivity</text>
+    <text x="775" y="142" fill="#8b949e" font-size="10">ICMP &amp; HTTP ping probe (masterserver.newbs.io)</text>
+  </g>
+
+  <!-- PHASE 2: CDN Sync -->
+  <g filter="url(#shadow)">
+    <rect x="40" y="180" width="1070" height="95" rx="10" fill="#161b22" stroke="#238636" stroke-width="1.5"/>
+    <rect x="40" y="180" width="1070" height="26" rx="10" fill="#238636" fill-opacity="0.25"/>
+    <text x="60" y="198" fill="#3fb950" font-size="12" font-weight="700">PHASE 2: Server Binary &amp; Asset CDN Synchronization</text>
+    
+    <rect x="60" y="215" width="320" height="50" rx="6" fill="#21262d" stroke="#238636" stroke-width="1"/>
+    <text x="75" y="235" fill="#f0f6fc" font-size="11" font-weight="700">📜 Fetch Server Manifest</text>
+    <text x="75" y="252" fill="#8b949e" font-size="10">GET /was/manifest.json (Game Server Tree)</text>
+
+    <rect x="400" y="215" width="340" height="50" rx="6" fill="#21262d" stroke="#238636" stroke-width="1"/>
+    <text x="415" y="235" fill="#f0f6fc" font-size="11" font-weight="700">🔍 SHA-256 Checksum Audit</text>
+    <text x="415" y="252" fill="#8b949e" font-size="10">Verifies local binaries, maps, and entity scripts</text>
+
+    <rect x="760" y="215" width="330" height="50" rx="6" fill="#21262d" stroke="#238636" stroke-width="1"/>
+    <text x="775" y="235" fill="#f0f6fc" font-size="11" font-weight="700">📦 Automatic Delta Downloader</text>
+    <text x="775" y="252" fill="#8b949e" font-size="10">Synchronizes patched server assets on boot</text>
+  </g>
+
+  <!-- PHASE 3: Sandboxing & Slave Spawning -->
+  <g filter="url(#shadow)">
+    <rect x="40" y="290" width="1070" height="105" rx="10" fill="#161b22" stroke="#d29922" stroke-width="1.5"/>
+    <rect x="40" y="290" width="1070" height="26" rx="10" fill="#d29922" fill-opacity="0.25"/>
+    <text x="60" y="308" fill="#d29922" font-size="12" font-weight="700">PHASE 3: Win32 Job Object Sandboxing &amp; Slave Process Spawning</text>
+    
+    <rect x="60" y="325" width="320" height="60" rx="6" fill="#21262d" stroke="#d29922" stroke-width="1"/>
+    <text x="75" y="345" fill="#f0f6fc" font-size="11" font-weight="700">🧠 CPU Core Affinity Engine</text>
+    <text x="75" y="360" fill="#8b949e" font-size="10">Binds to Performance P-Cores</text>
+    <text x="75" y="373" fill="#d29922" font-size="9">Eliminates E-Core context latency</text>
+
+    <rect x="400" y="325" width="340" height="60" rx="6" fill="#21262d" stroke="#d29922" stroke-width="1"/>
+    <text x="415" y="345" fill="#f0f6fc" font-size="11" font-weight="700">🛡️ Win32 Job Object Sandbox</text>
+    <text x="415" y="360" fill="#8b949e" font-size="10">4GB RAM cap per slave instance</text>
+    <text x="415" y="373" fill="#d29922" font-size="9">Auto-terminates child processes on exit</text>
+
+    <rect x="760" y="325" width="330" height="60" rx="6" fill="#21262d" stroke="#d29922" stroke-width="1"/>
+    <text x="775" y="345" fill="#f0f6fc" font-size="11" font-weight="700">⚔️ Spawns hon_x64.exe Slaves</text>
+    <text x="775" y="360" fill="#8b949e" font-size="10">Local Ports: Game 11235+, Voice 11435+</text>
+    <text x="775" y="373" fill="#d29922" font-size="9">Runs in headless dedicated mode</text>
+  </g>
+
+  <!-- PHASE 4: Master Server Registration -->
+  <g filter="url(#shadow)">
+    <rect x="40" y="410" width="1070" height="95" rx="10" fill="#161b22" stroke="#a371f7" stroke-width="1.5"/>
+    <rect x="40" y="410" width="1070" height="26" rx="10" fill="#a371f7" fill-opacity="0.25"/>
+    <text x="60" y="428" fill="#bc8cff" font-size="12" font-weight="700">PHASE 4: Master Server Session Registration &amp; UDP Ping Probes</text>
+    
+    <rect x="60" y="445" width="320" height="50" rx="6" fill="#21262d" stroke="#a371f7" stroke-width="1"/>
+    <text x="75" y="465" fill="#f0f6fc" font-size="11" font-weight="700">🏛️ Slot Registration Handshake</text>
+    <text x="75" y="482" fill="#8b949e" font-size="10">HTTP POST /server_requester.php?f=set_online</text>
+
+    <rect x="400" y="445" width="340" height="50" rx="6" fill="#21262d" stroke="#a371f7" stroke-width="1"/>
+    <text x="415" y="465" fill="#f0f6fc" font-size="11" font-weight="700">📡 Binary UDP Ping Responder</text>
+    <text x="415" y="482" fill="#8b949e" font-size="10">Port 21234: Answers 46-byte challenge probe</text>
+
+    <rect x="760" y="445" width="330" height="50" rx="6" fill="#21262d" stroke="#a371f7" stroke-width="1"/>
+    <text x="775" y="465" fill="#f0f6fc" font-size="11" font-weight="700">🟢 Server Status: ONLINE</text>
+    <text x="775" y="482" fill="#8b949e" font-size="10">Visible to players in game server browser</text>
+  </g>
+
+  <!-- PHASE 5: Anti-DDoS Proxy & Game Relay -->
+  <g filter="url(#shadow)">
+    <rect x="40" y="520" width="1070" height="105" rx="10" fill="#161b22" stroke="#238636" stroke-width="1.5"/>
+    <rect x="40" y="520" width="1070" height="26" rx="10" fill="#238636" fill-opacity="0.25"/>
+    <text x="60" y="538" fill="#3fb950" font-size="12" font-weight="700">PHASE 5: Anti-DDoS UDP Proxy &amp; Game Packet Relay</text>
+    
+    <rect x="60" y="555" width="320" height="60" rx="6" fill="#21262d" stroke="#238636" stroke-width="1"/>
+    <text x="75" y="575" fill="#f0f6fc" font-size="11" font-weight="700">🌐 Public UDP Port (21235+)</text>
+    <text x="75" y="590" fill="#8b949e" font-size="10">Player client connects to public port</text>
+    <text x="75" y="603" fill="#7ee787" font-size="9">Token-bucket rate limiter active</text>
+
+    <rect x="400" y="555" width="340" height="60" rx="6" fill="#21262d" stroke="#238636" stroke-width="1"/>
+    <text x="415" y="575" fill="#f0f6fc" font-size="11" font-weight="700">🛡️ 58-Byte Challenge-Response</text>
+    <text x="415" y="590" fill="#8b949e" font-size="10">Blocks spoofed UDP reflection attacks</text>
+    <text x="415" y="603" fill="#7ee787" font-size="9">Zero CPU cost on invalid packets</text>
+
+    <rect x="760" y="555" width="330" height="60" rx="6" fill="#21262d" stroke="#238636" stroke-width="1"/>
+    <text x="775" y="575" fill="#f0f6fc" font-size="11" font-weight="700">⚡ Local Loopback Relay (11235+)</text>
+    <text x="775" y="590" fill="#8b949e" font-size="10">Relays verified packets to isolated slave</text>
+    <text x="775" y="603" fill="#7ee787" font-size="9">Zero-copy socket forwarding</text>
+  </g>
+
+  <!-- PHASE 6: Real-Time Combat Log Telemetry -->
+  <g filter="url(#shadow)">
+    <rect x="40" y="640" width="1070" height="110" rx="10" fill="#161b22" stroke="#1f6feb" stroke-width="1.5"/>
+    <rect x="40" y="640" width="1070" height="26" rx="10" fill="#1f6feb" fill-opacity="0.25"/>
+    <text x="60" y="658" fill="#58a6ff" font-size="12" font-weight="700">PHASE 6: Zero-Allocation Combat Log Telemetry &amp; Stats Submission</text>
+    
+    <rect x="60" y="675" width="320" height="65" rx="6" fill="#21262d" stroke="#388bfd" stroke-width="1"/>
+    <text x="75" y="695" fill="#f0f6fc" font-size="11" font-weight="700">📜 Console Stream Parser</text>
+    <text x="75" y="710" fill="#8b949e" font-size="10">FastCombatLogParser (Span&lt;T&gt;)</text>
+    <text x="75" y="725" fill="#58a6ff" font-size="9">Kills, Towers, Kongor, Bloodlust</text>
+
+    <rect x="400" y="675" width="340" height="65" rx="6" fill="#21262d" stroke="#388bfd" stroke-width="1"/>
+    <text x="415" y="695" fill="#f0f6fc" font-size="11" font-weight="700">📡 SignalR Telemetry Stream</text>
+    <text x="415" y="710" fill="#8b949e" font-size="10">Live match state to Master Server</text>
+    <text x="415" y="725" fill="#58a6ff" font-size="9">Powers live spectator web views</text>
+
+    <rect x="760" y="675" width="330" height="65" rx="6" fill="#21262d" stroke="#388bfd" stroke-width="1"/>
+    <text x="775" y="695" fill="#f0f6fc" font-size="11" font-weight="700">💾 Match End &amp; Replay Upload</text>
+    <text x="775" y="710" fill="#8b949e" font-size="10">Signs match stats with SHA-1 key</text>
+    <text x="775" y="725" fill="#58a6ff" font-size="9">Uploads .honreplay file to storage</text>
+  </g>
+</svg>

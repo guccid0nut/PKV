@@ -1,0 +1,372 @@
+body {
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    pointer-events: none;
+    font-family: Arial, sans-serif;
+    font-size: 13px;
+    color: #e2e8f0;
+}
+
+#motd-window {
+    pointer-events: auto;
+    position: absolute;
+    top: 15%;
+    left: 8%;
+    width: 84%;
+    max-width: 1340px;
+    background-color: rgba(10, 16, 26, 0.96);
+    border-width: 2px;
+    border-color: #0284c7;
+    border-radius: 10px;
+    padding: 16px;
+}
+
+.clear-fix {
+    clear: both;
+}
+
+.motd-header {
+    display: block;
+    border-bottom-width: 1px;
+    border-bottom-color: #1e293b;
+    padding-bottom: 8px;
+    margin-bottom: 14px;
+}
+
+.motd-header-title {
+    float: left;
+    font-size: 16px;
+    font-weight: bold;
+    color: #38bdf8;
+}
+
+.motd-close-btn {
+    float: right;
+    font-size: 18px;
+    color: #94a3b8;
+    cursor: pointer;
+    padding: 0 8px;
+    border-radius: 4px;
+}
+
+.motd-close-btn:hover {
+    color: #ef4444;
+    background-color: rgba(239, 68, 68, 0.15);
+}
+
+/* 3-Column Panoramic Float Layout */
+.motd-columns {
+    display: block;
+    width: 100%;
+}
+
+/* Column 1: Hero Spotlight */
+.hero-card {
+    display: block;
+    float: left;
+    width: 285px;
+    background-color: rgba(15, 23, 42, 0.9);
+    border-width: 1px;
+    border-color: #991b1b;
+    border-radius: 8px;
+    padding: 12px;
+    text-align: center;
+}
+
+.badge-red {
+    display: inline-block;
+    background-color: #b91c1c;
+    color: #ffffff;
+    font-size: 10px;
+    font-weight: bold;
+    padding: 3px 8px;
+    border-radius: 4px;
+    margin-bottom: 10px;
+}
+
+.hero-portrait-frame {
+    width: 72px;
+    height: 72px;
+    border-width: 2px;
+    border-color: #ef4444;
+    border-radius: 6px;
+    background-color: #1e1e2f;
+    margin: 0 auto 8px auto;
+    text-align: center;
+}
+
+.hero-name {
+    font-size: 16px;
+    font-weight: bold;
+    color: #f8fafc;
+}
+
+.hero-subtitle {
+    font-size: 11px;
+    color: #f87171;
+    margin-bottom: 4px;
+}
+
+.hero-tags {
+    font-size: 10px;
+    color: #94a3b8;
+    margin-bottom: 8px;
+}
+
+.hero-lore {
+    font-size: 10px;
+    color: #cbd5e1;
+    background-color: rgba(30, 41, 59, 0.6);
+    border-radius: 4px;
+    padding: 6px;
+    margin-bottom: 10px;
+}
+
+.abilities-row {
+    display: block;
+    text-align: center;
+    margin-bottom: 12px;
+}
+
+.ability-box {
+    display: inline-block;
+    width: 36px;
+    height: 36px;
+    border-width: 1px;
+    border-color: #ef4444;
+    border-radius: 4px;
+    background-color: #0f172a;
+    margin: 0 2px;
+}
+
+.ability-box.ult {
+    border-color: #fbbf24;
+}
+
+.hero-btn-row {
+    display: block;
+    width: 100%;
+}
+
+.btn-hero {
+    display: block;
+    background-color: #991b1b;
+    color: #ffffff;
+    padding: 6px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: bold;
+    cursor: pointer;
+    text-align: center;
+}
+
+.btn-hero:hover {
+    background-color: #dc2626;
+}
+
+/* Column 2: Carousel Stage */
+.carousel-card {
+    display: block;
+    float: left;
+    width: 610px;
+    margin-left: 12px;
+    margin-right: 12px;
+    background-color: rgba(15, 23, 42, 0.9);
+    border-width: 1px;
+    border-color: #0284c7;
+    border-radius: 8px;
+    padding: 14px;
+}
+
+.badge-blue {
+    display: inline-block;
+    background-color: #0284c7;
+    color: #ffffff;
+    font-size: 10px;
+    font-weight: bold;
+    padding: 3px 8px;
+    border-radius: 4px;
+    margin-bottom: 8px;
+}
+
+.carousel-title {
+    font-size: 18px;
+    font-weight: bold;
+    color: #38bdf8;
+}
+
+.carousel-subtitle {
+    font-size: 11px;
+    color: #bae6fd;
+    margin-bottom: 10px;
+}
+
+.feature-bullets {
+    display: block;
+    margin-bottom: 12px;
+}
+
+.feature-bullet {
+    display: block;
+    background-color: rgba(3, 105, 161, 0.15);
+    border-width: 1px;
+    border-color: #0369a1;
+    border-radius: 4px;
+    padding: 8px;
+    font-size: 11px;
+    color: #cbd5e1;
+    margin-bottom: 6px;
+}
+
+.carousel-nav-row {
+    display: block;
+    text-align: center;
+    margin-top: 14px;
+    margin-bottom: 8px;
+}
+
+.carousel-arrow {
+    display: inline-block;
+    vertical-align: middle;
+    width: 22px;
+    height: 22px;
+    background-color: rgba(30, 41, 59, 0.8);
+    border-width: 1px;
+    border-color: #0284c7;
+    border-radius: 4px;
+    color: #38bdf8;
+    font-size: 13px;
+    font-weight: bold;
+    cursor: pointer;
+    text-align: center;
+    line-height: 18px;
+    margin: 0 4px;
+}
+
+.carousel-arrow:hover {
+    background-color: #0284c7;
+    color: #ffffff;
+}
+
+.dot {
+    display: inline-block;
+    vertical-align: middle;
+    width: 8px;
+    height: 8px;
+    border-radius: 4px;
+    background-color: #334155;
+    cursor: pointer;
+    margin: 0 3px;
+}
+
+.dot.active {
+    background-color: #38bdf8;
+    width: 20px;
+}
+
+.btn-carousel {
+    display: block;
+    background-color: #0284c7;
+    color: #ffffff;
+    padding: 6px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: bold;
+    cursor: pointer;
+    text-align: center;
+    margin-top: 8px;
+}
+
+.btn-carousel:hover {
+    background-color: #0369a1;
+}
+
+/* Column 3: Merrick's Vault */
+.vault-card {
+    display: block;
+    float: right;
+    width: 285px;
+    background-color: rgba(15, 23, 42, 0.9);
+    border-width: 1px;
+    border-color: #d97706;
+    border-radius: 8px;
+    padding: 12px;
+    text-align: center;
+}
+
+.badge-gold {
+    display: inline-block;
+    background-color: #b45309;
+    color: #ffffff;
+    font-size: 10px;
+    font-weight: bold;
+    padding: 3px 8px;
+    border-radius: 4px;
+    margin-bottom: 10px;
+}
+
+.vault-title {
+    font-size: 13px;
+    font-weight: bold;
+    color: #fde68a;
+}
+
+.vault-subtitle {
+    font-size: 10px;
+    color: #f59e0b;
+    margin-bottom: 10px;
+}
+
+.deal-item {
+    display: block;
+    background-color: rgba(30, 41, 59, 0.6);
+    border-width: 1px;
+    border-color: #475569;
+    border-radius: 6px;
+    padding: 8px;
+    margin-bottom: 8px;
+    text-align: left;
+    cursor: pointer;
+}
+
+.deal-item:hover {
+    border-color: #f59e0b;
+    background-color: rgba(45, 60, 85, 0.8);
+}
+
+.deal-name {
+    font-size: 11px;
+    font-weight: bold;
+    color: #38bdf8;
+}
+
+.deal-price {
+    font-size: 11px;
+    font-weight: bold;
+    color: #fbbf24;
+}
+
+.deal-desc {
+    font-size: 9px;
+    color: #94a3b8;
+    margin-top: 2px;
+}
+
+.btn-vault {
+    display: block;
+    background-color: #d97706;
+    color: #ffffff;
+    padding: 6px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: bold;
+    cursor: pointer;
+    margin-top: 10px;
+    text-align: center;
+}
+
+.btn-vault:hover {
+    background-color: #f59e0b;
+}

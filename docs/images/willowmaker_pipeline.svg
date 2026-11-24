@@ -1,0 +1,162 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1150 780" width="100%" height="100%" style="background-color: #0d1117; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#161b22"/>
+      <stop offset="100%" stop-color="#0d1117"/>
+    </linearGradient>
+    <marker id="arrowBlue" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 8 5 L 0 9 z" fill="#58a6ff"/>
+    </marker>
+    <marker id="arrowGreen" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 8 5 L 0 9 z" fill="#3fb950"/>
+    </marker>
+    <marker id="arrowPurple" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 8 5 L 0 9 z" fill="#bc8cff"/>
+    </marker>
+    <marker id="arrowOrange" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 8 5 L 0 9 z" fill="#d29922"/>
+    </marker>
+    <marker id="arrowRed" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 8 5 L 0 9 z" fill="#f85149"/>
+    </marker>
+    <filter id="shadow" x="-5%" y="-5%" width="110%" height="110%">
+      <feDropShadow dx="0" dy="4" stdDeviation="5" flood-color="#000000" flood-opacity="0.5"/>
+    </filter>
+  </defs>
+
+  <rect width="100%" height="100%" fill="url(#bgGrad)" rx="12"/>
+  <rect width="100%" height="100%" fill="none" stroke="#30363d" stroke-width="1.5" rx="12"/>
+
+  <!-- TITLE -->
+  <text x="575" y="40" text-anchor="middle" fill="#f0f6fc" font-size="18" font-weight="700">🚀 WILLOWMAKER Launch, Differential CDN Sync &amp; Engine Patcher Pipeline</text>
+
+  <!-- 7 PIPELINE STAGES -->
+  
+  <!-- STAGE 1: Discovery & Safety -->
+  <g filter="url(#shadow)">
+    <rect x="40" y="70" width="1070" height="85" rx="10" fill="#161b22" stroke="#1f6feb" stroke-width="1.5"/>
+    <rect x="40" y="70" width="1070" height="26" rx="10" fill="#1f6feb" fill-opacity="0.25"/>
+    <text x="60" y="88" fill="#58a6ff" font-size="12" font-weight="700">STAGE 1: 3-Tier Discovery &amp; Location Guard Verification</text>
+    
+    <rect x="60" y="105" width="320" height="40" rx="6" fill="#21262d" stroke="#388bfd" stroke-width="1"/>
+    <text x="75" y="125" fill="#f0f6fc" font-size="11" font-weight="700">1. Discovery Probe</text>
+    <text x="75" y="138" fill="#8b949e" font-size="10">AppDir ➔ Steam/Registry ➔ User Dialog</text>
+
+    <rect x="400" y="105" width="340" height="40" rx="6" fill="#21262d" stroke="#388bfd" stroke-width="1"/>
+    <text x="415" y="125" fill="#f0f6fc" font-size="11" font-weight="700">2. Location Guard Safety Check</text>
+    <text x="415" y="138" fill="#8b949e" font-size="10">Guards Desktop/Downloads from pollution</text>
+
+    <rect x="760" y="105" width="330" height="40" rx="6" fill="#21262d" stroke="#238636" stroke-width="1"/>
+    <text x="775" y="125" fill="#3fb950" font-size="11" font-weight="700">3. Verification Verdict: SAFE</text>
+    <text x="775" y="138" fill="#8b949e" font-size="10">Proceeds to Differential CDN Sync</text>
+  </g>
+
+  <!-- STAGE 2: CDN Synchronization -->
+  <g filter="url(#shadow)">
+    <rect x="40" y="170" width="1070" height="85" rx="10" fill="#161b22" stroke="#238636" stroke-width="1.5"/>
+    <rect x="40" y="170" width="1070" height="26" rx="10" fill="#238636" fill-opacity="0.25"/>
+    <text x="60" y="188" fill="#3fb950" font-size="12" font-weight="700">STAGE 2: High-Speed Differential CDN Synchronization (Community / S3 CDN)</text>
+    
+    <rect x="60" y="205" width="320" height="40" rx="6" fill="#21262d" stroke="#238636" stroke-width="1"/>
+    <text x="75" y="225" fill="#f0f6fc" font-size="11" font-weight="700">1. Fetch Remote Manifest</text>
+    <text x="75" y="238" fill="#8b949e" font-size="10">GET /wac/manifest.json (SHA-256 Catalog)</text>
+
+    <rect x="400" y="205" width="340" height="40" rx="6" fill="#21262d" stroke="#238636" stroke-width="1"/>
+    <text x="415" y="225" fill="#f0f6fc" font-size="11" font-weight="700">2. Delta Comparison &amp; Hashing</text>
+    <text x="415" y="238" fill="#8b949e" font-size="10">Scans local files, identifies missing/corrupt chunks</text>
+
+    <rect x="760" y="205" width="330" height="40" rx="6" fill="#21262d" stroke="#238636" stroke-width="1"/>
+    <text x="775" y="225" fill="#f0f6fc" font-size="11" font-weight="700">3. 8-Thread Parallel Download</text>
+    <text x="775" y="238" fill="#8b949e" font-size="10">Streams chunks with SHA-256 byte verification</text>
+  </g>
+
+  <!-- STAGE 3: Binary Engine Patching -->
+  <g filter="url(#shadow)">
+    <rect x="40" y="270" width="1070" height="100" rx="10" fill="#161b22" stroke="#d29922" stroke-width="1.5"/>
+    <rect x="40" y="270" width="1070" height="26" rx="10" fill="#d29922" fill-opacity="0.25"/>
+    <text x="60" y="288" fill="#d29922" font-size="12" font-weight="700">STAGE 3: Automated Binary Patching &amp; Performance Modernization (EnginePatchService)</text>
+    
+    <rect x="60" y="305" width="235" height="55" rx="6" fill="#21262d" stroke="#d29922" stroke-width="1"/>
+    <text x="75" y="325" fill="#f0f6fc" font-size="11" font-weight="700">⚡ 1000 FPS Uncapper</text>
+    <text x="75" y="340" fill="#8b949e" font-size="10">Patches 250.0f ➔ 1000.0f</text>
+    <text x="75" y="352" fill="#d29922" font-size="9">k2_x64.dll @ 0xFB416C</text>
+
+    <rect x="310" y="305" width="235" height="55" rx="6" fill="#21262d" stroke="#d29922" stroke-width="1"/>
+    <text x="325" y="325" fill="#f0f6fc" font-size="11" font-weight="700">🛑 Fix Loading Stalls</text>
+    <text x="325" y="340" fill="#8b949e" font-size="10">NOP 6-second throttle jump</text>
+    <text x="325" y="352" fill="#d29922" font-size="9">k2_x64.dll @ 0x8B72A8</text>
+
+    <rect x="560" y="305" width="245" height="55" rx="6" fill="#21262d" stroke="#d29922" stroke-width="1"/>
+    <text x="575" y="325" fill="#f0f6fc" font-size="11" font-weight="700">📂 Userdata Isolation</text>
+    <text x="575" y="340" fill="#8b949e" font-size="10">Redirects Documents ➔ ./userdata/</text>
+    <text x="575" y="352" fill="#d29922" font-size="9">Protects system user folders</text>
+
+    <rect x="820" y="305" width="270" height="55" rx="6" fill="#21262d" stroke="#d29922" stroke-width="1"/>
+    <text x="835" y="325" fill="#f0f6fc" font-size="11" font-weight="700">🛡️ Nullify Legacy URLs</text>
+    <text x="835" y="340" fill="#8b949e" font-size="10">Reroutes dead S2 URLs ➔ 0.0.0.0</text>
+    <text x="835" y="352" fill="#d29922" font-size="9">Eliminates DNS timeouts</text>
+  </g>
+
+  <!-- STAGE 4: Graphics Modernization -->
+  <g filter="url(#shadow)">
+    <rect x="40" y="385" width="1070" height="90" rx="10" fill="#161b22" stroke="#a371f7" stroke-width="1.5"/>
+    <rect x="40" y="385" width="1070" height="26" rx="10" fill="#a371f7" fill-opacity="0.25"/>
+    <text x="60" y="403" fill="#bc8cff" font-size="12" font-weight="700">STAGE 4: Modern Graphics Pipeline Generation (DXVK Vulkan 1.3 &amp; RTX Remix)</text>
+    
+    <rect x="60" y="420" width="320" height="45" rx="6" fill="#21262d" stroke="#a371f7" stroke-width="1"/>
+    <text x="75" y="440" fill="#f0f6fc" font-size="11" font-weight="700">🎮 DXVK Vulkan 1.3 Layer</text>
+    <text x="75" y="455" fill="#8b949e" font-size="10">Translates D3D9 ➔ Vulkan, zero microstutter</text>
+
+    <rect x="400" y="420" width="340" height="45" rx="6" fill="#21262d" stroke="#a371f7" stroke-width="1"/>
+    <text x="415" y="440" fill="#f0f6fc" font-size="11" font-weight="700">✨ NVIDIA RTX Remix Path Tracing</text>
+    <text x="415" y="455" fill="#8b949e" font-size="10">Full ray-traced global illumination &amp; shadows</text>
+
+    <rect x="760" y="420" width="330" height="45" rx="6" fill="#21262d" stroke="#a371f7" stroke-width="1"/>
+    <text x="775" y="440" fill="#f0f6fc" font-size="11" font-weight="700">⚙️ autoexec.cfg Optimization</text>
+    <text x="775" y="455" fill="#8b949e" font-size="10">Sets 128-tick rate &amp; 1000 FPS limits</text>
+  </g>
+
+  <!-- STAGE 5: IPC & Process Spawn -->
+  <g filter="url(#shadow)">
+    <rect x="40" y="490" width="1070" height="90" rx="10" fill="#161b22" stroke="#1f6feb" stroke-width="1.5"/>
+    <rect x="40" y="490" width="1070" height="26" rx="10" fill="#1f6feb" fill-opacity="0.25"/>
+    <text x="60" y="508" fill="#58a6ff" font-size="12" font-weight="700">STAGE 5: IPC Highway &amp; Process Execution (hon_x64.exe)</text>
+    
+    <rect x="60" y="525" width="320" height="45" rx="6" fill="#21262d" stroke="#388bfd" stroke-width="1"/>
+    <text x="75" y="545" fill="#f0f6fc" font-size="11" font-weight="700">🔌 Named Pipe Server Start</text>
+    <text x="75" y="560" fill="#8b949e" font-size="10">\\.\pipe\willowmaker-ipc (Low Latency IPC)</text>
+
+    <rect x="400" y="525" width="340" height="45" rx="6" fill="#21262d" stroke="#388bfd" stroke-width="1"/>
+    <text x="415" y="545" fill="#f0f6fc" font-size="11" font-weight="700">🚀 Spawns hon_x64.exe</text>
+    <text x="415" y="560" fill="#8b949e" font-size="10">Passes -masterserver, -auth, &amp; resolution</text>
+
+    <rect x="760" y="525" width="330" height="45" rx="6" fill="#21262d" stroke="#388bfd" stroke-width="1"/>
+    <text x="775" y="545" fill="#f0f6fc" font-size="11" font-weight="700">🤝 Handshake &amp; Link (0x574D)</text>
+    <text x="775" y="560" fill="#8b949e" font-size="10">Game client connects to pipe channel</text>
+  </g>
+
+  <!-- STAGE 6: Live Telemetry & Discord RPC -->
+  <g filter="url(#shadow)">
+    <rect x="40" y="595" width="1070" height="145" rx="10" fill="#161b22" stroke="#5865f2" stroke-width="1.5"/>
+    <rect x="40" y="595" width="1070" height="26" rx="10" fill="#5865f2" fill-opacity="0.25"/>
+    <text x="60" y="613" fill="#7983f5" font-size="12" font-weight="700">STAGE 6: Real-Time Telemetry Streaming &amp; Discord Rich Presence</text>
+    
+    <rect x="60" y="630" width="320" height="95" rx="6" fill="#21262d" stroke="#5865f2" stroke-width="1"/>
+    <text x="75" y="655" fill="#f0f6fc" font-size="11" font-weight="700">📊 Live Match Telemetry</text>
+    <text x="75" y="675" fill="#8b949e" font-size="10">• Hero ID (e.g. Hero_Empath)</text>
+    <text x="75" y="692" fill="#8b949e" font-size="10">• K / D / A &amp; GPM / XPM stats</text>
+    <text x="75" y="709" fill="#8b949e" font-size="10">• Map Name (Caldavar / MidWars)</text>
+
+    <rect x="400" y="630" width="340" height="95" rx="6" fill="#21262d" stroke="#5865f2" stroke-width="1"/>
+    <text x="415" y="655" fill="#f0f6fc" font-size="11" font-weight="700">🎮 Discord Rich Presence</text>
+    <text x="415" y="675" fill="#8b949e" font-size="10">• High-res hero portrait avatar</text>
+    <text x="415" y="692" fill="#8b949e" font-size="10">• Live score &amp; elapsed match time</text>
+    <text x="415" y="709" fill="#8b949e" font-size="10">• 1-click Join Lobby party invite</text>
+
+    <rect x="760" y="630" width="330" height="95" rx="6" fill="#21262d" stroke="#5865f2" stroke-width="1"/>
+    <text x="775" y="655" fill="#f0f6fc" font-size="11" font-weight="700">☁️ KONGOR SignalR Hub</text>
+    <text x="775" y="675" fill="#8b949e" font-size="10">• Broadcasts online state</text>
+    <text x="775" y="692" fill="#8b949e" font-size="10">• Real-time friends list sync</text>
+    <text x="775" y="709" fill="#8b949e" font-size="10">• Web portal status updates</text>
+  </g>
+</svg>

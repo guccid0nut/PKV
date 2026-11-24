@@ -1,0 +1,170 @@
+<Application xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="using:NEXUS.ControlPanel.GUI"
+             x:Class="NEXUS.ControlPanel.GUI.App"
+             RequestedThemeVariant="Dark">
+    <Application.DataTemplates>
+        <local:ViewLocator />
+    </Application.DataTemplates>
+    <Application.Styles>
+        <FluentTheme />
+
+        <!-- Web Portal Glass Card Container Style -->
+        <Style Selector="Border.card">
+            <Setter Property="Background" Value="#0F172A" />
+            <Setter Property="CornerRadius" Value="12" />
+            <Setter Property="BorderBrush" Value="#1E293B" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Padding" Value="18" />
+            <Setter Property="BoxShadow" Value="0 4 20 0 #30000000" />
+        </Style>
+
+        <!-- Web Portal Cyan Primary Action Button -->
+        <Style Selector="Button.primary">
+            <Setter Property="Background" Value="#00F0FF" />
+            <Setter Property="Foreground" Value="#0F172A" />
+            <Setter Property="FontWeight" Value="Bold" />
+            <Setter Property="CornerRadius" Value="8" />
+            <Setter Property="Padding" Value="16,9" />
+            <Setter Property="Cursor" Value="Hand" />
+        </Style>
+        <Style Selector="Button.primary:pointerover /template/ ContentPresenter">
+            <Setter Property="Background" Value="#38BDF8" />
+            <Setter Property="Foreground" Value="#0F172A" />
+        </Style>
+
+        <!-- Web Portal Emerald Success Button -->
+        <Style Selector="Button.success">
+            <Setter Property="Background" Value="#10B981" />
+            <Setter Property="Foreground" Value="#FFFFFF" />
+            <Setter Property="FontWeight" Value="Bold" />
+            <Setter Property="CornerRadius" Value="8" />
+            <Setter Property="Padding" Value="16,9" />
+            <Setter Property="Cursor" Value="Hand" />
+        </Style>
+        <Style Selector="Button.success:pointerover /template/ ContentPresenter">
+            <Setter Property="Background" Value="#059669" />
+        </Style>
+
+        <!-- Web Portal Purple Action Button (e.g. Launch Game Servers) -->
+        <Style Selector="Button.purple">
+            <Setter Property="Background" Value="#A855F7" />
+            <Setter Property="Foreground" Value="#FFFFFF" />
+            <Setter Property="FontWeight" Value="Bold" />
+            <Setter Property="CornerRadius" Value="8" />
+            <Setter Property="Padding" Value="16,9" />
+            <Setter Property="Cursor" Value="Hand" />
+        </Style>
+        <Style Selector="Button.purple:pointerover /template/ ContentPresenter">
+            <Setter Property="Background" Value="#9333EA" />
+            <Setter Property="Foreground" Value="#FFFFFF" />
+        </Style>
+
+        <!-- Web Portal Teal Action Button (e.g. Queue Arcade Fleet) -->
+        <Style Selector="Button.teal">
+            <Setter Property="Background" Value="#0891B2" />
+            <Setter Property="Foreground" Value="#FFFFFF" />
+            <Setter Property="FontWeight" Value="Bold" />
+            <Setter Property="CornerRadius" Value="8" />
+            <Setter Property="Padding" Value="16,9" />
+            <Setter Property="Cursor" Value="Hand" />
+        </Style>
+        <Style Selector="Button.teal:pointerover /template/ ContentPresenter">
+            <Setter Property="Background" Value="#0E7490" />
+            <Setter Property="Foreground" Value="#FFFFFF" />
+        </Style>
+
+        <!-- Web Portal Gold Action Button (e.g. Launch Game Client) -->
+        <Style Selector="Button.gold, Button.amber, Button.warning">
+            <Setter Property="Background" Value="#F59E0B" />
+            <Setter Property="Foreground" Value="#0F172A" />
+            <Setter Property="FontWeight" Value="Bold" />
+            <Setter Property="CornerRadius" Value="8" />
+            <Setter Property="Padding" Value="16,9" />
+            <Setter Property="Cursor" Value="Hand" />
+        </Style>
+        <Style
+            Selector="Button.gold:pointerover /template/ ContentPresenter, Button.amber:pointerover /template/ ContentPresenter, Button.warning:pointerover /template/ ContentPresenter">
+            <Setter Property="Background" Value="#D97706" />
+            <Setter Property="Foreground" Value="#0F172A" />
+        </Style>
+
+        <!-- Web Portal Crimson Danger Button -->
+        <Style Selector="Button.danger">
+            <Setter Property="Background" Value="#EF4444" />
+            <Setter Property="Foreground" Value="#FFFFFF" />
+            <Setter Property="FontWeight" Value="Bold" />
+            <Setter Property="CornerRadius" Value="8" />
+            <Setter Property="Padding" Value="16,9" />
+            <Setter Property="Cursor" Value="Hand" />
+        </Style>
+        <Style Selector="Button.danger:pointerover /template/ ContentPresenter">
+            <Setter Property="Background" Value="#DC2626" />
+        </Style>
+
+        <!-- Web Portal Slate Secondary Button -->
+        <Style Selector="Button.secondary">
+            <Setter Property="Background" Value="#1E293B" />
+            <Setter Property="BorderBrush" Value="#334155" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Foreground" Value="#E2E8F0" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="CornerRadius" Value="8" />
+            <Setter Property="Padding" Value="14,8" />
+            <Setter Property="Cursor" Value="Hand" />
+        </Style>
+        <Style Selector="Button.secondary:pointerover /template/ ContentPresenter">
+            <Setter Property="Background" Value="#334155" />
+            <Setter Property="BorderBrush" Value="#00F0FF" />
+        </Style>
+
+        <!-- Small Microservice Tile Buttons -->
+        <Style Selector="Button.small-start">
+            <Setter Property="Background" Value="#10B981" />
+            <Setter Property="Foreground" Value="#FFFFFF" />
+            <Setter Property="FontWeight" Value="Bold" />
+            <Setter Property="FontSize" Value="11" />
+            <Setter Property="CornerRadius" Value="6" />
+            <Setter Property="Padding" Value="10,5" />
+            <Setter Property="Cursor" Value="Hand" />
+        </Style>
+        <Style Selector="Button.small-start:pointerover /template/ ContentPresenter">
+            <Setter Property="Background" Value="#059669" />
+        </Style>
+
+        <Style Selector="Button.small-stop">
+            <Setter Property="Background" Value="#EF4444" />
+            <Setter Property="Foreground" Value="#FFFFFF" />
+            <Setter Property="FontWeight" Value="Bold" />
+            <Setter Property="FontSize" Value="11" />
+            <Setter Property="CornerRadius" Value="6" />
+            <Setter Property="Padding" Value="10,5" />
+            <Setter Property="Cursor" Value="Hand" />
+        </Style>
+        <Style Selector="Button.small-stop:pointerover /template/ ContentPresenter">
+            <Setter Property="Background" Value="#DC2626" />
+        </Style>
+
+        <!-- Modern Dark Inputs -->
+        <Style Selector="TextBox">
+            <Setter Property="Background" Value="#0B0F17" />
+            <Setter Property="BorderBrush" Value="#334155" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="8" />
+            <Setter Property="Padding" Value="12,9" />
+            <Setter Property="Foreground" Value="#F8FAFC" />
+        </Style>
+        <Style Selector="TextBox:focus /template/ Border#PART_BorderElement">
+            <Setter Property="BorderBrush" Value="#00F0FF" />
+        </Style>
+
+        <!-- ComboBox Styling -->
+        <Style Selector="ComboBox">
+            <Setter Property="Background" Value="#0F172A" />
+            <Setter Property="BorderBrush" Value="#334155" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="8" />
+            <Setter Property="Foreground" Value="#F8FAFC" />
+        </Style>
+    </Application.Styles>
+</Application>

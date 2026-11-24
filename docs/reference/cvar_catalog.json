@@ -1,0 +1,3681 @@
+{
+    "schema_version":  "1.0.0",
+    "generated_at":  "2026-11-16T21:38:07.3653758-06:00",
+    "total_cvars":  612,
+    "cvar_names":  [
+                       "accountStanding_allModeThreshold",
+                       "allheroes",
+                       "AutoReady_enabled",
+                       "AutoVoteBan_enabled",
+                       "cam_edgeScroll",
+                       "cam_flySpeed",
+                       "cam_mapConstraints",
+                       "cam_mode",
+                       "cam_scrollspeed",
+                       "cam_smoothAnglesHalfLife",
+                       "cam_smoothPositionHalfLife",
+                       "cc_create_clan_",
+                       "cc_create_clan_auto",
+                       "cc_create_clan_member_selected",
+                       "cc_mmrConfig",
+                       "cc_mmrConfigAfterS6",
+                       "cc_new_clan_member1",
+                       "cc_new_clan_member2",
+                       "cc_new_clan_member3",
+                       "cc_new_clan_member4",
+                       "cc_new_clan_name",
+                       "cc_new_clan_tag",
+                       "cc_TMMMatchFidelity",
+                       "cg_24hourClock",
+                       "cg_altInfoAlpha",
+                       "cg_altInfoColorScheme",
+                       "cg_altInfoLarge",
+                       "cg_altInfoNameAboveHP",
+                       "cg_altInfoNegativeEffects",
+                       "cg_altInfoPips",
+                       "cg_altInfoPipSpacing",
+                       "cg_altInfoPipSubSpacing",
+                       "cg_alwaysShowHealthBars",
+                       "cg_alwaysShowHeroSelectionRings",
+                       "cg_aoeRangeIndicators",
+                       "cg_ascensionEnabled",
+                       "cg_atmosphericFog",
+                       "cg_autoPick",
+                       "cg_autoPickHero",
+                       "cg_autoSelectSummonings",
+                       "cg_avatarHero",
+                       "cg_backgroundAssetWarmup",
+                       "cg_banjo_sound",
+                       "cg_cameraCenterOnRespawn",
+                       "cg_cameraSmoothing",
+                       "cg_campaigndebug",
+                       "cg_campaigndebug_string",
+                       "cg_censorChat",
+                       "cg_cloudShadows",
+                       "cg_cmdrDoubleActivate",
+                       "cg_constantInventory",
+                       "cg_constrainCursor",
+                       "cg_current_weather",
+                       "cg_customDamageFloats",
+                       "cg_debugGraffiti",
+                       "cg_defaultInterface",
+                       "cg_disableBackgroundEffects",
+                       "cg_displayAllies",
+                       "cg_displayLevelup",
+                       "cg_drawCursorWorldPos",
+                       "cg_drawEntityTypeNames",
+                       "cg_drawFps",
+                       "cg_drawNavGrid",
+                       "cg_drawPopupCritical",
+                       "cg_drawPopupDamage",
+                       "cg_drawPopupNegativeEffect",
+                       "cg_drawRewardExp",
+                       "cg_drawRewardGold",
+                       "cg_drawSelectedInventory",
+                       "cg_drawSelectedPath",
+                       "cg_drawSelectedStats",
+                       "cg_enableClientInfo",
+                       "cg_EnableFbStream",
+                       "cg_enableMinimapRightclick",
+                       "cg_enablePrivacyPolicy",
+                       "cg_enableQueueWorldPreload",
+                       "cg_enfosDerepeatOverride",
+                       "cg_enfosSavedDerepeat",
+                       "cg_entityCullRange",
+                       "cg_fogofwar",
+                       "cg_heartbeat_border_bg",
+                       "cg_heartbeat_border_pulse",
+                       "cg_heartbeat_circle_opacity",
+                       "cg_heartbeat_circle_size",
+                       "cg_heartbeat_enabled",
+                       "cg_heartbeat_freq",
+                       "cg_heartbeat_show_border",
+                       "cg_heartbeat_show_circle",
+                       "cg_heartbeat_sound",
+                       "cg_heartbeat_threshold",
+                       "cg_hero",
+                       "cg_heroIndicators",
+                       "cg_hideFullHealthBars",
+                       "cg_hudTheme",
+                       "cg_lockCamera",
+                       "cg_lockCameraGame",
+                       "cg_manualMaxFpsOverride",
+                       "cg_marioStarPower",
+                       "cg_masteryHeroString",
+                       "cg_masteryMatchReward",
+                       "cg_masteryRewardsString",
+                       "cg_masteryTimeout",
+                       "cg_masteryuidebug",
+                       "cg_menuTransitions",
+                       "cg_minimapPathEnabled",
+                       "cg_MonitorStoreResult",
+                       "cg_moveHeroToSpawnOnDisconnect",
+                       "cg_musicTheme",
+                       "cg_muteAnnouncerVoice",
+                       "cg_muteMinimapPing_VoiceMutedAllies",
+                       "cg_muteUIPing",
+                       "cg_newMainInterface",
+                       "cg_newMasteryExpPerMin",
+                       "cg_noSwitchToNoRenderUnits",
+                       "cg_onboardingCompleted",
+                       "cg_onboardingPreset",
+                       "cg_overheadDebuffBars",
+                       "cg_preloadSharedMap",
+                       "cg_preloadSharedWorld",
+                       "cg_rankedQuickstatsTooltips",
+                       "cg_replayPrecacheAll",
+                       "cg_restrictTeleportEffectToAllies",
+                       "cg_retro8BitSfx",
+                       "cg_rightClickDeny",
+                       "cg_runeKongorTimers",
+                       "cg_safeChannel",
+                       "cg_seasonTheme",
+                       "cg_selectedAnnouncer",
+                       "cg_selectedTaunt",
+                       "cg_sendPingToUIDelay",
+                       "cg_showAoEIndicators",
+                       "cg_showAreaCast",
+                       "cg_showCodexMainLogo",
+                       "cg_showExperienceRangeIndicator",
+                       "cg_showHerohealthLerp",
+                       "cg_showItemManacost",
+                       "cg_showlinecast",
+                       "cg_showPlayerSelectionRings",
+                       "cg_showSelectionRings",
+                       "cg_showSelectionRingsWhenHovered",
+                       "cg_smartcastingAbility_1",
+                       "cg_smartcastingAbility_2",
+                       "cg_smartcastingAbility_3",
+                       "cg_smartcastingAbility_4",
+                       "cg_smartcastingAbility_Taunt",
+                       "cg_smartcastingBackpack_1",
+                       "cg_smartcastingBackpack_2",
+                       "cg_smartcastingBackpack_3",
+                       "cg_smartcastingBackpack_4",
+                       "cg_smartcastingBackpack_5",
+                       "cg_smartcastingBackpack_6",
+                       "cg_smartcastingBackpack_Ward",
+                       "cg_smartcastingBackpack_Ward2",
+                       "cg_smartcastingExtraAbility_1",
+                       "cg_smartcastingExtraAbility_2",
+                       "cg_smartcastingExtraAbility_3",
+                       "cg_smartcastingExtraAbility_4",
+                       "cg_smartcastingExtraAbility_5",
+                       "cg_smartcastingExtraAbility_6",
+                       "cg_smartcastingOrderAttack",
+                       "cg_smartcastingType",
+                       "cg_smartRadialPing",
+                       "cg_spectating",
+                       "cg_store2_",
+                       "cg_stumpsTrees",
+                       "cg_tacticalAllyUlts",
+                       "cg_tacticalBuyback",
+                       "cg_tacticalCampTimers",
+                       "cg_toolPersistantTargetIndicatorEnable",
+                       "cg_towerTargetEffect",
+                       "cg_unhideVotes",
+                       "cg_unitPlayerColors",
+                       "cg_unitPortraitOverlay",
+                       "cg_unitVoiceResponses",
+                       "cg_unitVoiceResponsesDelay",
+                       "cg_useHeroIcon2",
+                       "cg_useLongTooltips",
+                       "cg_useNewShop2",
+                       "cg_vectorCast",
+                       "cg_wardVisionOverlay",
+                       "chat_filterChatSounds",
+                       "chat_filterHeroIcons",
+                       "chat_filterHeroNames",
+                       "chat_filterShortFormat",
+                       "chat_gameLobbyChatToggle",
+                       "chat_name",
+                       "chat_showChatTimestamps",
+                       "chat_userCount",
+                       "cl_allHeroes",
+                       "cl_fps",
+                       "cl_GarenaEnable",
+                       "cl_map",
+                       "cl_packetSendFPS",
+                       "cl_password",
+                       "cl_ping",
+                       "cl_Rap2Enable",
+                       "cl_reconnect",
+                       "cl_showfps",
+                       "compendium_guide_ability_hoverName",
+                       "compendium_guide_usingLocal",
+                       "compendium_usage_retrieveDays",
+                       "component_branch_height",
+                       "component_tree_baseY",
+                       "con_show",
+                       "d_drawAreaAffectors",
+                       "d_drawProjectileRadiuses",
+                       "d_drawTreeBounds",
+                       "d_drawUnitBounds",
+                       "developer",
+                       "dw_buy_sound_not_playing",
+                       "dw_shop_sound_not_playing",
+                       "ebuff_cfgActive_blinkenabled",
+                       "ebuff_cfgActive_dectimer",
+                       "ebuff_cfgActive_overheadlbl",
+                       "ebuff_cfgActive_popdispassive",
+                       "ebuff_cfgActive_popenabled",
+                       "ebuff_cfgActive_showlbl",
+                       "ebuff_cfgActive_timerbar",
+                       "facebook_stream_likes",
+                       "facebook_stream_ongoing",
+                       "facebook_stream_views",
+                       "facebookstream_report",
+                       "facebookstream_showcapturewindow",
+                       "g_botDifficulty",
+                       "g_camDistanceMax",
+                       "g_camDistanceMaxSpectator",
+                       "g_camDistanceMin",
+                       "g_camfov",
+                       "g_dayLength",
+                       "g_dayStartTime",
+                       "g_disableFogOfWar",
+                       "g_minimapPortraitAndColorType",
+                       "g_PathDetail",
+                       "g_perks",
+                       "g_spawnBosses",
+                       "g_spawnNeutrals",
+                       "g_unitMoveSpeedMin",
+                       "g_unitPlayDenyAnims",
+                       "game_phase",
+                       "gfx_fogColor",
+                       "gfx_fogFar",
+                       "gfx_fogNear",
+                       "gfx_fogType",
+                       "gfx_lighting",
+                       "gfx_normals",
+                       "gfx_points",
+                       "gfx_textures",
+                       "gfx_wireframe",
+                       "guide_fadein",
+                       "guide_recommendeditem_isscroll",
+                       "hbmod_bgstr",
+                       "hbmod_crit",
+                       "hbmod_freq",
+                       "hbmod_pbstr",
+                       "hbmod_sound",
+                       "hero_attackSpeedPerAgi",
+                       "hero_holdaftermove",
+                       "hero_hpPerStr",
+                       "hero_hpRegenPerStr",
+                       "hero_mastery_maxlevel_new",
+                       "hero_mpPerInt",
+                       "hero_mpRegenPerInt",
+                       "host_Affinity",
+                       "host_cloudAutoDownload",
+                       "host_cloudAutoUpload",
+                       "host_date",
+                       "host_dev",
+                       "host_drawFPS",
+                       "host_dynamicResReload",
+                       "host_fps",
+                       "host_graphicsdriverold",
+                       "host_language",
+                       "host_map",
+                       "host_maxFPS",
+                       "host_os",
+                       "host_store2buildshader",
+                       "host_store2unifyshader",
+                       "host_time",
+                       "host_timescale",
+                       "host_version",
+                       "host_vidDriver",
+                       "instantiateHeroIndex",
+                       "is_dev_game",
+                       "isStaff",
+                       "kongor_bot_ping_seq",
+                       "kongor_bot_ping_team",
+                       "kongor_bot_ping_x",
+                       "kongor_bot_ping_y",
+                       "kongor_detected_monitors",
+                       "kongor_disable_boot_preload",
+                       "kongor_is_bot_match",
+                       "kongor_offline_hub",
+                       "kongor_soccer_pass_seq",
+                       "login_autoLogin",
+                       "login_invisible",
+                       "login_isLoggedIn",
+                       "login_name",
+                       "login_password",
+                       "login_rememberMe",
+                       "login_rememberName",
+                       "login_rememberPassword",
+                       "manacosts_enabled",
+                       "map",
+                       "MERGE_CLAN_FRIENDS",
+                       "microStore_avatarSelectTarget",
+                       "microStore_heroSelectTarget",
+                       "microStore_targetCategory",
+                       "microStoreCDPriceGold",
+                       "microStoreCDPriceSilver",
+                       "microStoreDiscountInfo",
+                       "microStoreID",
+                       "microStoreID999",
+                       "microStorePackageCoins1",
+                       "microStorePackageCoins2",
+                       "microStorePackageCoins3",
+                       "microStorePackageCoins4",
+                       "microStorePackageCoins5",
+                       "microStorePackagePrice1",
+                       "microStorePackagePrice2",
+                       "microStorePackagePrice3",
+                       "microStorePackagePrice4",
+                       "microStorePackagePrice5",
+                       "microStoreSpecialDisplay",
+                       "motd_url",
+                       "movf_constraintoscreen",
+                       "movf_control_expand",
+                       "mstore_redeemcode_input",
+                       "mstoreHeroSortMode",
+                       "net_maxBPS",
+                       "net_packetSize",
+                       "net_ping",
+                       "OFFLINE_IN_GROUPS",
+                       "options_antialiasing",
+                       "options_aspect",
+                       "options_bpp",
+                       "options_d3dex",
+                       "options_defaultInterface",
+                       "options_display",
+                       "options_dynamiclights",
+                       "options_exclusive",
+                       "options_foliage",
+                       "options_framequeuing",
+                       "options_fullscreen",
+                       "options_gamma",
+                       "options_modelQuality",
+                       "options_postprocessing",
+                       "options_reflections",
+                       "options_refraction",
+                       "options_refreshrate",
+                       "options_resolution",
+                       "options_rimlighting",
+                       "options_shaderQuality",
+                       "options_shadowQuality",
+                       "options_skybox",
+                       "options_sound_disable",
+                       "options_sound_driver",
+                       "options_sound_numChannels",
+                       "options_sound_output",
+                       "options_soundQuality",
+                       "options_textureFiltering",
+                       "options_textureSize",
+                       "options_vidDriver",
+                       "options_vsync",
+                       "options_waterQuality",
+                       "p2p_auto_connect",
+                       "p2p_auto_host",
+                       "p2p_connect_addr",
+                       "p2p_host_addr",
+                       "p2p_last_ip",
+                       "p2p_mode",
+                       "p2p_nickname",
+                       "p2p_port",
+                       "p2p_standalone",
+                       "ping",
+                       "promo_currentQuanity",
+                       "purchase_u_package",
+                       "quickitem_dummy_draggingItem",
+                       "releaseStage_dev",
+                       "releaseStage_rc",
+                       "releaseStage_stable",
+                       "releaseStage_test",
+                       "replay_client",
+                       "replay_isPlaying",
+                       "replay_needprocessGoLive",
+                       "replay_operation",
+                       "replay_spec_slot",
+                       "replay_target_client",
+                       "replay_v2",
+                       "replay_voice",
+                       "res_unloadMapResources",
+                       "scene_drawSkybox",
+                       "scene_fakeSpecColor",
+                       "scene_foliageDrawDistance",
+                       "scene_skyboxMaterial",
+                       "sec_option_search",
+                       "shop_confirm_buyall",
+                       "shopAlphaValue",
+                       "SHOW_CUSTOM_COLORS",
+                       "sound_compressedFormat",
+                       "sound_drawSounds",
+                       "sound_interfaceVolume",
+                       "sound_masterVolume",
+                       "sound_musicVolume",
+                       "sound_mute",
+                       "sound_muteMusic",
+                       "sound_sfxVolume",
+                       "special_messages_web_url",
+                       "specui_bottom_tab_visible",
+                       "specui_combatpop_cooldown",
+                       "specui_combatpop_display",
+                       "specui_first_time_viewed3",
+                       "specui_itempop_gold_threshold",
+                       "specui_mini_mode1",
+                       "specui_push_visible",
+                       "specui_show_hotkeys",
+                       "specui_show_popup_ability_learn",
+                       "specui_show_popup_ability_use",
+                       "specui_show_popup_gank",
+                       "specui_show_popup_item",
+                       "specui_show_tooltips",
+                       "specui_unitframe_state",
+                       "store2_combobox_",
+                       "store2_enable_edit",
+                       "store2_initCategory",
+                       "store2_initSearchTerm",
+                       "store2_isBundleModelDetail",
+                       "store2_isModelDetailShowing",
+                       "store2_radio_button_hero_owned_isOn",
+                       "store2_showModelDetail",
+                       "store2_showModelDetailArrow",
+                       "store2LoadingMinMS",
+                       "store2ShowLoadingTime",
+                       "subswitch_dontask",
+                       "sv_spawnCreeps",
+                       "sv_spawnCritters",
+                       "sv_spawnPowerups",
+                       "sv_spawnTrees",
+                       "svr_ip",
+                       "svr_isStaff",
+                       "svr_login",
+                       "svr_mapName",
+                       "svr_name",
+                       "svr_port",
+                       "tao_req",
+                       "tao_res",
+                       "telemetry_ccu",
+                       "temp_gfxslider_int",
+                       "tod_entityAmbientColor4",
+                       "tod_entitySunColor4",
+                       "tod_terrainAmbientColor4",
+                       "tod_terrainSunColor4",
+                       "tokenCostPerGame",
+                       "tut_shopcat_",
+                       "ui_allHeroes",
+                       "ui_allow_store_tutorial",
+                       "ui_altAvatarListDebug",
+                       "ui_autocompleteTextBox",
+                       "ui_avatars_package_loaded",
+                       "ui_background",
+                       "ui_bot_definitions_loaded",
+                       "ui_buyCoinsBlurb",
+                       "ui_buyRegCurBlurb",
+                       "ui_canCreateGame",
+                       "ui_commonTriggersRegistered",
+                       "ui_confirmationsTriggersRegistered",
+                       "ui_debugObjectives",
+                       "ui_dev",
+                       "ui_dev_button",
+                       "ui_dev_feature_",
+                       "ui_dev_feature_7",
+                       "ui_devPlaceholders",
+                       "ui_disableChatServer",
+                       "ui_DontPromptDice",
+                       "ui_eapSelectedBundleGold",
+                       "ui_eapSelectedBundleID",
+                       "ui_eapSelectedBundleSilver",
+                       "ui_editor_active",
+                       "ui_EnableAlienFX",
+                       "ui_enableCustomAccIcons",
+                       "ui_filterMultiBarComposition",
+                       "ui_forceEnableTesting",
+                       "ui_game_chat_sounds",
+                       "ui_game_lobby_store_active",
+                       "ui_game_specInterfaceLoaded",
+                       "ui_gameInterfaceLoaded",
+                       "ui_gamePhase",
+                       "ui_gamePhaseExtended",
+                       "ui_hideGameHeroTips",
+                       "ui_hideGLIncorrectWarning",
+                       "ui_hud_scale",
+                       "ui_isBotMatch",
+                       "ui_isLoggedIn",
+                       "ui_isStaff",
+                       "ui_lastSavedAccountName",
+                       "ui_lastSelectedMap",
+                       "ui_lastSelectedUser",
+                       "ui_launcherRequiredString",
+                       "ui_lobby_localPlayerCaptain",
+                       "ui_lobby_showOldAAPicker",
+                       "ui_local_bot_game",
+                       "ui_logged_in",
+                       "ui_LoginConsoleScript",
+                       "ui_main_walkthroughTest",
+                       "ui_maliken_letter_4",
+                       "ui_malikenMessagePath",
+                       "ui_masteryDemoPresets",
+                       "ui_match_is_spectating",
+                       "ui_match_stats_waitingToShow",
+                       "ui_minimap_glass",
+                       "ui_minimap_opacity",
+                       "ui_minimap_rightside",
+                       "ui_nick",
+                       "ui_not_opt_",
+                       "ui_not_opt_sound",
+                       "ui_notifications_toastDuration",
+                       "ui_options_gfxslider",
+                       "ui_options_referral_url",
+                       "ui_overrideRegion",
+                       "ui_overrideTheme",
+                       "ui_playground_active",
+                       "ui_preloadTheWorld",
+                       "ui_promoCornerLeft",
+                       "ui_quickStart",
+                       "ui_raf_enabled",
+                       "ui_raf_region_string",
+                       "ui_rap_enabled",
+                       "ui_region_accountCreationType",
+                       "ui_regionLogoPath",
+                       "ui_reloadInterfaces",
+                       "ui_selectedHero",
+                       "ui_selectPrank",
+                       "ui_showCodeRedemption",
+                       "ui_showMalikenMessage",
+                       "ui_showSpecialEventLogo",
+                       "ui_showStoreWalkthrough",
+                       "ui_staffIconPath",
+                       "ui_staffStringName",
+                       "ui_suppressAutoLogin",
+                       "ui_supressNews",
+                       "ui_testCats",
+                       "ui_testScreen",
+                       "ui_testSuiteReplaceEntityNames",
+                       "ui_testSuiteReplaceItemNames",
+                       "ui_twitch_live",
+                       "ui_unlimitedPings",
+                       "ui_useClientLoginSystem",
+                       "ui_useRegionalCurrency",
+                       "ui_useRegionalCurrencyIcon",
+                       "upd_checkForUpdates",
+                       "USER_SORT_ONLINE_FIRST",
+                       "version",
+                       "vid_d3d9",
+                       "vid_display",
+                       "vid_drawBoneNames",
+                       "vid_drawBones",
+                       "vid_drawMeshNames",
+                       "vid_drawModelBounds",
+                       "vid_drawParticleSystems",
+                       "vid_driver",
+                       "vid_foliageAlphaTestRef",
+                       "vid_foliageAlphaTestRef2",
+                       "vid_foliageOptLight",
+                       "vid_foliageRenderType",
+                       "vid_foliageWireframe",
+                       "vid_fps",
+                       "vid_fullscreen",
+                       "vid_height",
+                       "vid_hideTerrain",
+                       "vid_hideWater",
+                       "vid_refreshRate",
+                       "vid_render3Das2D",
+                       "vid_resolution",
+                       "vid_shader_Precache",
+                       "vid_shaderAmbientOcclusion",
+                       "vid_shaderPrecache",
+                       "vid_shadows",
+                       "vid_SmoothLineEnable",
+                       "vid_smoothLineExtent",
+                       "vid_smoothLineR",
+                       "vid_smoothLineW",
+                       "vid_terrainCliffs",
+                       "vid_terrainLayer1",
+                       "vid_terrainLayer2",
+                       "vid_terrainShowGrid",
+                       "vid_terrainShowNormals",
+                       "vid_textureDownsize",
+                       "vid_vsync",
+                       "vid_width",
+                       "voice_audioDampen",
+                       "voice_disabled",
+                       "voice_enable",
+                       "voice_volume",
+                       "watch_bullet_sending",
+                       "watch_bullet_showing",
+                       "watch_system_bet_coin",
+                       "watch_system_bet_id",
+                       "watch_system_bet_item_id",
+                       "watch_user_activeWatches",
+                       "watchreplaymask_autohide",
+                       "webbrowser_last_channel",
+                       "widget_editor_color_a",
+                       "widget_editor_color_b",
+                       "widget_editor_color_g",
+                       "widget_editor_color_r",
+                       "widget_editor_colorscale_a",
+                       "widget_editor_colorscale_b",
+                       "widget_editor_colorscale_g",
+                       "widget_editor_colorscale_r",
+                       "widget_editor_height",
+                       "widget_editor_width",
+                       "widget_editor_x",
+                       "widget_editor_y"
+                   ],
+    "entries":  [
+                    {
+                        "name":  "accountStanding_allModeThreshold",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/ClientPackageFiles/ui/scripts/player_hosted.lua"
+                    },
+                    {
+                        "name":  "allheroes",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/scripts/game_lobby.lua"
+                    },
+                    {
+                        "name":  "AutoReady_enabled",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/ClientPackageFiles/ui/fe2/auto_pick_voteban.package"
+                    },
+                    {
+                        "name":  "AutoVoteBan_enabled",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/ClientPackageFiles/ui/fe2/auto_pick_voteban.package"
+                    },
+                    {
+                        "name":  "cam_edgeScroll",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/game_options.package"
+                    },
+                    {
+                        "name":  "cam_flySpeed",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/test_suite/test_suite.package"
+                    },
+                    {
+                        "name":  "cam_mapConstraints",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/test_suite/test_suite.package"
+                    },
+                    {
+                        "name":  "cam_mode",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/test_suite/test_suite.package"
+                    },
+                    {
+                        "name":  "cam_scrollspeed",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/game_options.package"
+                    },
+                    {
+                        "name":  "cam_smoothAnglesHalfLife",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/test_suite/test_suite.package"
+                    },
+                    {
+                        "name":  "cam_smoothPositionHalfLife",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/test_suite/test_suite.package"
+                    },
+                    {
+                        "name":  "cc_create_clan_",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/newui/social_v2.package"
+                    },
+                    {
+                        "name":  "cc_create_clan_auto",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/newui/social_v2.package"
+                    },
+                    {
+                        "name":  "cc_create_clan_member_selected",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/newui/social_v2.package"
+                    },
+                    {
+                        "name":  "cc_mmrConfig",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/ClientPackageFiles/ui/scripts/watch_system.lua"
+                    },
+                    {
+                        "name":  "cc_mmrConfigAfterS6",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/scripts/newui/watch_system_v2.lua"
+                    },
+                    {
+                        "name":  "cc_new_clan_member1",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/newui/social_v2.package"
+                    },
+                    {
+                        "name":  "cc_new_clan_member2",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/newui/social_v2.package"
+                    },
+                    {
+                        "name":  "cc_new_clan_member3",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/newui/social_v2.package"
+                    },
+                    {
+                        "name":  "cc_new_clan_member4",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/newui/social_v2.package"
+                    },
+                    {
+                        "name":  "cc_new_clan_name",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/newui/social_v2.package"
+                    },
+                    {
+                        "name":  "cc_new_clan_tag",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/newui/social_v2.package"
+                    },
+                    {
+                        "name":  "cc_TMMMatchFidelity",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/ClientPackageFiles/ui/fe2/matchmaking.package"
+                    },
+                    {
+                        "name":  "cg_24hourClock",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/newui/system_bar_v2.package"
+                    },
+                    {
+                        "name":  "cg_altInfoAlpha",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/game_options.package"
+                    },
+                    {
+                        "name":  "cg_altInfoColorScheme",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/game_options.package"
+                    },
+                    {
+                        "name":  "cg_altInfoLarge",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/alt_info_hero.interface"
+                    },
+                    {
+                        "name":  "cg_altInfoNameAboveHP",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/game_options.package"
+                    },
+                    {
+                        "name":  "cg_altInfoNegativeEffects",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/game_options.package"
+                    },
+                    {
+                        "name":  "cg_altInfoPips",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/game_options.package"
+                    },
+                    {
+                        "name":  "cg_altInfoPipSpacing",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/scripts/alt_info_hero.lua"
+                    },
+                    {
+                        "name":  "cg_altInfoPipSubSpacing",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/scripts/alt_info_hero.lua"
+                    },
+                    {
+                        "name":  "cg_alwaysShowHealthBars",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/game_options.package"
+                    },
+                    {
+                        "name":  "cg_alwaysShowHeroSelectionRings",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/game_options.package"
+                    },
+                    {
+                        "name":  "cg_aoeRangeIndicators",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/game_options.package"
+                    },
+                    {
+                        "name":  "cg_ascensionEnabled",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/scripts/main_v2.lua"
+                    },
+                    {
+                        "name":  "cg_atmosphericFog",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/game_options.package"
+                    },
+                    {
+                        "name":  "cg_autoPick",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/scripts/newui/lobby_v2.lua"
+                    },
+                    {
+                        "name":  "cg_autoPickHero",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/scripts/newui/lobby_v2.lua"
+                    },
+                    {
+                        "name":  "cg_autoSelectSummonings",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/game_options.package"
+                    },
+                    {
+                        "name":  "cg_avatarHero",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/game_lobby.package"
+                    },
+                    {
+                        "name":  "cg_backgroundAssetWarmup",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/game_options.package"
+                    },
+                    {
+                        "name":  "cg_banjo_sound",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/confirmations.interface"
+                    },
+                    {
+                        "name":  "cg_cameraCenterOnRespawn",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/game_options.package"
+                    },
+                    {
+                        "name":  "cg_cameraSmoothing",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/test_suite/test_suite.package"
+                    },
+                    {
+                        "name":  "cg_campaigndebug",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/ClientPackageFiles/ui/scripts/match_stats.lua"
+                    },
+                    {
+                        "name":  "cg_campaigndebug_string",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/ClientPackageFiles/ui/scripts/match_stats.lua"
+                    },
+                    {
+                        "name":  "cg_censorChat",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/game_options.package"
+                    },
+                    {
+                        "name":  "cg_cloudShadows",
+                        "category":  "cgame",
+                        "source":  "k2_engine_core"
+                    },
+                    {
+                        "name":  "cg_cmdrDoubleActivate",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/game_options.package"
+                    },
+                    {
+                        "name":  "cg_constantInventory",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/game_options.package"
+                    },
+                    {
+                        "name":  "cg_constrainCursor",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/game_options.package"
+                    },
+                    {
+                        "name":  "cg_current_weather",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/game_options.package"
+                    },
+                    {
+                        "name":  "cg_customDamageFloats",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/game_options.package"
+                    },
+                    {
+                        "name":  "cg_debugGraffiti",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/scripts/codex.lua"
+                    },
+                    {
+                        "name":  "cg_defaultInterface",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/scripts/game_new.lua"
+                    },
+                    {
+                        "name":  "cg_disableBackgroundEffects",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/game_options.package"
+                    },
+                    {
+                        "name":  "cg_displayAllies",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/game_apex.interface"
+                    },
+                    {
+                        "name":  "cg_displayLevelup",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/game_apex.interface"
+                    },
+                    {
+                        "name":  "cg_drawCursorWorldPos",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/test_suite/test_suite.package"
+                    },
+                    {
+                        "name":  "cg_drawEntityTypeNames",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/test_suite/test_suite.package"
+                    },
+                    {
+                        "name":  "cg_drawFps",
+                        "category":  "cgame",
+                        "source":  "k2_engine_core"
+                    },
+                    {
+                        "name":  "cg_drawNavGrid",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/test_suite/test_suite.package"
+                    },
+                    {
+                        "name":  "cg_drawPopupCritical",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/game_options.package"
+                    },
+                    {
+                        "name":  "cg_drawPopupDamage",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/game_options.package"
+                    },
+                    {
+                        "name":  "cg_drawPopupNegativeEffect",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/game_options.package"
+                    },
+                    {
+                        "name":  "cg_drawRewardExp",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/game_options.package"
+                    },
+                    {
+                        "name":  "cg_drawRewardGold",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/game_options.package"
+                    },
+                    {
+                        "name":  "cg_drawSelectedInventory",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/test_suite/test_suite.package"
+                    },
+                    {
+                        "name":  "cg_drawSelectedPath",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/test_suite/test_suite.package"
+                    },
+                    {
+                        "name":  "cg_drawSelectedStats",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/test_suite/test_suite.package"
+                    },
+                    {
+                        "name":  "cg_enableClientInfo",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/game_options.package"
+                    },
+                    {
+                        "name":  "cg_EnableFbStream",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/game_options.package"
+                    },
+                    {
+                        "name":  "cg_enableMinimapRightclick",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/game_options.package"
+                    },
+                    {
+                        "name":  "cg_enablePrivacyPolicy",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/scripts/main_v2.lua"
+                    },
+                    {
+                        "name":  "cg_enableQueueWorldPreload",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/scripts/main_v2.lua"
+                    },
+                    {
+                        "name":  "cg_enfosDerepeatOverride",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/scripts/enfos_hud.lua"
+                    },
+                    {
+                        "name":  "cg_enfosSavedDerepeat",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/scripts/main_v2.lua"
+                    },
+                    {
+                        "name":  "cg_entityCullRange",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/test_suite/test_suite.package"
+                    },
+                    {
+                        "name":  "cg_fogofwar",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/ClientPackageFiles/ui/game_replay_control.interface"
+                    },
+                    {
+                        "name":  "cg_heartbeat_border_bg",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/game_options.package"
+                    },
+                    {
+                        "name":  "cg_heartbeat_border_pulse",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/game_options.package"
+                    },
+                    {
+                        "name":  "cg_heartbeat_circle_opacity",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/game_options.package"
+                    },
+                    {
+                        "name":  "cg_heartbeat_circle_size",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/game_options.package"
+                    },
+                    {
+                        "name":  "cg_heartbeat_enabled",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/game_options.package"
+                    },
+                    {
+                        "name":  "cg_heartbeat_freq",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/game_options.package"
+                    },
+                    {
+                        "name":  "cg_heartbeat_show_border",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/game_options.package"
+                    },
+                    {
+                        "name":  "cg_heartbeat_show_circle",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/game_options.package"
+                    },
+                    {
+                        "name":  "cg_heartbeat_sound",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/game_options.package"
+                    },
+                    {
+                        "name":  "cg_heartbeat_threshold",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/game_options.package"
+                    },
+                    {
+                        "name":  "cg_hero",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/scripts/nexus_bridge.lua"
+                    },
+                    {
+                        "name":  "cg_heroIndicators",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/game_options.package"
+                    },
+                    {
+                        "name":  "cg_hideFullHealthBars",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/game_options.package"
+                    },
+                    {
+                        "name":  "cg_hudTheme",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/game_options.package"
+                    },
+                    {
+                        "name":  "cg_lockCamera",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/ClientPackageFiles/ui/game_replay_control.interface"
+                    },
+                    {
+                        "name":  "cg_lockCameraGame",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/game_options.package"
+                    },
+                    {
+                        "name":  "cg_manualMaxFpsOverride",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/scripts/sysbar_controller.lua"
+                    },
+                    {
+                        "name":  "cg_marioStarPower",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/game_options.package"
+                    },
+                    {
+                        "name":  "cg_masteryHeroString",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/ClientPackageFiles/ui/scripts/player_stats.lua"
+                    },
+                    {
+                        "name":  "cg_masteryMatchReward",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/ClientPackageFiles/ui/scripts/match_stats.lua"
+                    },
+                    {
+                        "name":  "cg_masteryRewardsString",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/ClientPackageFiles/ui/scripts/player_stats.lua"
+                    },
+                    {
+                        "name":  "cg_masteryTimeout",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/scripts/newui/match_stats_v2.lua"
+                    },
+                    {
+                        "name":  "cg_masteryuidebug",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/newui/match_stats_v2.package"
+                    },
+                    {
+                        "name":  "cg_menuTransitions",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/scripts/main_v2.lua"
+                    },
+                    {
+                        "name":  "cg_minimapPathEnabled",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/game_options.package"
+                    },
+                    {
+                        "name":  "cg_MonitorStoreResult",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/scripts/store_core.lua"
+                    },
+                    {
+                        "name":  "cg_moveHeroToSpawnOnDisconnect",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/game_options.package"
+                    },
+                    {
+                        "name":  "cg_musicTheme",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/game_options.package"
+                    },
+                    {
+                        "name":  "cg_muteAnnouncerVoice",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/game_options.package"
+                    },
+                    {
+                        "name":  "cg_muteMinimapPing_VoiceMutedAllies",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/game_options.package"
+                    },
+                    {
+                        "name":  "cg_muteUIPing",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/game_options.package"
+                    },
+                    {
+                        "name":  "cg_newMainInterface",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/scripts/global_main.lua"
+                    },
+                    {
+                        "name":  "cg_newMasteryExpPerMin",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/ClientPackageFiles/ui/scripts/match_stats.lua"
+                    },
+                    {
+                        "name":  "cg_noSwitchToNoRenderUnits",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/game_options.package"
+                    },
+                    {
+                        "name":  "cg_onboardingCompleted",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/scripts/onboarding_presets.lua"
+                    },
+                    {
+                        "name":  "cg_onboardingPreset",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/scripts/onboarding_presets.lua"
+                    },
+                    {
+                        "name":  "cg_overheadDebuffBars",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/game_options.package"
+                    },
+                    {
+                        "name":  "cg_preloadSharedMap",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/scripts/main_v2.lua"
+                    },
+                    {
+                        "name":  "cg_preloadSharedWorld",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/scripts/main_v2.lua"
+                    },
+                    {
+                        "name":  "cg_rankedQuickstatsTooltips",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/game_score.package"
+                    },
+                    {
+                        "name":  "cg_replayPrecacheAll",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/test_suite/test_suite.package"
+                    },
+                    {
+                        "name":  "cg_restrictTeleportEffectToAllies",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/game_options.package"
+                    },
+                    {
+                        "name":  "cg_retro8BitSfx",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/game_options.package"
+                    },
+                    {
+                        "name":  "cg_rightClickDeny",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/game_options.package"
+                    },
+                    {
+                        "name":  "cg_runeKongorTimers",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/game_options.package"
+                    },
+                    {
+                        "name":  "cg_safeChannel",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/game_options.package"
+                    },
+                    {
+                        "name":  "cg_seasonTheme",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/game_options.package"
+                    },
+                    {
+                        "name":  "cg_selectedAnnouncer",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/scripts/game_new.lua"
+                    },
+                    {
+                        "name":  "cg_selectedTaunt",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/scripts/store_core.lua"
+                    },
+                    {
+                        "name":  "cg_sendPingToUIDelay",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/game_options.package"
+                    },
+                    {
+                        "name":  "cg_showAoEIndicators",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/game_options.package"
+                    },
+                    {
+                        "name":  "cg_showAreaCast",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/game_apex.interface"
+                    },
+                    {
+                        "name":  "cg_showCodexMainLogo",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/scripts/codex.lua"
+                    },
+                    {
+                        "name":  "cg_showExperienceRangeIndicator",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/game_options.package"
+                    },
+                    {
+                        "name":  "cg_showHerohealthLerp",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/game_options.package"
+                    },
+                    {
+                        "name":  "cg_showItemManacost",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/game_options.package"
+                    },
+                    {
+                        "name":  "cg_showlinecast",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/game_options.package"
+                    },
+                    {
+                        "name":  "cg_showPlayerSelectionRings",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/game_options.package"
+                    },
+                    {
+                        "name":  "cg_showSelectionRings",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/game_options.package"
+                    },
+                    {
+                        "name":  "cg_showSelectionRingsWhenHovered",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/game_options.package"
+                    },
+                    {
+                        "name":  "cg_smartcastingAbility_1",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/game_options.package"
+                    },
+                    {
+                        "name":  "cg_smartcastingAbility_2",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/game_options.package"
+                    },
+                    {
+                        "name":  "cg_smartcastingAbility_3",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/game_options.package"
+                    },
+                    {
+                        "name":  "cg_smartcastingAbility_4",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/game_options.package"
+                    },
+                    {
+                        "name":  "cg_smartcastingAbility_Taunt",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/game_options.package"
+                    },
+                    {
+                        "name":  "cg_smartcastingBackpack_1",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/game_options.package"
+                    },
+                    {
+                        "name":  "cg_smartcastingBackpack_2",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/game_options.package"
+                    },
+                    {
+                        "name":  "cg_smartcastingBackpack_3",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/game_options.package"
+                    },
+                    {
+                        "name":  "cg_smartcastingBackpack_4",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/game_options.package"
+                    },
+                    {
+                        "name":  "cg_smartcastingBackpack_5",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/game_options.package"
+                    },
+                    {
+                        "name":  "cg_smartcastingBackpack_6",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/game_options.package"
+                    },
+                    {
+                        "name":  "cg_smartcastingBackpack_Ward",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/game_options.package"
+                    },
+                    {
+                        "name":  "cg_smartcastingBackpack_Ward2",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/game_options.package"
+                    },
+                    {
+                        "name":  "cg_smartcastingExtraAbility_1",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/game_options.package"
+                    },
+                    {
+                        "name":  "cg_smartcastingExtraAbility_2",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/game_options.package"
+                    },
+                    {
+                        "name":  "cg_smartcastingExtraAbility_3",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/game_options.package"
+                    },
+                    {
+                        "name":  "cg_smartcastingExtraAbility_4",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/game_options.package"
+                    },
+                    {
+                        "name":  "cg_smartcastingExtraAbility_5",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/game_options.package"
+                    },
+                    {
+                        "name":  "cg_smartcastingExtraAbility_6",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/game_options.package"
+                    },
+                    {
+                        "name":  "cg_smartcastingOrderAttack",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/game_options.package"
+                    },
+                    {
+                        "name":  "cg_smartcastingType",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/game_options.package"
+                    },
+                    {
+                        "name":  "cg_smartRadialPing",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/game_options.package"
+                    },
+                    {
+                        "name":  "cg_spectating",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/scripts/heartbeat_controller.lua"
+                    },
+                    {
+                        "name":  "cg_store2_",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/game_lobby.package"
+                    },
+                    {
+                        "name":  "cg_stumpsTrees",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/game_options.package"
+                    },
+                    {
+                        "name":  "cg_tacticalAllyUlts",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/game_options.package"
+                    },
+                    {
+                        "name":  "cg_tacticalBuyback",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/game_options.package"
+                    },
+                    {
+                        "name":  "cg_tacticalCampTimers",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/game_options.package"
+                    },
+                    {
+                        "name":  "cg_toolPersistantTargetIndicatorEnable",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/game_options.package"
+                    },
+                    {
+                        "name":  "cg_towerTargetEffect",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/game_options.package"
+                    },
+                    {
+                        "name":  "cg_unhideVotes",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/game_vote.interface"
+                    },
+                    {
+                        "name":  "cg_unitPlayerColors",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/game_apex.interface"
+                    },
+                    {
+                        "name":  "cg_unitPortraitOverlay",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/game_options.package"
+                    },
+                    {
+                        "name":  "cg_unitVoiceResponses",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/game_options.package"
+                    },
+                    {
+                        "name":  "cg_unitVoiceResponsesDelay",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/game_options.package"
+                    },
+                    {
+                        "name":  "cg_useHeroIcon2",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/game_options.package"
+                    },
+                    {
+                        "name":  "cg_useLongTooltips",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/game_apex.interface"
+                    },
+                    {
+                        "name":  "cg_useNewShop2",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/game_options.package"
+                    },
+                    {
+                        "name":  "cg_vectorCast",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/game_options.package"
+                    },
+                    {
+                        "name":  "cg_wardVisionOverlay",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/game_options.package"
+                    },
+                    {
+                        "name":  "chat_filterChatSounds",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/ClientPackageFiles/ui/scripts/options.lua"
+                    },
+                    {
+                        "name":  "chat_filterHeroIcons",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/ClientPackageFiles/ui/scripts/options.lua"
+                    },
+                    {
+                        "name":  "chat_filterHeroNames",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/ClientPackageFiles/ui/scripts/options.lua"
+                    },
+                    {
+                        "name":  "chat_filterShortFormat",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/ClientPackageFiles/ui/scripts/options.lua"
+                    },
+                    {
+                        "name":  "chat_gameLobbyChatToggle",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/newui/communicator_v2.package"
+                    },
+                    {
+                        "name":  "chat_name",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/scripts/newui/communicator_v2.lua"
+                    },
+                    {
+                        "name":  "chat_showChatTimestamps",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/game_options.package"
+                    },
+                    {
+                        "name":  "chat_userCount",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/scripts/sysbar_controller.lua"
+                    },
+                    {
+                        "name":  "cl_allHeroes",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/scripts/newui/kongor_logger.lua"
+                    },
+                    {
+                        "name":  "cl_fps",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/scripts/tao.lua"
+                    },
+                    {
+                        "name":  "cl_GarenaEnable",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/scripts/sysbar_controller.lua"
+                    },
+                    {
+                        "name":  "cl_map",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/scripts/asset_prewarmer.lua"
+                    },
+                    {
+                        "name":  "cl_packetSendFPS",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/scripts/main_v2.lua"
+                    },
+                    {
+                        "name":  "cl_password",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/scripts/newui/player_hosted_v2.lua"
+                    },
+                    {
+                        "name":  "cl_ping",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/scripts/sysbar_controller.lua"
+                    },
+                    {
+                        "name":  "cl_Rap2Enable",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/newui/match_stats_v2.package"
+                    },
+                    {
+                        "name":  "cl_reconnect",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/scripts/main_v2.lua"
+                    },
+                    {
+                        "name":  "cl_showfps",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/scripts/sysbar_controller.lua"
+                    },
+                    {
+                        "name":  "compendium_guide_ability_hoverName",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/ClientPackageFiles/ui/fe2/game_lobby_hero_info.package"
+                    },
+                    {
+                        "name":  "compendium_guide_usingLocal",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/scripts/learnatorium.lua"
+                    },
+                    {
+                        "name":  "compendium_usage_retrieveDays",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/learnatorium_templates.package"
+                    },
+                    {
+                        "name":  "component_branch_height",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/game_shop_v3_templates.package"
+                    },
+                    {
+                        "name":  "component_tree_baseY",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/scripts/game_shop.lua"
+                    },
+                    {
+                        "name":  "con_show",
+                        "category":  "console",
+                        "source":  "k2_engine_core"
+                    },
+                    {
+                        "name":  "d_drawAreaAffectors",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/test_suite/test_suite.package"
+                    },
+                    {
+                        "name":  "d_drawProjectileRadiuses",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/test_suite/test_suite.package"
+                    },
+                    {
+                        "name":  "d_drawTreeBounds",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/test_suite/test_suite.package"
+                    },
+                    {
+                        "name":  "d_drawUnitBounds",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/test_suite/test_suite.package"
+                    },
+                    {
+                        "name":  "developer",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/scripts/newui/player_stats_v2.lua"
+                    },
+                    {
+                        "name":  "dw_buy_sound_not_playing",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/game_shop_v3.interface"
+                    },
+                    {
+                        "name":  "dw_shop_sound_not_playing",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/game_shop_v3.interface"
+                    },
+                    {
+                        "name":  "ebuff_cfgActive_blinkenabled",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/game_options.package"
+                    },
+                    {
+                        "name":  "ebuff_cfgActive_dectimer",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/game_options.package"
+                    },
+                    {
+                        "name":  "ebuff_cfgActive_overheadlbl",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/game_options.package"
+                    },
+                    {
+                        "name":  "ebuff_cfgActive_popdispassive",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/game_options.package"
+                    },
+                    {
+                        "name":  "ebuff_cfgActive_popenabled",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/game_options.package"
+                    },
+                    {
+                        "name":  "ebuff_cfgActive_showlbl",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/game_options.package"
+                    },
+                    {
+                        "name":  "ebuff_cfgActive_timerbar",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/tooltip_ability.package"
+                    },
+                    {
+                        "name":  "facebook_stream_likes",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/scripts/game_new.lua"
+                    },
+                    {
+                        "name":  "facebook_stream_ongoing",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/scripts/game_new.lua"
+                    },
+                    {
+                        "name":  "facebook_stream_views",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/scripts/game_new.lua"
+                    },
+                    {
+                        "name":  "facebookstream_report",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/ClientPackageFiles/ui/fe2/facebook_stream.package"
+                    },
+                    {
+                        "name":  "facebookstream_showcapturewindow",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/ClientPackageFiles/ui/fe2/facebook_stream.package"
+                    },
+                    {
+                        "name":  "g_botDifficulty",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/bots/soccer_bot_brain.lua"
+                    },
+                    {
+                        "name":  "g_camDistanceMax",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/test_suite/test_suite.package"
+                    },
+                    {
+                        "name":  "g_camDistanceMaxSpectator",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/test_suite/test_suite.package"
+                    },
+                    {
+                        "name":  "g_camDistanceMin",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/test_suite/test_suite.package"
+                    },
+                    {
+                        "name":  "g_camfov",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/test_suite/test_suite.package"
+                    },
+                    {
+                        "name":  "g_dayLength",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/scripts/game_new.lua"
+                    },
+                    {
+                        "name":  "g_dayStartTime",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/scripts/game_new.lua"
+                    },
+                    {
+                        "name":  "g_disableFogOfWar",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/test_suite/test_suite.package"
+                    },
+                    {
+                        "name":  "g_minimapPortraitAndColorType",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/game_options.package"
+                    },
+                    {
+                        "name":  "g_PathDetail",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/test_suite/test_suite.package"
+                    },
+                    {
+                        "name":  "g_perks",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/test_suite/test_suite.package"
+                    },
+                    {
+                        "name":  "g_spawnBosses",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/test_suite/test_suite.package"
+                    },
+                    {
+                        "name":  "g_spawnNeutrals",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/test_suite/test_suite.package"
+                    },
+                    {
+                        "name":  "g_unitMoveSpeedMin",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/test_suite/test_suite.package"
+                    },
+                    {
+                        "name":  "g_unitPlayDenyAnims",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/game_options.package"
+                    },
+                    {
+                        "name":  "game_phase",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/scripts/sysbar_controller.lua"
+                    },
+                    {
+                        "name":  "gfx_fogColor",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/scripts/kongor_seasonal_hud.lua"
+                    },
+                    {
+                        "name":  "gfx_fogFar",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/scripts/kongor_seasonal_hud.lua"
+                    },
+                    {
+                        "name":  "gfx_fogNear",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/scripts/kongor_seasonal_hud.lua"
+                    },
+                    {
+                        "name":  "gfx_fogType",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/scripts/kongor_seasonal_hud.lua"
+                    },
+                    {
+                        "name":  "gfx_lighting",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/test_suite/test_suite.package"
+                    },
+                    {
+                        "name":  "gfx_normals",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/test_suite/test_suite.package"
+                    },
+                    {
+                        "name":  "gfx_points",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/test_suite/test_suite.package"
+                    },
+                    {
+                        "name":  "gfx_textures",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/test_suite/test_suite.package"
+                    },
+                    {
+                        "name":  "gfx_wireframe",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/test_suite/test_suite.package"
+                    },
+                    {
+                        "name":  "guide_fadein",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/game_shop_v3_templates.package"
+                    },
+                    {
+                        "name":  "guide_recommendeditem_isscroll",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/scripts/game_shop.lua"
+                    },
+                    {
+                        "name":  "hbmod_bgstr",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/scripts/heartbeat_controller.lua"
+                    },
+                    {
+                        "name":  "hbmod_crit",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/scripts/heartbeat_controller.lua"
+                    },
+                    {
+                        "name":  "hbmod_freq",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/scripts/heartbeat_controller.lua"
+                    },
+                    {
+                        "name":  "hbmod_pbstr",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/scripts/heartbeat_controller.lua"
+                    },
+                    {
+                        "name":  "hbmod_sound",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/scripts/heartbeat_controller.lua"
+                    },
+                    {
+                        "name":  "hero_attackSpeedPerAgi",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/test_suite/test_suite.package"
+                    },
+                    {
+                        "name":  "hero_holdaftermove",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/game_options.package"
+                    },
+                    {
+                        "name":  "hero_hpPerStr",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/test_suite/test_suite.package"
+                    },
+                    {
+                        "name":  "hero_hpRegenPerStr",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/test_suite/test_suite.package"
+                    },
+                    {
+                        "name":  "hero_mastery_maxlevel_new",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/scripts/learnatorium.lua"
+                    },
+                    {
+                        "name":  "hero_mpPerInt",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/test_suite/test_suite.package"
+                    },
+                    {
+                        "name":  "hero_mpRegenPerInt",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/test_suite/test_suite.package"
+                    },
+                    {
+                        "name":  "host_Affinity",
+                        "category":  "engine_host",
+                        "source":  "k2_engine_core"
+                    },
+                    {
+                        "name":  "host_cloudAutoDownload",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/game_options.package"
+                    },
+                    {
+                        "name":  "host_cloudAutoUpload",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/game_options.package"
+                    },
+                    {
+                        "name":  "host_date",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/test_suite/test_suite.lua"
+                    },
+                    {
+                        "name":  "host_dev",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/scripts/store_core.lua"
+                    },
+                    {
+                        "name":  "host_drawFPS",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/scripts/sysbar_controller.lua"
+                    },
+                    {
+                        "name":  "host_dynamicResReload",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/test_suite/test_suite.package"
+                    },
+                    {
+                        "name":  "host_fps",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/scripts/tao.lua"
+                    },
+                    {
+                        "name":  "host_graphicsdriverold",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/confirmations.interface"
+                    },
+                    {
+                        "name":  "host_language",
+                        "category":  "engine_host",
+                        "source":  "k2_engine_core"
+                    },
+                    {
+                        "name":  "host_map",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/scripts/asset_prewarmer.lua"
+                    },
+                    {
+                        "name":  "host_maxFPS",
+                        "category":  "engine_host",
+                        "source":  "k2_engine_core"
+                    },
+                    {
+                        "name":  "host_os",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/store2.package"
+                    },
+                    {
+                        "name":  "host_store2buildshader",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/scripts/store_core.lua"
+                    },
+                    {
+                        "name":  "host_store2unifyshader",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/scripts/store_core.lua"
+                    },
+                    {
+                        "name":  "host_time",
+                        "category":  "engine_host",
+                        "source":  "k2_engine_core"
+                    },
+                    {
+                        "name":  "host_timescale",
+                        "category":  "engine_host",
+                        "source":  "k2_engine_core"
+                    },
+                    {
+                        "name":  "host_version",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/scripts/newui/kongor_logger.lua"
+                    },
+                    {
+                        "name":  "host_vidDriver",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/game_options.package"
+                    },
+                    {
+                        "name":  "instantiateHeroIndex",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/scripts/store_filters.lua"
+                    },
+                    {
+                        "name":  "is_dev_game",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/scripts/game_new.lua"
+                    },
+                    {
+                        "name":  "isStaff",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/scripts/newui/communicator_v2.lua"
+                    },
+                    {
+                        "name":  "kongor_bot_ping_seq",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/bots/teambot/teambotbrain.lua"
+                    },
+                    {
+                        "name":  "kongor_bot_ping_team",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/bots/teambot/teambotbrain.lua"
+                    },
+                    {
+                        "name":  "kongor_bot_ping_x",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/bots/teambot/teambotbrain.lua"
+                    },
+                    {
+                        "name":  "kongor_bot_ping_y",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/bots/teambot/teambotbrain.lua"
+                    },
+                    {
+                        "name":  "kongor_detected_monitors",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/scripts/sysbar_controller.lua"
+                    },
+                    {
+                        "name":  "kongor_disable_boot_preload",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/scripts/main_v2.lua"
+                    },
+                    {
+                        "name":  "kongor_is_bot_match",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/test_suite/test_suite.lua"
+                    },
+                    {
+                        "name":  "kongor_offline_hub",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/main.interface"
+                    },
+                    {
+                        "name":  "kongor_soccer_pass_seq",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/bots/soccer_bot_brain.lua"
+                    },
+                    {
+                        "name":  "login_autoLogin",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/scripts/main_v2.lua"
+                    },
+                    {
+                        "name":  "login_invisible",
+                        "category":  "auth",
+                        "source":  "k2_engine_core"
+                    },
+                    {
+                        "name":  "login_isLoggedIn",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/scripts/main_matches.lua"
+                    },
+                    {
+                        "name":  "login_name",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/scripts/sysbar_controller.lua"
+                    },
+                    {
+                        "name":  "login_password",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/main.interface"
+                    },
+                    {
+                        "name":  "login_rememberMe",
+                        "category":  "auth",
+                        "source":  "k2_engine_core"
+                    },
+                    {
+                        "name":  "login_rememberName",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/main.interface"
+                    },
+                    {
+                        "name":  "login_rememberPassword",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/main.interface"
+                    },
+                    {
+                        "name":  "manacosts_enabled",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/ClientPackageFiles/ui/manacosts_options.package"
+                    },
+                    {
+                        "name":  "map",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/scripts/enfos_hud.lua"
+                    },
+                    {
+                        "name":  "MERGE_CLAN_FRIENDS",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/game_options.package"
+                    },
+                    {
+                        "name":  "microStore_avatarSelectTarget",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/scripts/store_filters.lua"
+                    },
+                    {
+                        "name":  "microStore_heroSelectTarget",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/scripts/store_filters.lua"
+                    },
+                    {
+                        "name":  "microStore_targetCategory",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/test_suite/test_suite.lua"
+                    },
+                    {
+                        "name":  "microStoreCDPriceGold",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/scripts/store_checkout.lua"
+                    },
+                    {
+                        "name":  "microStoreCDPriceSilver",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/scripts/store_checkout.lua"
+                    },
+                    {
+                        "name":  "microStoreDiscountInfo",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/ClientPackageFiles/ui/fe2/store2_templates.package"
+                    },
+                    {
+                        "name":  "microStoreID",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/scripts/store_preview_stage.lua"
+                    },
+                    {
+                        "name":  "microStoreID999",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/scripts/store_carousel.lua"
+                    },
+                    {
+                        "name":  "microStorePackageCoins1",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/scripts/store_checkout.lua"
+                    },
+                    {
+                        "name":  "microStorePackageCoins2",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/scripts/store_checkout.lua"
+                    },
+                    {
+                        "name":  "microStorePackageCoins3",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/scripts/store_checkout.lua"
+                    },
+                    {
+                        "name":  "microStorePackageCoins4",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/scripts/store_checkout.lua"
+                    },
+                    {
+                        "name":  "microStorePackageCoins5",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/scripts/store_checkout.lua"
+                    },
+                    {
+                        "name":  "microStorePackagePrice1",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/scripts/store_checkout.lua"
+                    },
+                    {
+                        "name":  "microStorePackagePrice2",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/scripts/store_checkout.lua"
+                    },
+                    {
+                        "name":  "microStorePackagePrice3",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/scripts/store_checkout.lua"
+                    },
+                    {
+                        "name":  "microStorePackagePrice4",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/scripts/store_checkout.lua"
+                    },
+                    {
+                        "name":  "microStorePackagePrice5",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/scripts/store_checkout.lua"
+                    },
+                    {
+                        "name":  "microStoreSpecialDisplay",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/scripts/store_filters.lua"
+                    },
+                    {
+                        "name":  "motd_url",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/scripts/newui/homepage_v2.lua"
+                    },
+                    {
+                        "name":  "movf_constraintoscreen",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/ClientPackageFiles/ui/movf_control.package"
+                    },
+                    {
+                        "name":  "movf_control_expand",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/ClientPackageFiles/ui/movf_control.package"
+                    },
+                    {
+                        "name":  "mstore_redeemcode_input",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/ClientPackageFiles/ui/fe2/store2_form_redeemcode.package"
+                    },
+                    {
+                        "name":  "mstoreHeroSortMode",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/scripts/store_filters.lua"
+                    },
+                    {
+                        "name":  "net_maxBPS",
+                        "category":  "network",
+                        "source":  "k2_engine_core"
+                    },
+                    {
+                        "name":  "net_packetSize",
+                        "category":  "network",
+                        "source":  "k2_engine_core"
+                    },
+                    {
+                        "name":  "net_ping",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/scripts/sysbar_controller.lua"
+                    },
+                    {
+                        "name":  "OFFLINE_IN_GROUPS",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/game_options.package"
+                    },
+                    {
+                        "name":  "options_antialiasing",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/game_options.package"
+                    },
+                    {
+                        "name":  "options_aspect",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/game_options.package"
+                    },
+                    {
+                        "name":  "options_bpp",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/game_options.package"
+                    },
+                    {
+                        "name":  "options_d3dex",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/game_options.package"
+                    },
+                    {
+                        "name":  "options_defaultInterface",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/game_options.package"
+                    },
+                    {
+                        "name":  "options_display",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/game_options.package"
+                    },
+                    {
+                        "name":  "options_dynamiclights",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/game_options.package"
+                    },
+                    {
+                        "name":  "options_exclusive",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/game_options.package"
+                    },
+                    {
+                        "name":  "options_foliage",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/game_options.package"
+                    },
+                    {
+                        "name":  "options_framequeuing",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/game_options.package"
+                    },
+                    {
+                        "name":  "options_fullscreen",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/game_options.package"
+                    },
+                    {
+                        "name":  "options_gamma",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/game_options.package"
+                    },
+                    {
+                        "name":  "options_modelQuality",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/game_options.package"
+                    },
+                    {
+                        "name":  "options_postprocessing",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/game_options.package"
+                    },
+                    {
+                        "name":  "options_reflections",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/game_options.package"
+                    },
+                    {
+                        "name":  "options_refraction",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/game_options.package"
+                    },
+                    {
+                        "name":  "options_refreshrate",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/game_options.package"
+                    },
+                    {
+                        "name":  "options_resolution",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/game_options.package"
+                    },
+                    {
+                        "name":  "options_rimlighting",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/game_options.package"
+                    },
+                    {
+                        "name":  "options_shaderQuality",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/game_options.package"
+                    },
+                    {
+                        "name":  "options_shadowQuality",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/game_options.package"
+                    },
+                    {
+                        "name":  "options_skybox",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/game_options.package"
+                    },
+                    {
+                        "name":  "options_sound_disable",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/game_options.package"
+                    },
+                    {
+                        "name":  "options_sound_driver",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/game_options.package"
+                    },
+                    {
+                        "name":  "options_sound_numChannels",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/game_options.package"
+                    },
+                    {
+                        "name":  "options_sound_output",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/game_options.package"
+                    },
+                    {
+                        "name":  "options_soundQuality",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/game_options.package"
+                    },
+                    {
+                        "name":  "options_textureFiltering",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/game_options.package"
+                    },
+                    {
+                        "name":  "options_textureSize",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/game_options.package"
+                    },
+                    {
+                        "name":  "options_vidDriver",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/game_options.package"
+                    },
+                    {
+                        "name":  "options_vsync",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/game_options.package"
+                    },
+                    {
+                        "name":  "options_waterQuality",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/game_options.package"
+                    },
+                    {
+                        "name":  "p2p_auto_connect",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/main.interface"
+                    },
+                    {
+                        "name":  "p2p_auto_host",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/main.interface"
+                    },
+                    {
+                        "name":  "p2p_connect_addr",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/scripts/main_matches.lua"
+                    },
+                    {
+                        "name":  "p2p_host_addr",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/scripts/main_v2.lua"
+                    },
+                    {
+                        "name":  "p2p_last_ip",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/scripts/main_matches.lua"
+                    },
+                    {
+                        "name":  "p2p_mode",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/main.interface"
+                    },
+                    {
+                        "name":  "p2p_nickname",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/scripts/main_matches.lua"
+                    },
+                    {
+                        "name":  "p2p_port",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/scripts/main_matches.lua"
+                    },
+                    {
+                        "name":  "p2p_standalone",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/main.interface"
+                    },
+                    {
+                        "name":  "ping",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/scripts/sysbar_controller.lua"
+                    },
+                    {
+                        "name":  "promo_currentQuanity",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/scripts/store_carousel.lua"
+                    },
+                    {
+                        "name":  "purchase_u_package",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/ClientPackageFiles/ui/fe2/form_upgrade_account.package"
+                    },
+                    {
+                        "name":  "quickitem_dummy_draggingItem",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/scripts/game_shop.lua"
+                    },
+                    {
+                        "name":  "releaseStage_dev",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/scripts/game_lobby.lua"
+                    },
+                    {
+                        "name":  "releaseStage_rc",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/scripts/global_main.lua"
+                    },
+                    {
+                        "name":  "releaseStage_stable",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/store2.package"
+                    },
+                    {
+                        "name":  "releaseStage_test",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/scripts/game_lobby.lua"
+                    },
+                    {
+                        "name":  "replay_client",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/scripts/replay_control.lua"
+                    },
+                    {
+                        "name":  "replay_isPlaying",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/game_apex.interface"
+                    },
+                    {
+                        "name":  "replay_needprocessGoLive",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/ClientPackageFiles/ui/game_replay_control.interface"
+                    },
+                    {
+                        "name":  "replay_operation",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/ClientPackageFiles/ui/game_replay_control.interface"
+                    },
+                    {
+                        "name":  "replay_spec_slot",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/ClientPackageFiles/ui/game_spectator.interface"
+                    },
+                    {
+                        "name":  "replay_target_client",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/ClientPackageFiles/ui/game_replay_control.interface"
+                    },
+                    {
+                        "name":  "replay_v2",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/game_apex.interface"
+                    },
+                    {
+                        "name":  "replay_voice",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/ClientPackageFiles/ui/game_replay_control.interface"
+                    },
+                    {
+                        "name":  "res_unloadMapResources",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/scripts/main_v2.lua"
+                    },
+                    {
+                        "name":  "scene_drawSkybox",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/test_suite/test_suite.package"
+                    },
+                    {
+                        "name":  "scene_fakeSpecColor",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/scripts/store_core.lua"
+                    },
+                    {
+                        "name":  "scene_foliageDrawDistance",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/test_suite/test_suite.package"
+                    },
+                    {
+                        "name":  "scene_skyboxMaterial",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/test_suite/test_suite.package"
+                    },
+                    {
+                        "name":  "sec_option_search",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/scripts/main_v2.lua"
+                    },
+                    {
+                        "name":  "shop_confirm_buyall",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/game_shop_v3.interface"
+                    },
+                    {
+                        "name":  "shopAlphaValue",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/game_shop_v3_templates.package"
+                    },
+                    {
+                        "name":  "SHOW_CUSTOM_COLORS",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/game_options.package"
+                    },
+                    {
+                        "name":  "sound_compressedFormat",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/test_suite/test_suite.lua"
+                    },
+                    {
+                        "name":  "sound_drawSounds",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/test_suite/test_suite.package"
+                    },
+                    {
+                        "name":  "sound_interfaceVolume",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/game_options.package"
+                    },
+                    {
+                        "name":  "sound_masterVolume",
+                        "category":  "audio",
+                        "source":  "k2_engine_core"
+                    },
+                    {
+                        "name":  "sound_musicVolume",
+                        "category":  "audio",
+                        "source":  "k2_engine_core"
+                    },
+                    {
+                        "name":  "sound_mute",
+                        "category":  "audio",
+                        "source":  "k2_engine_core"
+                    },
+                    {
+                        "name":  "sound_muteMusic",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/game_options.package"
+                    },
+                    {
+                        "name":  "sound_sfxVolume",
+                        "category":  "audio",
+                        "source":  "k2_engine_core"
+                    },
+                    {
+                        "name":  "special_messages_web_url",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/newui/system_messages_v2.package"
+                    },
+                    {
+                        "name":  "specui_bottom_tab_visible",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/ClientPackageFiles/ui/game_spectator.interface"
+                    },
+                    {
+                        "name":  "specui_combatpop_cooldown",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/ClientPackageFiles/ui/specui/specui_info_tabs.package"
+                    },
+                    {
+                        "name":  "specui_combatpop_display",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/ClientPackageFiles/ui/specui/specui_info_tabs.package"
+                    },
+                    {
+                        "name":  "specui_first_time_viewed3",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/specui/specui_base_interface.package"
+                    },
+                    {
+                        "name":  "specui_itempop_gold_threshold",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/ClientPackageFiles/ui/scripts/specui.lua"
+                    },
+                    {
+                        "name":  "specui_mini_mode1",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/ClientPackageFiles/ui/specui/specui_info_tabs.package"
+                    },
+                    {
+                        "name":  "specui_push_visible",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/ClientPackageFiles/ui/game_spectator.interface"
+                    },
+                    {
+                        "name":  "specui_show_hotkeys",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/ClientPackageFiles/ui/scripts/specui.lua"
+                    },
+                    {
+                        "name":  "specui_show_popup_ability_learn",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/ClientPackageFiles/ui/specui/specui_info_tabs.package"
+                    },
+                    {
+                        "name":  "specui_show_popup_ability_use",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/ClientPackageFiles/ui/specui/specui_info_tabs.package"
+                    },
+                    {
+                        "name":  "specui_show_popup_gank",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/ClientPackageFiles/ui/scripts/specui.lua"
+                    },
+                    {
+                        "name":  "specui_show_popup_item",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/ClientPackageFiles/ui/scripts/specui.lua"
+                    },
+                    {
+                        "name":  "specui_show_tooltips",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/ClientPackageFiles/ui/specui/specui_hub.package"
+                    },
+                    {
+                        "name":  "specui_unitframe_state",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/ClientPackageFiles/ui/game_spectator.interface"
+                    },
+                    {
+                        "name":  "store2_combobox_",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/scripts/store_filters.lua"
+                    },
+                    {
+                        "name":  "store2_enable_edit",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/store2.package"
+                    },
+                    {
+                        "name":  "store2_initCategory",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/scripts/store_checkout.lua"
+                    },
+                    {
+                        "name":  "store2_initSearchTerm",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/store2.package"
+                    },
+                    {
+                        "name":  "store2_isBundleModelDetail",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/store2.package"
+                    },
+                    {
+                        "name":  "store2_isModelDetailShowing",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/store2.package"
+                    },
+                    {
+                        "name":  "store2_radio_button_hero_owned_isOn",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/scripts/store_carousel.lua"
+                    },
+                    {
+                        "name":  "store2_showModelDetail",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/store2.package"
+                    },
+                    {
+                        "name":  "store2_showModelDetailArrow",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/store2.package"
+                    },
+                    {
+                        "name":  "store2LoadingMinMS",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/scripts/store_core.lua"
+                    },
+                    {
+                        "name":  "store2ShowLoadingTime",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/scripts/store_core.lua"
+                    },
+                    {
+                        "name":  "subswitch_dontask",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/scripts/newui/player_stats_v2.lua"
+                    },
+                    {
+                        "name":  "sv_spawnCreeps",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/test_suite/test_suite.package"
+                    },
+                    {
+                        "name":  "sv_spawnCritters",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/test_suite/test_suite.package"
+                    },
+                    {
+                        "name":  "sv_spawnPowerups",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/test_suite/test_suite.package"
+                    },
+                    {
+                        "name":  "sv_spawnTrees",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/test_suite/test_suite.package"
+                    },
+                    {
+                        "name":  "svr_ip",
+                        "category":  "server",
+                        "source":  "k2_engine_core"
+                    },
+                    {
+                        "name":  "svr_isStaff",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/scripts/newui/communicator_v2.lua"
+                    },
+                    {
+                        "name":  "svr_login",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/scripts/main_v2.lua"
+                    },
+                    {
+                        "name":  "svr_mapName",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/scripts/enfos_hud.lua"
+                    },
+                    {
+                        "name":  "svr_name",
+                        "category":  "server",
+                        "source":  "k2_engine_core"
+                    },
+                    {
+                        "name":  "svr_port",
+                        "category":  "server",
+                        "source":  "k2_engine_core"
+                    },
+                    {
+                        "name":  "tao_req",
+                        "category":  "native_guard_ipc",
+                        "source":  "k2_engine_core"
+                    },
+                    {
+                        "name":  "tao_res",
+                        "category":  "native_guard_ipc",
+                        "source":  "k2_engine_core"
+                    },
+                    {
+                        "name":  "telemetry_ccu",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/scripts/sysbar_controller.lua"
+                    },
+                    {
+                        "name":  "temp_gfxslider_int",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/game_options.package"
+                    },
+                    {
+                        "name":  "tod_entityAmbientColor4",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/scripts/kongor_seasonal_hud.lua"
+                    },
+                    {
+                        "name":  "tod_entitySunColor4",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/scripts/kongor_seasonal_hud.lua"
+                    },
+                    {
+                        "name":  "tod_terrainAmbientColor4",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/scripts/kongor_seasonal_hud.lua"
+                    },
+                    {
+                        "name":  "tod_terrainSunColor4",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/scripts/kongor_seasonal_hud.lua"
+                    },
+                    {
+                        "name":  "tokenCostPerGame",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/game_lobby.package"
+                    },
+                    {
+                        "name":  "tut_shopcat_",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/scripts/game_shop.lua"
+                    },
+                    {
+                        "name":  "ui_allHeroes",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/scripts/game_lobby.lua"
+                    },
+                    {
+                        "name":  "ui_allow_store_tutorial",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/scripts/main_v2.lua"
+                    },
+                    {
+                        "name":  "ui_altAvatarListDebug",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/scripts/store_filters.lua"
+                    },
+                    {
+                        "name":  "ui_autocompleteTextBox",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/newui/social_v2.package"
+                    },
+                    {
+                        "name":  "ui_avatars_package_loaded",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/scripts/main_v2.lua"
+                    },
+                    {
+                        "name":  "ui_background",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/game_options.package"
+                    },
+                    {
+                        "name":  "ui_bot_definitions_loaded",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/scripts/game_lobby.lua"
+                    },
+                    {
+                        "name":  "ui_buyCoinsBlurb",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/scripts/regions.lua"
+                    },
+                    {
+                        "name":  "ui_buyRegCurBlurb",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/scripts/regions.lua"
+                    },
+                    {
+                        "name":  "ui_canCreateGame",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/scripts/newui/player_hosted_v2.lua"
+                    },
+                    {
+                        "name":  "ui_commonTriggersRegistered",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/scripts/main_v2.lua"
+                    },
+                    {
+                        "name":  "ui_confirmationsTriggersRegistered",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/scripts/main_v2.lua"
+                    },
+                    {
+                        "name":  "ui_debugObjectives",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/scripts/game_objectives.lua"
+                    },
+                    {
+                        "name":  "ui_dev",
+                        "category":  "ui",
+                        "source":  "k2_engine_core"
+                    },
+                    {
+                        "name":  "ui_dev_button",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/newui/system_bar_v2.package"
+                    },
+                    {
+                        "name":  "ui_dev_feature_",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/scripts/global_main.lua"
+                    },
+                    {
+                        "name":  "ui_dev_feature_7",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/scripts/main_v2.lua"
+                    },
+                    {
+                        "name":  "ui_devPlaceholders",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/scripts/newui/match_stats_v2.lua"
+                    },
+                    {
+                        "name":  "ui_disableChatServer",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/scripts/main_v2.lua"
+                    },
+                    {
+                        "name":  "ui_DontPromptDice",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/scripts/game_new.lua"
+                    },
+                    {
+                        "name":  "ui_eapSelectedBundleGold",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/scripts/store_checkout.lua"
+                    },
+                    {
+                        "name":  "ui_eapSelectedBundleID",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/scripts/store_checkout.lua"
+                    },
+                    {
+                        "name":  "ui_eapSelectedBundleSilver",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/scripts/store_checkout.lua"
+                    },
+                    {
+                        "name":  "ui_editor_active",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/scripts/main_v2.lua"
+                    },
+                    {
+                        "name":  "ui_EnableAlienFX",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/game_options.package"
+                    },
+                    {
+                        "name":  "ui_enableCustomAccIcons",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/scripts/regions.lua"
+                    },
+                    {
+                        "name":  "ui_filterMultiBarComposition",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/scripts/game_lobby.lua"
+                    },
+                    {
+                        "name":  "ui_forceEnableTesting",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/scripts/collector_sets_data.lua"
+                    },
+                    {
+                        "name":  "ui_game_chat_sounds",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/game_options.package"
+                    },
+                    {
+                        "name":  "ui_game_lobby_store_active",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/scripts/game_lobby.lua"
+                    },
+                    {
+                        "name":  "ui_game_specInterfaceLoaded",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/scripts/main_v2.lua"
+                    },
+                    {
+                        "name":  "ui_gameInterfaceLoaded",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/scripts/main_v2.lua"
+                    },
+                    {
+                        "name":  "ui_gamePhase",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/eula_popup.package"
+                    },
+                    {
+                        "name":  "ui_gamePhaseExtended",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/game_lobby.package"
+                    },
+                    {
+                        "name":  "ui_hideGameHeroTips",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/game_apex.interface"
+                    },
+                    {
+                        "name":  "ui_hideGLIncorrectWarning",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/scripts/game_new.lua"
+                    },
+                    {
+                        "name":  "ui_hud_scale",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/ClientPackageFiles/ui/scripts/modern_hud_controller.lua"
+                    },
+                    {
+                        "name":  "ui_isBotMatch",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/game_lobby.package"
+                    },
+                    {
+                        "name":  "ui_isLoggedIn",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/eula_popup.package"
+                    },
+                    {
+                        "name":  "ui_isStaff",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/scripts/newui/communicator_v2.lua"
+                    },
+                    {
+                        "name":  "ui_lastSavedAccountName",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/scripts/main_v2.lua"
+                    },
+                    {
+                        "name":  "ui_lastSelectedMap",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/scripts/main_v2_audio_news.lua"
+                    },
+                    {
+                        "name":  "ui_lastSelectedUser",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/scripts/main_v2.lua"
+                    },
+                    {
+                        "name":  "ui_launcherRequiredString",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/scripts/regions.lua"
+                    },
+                    {
+                        "name":  "ui_lobby_localPlayerCaptain",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/game_lobby.package"
+                    },
+                    {
+                        "name":  "ui_lobby_showOldAAPicker",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/game_lobby.package"
+                    },
+                    {
+                        "name":  "ui_local_bot_game",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/newui/confirmations_v2.package"
+                    },
+                    {
+                        "name":  "ui_logged_in",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/scripts/nexus_bridge.lua"
+                    },
+                    {
+                        "name":  "ui_LoginConsoleScript",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/scripts/main_v2.lua"
+                    },
+                    {
+                        "name":  "ui_main_walkthroughTest",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/scripts/main_v2.lua"
+                    },
+                    {
+                        "name":  "ui_maliken_letter_4",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/scripts/main_v2.lua"
+                    },
+                    {
+                        "name":  "ui_malikenMessagePath",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/ClientPackageFiles/ui/fe2/main_splash_screens.package"
+                    },
+                    {
+                        "name":  "ui_masteryDemoPresets",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/scripts/newui/player_stats_v2.lua"
+                    },
+                    {
+                        "name":  "ui_match_is_spectating",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/scripts/main_v2.lua"
+                    },
+                    {
+                        "name":  "ui_match_stats_waitingToShow",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/main_popup_v2.interface"
+                    },
+                    {
+                        "name":  "ui_minimap_glass",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/ClientPackageFiles/ui/scripts/modern_hud_controller.lua"
+                    },
+                    {
+                        "name":  "ui_minimap_opacity",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/ClientPackageFiles/ui/scripts/modern_hud_controller.lua"
+                    },
+                    {
+                        "name":  "ui_minimap_rightside",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/ebuffplus.package"
+                    },
+                    {
+                        "name":  "ui_nick",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/scripts/newui/communicator_v2.lua"
+                    },
+                    {
+                        "name":  "ui_not_opt_",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/scripts/newui/system_messages_v2.lua"
+                    },
+                    {
+                        "name":  "ui_not_opt_sound",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/game_options.package"
+                    },
+                    {
+                        "name":  "ui_notifications_toastDuration",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/game_options.package"
+                    },
+                    {
+                        "name":  "ui_options_gfxslider",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/scripts/store_core.lua"
+                    },
+                    {
+                        "name":  "ui_options_referral_url",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/ClientPackageFiles/ui/scripts/options.lua"
+                    },
+                    {
+                        "name":  "ui_overrideRegion",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/scripts/regions.lua"
+                    },
+                    {
+                        "name":  "ui_overrideTheme",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/scripts/plinko.lua"
+                    },
+                    {
+                        "name":  "ui_playground_active",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/scripts/main_v2.lua"
+                    },
+                    {
+                        "name":  "ui_preloadTheWorld",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/scripts/main_v2.lua"
+                    },
+                    {
+                        "name":  "ui_promoCornerLeft",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/scripts/main_v2.lua"
+                    },
+                    {
+                        "name":  "ui_quickStart",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/scripts/main_v2.lua"
+                    },
+                    {
+                        "name":  "ui_raf_enabled",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/ClientPackageFiles/ui/scripts/match_stats.lua"
+                    },
+                    {
+                        "name":  "ui_raf_region_string",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/scripts/main_v2.lua"
+                    },
+                    {
+                        "name":  "ui_rap_enabled",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/game_apex.interface"
+                    },
+                    {
+                        "name":  "ui_region_accountCreationType",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/ClientPackageFiles/ui/fe2/form_create_paid_account.package"
+                    },
+                    {
+                        "name":  "ui_regionLogoPath",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/scripts/regions.lua"
+                    },
+                    {
+                        "name":  "ui_reloadInterfaces",
+                        "category":  "ui",
+                        "source":  "k2_engine_core"
+                    },
+                    {
+                        "name":  "ui_selectedHero",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/scripts/newui/match_stats_v2.lua"
+                    },
+                    {
+                        "name":  "ui_selectPrank",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/scripts/global_main.lua"
+                    },
+                    {
+                        "name":  "ui_showCodeRedemption",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/store2.package"
+                    },
+                    {
+                        "name":  "ui_showMalikenMessage",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/scripts/main_v2.lua"
+                    },
+                    {
+                        "name":  "ui_showSpecialEventLogo",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/scripts/main_v2_scene.lua"
+                    },
+                    {
+                        "name":  "ui_showStoreWalkthrough",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/scripts/store2.lua"
+                    },
+                    {
+                        "name":  "ui_staffIconPath",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/scripts/regions.lua"
+                    },
+                    {
+                        "name":  "ui_staffStringName",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/scripts/regions.lua"
+                    },
+                    {
+                        "name":  "ui_suppressAutoLogin",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/main.interface"
+                    },
+                    {
+                        "name":  "ui_supressNews",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/scripts/main_v2.lua"
+                    },
+                    {
+                        "name":  "ui_testCats",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/scripts/main_v2.lua"
+                    },
+                    {
+                        "name":  "ui_testScreen",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/main.interface"
+                    },
+                    {
+                        "name":  "ui_testSuiteReplaceEntityNames",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/test_suite/test_suite.lua"
+                    },
+                    {
+                        "name":  "ui_testSuiteReplaceItemNames",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/test_suite/test_suite.lua"
+                    },
+                    {
+                        "name":  "ui_twitch_live",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/scripts/news.lua"
+                    },
+                    {
+                        "name":  "ui_unlimitedPings",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/game_options.package"
+                    },
+                    {
+                        "name":  "ui_useClientLoginSystem",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/main.interface"
+                    },
+                    {
+                        "name":  "ui_useRegionalCurrency",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/scripts/regions.lua"
+                    },
+                    {
+                        "name":  "ui_useRegionalCurrencyIcon",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/ClientPackageFiles/ui/fe2/store2_form_buycoins.package"
+                    },
+                    {
+                        "name":  "upd_checkForUpdates",
+                        "category":  "updater",
+                        "source":  "k2_engine_core"
+                    },
+                    {
+                        "name":  "USER_SORT_ONLINE_FIRST",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/game_options.package"
+                    },
+                    {
+                        "name":  "version",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/scripts/newui/kongor_logger.lua"
+                    },
+                    {
+                        "name":  "vid_d3d9",
+                        "category":  "video",
+                        "source":  "k2_engine_core"
+                    },
+                    {
+                        "name":  "vid_display",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/game_options.package"
+                    },
+                    {
+                        "name":  "vid_drawBoneNames",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/test_suite/test_suite.package"
+                    },
+                    {
+                        "name":  "vid_drawBones",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/test_suite/test_suite.package"
+                    },
+                    {
+                        "name":  "vid_drawMeshNames",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/test_suite/test_suite.package"
+                    },
+                    {
+                        "name":  "vid_drawModelBounds",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/test_suite/test_suite.package"
+                    },
+                    {
+                        "name":  "vid_drawParticleSystems",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/test_suite/test_suite.package"
+                    },
+                    {
+                        "name":  "vid_driver",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/game_options.package"
+                    },
+                    {
+                        "name":  "vid_foliageAlphaTestRef",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/test_suite/test_suite.package"
+                    },
+                    {
+                        "name":  "vid_foliageAlphaTestRef2",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/test_suite/test_suite.package"
+                    },
+                    {
+                        "name":  "vid_foliageOptLight",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/test_suite/test_suite.package"
+                    },
+                    {
+                        "name":  "vid_foliageRenderType",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/test_suite/test_suite.package"
+                    },
+                    {
+                        "name":  "vid_foliageWireframe",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/test_suite/test_suite.package"
+                    },
+                    {
+                        "name":  "vid_fps",
+                        "category":  "video",
+                        "source":  "k2_engine_core"
+                    },
+                    {
+                        "name":  "vid_fullscreen",
+                        "category":  "video",
+                        "source":  "k2_engine_core"
+                    },
+                    {
+                        "name":  "vid_height",
+                        "category":  "video",
+                        "source":  "k2_engine_core"
+                    },
+                    {
+                        "name":  "vid_hideTerrain",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/test_suite/test_suite.package"
+                    },
+                    {
+                        "name":  "vid_hideWater",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/test_suite/test_suite.package"
+                    },
+                    {
+                        "name":  "vid_refreshRate",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/scripts/sysbar_controller.lua"
+                    },
+                    {
+                        "name":  "vid_render3Das2D",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/scripts/store_core.lua"
+                    },
+                    {
+                        "name":  "vid_resolution",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/scripts/sysbar_controller.lua"
+                    },
+                    {
+                        "name":  "vid_shader_Precache",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/game_options.package"
+                    },
+                    {
+                        "name":  "vid_shaderAmbientOcclusion",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/ClientPackageFiles/ui/scripts/nexus/nexus_graphics.lua"
+                    },
+                    {
+                        "name":  "vid_shaderPrecache",
+                        "category":  "video",
+                        "source":  "k2_engine_core"
+                    },
+                    {
+                        "name":  "vid_shadows",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/ClientPackageFiles/ui/scripts/nexus/nexus_graphics.lua"
+                    },
+                    {
+                        "name":  "vid_SmoothLineEnable",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/test_suite/test_suite.package"
+                    },
+                    {
+                        "name":  "vid_smoothLineExtent",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/test_suite/test_suite.package"
+                    },
+                    {
+                        "name":  "vid_smoothLineR",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/test_suite/test_suite.package"
+                    },
+                    {
+                        "name":  "vid_smoothLineW",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/test_suite/test_suite.package"
+                    },
+                    {
+                        "name":  "vid_terrainCliffs",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/test_suite/test_suite.package"
+                    },
+                    {
+                        "name":  "vid_terrainLayer1",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/test_suite/test_suite.package"
+                    },
+                    {
+                        "name":  "vid_terrainLayer2",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/test_suite/test_suite.package"
+                    },
+                    {
+                        "name":  "vid_terrainShowGrid",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/test_suite/test_suite.package"
+                    },
+                    {
+                        "name":  "vid_terrainShowNormals",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/test_suite/test_suite.package"
+                    },
+                    {
+                        "name":  "vid_textureDownsize",
+                        "category":  "video",
+                        "source":  "k2_engine_core"
+                    },
+                    {
+                        "name":  "vid_vsync",
+                        "category":  "video",
+                        "source":  "k2_engine_core"
+                    },
+                    {
+                        "name":  "vid_width",
+                        "category":  "video",
+                        "source":  "k2_engine_core"
+                    },
+                    {
+                        "name":  "voice_audioDampen",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/game_options.package"
+                    },
+                    {
+                        "name":  "voice_disabled",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/game_options.package"
+                    },
+                    {
+                        "name":  "voice_enable",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/scripts/sysbar_controller.lua"
+                    },
+                    {
+                        "name":  "voice_volume",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/fe2/game_options.package"
+                    },
+                    {
+                        "name":  "watch_bullet_sending",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/ClientPackageFiles/ui/scripts/chat.lua"
+                    },
+                    {
+                        "name":  "watch_bullet_showing",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/ClientPackageFiles/ui/game_replay_control.interface"
+                    },
+                    {
+                        "name":  "watch_system_bet_coin",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/scripts/newui/watch_system_v2.lua"
+                    },
+                    {
+                        "name":  "watch_system_bet_id",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/scripts/newui/watch_system_v2.lua"
+                    },
+                    {
+                        "name":  "watch_system_bet_item_id",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/scripts/newui/watch_system_v2.lua"
+                    },
+                    {
+                        "name":  "watch_user_activeWatches",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/scripts/newui/common_v2.lua"
+                    },
+                    {
+                        "name":  "watchreplaymask_autohide",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/ClientPackageFiles/ui/game_replay_control.interface"
+                    },
+                    {
+                        "name":  "webbrowser_last_channel",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/override/ui/scripts/global_main.lua"
+                    },
+                    {
+                        "name":  "widget_editor_color_a",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/ClientPackageFiles/ui/widget_editor.package"
+                    },
+                    {
+                        "name":  "widget_editor_color_b",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/ClientPackageFiles/ui/widget_editor.package"
+                    },
+                    {
+                        "name":  "widget_editor_color_g",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/ClientPackageFiles/ui/widget_editor.package"
+                    },
+                    {
+                        "name":  "widget_editor_color_r",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/ClientPackageFiles/ui/widget_editor.package"
+                    },
+                    {
+                        "name":  "widget_editor_colorscale_a",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/ClientPackageFiles/ui/widget_editor.package"
+                    },
+                    {
+                        "name":  "widget_editor_colorscale_b",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/ClientPackageFiles/ui/widget_editor.package"
+                    },
+                    {
+                        "name":  "widget_editor_colorscale_g",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/ClientPackageFiles/ui/widget_editor.package"
+                    },
+                    {
+                        "name":  "widget_editor_colorscale_r",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/ClientPackageFiles/ui/widget_editor.package"
+                    },
+                    {
+                        "name":  "widget_editor_height",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/ClientPackageFiles/ui/widget_editor.package"
+                    },
+                    {
+                        "name":  "widget_editor_width",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/ClientPackageFiles/ui/widget_editor.package"
+                    },
+                    {
+                        "name":  "widget_editor_x",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/ClientPackageFiles/ui/widget_editor.package"
+                    },
+                    {
+                        "name":  "widget_editor_y",
+                        "category":  "ui_or_script",
+                        "source":  "games/client/ClientPackageFiles/ui/widget_editor.package"
+                    }
+                ]
+}

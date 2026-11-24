@@ -1,0 +1,102 @@
+<Solution>
+  <Folder Name="/src/libs/">
+    <Project Path="src/libs/contracts/NEXUS.Contracts.csproj"/>
+    <Project Path="src/libs/service-defaults/ASPIRE.ServiceDefaults.csproj"/>
+    <Project Path="src/libs/database-context/MERRICK.DatabaseContext.csproj"/>
+    <Project Path="src/libs/protocol-core/Kongor.Core.csproj"/>
+    <Project Path="src/libs/source-generators/ASPIRE.SourceGenerator.csproj"/>
+  </Folder>
+
+  <Folder Name="/src/services/">
+    <Project Path="src/services/aspire-host/ASPIRE.ApplicationHost.csproj"/>
+    <Project Path="src/services/master-server/KONGOR.MasterServer.csproj"/>
+    <Project Path="src/services/chat-server/TRANSMUTANSTEIN.ChatServer.csproj"/>
+    <Project Path="src/services/web-api/ZORGATH.WebPortal.API.csproj"/>
+    <Project Path="src/services/web-ui/DAWNBRINGER.WebPortal.UI.csproj"/>
+    <Project Path="src/services/edge-gateway/KONGOR.EdgeGateway.csproj"/>
+  </Folder>
+
+  <Folder Name="/src/apps/">
+    <Project Path="src/apps/compel/COMPEL.csproj"/>
+    <Project Path="src/apps/willowmaker/WILLOWMAKER.csproj"/>
+    <Project Path="src/apps/control-panel/NEXUS.ControlPanel.GUI.csproj"/>
+    <Project Path="src/apps/compel-gui/COMPEL.GUI.csproj"/>
+    <Project Path="src/apps/replay-studio/ReplayStudio.GUI.csproj"/>
+  </Folder>
+
+  <Folder Name="/src/extensions/">
+    <Project Path="src/extensions/modding/Kongor.Modding.csproj"/>
+    <Project Path="src/extensions/replay-renderer/ReplayRenderer.Service.csproj"/>
+    <Project Path="src/extensions/vulkan-interop/NEXUS.VulkanInterop.csproj"/>
+    <Project Path="src/extensions/cdn-broker/NEXUS.CdnBroker.csproj"/>
+    <Project Path="src/extensions/spatial-audio/NEXUS.SpatialAudio.csproj"/>
+  </Folder>
+
+  <Folder Name="/src/tools/">
+    <Project Path="src/tools/kongor-cli/Kongor.Cli.csproj"/>
+    <Project Path="src/tools/kongor-shim/Kongor.Shim.csproj"/>
+    <Project Path="src/tools/mod-cli/ModCli.csproj"/>
+    <Project Path="src/tools/prebake-tool/prebake-tool.csproj"/>
+    <Project Path="src/tools/lua-verifier/LuaVerifier.csproj"/>
+    <Project Path="src/tools/endpoint-auditor/EndpointAuditor.csproj"/>
+    <Project Path="src/tools/headless-renderer/Kongor.HeadlessRenderer.csproj"/>
+  </Folder>
+
+  <Folder Name="/tests/unit/libs/">
+    <Project Path="tests/unit/libs/NEXUS.Contracts.Tests/NEXUS.Contracts.Tests.csproj"/>
+    <Project Path="tests/unit/libs/Kongor.Core.Tests/Kongor.Core.Tests.csproj"/>
+    <Project Path="tests/unit/libs/MERRICK.DatabaseContext.Tests/MERRICK.DatabaseContext.Tests.csproj"/>
+  </Folder>
+
+  <Folder Name="/tests/unit/services/">
+    <Project Path="tests/unit/services/KONGOR.MasterServer.Tests/KONGOR.MasterServer.Tests.csproj"/>
+    <Project Path="tests/unit/services/TRANSMUTANSTEIN.ChatServer.Tests/TRANSMUTANSTEIN.ChatServer.Tests.csproj"/>
+    <Project Path="tests/unit/services/ZORGATH.WebPortal.API.Tests/ZORGATH.WebPortal.API.Tests.csproj"/>
+    <Project Path="tests/unit/services/KONGOR.EdgeGateway.Tests/KONGOR.EdgeGateway.Tests.csproj"/>
+  </Folder>
+
+  <Folder Name="/tests/unit/apps/">
+    <Project Path="tests/unit/apps/COMPEL.Tests/COMPEL.Tests.csproj"/>
+    <Project Path="tests/unit/apps/NEXUS.ControlPanel.Tests/NEXUS.ControlPanel.Tests.csproj"/>
+    <Project Path="tests/unit/apps/WILLOWMAKER.Tests/WILLOWMAKER.Tests.csproj"/>
+  </Folder>
+
+  <Folder Name="/tests/unit/extensions/">
+    <Project Path="tests/unit/extensions/Kongor.Modding.Tests/Kongor.Modding.Tests.csproj"/>
+    <Project Path="tests/unit/extensions/NEXUS.CdnBroker.Tests/NEXUS.CdnBroker.Tests.csproj"/>
+    <Project Path="tests/unit/extensions/ReplayRenderer.Tests/ReplayRenderer.Tests.csproj"/>
+  </Folder>
+
+  <Folder Name="/tests/unit/tools/">
+    <Project Path="tests/unit/tools/Kongor.Cli.Tests/Kongor.Cli.Tests.csproj"/>
+    <Project Path="tests/unit/tools/Kongor.Mcp.Tests/Kongor.Mcp.Tests.csproj"/>
+    <Project Path="tests/unit/tools/ReplayStudio.Tests/ReplayStudio.Tests.csproj"/>
+  </Folder>
+
+  <Folder Name="/tests/integration/">
+    <Project Path="tests/integration/Grpc.Challenger.Tests/Grpc.Challenger.Tests.csproj"/>
+    <Project Path="tests/integration/ASPIRE.Integration.Tests/ASPIRE.Integration.Tests.csproj"/>
+    <Project Path="tests/integration/ASPIRE.Client.Integration.Tests/ASPIRE.Client.Integration.Tests.csproj"/>
+    <Project Path="tests/integration/ASPIRE.Prebaking.Tests/ASPIRE.Prebaking.Tests.csproj"/>
+  </Folder>
+
+  <Folder Name="/tests/gui/">
+    <Project Path="tests/gui/ASPIRE.Client.Gui.Tests/ASPIRE.Client.Gui.Tests.csproj"/>
+  </Folder>
+
+  <Folder Name="/tests/performance/">
+    <Project Path="tests/performance/ASPIRE.Tests.Performance/ASPIRE.Tests.Performance.csproj"/>
+  </Folder>
+
+  <Folder Name="/tests/load/">
+    <Project Path="tests/load/ASPIRE.Load.Tests/ASPIRE.Load.Tests.csproj"/>
+  </Folder>
+
+  <Folder Name="/tests/e2e/">
+    <Project Path="tests/e2e/mcp/Kongor.Mcp.E2E.Tests.csproj"/>
+  </Folder>
+
+  <Folder Name="/tests/adversarial-lua-verifier/">
+    <Project Path="tests/adversarial-lua-verifier/AdversarialLuaVerifier.csproj"/>
+  </Folder>
+</Solution>

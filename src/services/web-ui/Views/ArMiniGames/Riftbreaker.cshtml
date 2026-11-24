@@ -1,0 +1,518 @@
+@{
+    Layout = null;
+    string initialRoom = (ViewData["InitialRoom"] as string) ?? "RIFT";
+    string playerDisplayName = (ViewData["PlayerDisplayName"] as string) ?? "Champion";
+    bool isDiscordAuth = (ViewData["IsDiscordAuthenticated"] as bool?) ?? false;
+}
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-slate-950 text-slate-100">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>Chrono-Pong: Riftbreaker — Project KONGOR ARcade</title>
+    <link rel="stylesheet" href="~/css/tailwind.css" asp-append-version="true" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <style>
+        :root {
+            --rb-ease: cubic-bezier(0.22, 1, 0.36, 1);
+            --rb-spring: linear(
+                0, 0.009, 0.035 2.1%, 0.141, 0.281 6.7%, 0.723 12.9%, 0.938 16.7%,
+                1.017, 1.077, 1.121, 1.149 24.3%, 1.159, 1.163 26.1%, 1.161,
+                1.154, 1.143, 1.127 33.7%, 1.052 44.3%, 1.017 51.3%, 0.996 59%,
+                0.991 66.2%, 1 85.4%, 1
+            );
+            --rb-focus: #22d3ee;
+        }
+
+        body {
+            margin: 0;
+            background-color: #020617;
+            font-family: 'Outfit', 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+            min-height: 100dvh;
+        }
+
+        /* Accessibility: high-contrast keyboard focus ring (>= 3:1 contrast) */
+        :focus-visible {
+            outline: 2px solid var(--rb-focus);
+            outline-offset: 2px;
+        }
+
+        .rb-btn-target {
+            min-block-size: 44px;
+            min-inline-size: 44px;
+        }
+
+        /* Suspend rendering & loops when occluded */
+        #riftbreakerStage {
+            content-visibility: auto;
+            contain-intrinsic-size: 100vw 100dvh;
+            height: 100dvh;
+            width: 100%;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* 1972 Retro CRT Scanline Overlay for Act I only */
+        .rb-crt-overlay {
+            background:
+                repeating-linear-gradient(
+                    to bottom,
+                    rgba(255, 255, 255, 0.035) 0px,
+                    rgba(255, 255, 255, 0.035) 1px,
+                    transparent 1px,
+                    transparent 3px
+                ),
+                radial-gradient(circle at center, transparent 58%, rgba(0, 0, 0, 0.62) 100%);
+            pointer-events: none;
+        }
+
+        /* Modern Web Guidance: Top-layer modal dialog & scroll containment */
+        dialog.rb-dialog:modal {
+            overscroll-behavior: contain;
+            max-height: min(88dvh, 760px);
+            overflow-y: auto;
+        }
+
+        dialog.rb-dialog::backdrop {
+            overflow: hidden;
+            overscroll-behavior: contain;
+            background: rgba(2, 6, 23, 0.8);
+            backdrop-filter: blur(8px);
+        }
+
+        dialog.rb-dialog,
+        .rb-popover {
+            transition-property: opacity, transform, display, overlay;
+            transition-behavior: allow-discrete;
+            transition-duration: 240ms;
+            transition-timing-function: var(--rb-ease);
+        }
+
+        @@media (prefers-reduced-motion: no-preference) {
+            dialog.rb-dialog[open] {
+                transition-timing-function: var(--rb-spring);
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+
+            @@starting-style {
+                dialog.rb-dialog[open] {
+                    opacity: 0;
+                    transform: translateY(14px) scale(0.95);
+                }
+            }
+
+            .rb-popover:popover-open {
+                transition-timing-function: var(--rb-spring);
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+
+            @@starting-style {
+                .rb-popover:popover-open {
+                    opacity: 0;
+                    transform: translateY(-6px) scale(0.97);
+                }
+            }
+        }
+
+        dialog.rb-dialog[data-closing="true"],
+        .rb-popover[data-closing="true"] {
+            opacity: 0;
+            transform: translateY(10px) scale(0.97);
+        }
+
+        /* Branded <select> progressive enhancement */
+        .rb-base-select {
+            inline-size: 100%;
+            min-block-size: 44px;
+            background-color: #0f172a;
+            color: #f8fafc;
+            border: 1px solid #334155;
+            border-radius: 0.75rem;
+            padding: 0.5rem 0.75rem;
+            font-size: 0.875rem;
+            font-weight: 600;
+        }
+
+        @@supports (appearance: base-select) {
+            .rb-base-select,
+            .rb-base-select::picker(select) {
+                appearance: base-select;
+            }
+
+            .rb-base-select {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                gap: 0.5rem;
+                cursor: pointer;
+            }
+
+            .rb-base-select::picker-icon {
+                content: "▾";
+                color: #38bdf8;
+                font-size: 0.85rem;
+                transition: transform 180ms var(--rb-ease);
+            }
+
+            .rb-base-select:open::picker-icon {
+                transform: rotate(180deg);
+            }
+
+            .rb-base-select::picker(select) {
+                background-color: #0b1120;
+                color: #f8fafc;
+                border: 1px solid #38bdf8;
+                border-radius: 0.75rem;
+                padding: 0.35rem;
+                box-shadow: 0 18px 40px rgba(0, 0, 0, 0.65);
+            }
+
+            .rb-base-select option {
+                padding: 0.5rem 0.65rem;
+                border-radius: 0.5rem;
+                color: #e2e8f0;
+                cursor: pointer;
+            }
+
+            .rb-base-select option:hover,
+            .rb-base-select option:focus-visible {
+                background-color: #1e293b;
+                color: #ffffff;
+            }
+
+            .rb-base-select option::checkmark {
+                color: #22d3ee;
+                font-weight: 900;
+            }
+        }
+
+        /* Toast visibility */
+        #announcerToast {
+            opacity: 0;
+            transform: translate(-50%, 10px);
+            transition: opacity 220ms var(--rb-ease), transform 220ms var(--rb-ease);
+        }
+
+        #announcerToast[data-visible="true"] {
+            opacity: 1;
+            transform: translate(-50%, 0);
+        }
+
+        /* WCAG 2.3.1 & Reduced Motion Guarantee: zero flashes > 3Hz */
+        @@media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
+        }
+
+        html[data-comfort="true"] .rb-crt-overlay {
+            opacity: 0.35;
+        }
+    </style>
+</head>
+<body class="bg-slate-950 text-slate-100 antialiased">
+
+<main id="riftbreakerStage">
+    <!-- Optional AR Webcam Background -->
+    <video id="cameraFeed" playsinline muted autoplay class="hidden absolute inset-0 w-full h-full object-cover z-0"></video>
+
+    <!-- Primary WebGL2 3D Canvas Container -->
+    <div id="canvasContainer" class="absolute inset-0 z-10">
+        <canvas id="gameCanvas" role="region" aria-label="Chrono-Pong Riftbreaker 3D Arena" style="touch-action: none; width: 100%; height: 100%; display: block;"></canvas>
+    </div>
+
+    <!-- Retro 1972 CRT Scanline Film (Hidden automatically once Act I shatters) -->
+    <div id="crtOverlay" class="rb-crt-overlay absolute inset-0 z-20 transition-opacity duration-500"></div>
+
+    <!-- TOP BROADCAST HUD -->
+    <header class="relative z-30 flex flex-wrap items-center justify-between gap-3 px-4 pt-3 pb-2 pointer-events-none">
+        <!-- Player 1 Score & Energy Pill -->
+        <div class="pointer-events-auto flex items-center gap-3 px-4 py-2 rounded-2xl bg-slate-950/85 border border-cyan-500/40 backdrop-blur-md shadow-xl min-w-[195px]">
+            <div class="flex flex-col flex-1 min-w-0">
+                <div class="flex items-center justify-between gap-2">
+                    <span id="nameP1" class="text-xs font-black text-white truncate">@playerDisplayName</span>
+                    <span id="heroTagP1" class="text-[10px] font-bold text-cyan-300 uppercase tracking-wider truncate">CRT Paddle</span>
+                </div>
+                <div class="mt-1.5 h-2 w-full rounded-full bg-slate-800 overflow-hidden" aria-label="Player 1 Ultimate Energy">
+                    <div id="energyBarP1" class="h-full bg-gradient-to-r from-cyan-400 to-sky-500 transition-all duration-150" style="width: 55%;"></div>
+                </div>
+            </div>
+            <span id="scoreP1" class="text-3xl font-black font-mono text-cyan-300 tabular-nums" aria-label="Player 1 Score">0</span>
+        </div>
+
+        <!-- Center Act Indicator + Utility Buttons -->
+        <div class="pointer-events-auto flex flex-col items-center gap-1.5">
+            <div class="flex items-center gap-2 px-3 py-1.5 rounded-2xl bg-slate-950/90 border border-slate-700/80 backdrop-blur-md shadow-xl">
+                <a href="/ar-mini-games" class="rb-btn-target inline-flex items-center justify-center px-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700 text-xs font-bold text-slate-300" aria-label="Return to ARcade Hub">
+                    <i class="fas fa-arrow-left" aria-hidden="true"></i>
+                </a>
+                <span class="px-2 py-0.5 rounded-full bg-amber-500/20 border border-amber-400/40 text-[10px] font-black uppercase tracking-wider text-amber-300">Future Dev Prototype</span>
+                <span id="actBadge" class="px-2.5 py-1 text-xs font-black font-mono uppercase tracking-wider text-cyan-300">ACT I · TERMINAL TENNIS 1972</span>
+                <button id="btnPausePlay" type="button" commandfor="riftbreakerStage" command="--pause-toggle" aria-label="Pause Match" class="rb-btn-target px-3 py-1 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-600 text-xs font-bold text-white cursor-pointer">
+                    Pause
+                </button>
+                <button id="btnComfortMode" type="button" commandfor="riftbreakerStage" command="--comfort-toggle" aria-pressed="false" class="rb-btn-target px-3 py-1 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-600 text-xs font-bold text-emerald-300 cursor-pointer">
+                    CalmFX: Off
+                </button>
+                <!-- Note: uses popovertarget ONLY (never combined with commandfor) -->
+                <button id="btnOpenSettings" type="button" popovertarget="settingsPopover" aria-label="Open Game Settings" class="rb-btn-target inline-flex items-center justify-center px-3 rounded-xl bg-slate-800 hover:bg-slate-700 border border-cyan-500/40 text-xs font-bold text-cyan-300 cursor-pointer">
+                    <i class="fas fa-sliders" aria-hidden="true"></i>
+                </button>
+            </div>
+            <div id="activeRiftChips" class="flex flex-wrap items-center justify-center gap-1.5"></div>
+        </div>
+
+        <!-- Player 2 / AI Score & Energy Pill -->
+        <div class="pointer-events-auto flex items-center gap-3 px-4 py-2 rounded-2xl bg-slate-950/85 border border-rose-500/40 backdrop-blur-md shadow-xl min-w-[195px]">
+            <span id="scoreP2" class="text-3xl font-black font-mono text-rose-400 tabular-nums" aria-label="Player 2 Score">0</span>
+            <div class="flex flex-col flex-1 min-w-0 text-right">
+                <div class="flex items-center justify-between gap-2">
+                    <span id="heroTagP2" class="text-[10px] font-bold text-rose-300 uppercase tracking-wider truncate">CRT Paddle</span>
+                    <span id="nameP2" class="text-xs font-black text-white truncate">AI (Tactician)</span>
+                </div>
+                <div class="mt-1.5 h-2 w-full rounded-full bg-slate-800 overflow-hidden" aria-label="Player 2 Ultimate Energy">
+                    <div id="energyBarP2" class="h-full bg-gradient-to-r from-rose-500 to-amber-500 transition-all duration-150" style="width: 55%;"></div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- SETTINGS POPOVER (Native Popover API + Branded <select>) -->
+    <div id="settingsPopover" popover="auto" class="rb-popover fixed top-20 right-4 m-0 z-50 w-80 max-w-[calc(100vw-2rem)] rounded-2xl bg-slate-950/95 border border-cyan-500/45 p-4 text-slate-100 shadow-2xl">
+        <div class="flex items-center justify-between pb-3 mb-3 border-b border-slate-800">
+            <h2 class="text-sm font-black uppercase tracking-wider text-cyan-300">Riftbreaker Settings</h2>
+            <button type="button" popovertarget="settingsPopover" popovertargetaction="hide" aria-label="Close Settings" class="rb-btn-target px-2.5 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-700 text-xs font-bold text-slate-300 cursor-pointer">
+                Close
+            </button>
+        </div>
+
+        <div class="space-y-3.5 text-xs">
+            <div>
+                <label for="selectAnnouncer" class="block font-bold text-slate-300 mb-1">HoN Announcer Pack</label>
+                <select id="selectAnnouncer" class="rb-base-select">
+                    <button><selectedcontent></selectedcontent></button>
+                    <option value="default" selected>Default HoN Announcer</option>
+                    <option value="breakycpk">BreakyCPK (HoNCast)</option>
+                    <option value="flamboyant">Flamboyant Announcer</option>
+                    <option value="bamf">BAMF Announcer</option>
+                </select>
+            </div>
+
+            <div>
+                <label for="selectAiTier" class="block font-bold text-slate-300 mb-1">AI Opponent Tier</label>
+                <select id="selectAiTier" class="rb-base-select">
+                    <button><selectedcontent></selectedcontent></button>
+                    <option value="beginner">Initiate (Beginner)</option>
+                    <option value="tactician" selected>Tactician (Balanced)</option>
+                    <option value="grandmaster">Grandmaster (Deceptive)</option>
+                </select>
+            </div>
+
+            <label class="flex items-center gap-2.5 p-2 rounded-xl bg-slate-900/80 border border-slate-800 cursor-pointer">
+                <input id="chkSkipIntro" type="checkbox" class="w-4 h-4 accent-cyan-400" />
+                <span class="font-semibold text-slate-200">Skip 1972 Act I Intro on Rematch</span>
+            </label>
+
+            <div class="grid grid-cols-2 gap-2">
+                <button id="btnToggleAudio" type="button" aria-pressed="true" class="rb-btn-target px-3 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700 font-bold text-cyan-200 cursor-pointer">
+                    Audio: On
+                </button>
+                <button id="btnToggleSynth" type="button" aria-pressed="true" class="rb-btn-target px-3 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700 font-bold text-fuchsia-200 cursor-pointer">
+                    Act IV Synth: On
+                </button>
+            </div>
+
+            <button id="btnToggleAr" type="button" class="rb-btn-target w-full px-3 py-2 rounded-xl bg-emerald-950/70 hover:bg-emerald-900/80 border border-emerald-500/40 font-bold text-emerald-300 cursor-pointer">
+                <i class="fas fa-camera mr-1.5" aria-hidden="true"></i> Toggle Tabletop AR Webcam
+            </button>
+        </div>
+    </div>
+
+    <!-- ANNOUNCER LIVE REGION TOAST -->
+    <div id="announcerToast" role="status" aria-live="polite" aria-atomic="true" data-visible="false" class="fixed bottom-20 left-1/2 z-40 px-4 py-2 rounded-full bg-slate-950/92 border border-cyan-400/50 text-xs font-black tracking-wide text-cyan-200 shadow-2xl pointer-events-none whitespace-nowrap max-w-[92vw] truncate">
+        <span id="announcerToastText">RIFT-OS TERMINAL TENNIS v1.972</span>
+    </div>
+
+    <!-- BOTTOM TACTICAL ACTION BAR -->
+    <footer class="fixed bottom-3 left-1/2 -translate-x-1/2 z-30 flex items-center gap-2.5 px-3 py-1.5 rounded-2xl bg-slate-950/85 border border-slate-800/90 backdrop-blur-md shadow-2xl">
+        <button id="btnOpenModeDialog" type="button" commandfor="modeDialog" command="--show-mode" class="rb-btn-target px-3.5 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700 text-xs font-bold text-slate-200 cursor-pointer">
+            <i class="fas fa-users mr-1.5 text-cyan-300" aria-hidden="true"></i> Mode / 1v1 Room
+        </button>
+        <button id="btnParryStrike" type="button" commandfor="riftbreakerStage" command="--parry" disabled class="rb-btn-target px-4 py-2 rounded-xl bg-cyan-600/90 hover:bg-cyan-500 disabled:opacity-40 disabled:cursor-not-allowed text-slate-950 text-xs font-black uppercase tracking-wider cursor-pointer">
+            [Space] Parry
+        </button>
+        <button id="btnCastUlt" type="button" commandfor="riftbreakerStage" command="--cast-ult" disabled class="rb-btn-target px-4 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-fuchsia-600 hover:from-amber-400 hover:to-fuchsia-500 disabled:opacity-40 disabled:cursor-not-allowed text-slate-950 text-xs font-black uppercase tracking-wider cursor-pointer">
+            <span id="btnCastUltLabel">Hero Ult (Act II)</span> <span id="energyTextP1" class="ml-1 font-mono opacity-80">55%</span>
+        </button>
+    </footer>
+
+    <!-- DIALOG 1: 3D CHAMPION SOUL-BIND (ACT I -> ACT II) -->
+    <dialog id="heroDraftDialog" closedby="closerequest" class="kongor-dialog rb-dialog m-auto w-[min(94vw,820px)] rounded-3xl bg-slate-950/95 border border-cyan-400/50 p-6 text-slate-100 shadow-2xl">
+        <form method="dialog" asp-antiforgery="false" id="heroDraftForm" class="space-y-4">
+            <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-800 pb-3">
+                <div>
+                    <p class="text-[11px] font-black uppercase tracking-widest text-fuchsia-400">Chrono Shatter Detected</p>
+                    <h2 class="text-2xl font-black text-white tracking-tight">Choose Your 3D Champion</h2>
+                </div>
+                <span id="heroDraftStatus" class="text-xs font-semibold text-cyan-300">Select a HoN Hero to manifest on the Sanctum Court</span>
+            </div>
+
+            <div id="heroGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                <!-- Populated by RiftbreakerGame.renderHeroGrid() -->
+            </div>
+        </form>
+    </dialog>
+
+    <!-- DIALOG 2: TACTICAL RIFT RULE CARD DRAFT (ACT III) -->
+    <dialog id="cardDraftDialog" closedby="closerequest" class="kongor-dialog rb-dialog m-auto w-[min(94vw,720px)] rounded-3xl bg-slate-950/95 border border-fuchsia-400/50 p-6 text-slate-100 shadow-2xl">
+        <form method="dialog" asp-antiforgery="false" id="cardDraftForm" class="space-y-4">
+            <div class="border-b border-slate-800 pb-3">
+                <p class="text-[11px] font-black uppercase tracking-widest text-fuchsia-400">Act III Escalation</p>
+                <h2 class="text-2xl font-black text-white tracking-tight">Tactical Rift Rule Draft</h2>
+                <p id="cardDraftSubtitle" class="text-xs text-slate-300 mt-1">Select a permanent arena mutation:</p>
+            </div>
+
+            <div id="cardGrid" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <!-- Populated by RiftbreakerGame.triggerCardDraft() -->
+            </div>
+        </form>
+    </dialog>
+
+    <!-- DIALOG 3: MODE / ONLINE 1V1 ROOM / CONTROLS -->
+    <dialog id="modeDialog" closedby="any" class="kongor-dialog rb-dialog m-auto w-[min(94vw,560px)] rounded-3xl bg-slate-950/95 border border-slate-700 p-6 text-slate-100 shadow-2xl">
+        <div class="flex items-center justify-between border-b border-slate-800 pb-3 mb-4">
+            <div>
+                <h2 class="text-xl font-black text-white">Arena Mode &amp; Controls</h2>
+                <p class="text-xs text-slate-400">Solo Tactical AI • Local 2-Player • Online SignalR 1v1 Room</p>
+            </div>
+            <button type="button" commandfor="modeDialog" command="--close-mode" aria-label="Close Mode Dialog" class="rb-btn-target px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700 text-xs font-bold text-slate-300 cursor-pointer">
+                Close
+            </button>
+        </div>
+
+        <div class="space-y-4">
+            <div class="grid grid-cols-2 gap-3">
+                <button id="btnSelectSoloAi" type="button" class="rb-btn-target p-3.5 rounded-2xl bg-cyan-950/60 hover:bg-cyan-900/70 border border-cyan-500/50 text-left cursor-pointer">
+                    <div class="text-sm font-black text-cyan-300">Solo vs AI</div>
+                    <div class="text-[11px] text-slate-300 mt-0.5">3-tier adaptive AI opponent</div>
+                </button>
+                <button id="btnSelectLocal2P" type="button" class="rb-btn-target p-3.5 rounded-2xl bg-amber-950/60 hover:bg-amber-900/70 border border-amber-500/50 text-left cursor-pointer">
+                    <div class="text-sm font-black text-amber-300">Local 2P Duel</div>
+                    <div class="text-[11px] text-slate-300 mt-0.5">WASD + F/G vs Arrows + Shift/Enter</div>
+                </button>
+            </div>
+
+            <div class="p-4 rounded-2xl bg-slate-900/80 border border-slate-800 space-y-3">
+                <div class="flex items-center justify-between">
+                    <span class="text-xs font-black uppercase tracking-wider text-fuchsia-300">Online 1v1 SignalR Room</span>
+                    @if (!isDiscordAuth)
+                    {
+                        <span class="text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300">Instant Guest Play Enabled</span>
+                    }
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                    <input id="inputPlayerName" type="text" maxlength="24" value="@playerDisplayName" aria-label="Player Display Name" class="min-h-[44px] px-3 rounded-xl bg-slate-950 border border-slate-700 text-xs font-bold text-white" />
+                    <input id="inputRoomCode" type="text" maxlength="8" value="@initialRoom" aria-label="Room Code" class="min-h-[44px] px-3 rounded-xl bg-slate-950 border border-slate-700 text-xs font-mono font-black uppercase text-cyan-300" />
+                </div>
+                <button id="btnJoinOnlineRoom" type="button" class="rb-btn-target w-full py-2.5 rounded-xl bg-fuchsia-600 hover:bg-fuchsia-500 text-white font-black text-xs uppercase tracking-wider cursor-pointer">
+                    Connect &amp; Join Room
+                </button>
+                <p id="onlineStatusBanner" class="text-[11px] text-slate-400">Share the room code or URL with a friend to duel live across the Rift.</p>
+            </div>
+
+            <div class="p-3 rounded-2xl bg-slate-900/60 border border-slate-800 text-[11px] text-slate-300 space-y-1">
+                <div><strong class="text-cyan-300">Move:</strong> Mouse / Touch / W-S (Act I), WASD net-rush (Act II+)</div>
+                <div><strong class="text-cyan-300">Parry:</strong> Left-Click or Space (35ms hitstop, curve spin, +35% Ult energy)</div>
+                <div><strong class="text-amber-300">Hero Ultimate:</strong> Right-Click or E/G when Energy reaches 100%</div>
+            </div>
+        </div>
+    </dialog>
+
+    <!-- DIALOG 4: VICTORY & REMATCH -->
+    <dialog id="victoryDialog" closedby="closerequest" class="kongor-dialog rb-dialog m-auto w-[min(94vw,480px)] rounded-3xl bg-slate-950/95 border border-amber-400/55 p-6 text-slate-100 shadow-2xl text-center">
+        <form method="dialog" asp-antiforgery="false" class="space-y-4">
+            <div class="text-4xl" aria-hidden="true">🏆</div>
+            <h2 id="victoryTitle" class="text-2xl font-black text-white">Rift Broken!</h2>
+            <p id="victoryScore" class="text-base font-mono font-bold text-cyan-300">Final Score: 11 — 0</p>
+            <p id="victoryStats" class="text-xs text-slate-400">Longest Rally: 0 • Parries: 0</p>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-2">
+                <button type="submit" value="rematch_quick" class="rb-btn-target py-2.5 px-4 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-black text-xs uppercase tracking-wider cursor-pointer">
+                    Quick Hero Draft Rematch
+                </button>
+                <button type="submit" value="rematch_full" class="rb-btn-target py-2.5 px-4 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-600 text-white font-bold text-xs uppercase tracking-wider cursor-pointer">
+                    Replay Full 1972 Escalation
+                </button>
+            </div>
+        </form>
+    </dialog>
+</main>
+
+<script src="/lib/three/three.r16x.bundle.js" asp-append-version="true"></script>
+<script src="/js/kongor-viewer-core.js" asp-append-version="true"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.7/signalr.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script src="/js/riftbreaker-engine.js" asp-append-version="true"></script>
+<script>
+    (function () {
+        'use strict';
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const skipIntroParam = urlParams.get('skipIntro') === '1';
+        const modeParam = urlParams.get('mode') || 'ai';
+
+        const game = new window.RiftbreakerGame({
+            initialRoom: '@initialRoom',
+            playerName: '@playerDisplayName',
+            initialMode: modeParam === 'local2p' ? 'local2p' : (modeParam === 'online' ? 'online' : 'ai'),
+            skipIntro: skipIntroParam
+        });
+
+        window.addEventListener('DOMContentLoaded', () => {
+            game.init();
+            if (modeParam === 'online') {
+                game.connectOnlineRoom('@initialRoom', '@playerDisplayName');
+            }
+        });
+
+        window.addEventListener('beforeunload', () => {
+            game.dispose();
+        });
+
+        // Controlled inspection & automated E2E verification API
+        window.__riftbreaker = {
+            getState: () => ({
+                act: game.act,
+                phase: game.phase,
+                mode: game.mode,
+                scores: [...game.scores],
+                heroes: { ...game.heroes },
+                activeRiftCards: Array.from(game.activeRiftCards),
+                bossSpawned: game.bossSpawned,
+                paused: game.paused,
+                comfortMode: game.comfortMode,
+                isTabHidden: game.isTabHidden,
+                isStageSkipped: game.isStageSkipped,
+                ballCount: game.balls.length,
+                p1Energy: Math.round(game.players[1].energy),
+                p2Energy: Math.round(game.players[2].energy),
+                heroRigLoaded: { 1: Boolean(game.heroRigs[1]?.mixer), 2: Boolean(game.heroRigs[2]?.mixer) },
+                kongorRigLoaded: Boolean(game.kongorRig?.root?.visible)
+            }),
+            triggerShatter: () => game.triggerScreenShatter(),
+            selectHero: (heroId) => game.confirmHeroSelection(heroId),
+            triggerCardDraft: (pickerSlot = 1) => game.triggerCardDraft(pickerSlot),
+            selectCard: (cardId) => game.confirmRiftCard(cardId),
+            triggerAct4: () => game.triggerAct4BossOverdrive(),
+            setEnergy: (slot, val) => { if (game.players[slot]) game.players[slot].energy = val; game.updateHud(); },
+            castUlt: (slot = 1) => game.castHeroUltimate(slot),
+            parry: (slot = 1) => game.attemptParry(slot),
+            forceScore: (scorerSlot = 1) => game.applyScoreUpdate(scorerSlot)
+        };
+    })();
+</script>
+</body>
+</html>

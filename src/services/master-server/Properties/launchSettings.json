@@ -1,0 +1,29 @@
+{
+  "$schema": "http://json.schemastore.org/launchsettings.json",
+  "profiles": {
+    "KONGOR.MasterServer Development": {
+      "commandName": "Project",
+      "launchBrowser": true,
+      "applicationUrl": "http://0.0.0.0:55555;http://localhost:55555",
+      "launchUrl": "http://localhost:55555/scalar/v1",
+      "environmentVariables": {
+        "APPLICATION_URL": "http://0.0.0.0:55555",
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "DOTNET_ENVIRONMENT": "Development"
+      },
+      "dotnetRunMessages": true
+    },
+    "KONGOR.MasterServer Production": {
+      "commandName": "Project",
+      "launchBrowser": true,
+      "applicationUrl": "http://localhost:55555",
+      "launchUrl": "scalar/v1",
+      "environmentVariables": {
+        "APPLICATION_URL": "http://api.kongor.net",
+        "ASPNETCORE_ENVIRONMENT": "Production",
+        "DOTNET_ENVIRONMENT": "Production"
+      },
+      "dotnetRunMessages": true
+    }
+  }
+}

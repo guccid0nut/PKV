@@ -1,0 +1,425 @@
+{
+  "_default": {
+    "abilities": [
+      {
+        "slot": 1,
+        "key": "Q",
+        "maxLevel": 4,
+        "requiredLevels": [
+          1,
+          3,
+          5,
+          7
+        ],
+        "isInnateOrEarlyUlt": false
+      },
+      {
+        "slot": 2,
+        "key": "W",
+        "maxLevel": 4,
+        "requiredLevels": [
+          1,
+          3,
+          5,
+          7
+        ],
+        "isInnateOrEarlyUlt": false
+      },
+      {
+        "slot": 3,
+        "key": "E",
+        "maxLevel": 4,
+        "requiredLevels": [
+          1,
+          3,
+          5,
+          7
+        ],
+        "isInnateOrEarlyUlt": false
+      },
+      {
+        "slot": 4,
+        "key": "R",
+        "maxLevel": 3,
+        "requiredLevels": [
+          6,
+          11,
+          16
+        ],
+        "isInnateOrEarlyUlt": false
+      },
+      {
+        "slot": 5,
+        "key": "+Stats",
+        "maxLevel": 10,
+        "requiredLevels": [
+          1
+        ],
+        "isInnateOrEarlyUlt": false
+      }
+    ]
+  },
+  "shadowblade": {
+    "abilities": [
+      {
+        "slot": 1,
+        "key": "Q",
+        "maxLevel": 4,
+        "requiredLevels": [
+          1,
+          3,
+          5,
+          7
+        ],
+        "isInnateOrEarlyUlt": false
+      },
+      {
+        "slot": 2,
+        "key": "W",
+        "maxLevel": 4,
+        "requiredLevels": [
+          1,
+          3,
+          5,
+          7
+        ],
+        "isInnateOrEarlyUlt": false
+      },
+      {
+        "slot": 3,
+        "key": "E",
+        "maxLevel": 4,
+        "requiredLevels": [
+          1,
+          3,
+          5,
+          7
+        ],
+        "isInnateOrEarlyUlt": false
+      },
+      {
+        "slot": 4,
+        "key": "R",
+        "maxLevel": 4,
+        "requiredLevels": [
+          1,
+          6,
+          11,
+          16
+        ],
+        "isInnateOrEarlyUlt": true
+      },
+      {
+        "slot": 5,
+        "key": "+Stats",
+        "maxLevel": 10,
+        "requiredLevels": [
+          1
+        ],
+        "isInnateOrEarlyUlt": false
+      }
+    ]
+  },
+  "master_of_arms": {
+    "abilities": [
+      {
+        "slot": 1,
+        "key": "Q",
+        "maxLevel": 4,
+        "requiredLevels": [
+          1,
+          3,
+          5,
+          7
+        ],
+        "isInnateOrEarlyUlt": false
+      },
+      {
+        "slot": 2,
+        "key": "W",
+        "maxLevel": 4,
+        "requiredLevels": [
+          1,
+          3,
+          5,
+          7
+        ],
+        "isInnateOrEarlyUlt": false
+      },
+      {
+        "slot": 3,
+        "key": "E",
+        "maxLevel": 4,
+        "requiredLevels": [
+          1,
+          3,
+          5,
+          7
+        ],
+        "isInnateOrEarlyUlt": false
+      },
+      {
+        "slot": 4,
+        "key": "R",
+        "maxLevel": 4,
+        "requiredLevels": [
+          1,
+          6,
+          11,
+          16
+        ],
+        "isInnateOrEarlyUlt": true
+      },
+      {
+        "slot": 5,
+        "key": "+Stats",
+        "maxLevel": 10,
+        "requiredLevels": [
+          1
+        ],
+        "isInnateOrEarlyUlt": false
+      }
+    ]
+  },
+  "masterofarms": {
+    "abilities": [
+      {
+        "slot": 1,
+        "key": "Q",
+        "maxLevel": 4,
+        "requiredLevels": [
+          1,
+          3,
+          5,
+          7
+        ],
+        "isInnateOrEarlyUlt": false
+      },
+      {
+        "slot": 2,
+        "key": "W",
+        "maxLevel": 4,
+        "requiredLevels": [
+          1,
+          3,
+          5,
+          7
+        ],
+        "isInnateOrEarlyUlt": false
+      },
+      {
+        "slot": 3,
+        "key": "E",
+        "maxLevel": 4,
+        "requiredLevels": [
+          1,
+          3,
+          5,
+          7
+        ],
+        "isInnateOrEarlyUlt": false
+      },
+      {
+        "slot": 4,
+        "key": "R",
+        "maxLevel": 4,
+        "requiredLevels": [
+          1,
+          6,
+          11,
+          16
+        ],
+        "isInnateOrEarlyUlt": true
+      },
+      {
+        "slot": 5,
+        "key": "+Stats",
+        "maxLevel": 10,
+        "requiredLevels": [
+          1
+        ],
+        "isInnateOrEarlyUlt": false
+      }
+    ]
+  },
+  "geomancer": {
+    "abilities": [
+      {
+        "slot": 1,
+        "key": "Q",
+        "maxLevel": 4,
+        "requiredLevels": [
+          1,
+          3,
+          5,
+          7
+        ],
+        "isInnateOrEarlyUlt": false
+      },
+      {
+        "slot": 2,
+        "key": "W",
+        "maxLevel": 4,
+        "requiredLevels": [
+          1,
+          3,
+          5,
+          7
+        ],
+        "isInnateOrEarlyUlt": false
+      },
+      {
+        "slot": 3,
+        "key": "E",
+        "maxLevel": 4,
+        "requiredLevels": [
+          1,
+          3,
+          5,
+          7
+        ],
+        "isInnateOrEarlyUlt": false
+      },
+      {
+        "slot": 4,
+        "key": "R",
+        "maxLevel": 3,
+        "requiredLevels": [
+          6,
+          11,
+          16
+        ],
+        "isInnateOrEarlyUlt": false
+      },
+      {
+        "slot": 5,
+        "key": "+Stats",
+        "maxLevel": 10,
+        "requiredLevels": [
+          1
+        ],
+        "isInnateOrEarlyUlt": false
+      }
+    ]
+  },
+  "circe": {
+    "abilities": [
+      {
+        "slot": 1,
+        "key": "Q",
+        "maxLevel": 4,
+        "requiredLevels": [
+          1,
+          3,
+          5,
+          7
+        ],
+        "isInnateOrEarlyUlt": false
+      },
+      {
+        "slot": 2,
+        "key": "W",
+        "maxLevel": 4,
+        "requiredLevels": [
+          1,
+          3,
+          5,
+          7
+        ],
+        "isInnateOrEarlyUlt": false
+      },
+      {
+        "slot": 3,
+        "key": "E",
+        "maxLevel": 4,
+        "requiredLevels": [
+          1,
+          3,
+          5,
+          7
+        ],
+        "isInnateOrEarlyUlt": false
+      },
+      {
+        "slot": 4,
+        "key": "R",
+        "maxLevel": 3,
+        "requiredLevels": [
+          6,
+          11,
+          16
+        ],
+        "isInnateOrEarlyUlt": false
+      },
+      {
+        "slot": 5,
+        "key": "+Stats",
+        "maxLevel": 10,
+        "requiredLevels": [
+          1
+        ],
+        "isInnateOrEarlyUlt": false
+      }
+    ]
+  },
+  "kinesis": {
+    "abilities": [
+      {
+        "slot": 1,
+        "key": "Q",
+        "maxLevel": 4,
+        "requiredLevels": [
+          1,
+          3,
+          5,
+          7
+        ],
+        "isInnateOrEarlyUlt": false
+      },
+      {
+        "slot": 2,
+        "key": "W",
+        "maxLevel": 4,
+        "requiredLevels": [
+          1,
+          3,
+          5,
+          7
+        ],
+        "isInnateOrEarlyUlt": false
+      },
+      {
+        "slot": 3,
+        "key": "E",
+        "maxLevel": 4,
+        "requiredLevels": [
+          1,
+          3,
+          5,
+          7
+        ],
+        "isInnateOrEarlyUlt": false
+      },
+      {
+        "slot": 4,
+        "key": "R",
+        "maxLevel": 3,
+        "requiredLevels": [
+          6,
+          11,
+          16
+        ],
+        "isInnateOrEarlyUlt": false
+      },
+      {
+        "slot": 5,
+        "key": "+Stats",
+        "maxLevel": 10,
+        "requiredLevels": [
+          1
+        ],
+        "isInnateOrEarlyUlt": false
+      }
+    ]
+  }
+}

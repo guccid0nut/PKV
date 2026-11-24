@@ -1,0 +1,462 @@
+@model StaffStoreViewModel
+@{
+    ViewData["Title"] = "Staff Command Center - Store & Item Catalog";
+
+    string GetCategoryClass(string? category)
+    {
+        var isSelected = string.Equals(Model.SelectedCategory, category, StringComparison.OrdinalIgnoreCase) ||
+                         (string.IsNullOrEmpty(Model.SelectedCategory) && string.Equals(category, "all", StringComparison.OrdinalIgnoreCase));
+
+        return isSelected
+            ? "bg-amber-500 text-slate-950 font-bold shadow-lg shadow-amber-500/20"
+            : "bg-slate-800/80 hover:bg-slate-700/80 text-slate-300 hover:text-white border border-slate-700/60";
+    }
+
+    string GetTypeBadgeClass(int type, bool isBundle)
+    {
+        if (isBundle) return "bg-purple-500/20 text-purple-300 border-purple-500/40";
+        return type switch
+        {
+            1 => "bg-amber-500/20 text-amber-300 border-amber-500/40",
+            3 => "bg-sky-500/20 text-sky-300 border-sky-500/40",
+            4 => "bg-rose-500/20 text-rose-300 border-rose-500/40",
+            5 => "bg-emerald-500/20 text-emerald-300 border-emerald-500/40",
+            6 => "bg-indigo-500/20 text-indigo-300 border-indigo-500/40",
+            7 or 11 => "bg-teal-500/20 text-teal-300 border-teal-500/40",
+            12 => "bg-sky-500/20 text-sky-300 border-sky-500/40",
+            20 => "bg-purple-500/20 text-purple-300 border-purple-500/40",
+            _ => "bg-slate-500/20 text-slate-300 border-slate-500/40"
+        };
+    }
+}
+
+<div class="w-full max-w-[1700px] mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6 animate-fadeIn">
+    @Html.AntiForgeryToken()
+
+    <!-- Top Header Banner -->
+    <div
+        class="relative overflow-hidden rounded-2xl p-5 sm:p-6 bg-gradient-to-r from-amber-950/70 via-slate-900/80 to-slate-950/90 border border-amber-500/25 shadow-xl backdrop-blur-xl">
+        <div
+            class="absolute -right-12 -top-12 w-64 h-64 bg-amber-600/15 rounded-full blur-3xl pointer-events-none"></div>
+        <div
+            class="absolute -left-12 -bottom-12 w-64 h-64 bg-purple-600/10 rounded-full blur-3xl pointer-events-none"></div>
+
+        <div class="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div class="space-y-1.5">
+                <div
+                    class="inline-flex items-center gap-2 px-3 py-0.5 rounded-full bg-amber-500/15 border border-amber-500/30 text-amber-300 text-xs font-bold tracking-wider uppercase">
+                    <span class="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>
+                    <span>Staff Store Management</span>
+                </div>
+                <h1 class="text-2xl sm:text-3xl font-black text-white tracking-tight">
+                    Shop & Vanity Catalog Manager
+                </h1>
+                <p class="text-slate-400 text-xs sm:text-sm max-w-3xl">
+                    Browse, inspect, and manage in-game vanity products, prices, and bundles. Launch the 3D WebGL Vanity
+                    Booth to preview skins and skeletal animations in real-time.
+                </p>
+            </div>
+
+            <!-- Staff Navigation Sub-Tabs -->
+            <div
+                class="flex items-center gap-2 bg-slate-950/80 p-1.5 rounded-xl border border-slate-800 self-start md:self-auto">
+                <a asp-controller="Staff" asp-action="Reports"
+                   class="px-3.5 py-1.5 rounded-lg text-xs font-bold text-slate-400 hover:text-white transition-all flex items-center gap-2">
+                    <i class="fas fa-shield-alt"></i>
+                    <span>Player Reports</span>
+                </a>
+                <a asp-controller="Staff" asp-action="Streamers"
+                   class="px-3.5 py-1.5 rounded-lg text-xs font-bold text-slate-400 hover:text-[#C499FF] transition-all flex items-center gap-2">
+                    <i class="fab fa-twitch text-[#9146FF]"></i>
+                    <span>Streamers</span>
+                </a>
+                <a asp-controller="Staff" asp-action="Hosts"
+                   class="px-3.5 py-1.5 rounded-lg text-xs font-bold text-slate-400 hover:text-white transition-all flex items-center gap-2">
+                    <i class="fas fa-server"></i>
+                    <span>Volunteer Hosts</span>
+                </a>
+                <a asp-controller="Staff" asp-action="Store"
+                   class="px-3.5 py-1.5 rounded-lg text-xs font-bold bg-amber-500 text-slate-950 shadow-md shadow-amber-500/20 transition-all flex items-center gap-2">
+                    <i class="fas fa-store"></i>
+                    <span>Store Manager</span>
+                </a>
+                <a asp-controller="Staff" asp-action="Inventory"
+                   class="px-3.5 py-1.5 rounded-lg text-xs font-bold text-slate-400 hover:text-white transition-all flex items-center gap-2">
+                    <i class="fas fa-boxes"></i>
+                    <span>Inventory Manager</span>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Summary Metrics -->
+    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4">
+        <div class="bg-slate-900/80 border border-slate-800 rounded-xl p-4 flex flex-col justify-between">
+            <span class="text-xs text-slate-400 font-medium">Total Products</span>
+            <div class="flex items-baseline gap-2 mt-2">
+                <span class="text-2xl font-black text-white">@Model.TotalCount</span>
+                <span class="text-[10px] text-amber-400 font-semibold uppercase">Catalog</span>
+            </div>
+        </div>
+        <div class="bg-slate-900/80 border border-slate-800 rounded-xl p-4 flex flex-col justify-between">
+            <span class="text-xs text-slate-400 font-medium">Alt Avatars</span>
+            <div class="flex items-baseline gap-2 mt-2">
+                <span class="text-2xl font-black text-sky-400">@Model.TotalAvatars</span>
+                <span class="text-[10px] text-slate-400 font-semibold uppercase">Skins</span>
+            </div>
+        </div>
+        <div class="bg-slate-900/80 border border-slate-800 rounded-xl p-4 flex flex-col justify-between">
+            <span class="text-xs text-slate-400 font-medium">Wards</span>
+            <div class="flex items-baseline gap-2 mt-2">
+                <span class="text-2xl font-black text-teal-400">@Model.TotalWards</span>
+                <span class="text-[10px] text-slate-400 font-semibold uppercase">Ward Skins</span>
+            </div>
+        </div>
+        <div class="bg-slate-900/80 border border-slate-800 rounded-xl p-4 flex flex-col justify-between">
+            <span class="text-xs text-slate-400 font-medium">Bundles</span>
+            <div class="flex items-baseline gap-2 mt-2">
+                <span class="text-2xl font-black text-purple-400">@Model.TotalBundles</span>
+                <span class="text-[10px] text-slate-400 font-semibold uppercase">Sets</span>
+            </div>
+        </div>
+        <div class="bg-slate-900/80 border border-slate-800 rounded-xl p-4 flex flex-col justify-between">
+            <span class="text-xs text-slate-400 font-medium">Taunts</span>
+            <div class="flex items-baseline gap-2 mt-2">
+                <span class="text-2xl font-black text-rose-400">@Model.TotalTaunts</span>
+                <span class="text-[10px] text-slate-400 font-semibold uppercase">Smackdowns</span>
+            </div>
+        </div>
+        <div class="bg-slate-900/80 border border-slate-800 rounded-xl p-4 flex flex-col justify-between">
+            <span class="text-xs text-slate-400 font-medium">Couriers</span>
+            <div class="flex items-baseline gap-2 mt-2">
+                <span class="text-2xl font-black text-indigo-400">@Model.TotalCouriers</span>
+                <span class="text-[10px] text-slate-400 font-semibold uppercase">Companions</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filter & Search Controls -->
+    <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-4 sm:p-5 space-y-4 shadow-lg">
+        <form method="get" asp-controller="Staff" asp-action="Store"
+              class="flex flex-col md:flex-row items-stretch md:items-center gap-3">
+            <input type="hidden" name="category" value="@Model.SelectedCategory"/>
+
+            <!-- Search Bar -->
+            <div class="relative flex-1">
+                <i class="fas fa-search absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+                <input type="text" name="search" value="@Model.SearchQuery"
+                       placeholder="Search avatar name, hero, entity code, or Product ID..."
+                       class="w-full pl-9 pr-4 py-2 bg-slate-950 border border-slate-800 rounded-xl text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:border-amber-500 transition-colors"/>
+            </div>
+
+            <button type="submit"
+                    class="px-5 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs shadow-md shadow-amber-500/20 transition-all flex items-center justify-center gap-2">
+                <i class="fas fa-filter text-xs"></i> Filter Catalog
+            </button>
+
+            @if (!string.IsNullOrEmpty(Model.SearchQuery) || (!string.IsNullOrEmpty(Model.SelectedCategory) && Model.SelectedCategory != "all"))
+            {
+                <a asp-controller="Staff" asp-action="Store"
+                   class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold transition-all flex items-center justify-center gap-2 border border-slate-700">
+                    Reset
+                </a>
+            }
+        </form>
+
+        <!-- Category Filter Pills -->
+        <div class="flex items-center gap-2 overflow-x-auto pb-1 text-xs scrollbar-none">
+            <a asp-controller="Staff" asp-action="Store" asp-route-category="all" asp-route-search="@Model.SearchQuery"
+               class="px-3.5 py-1.5 rounded-lg transition-all flex-shrink-0 @GetCategoryClass("all")">All Items</a>
+            <a asp-controller="Staff" asp-action="Store" asp-route-category="avatars"
+               asp-route-search="@Model.SearchQuery"
+               class="px-3.5 py-1.5 rounded-lg transition-all flex-shrink-0 @GetCategoryClass("avatars")">🦸 Alt Avatars
+                (@Model.TotalAvatars)</a>
+            <a asp-controller="Staff" asp-action="Store" asp-route-category="wards"
+               asp-route-search="@Model.SearchQuery"
+               class="px-3.5 py-1.5 rounded-lg transition-all flex-shrink-0 @GetCategoryClass("wards")">👁️ Wards
+                (@Model.TotalWards)</a>
+            <a asp-controller="Staff" asp-action="Store" asp-route-category="bundles"
+               asp-route-search="@Model.SearchQuery"
+               class="px-3.5 py-1.5 rounded-lg transition-all flex-shrink-0 @GetCategoryClass("bundles")">📦 Bundles
+                (@Model.TotalBundles)</a>
+            <a asp-controller="Staff" asp-action="Store" asp-route-category="taunts"
+               asp-route-search="@Model.SearchQuery"
+               class="px-3.5 py-1.5 rounded-lg transition-all flex-shrink-0 @GetCategoryClass("taunts")">💀 Taunts
+                (@Model.TotalTaunts)</a>
+            <a asp-controller="Staff" asp-action="Store" asp-route-category="couriers"
+               asp-route-search="@Model.SearchQuery"
+               class="px-3.5 py-1.5 rounded-lg transition-all flex-shrink-0 @GetCategoryClass("couriers")">🐎 Couriers
+                (@Model.TotalCouriers)</a>
+            <a asp-controller="Staff" asp-action="Store" asp-route-category="announcers"
+               asp-route-search="@Model.SearchQuery"
+               class="px-3.5 py-1.5 rounded-lg transition-all flex-shrink-0 @GetCategoryClass("announcers")">🎙️
+                Announcers (@Model.TotalAnnouncers)</a>
+        </div>
+    </div>
+
+    <!-- Items Grid -->
+    @if (Model.Items.Count == 0)
+    {
+        <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-12 text-center space-y-3">
+            <div
+                class="w-16 h-16 rounded-full bg-slate-800/80 border border-slate-700 flex items-center justify-center mx-auto text-slate-500 text-2xl">
+                <i class="fas fa-box-open"></i>
+            </div>
+            <h3 class="text-base font-bold text-slate-200">No store items matched your filter</h3>
+            <p class="text-xs text-slate-400 max-w-sm mx-auto">Try clearing your search term or selecting a different
+                category filter above.</p>
+        </div>
+    }
+    else
+    {
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 gap-4">
+            @foreach (var item in Model.Items)
+            {
+                <div id="item-card-@item.Id"
+                     class="bg-slate-900/90 border border-slate-800 hover:border-amber-500/40 rounded-2xl p-4 flex flex-col justify-between transition-all duration-200 hover:shadow-xl hover:shadow-amber-500/5 group">
+                    <div>
+                        <!-- Header Badges -->
+                        <div class="flex items-center justify-between gap-2 mb-3">
+                            <span
+                                class="px-2.5 py-0.5 rounded-md text-[10px] font-extrabold uppercase tracking-wider border @GetTypeBadgeClass(item.Type, item.IsBundle)">
+                                @item.TypeName
+                            </span>
+                            <span class="text-[11px] font-mono text-slate-500 font-bold">#@item.Id</span>
+                        </div>
+
+                        <!-- Title & Code -->
+                        <h4 class="text-sm font-bold text-slate-100 group-hover:text-amber-300 transition-colors line-clamp-1">
+                            @item.Name
+                        </h4>
+                        <p class="text-[11px] font-mono text-slate-400 truncate mt-0.5" title="@item.Code">
+                            @item.Code
+                        </p>
+
+                        <!-- Price Tag -->
+                        <div class="flex items-center justify-between gap-3 mt-3 pt-3 border-t border-slate-800/80">
+                            <div class="flex items-center gap-3">
+                                <div class="flex items-center gap-1.5 text-xs font-bold text-amber-400">
+                                    <i class="fas fa-coins text-[10px]"></i>
+                                    <span
+                                        id="gold-val-@item.Id">@(item.GoldCost > 0 ? item.GoldCost + " Gold" : "Free")</span>
+                                </div>
+                                @if (item.SilverCost > 0 || item.GoldCost == 0)
+                                {
+                                    <div class="flex items-center gap-1.5 text-xs font-bold text-slate-300">
+                                        <i class="fas fa-circle text-[8px] text-slate-400"></i>
+                                        <span id="silver-val-@item.Id">@item.SilverCost Silver</span>
+                                    </div>
+                                }
+                            </div>
+
+                            <!-- Edit Price Button -->
+                            <button type="button"
+                                    onclick="openPriceEditor(@item.Id, '@item.Name.Replace("'", "\\'")', @item.GoldCost, @item.SilverCost, @item.IsEnabled.ToString().ToLower(), @item.Purchasable.ToString().ToLower())"
+                                    title="Edit Price & Availability"
+                                    class="text-slate-400 hover:text-amber-300 p-1 rounded-lg hover:bg-slate-800 transition-colors text-xs">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Actions -->
+                    <div class="mt-4 pt-3 border-t border-slate-800 flex items-center justify-between gap-2">
+                        @if (item.CanPreview3D && !string.IsNullOrEmpty(item.HeroName))
+                        {
+                            <button type="button"
+                                    onclick="window.VanityBooth3D.openHero('@item.HeroName', '@item.AltAvatarSuffix', '@item.Name.Replace("'", "\\'")', '@item.Resource')"
+                                    class="w-full py-1.5 px-3 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 hover:text-amber-200 border border-amber-500/30 text-xs font-bold transition-all flex items-center justify-center gap-2">
+                                <i class="fas fa-cube text-[11px]"></i>
+                                <span>3D Preview</span>
+                            </button>
+                        }
+                        else if (item.IsBundle)
+                        {
+                            <button type="button"
+                                    onclick="window.VanityBooth3D.openModel('/ui/fe2/grabbag/halloween/pumpkin.mdf', '@item.Name.Replace("'", "\\'")')"
+                                    class="w-full py-1.5 px-3 rounded-xl bg-purple-500/10 hover:bg-purple-500/20 text-purple-300 hover:text-purple-200 border border-purple-500/30 text-xs font-bold transition-all flex items-center justify-center gap-2">
+                                <i class="fas fa-box-open text-[11px]"></i>
+                                <span>Inspect Bundle</span>
+                            </button>
+                        }
+                        else
+                        {
+                            <span class="text-[11px] text-slate-500 italic py-1.5">2D Vanity Item</span>
+                        }
+                    </div>
+                </div>
+            }
+        </div>
+
+        <!-- Pagination -->
+        @if (Model.TotalPages > 1)
+        {
+            <div class="flex items-center justify-between pt-4 border-t border-slate-800">
+                <span class="text-xs text-slate-400">
+                    Showing Page <span class="font-bold text-slate-200">@Model.Page</span> of <span
+                        class="font-bold text-slate-200">@Model.TotalPages</span> (@Model.TotalCount items)
+                </span>
+
+                <div class="flex items-center gap-2">
+                    @if (Model.Page > 1)
+                    {
+                        <a asp-controller="Staff" asp-action="Store" asp-route-page="@(Model.Page - 1)"
+                           asp-route-category="@Model.SelectedCategory" asp-route-search="@Model.SearchQuery"
+                           class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold transition-colors border border-slate-700">
+                            <i class="fas fa-chevron-left mr-1"></i> Previous
+                        </a>
+                    }
+                    @if (Model.Page < Model.TotalPages)
+                    {
+                        <a asp-controller="Staff" asp-action="Store" asp-route-page="@(Model.Page + 1)"
+                           asp-route-category="@Model.SelectedCategory" asp-route-search="@Model.SearchQuery"
+                           class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold transition-colors border border-slate-700">
+                            Next <i class="fas fa-chevron-right ml-1"></i>
+                        </a>
+                    }
+                </div>
+            </div>
+        }
+    }
+</div>
+
+<!-- Price & Availability Editor Modal -->
+<div id="priceEditorModal"
+     class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-950/80 backdrop-blur-md p-4 transition-all">
+    <div class="relative w-full max-w-md bg-slate-900 border border-amber-500/30 rounded-2xl p-6 shadow-2xl space-y-5">
+        <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+            <div>
+                <h3 id="editItemTitle" class="text-base font-bold text-slate-100">Edit Product Price</h3>
+                <span id="editItemId" class="text-xs text-slate-400 font-mono"></span>
+            </div>
+            <button onclick="closePriceEditor()"
+                    class="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-slate-800">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+
+        <input type="hidden" id="editItemHiddenId"/>
+
+        <div class="space-y-4 text-xs">
+            <div>
+                <label class="block text-slate-300 font-medium mb-1.5">Gold Cost (Coins):</label>
+                <input type="number" id="editGoldCost" min="0" step="5"
+                       class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-slate-100 font-mono focus:outline-none focus:border-amber-500"/>
+            </div>
+
+            <div>
+                <label class="block text-slate-300 font-medium mb-1.5">Silver Cost (Coins):</label>
+                <input type="number" id="editSilverCost" min="0" step="25"
+                       class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-slate-100 font-mono focus:outline-none focus:border-amber-500"/>
+            </div>
+
+            <div class="flex items-center justify-between pt-2">
+                <label class="text-slate-300 font-medium">Enabled in Store:</label>
+                <input type="checkbox" id="editIsEnabled" class="w-4 h-4 accent-amber-500 rounded"/>
+            </div>
+
+            <div class="flex items-center justify-between">
+                <label class="text-slate-300 font-medium">Purchasable:</label>
+                <input type="checkbox" id="editPurchasable" class="w-4 h-4 accent-amber-500 rounded"/>
+            </div>
+        </div>
+
+        <div id="editStatusMsg" class="text-xs font-semibold hidden"></div>
+
+        <div class="flex items-center justify-end gap-3 pt-3 border-t border-slate-800">
+            <button onclick="closePriceEditor()"
+                    class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold transition-colors">
+                Cancel
+            </button>
+            <button id="savePriceBtn" onclick="saveStoreItemChanges()"
+                    class="px-5 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs shadow-md shadow-amber-500/20 transition-all">
+                Save Changes
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+    function openPriceEditor(id, name, gold, silver, enabled, purchasable) {
+        document.getElementById('editItemHiddenId').value = id;
+        document.getElementById('editItemTitle').innerText = name;
+        document.getElementById('editItemId').innerText = 'Product ID: #' + id;
+        document.getElementById('editGoldCost').value = gold;
+        document.getElementById('editSilverCost').value = silver;
+        document.getElementById('editIsEnabled').checked = enabled;
+        document.getElementById('editPurchasable').checked = purchasable;
+
+        const statusMsg = document.getElementById('editStatusMsg');
+        statusMsg.classList.add('hidden');
+
+        document.getElementById('priceEditorModal').style.display = 'flex';
+    }
+
+    function closePriceEditor() {
+        document.getElementById('priceEditorModal').style.display = 'none';
+    }
+
+    async function saveStoreItemChanges() {
+        const id = parseInt(document.getElementById('editItemHiddenId').value, 10);
+        const gold = parseInt(document.getElementById('editGoldCost').value, 10) || 0;
+        const silver = parseInt(document.getElementById('editSilverCost').value, 10) || 0;
+        const isEnabled = document.getElementById('editIsEnabled').checked;
+        const purchasable = document.getElementById('editPurchasable').checked;
+
+        const saveBtn = document.getElementById('savePriceBtn');
+        const statusMsg = document.getElementById('editStatusMsg');
+
+        saveBtn.disabled = true;
+        saveBtn.innerText = "Saving...";
+
+        try {
+            const resp = await fetch('/staff/store/update', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value || ''
+                },
+                body: JSON.stringify({
+                    id: id,
+                    goldCost: gold,
+                    silverCost: silver,
+                    isEnabled: isEnabled,
+                    purchasable: purchasable
+                })
+            });
+
+            const data = await resp.json();
+
+            if (resp.ok && data.success) {
+                statusMsg.innerText = "✓ Saved successfully!";
+                statusMsg.className = "text-xs font-semibold text-emerald-400";
+                statusMsg.classList.remove('hidden');
+
+                // Update card badges dynamically
+                const goldEl = document.getElementById('gold-val-' + id);
+                if (goldEl) goldEl.innerText = gold > 0 ? gold + ' Gold' : 'Free';
+
+                const silverEl = document.getElementById('silver-val-' + id);
+                if (silverEl) silverEl.innerText = silver + ' Silver';
+
+                setTimeout(() => {
+                    closePriceEditor();
+                    saveBtn.disabled = false;
+                    saveBtn.innerText = "Save Changes";
+                }, 700);
+            } else {
+                statusMsg.innerText = "Error: " + (data.error || "Failed to update item.");
+                statusMsg.className = "text-xs font-semibold text-red-400";
+                statusMsg.classList.remove('hidden');
+                saveBtn.disabled = false;
+                saveBtn.innerText = "Save Changes";
+            }
+        } catch (err) {
+            statusMsg.innerText = "Network error: " + err.message;
+            statusMsg.className = "text-xs font-semibold text-red-400";
+            statusMsg.classList.remove('hidden');
+            saveBtn.disabled = false;
+            saveBtn.innerText = "Save Changes";
+        }
+    }
+</script>

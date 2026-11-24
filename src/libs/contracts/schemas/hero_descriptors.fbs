@@ -1,0 +1,97 @@
+// ============================================================================
+// PROJECT KONGOR: HERO & ENTITY DESCRIPTORS FLATBUFFERS SCHEMA
+// High-performance binary prebaked entity cache for sub-2.0s game loading
+// ============================================================================
+
+namespace Kongor.Prebaked;
+
+enum AttributeType : byte {
+    Strength = 0,
+    Agility = 1,
+    Intelligence = 2
+}
+
+enum AttackType : byte {
+    Melee = 0,
+    Ranged = 1
+}
+
+table AbilityDescriptor {
+    slot: int;
+    name: string;
+    display_name: string;
+    icon_path: string;
+    mana_cost: string;
+    cooldown_time: string;
+    action_type: string;
+    target_radius: float;
+    cast_range: float;
+}
+
+table AltAvatarDescriptor {
+    key: string;
+    hero_name: string;
+    display_name: string;
+    icon_path: string;
+    model_path: string;
+    effect_path: string;
+    preview_scale: float;
+}
+
+table HeroDescriptor {
+    id: uint;
+    name: string (key);
+    display_name: string;
+    directory: string;
+    icon_path: string;
+    model_path: string;
+    faction: string;
+    primary_attribute: AttributeType;
+    attack_type: AttackType;
+    
+    strength: float;
+    strength_per_level: float;
+    agility: float;
+    agility_per_level: float;
+    intelligence: float;
+    intelligence_per_level: float;
+    
+    armor: float;
+    magic_armor: float;
+    attack_damage_min: float;
+    attack_damage_max: float;
+    attack_range: float;
+    move_speed: float;
+    difficulty: float;
+    
+    solo_rating: int;
+    carry_rating: int;
+    support_rating: int;
+    initiator_rating: int;
+    ganker_rating: int;
+    
+    abilities: [AbilityDescriptor];
+    alt_avatars: [AltAvatarDescriptor];
+    recommended_items: [string];
+    preload_resources: [string];
+}
+
+table ItemDescriptor {
+    name: string (key);
+    display_name: string;
+    icon_path: string;
+    cost: int;
+    category: string;
+}
+
+table HeroCacheManifest {
+    version: uint;
+    generated_timestamp_utc: ulong;
+    xxhash3_checksum: ulong;
+    heroes: [HeroDescriptor];
+    items: [ItemDescriptor];
+}
+
+root_type HeroCacheManifest;
+file_identifier "KNFB";
+file_extension "bin";

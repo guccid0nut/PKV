@@ -1,0 +1,21 @@
+{
+  "solution": {
+    "path": "..\\ProjectKongor.slnx",
+    "projects": [
+      "src\\apps\\willowmaker\\WILLOWMAKER.csproj",
+      "src\\apps\\compel\\COMPEL.csproj",
+      "src\\apps\\compel-gui\\COMPEL.GUI.csproj",
+      "src\\apps\\control-panel\\NEXUS.ControlPanel.GUI.csproj",
+      "src\\apps\\replay-studio\\ReplayStudio.GUI.csproj",
+      "src\\extensions\\cdn-broker\\NEXUS.CdnBroker.csproj",
+      "src\\extensions\\spatial-audio\\NEXUS.SpatialAudio.csproj",
+      "src\\extensions\\vulkan-interop\\NEXUS.VulkanInterop.csproj",
+      "src\\libs\\protocol-core\\Kongor.Core.csproj",
+      "src\\libs\\contracts\\NEXUS.Contracts.csproj",
+      "tests\\unit\\apps\\COMPEL.Tests\\COMPEL.Tests.csproj",
+      "tests\\unit\\apps\\NEXUS.ControlPanel.Tests\\NEXUS.ControlPanel.Tests.csproj",
+      "tests\\unit\\apps\\WILLOWMAKER.Tests\\WILLOWMAKER.Tests.csproj",
+      "tests\\unit\\tools\\ReplayStudio.Tests\\ReplayStudio.Tests.csproj"
+    ]
+  }
+}

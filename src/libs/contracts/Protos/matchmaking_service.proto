@@ -1,0 +1,75 @@
+﻿syntax = "proto3";
+
+package nexus.contracts.matchmaking.v1;
+option csharp_namespace = "NEXUS.Contracts.Matchmaking.V1";
+
+service MatchmakingService {
+  rpc SubmitTicket (SubmitTicketRequest) returns (SubmitTicketResponse);
+  rpc CancelTicket (CancelTicketRequest) returns (CancelTicketResponse);
+  rpc ProvisionMatch (ProvisionMatchRequest) returns (ProvisionMatchResponse);
+  rpc AcknowledgeMatchConnect (AcknowledgeConnectRequest) returns (AcknowledgeConnectResponse);
+}
+
+enum GameMode {
+  GAME_MODE_UNSPECIFIED = 0;
+  GAME_MODE_ALL_PICK = 1;
+  GAME_MODE_CAPTAINS_MODE = 2;
+  GAME_MODE_MID_WARS = 3;
+  GAME_MODE_SINGLE_DRAFT = 4;
+}
+
+message PlayerMatchCandidate {
+  uint32 account_id = 1;
+  string nickname = 2;
+  uint32 mmr = 3;
+  string region_preference = 4;
+  repeated uint32 preferred_heroes = 5;
+}
+
+message SubmitTicketRequest {
+  PlayerMatchCandidate player = 1;
+  GameMode game_mode = 2;
+  repeated string allowed_regions = 3;
+}
+
+message SubmitTicketResponse {
+  string ticket_id = 1;
+  int32 estimated_wait_seconds = 2;
+}
+
+message CancelTicketRequest {
+  string ticket_id = 1;
+  uint32 account_id = 2;
+}
+
+message CancelTicketResponse {
+  bool cancelled = 1;
+}
+
+message ProvisionMatchRequest {
+  uint64 match_id = 1;
+  string map_name = 2;
+  GameMode game_mode = 3;
+  string region = 4;
+  repeated PlayerMatchCandidate legion_team = 5;
+  repeated PlayerMatchCandidate hellbourne_team = 6;
+}
+
+message ProvisionMatchResponse {
+  bool server_allocated = 1;
+  string server_ip = 2;
+  uint32 server_port = 3;
+  string match_auth_token = 4;
+  int64 match_start_unix_timestamp = 5;
+}
+
+message AcknowledgeConnectRequest {
+  uint64 match_id = 1;
+  uint32 account_id = 2;
+  string match_auth_token = 3;
+}
+
+message AcknowledgeConnectResponse {
+  bool authorized = 1;
+  int32 slot_index = 2;
+}

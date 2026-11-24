@@ -1,0 +1,1389 @@
+@model StoreItemDetailViewModel
+@{
+    ViewData["Title"] = $"{Model.Item.Name} - Project KONGOR Store";
+    var cleanHero = Model.Item.HeroName.Replace("Hero_", "").ToLowerInvariant();
+    var altAvatar = Model.Item.AltAvatarSuffix;
+    var isAnnouncer = Model.Item.Type == 4 || Model.Item.TypeName.Contains("Announcer", StringComparison.OrdinalIgnoreCase) || Model.Item.Code.StartsWith("av.", StringComparison.OrdinalIgnoreCase);
+    var isTaunt = Model.Item.Type == 5 || Model.Item.Type == 2 || Model.Item.TypeName.Contains("Taunt", StringComparison.OrdinalIgnoreCase) || Model.Item.Code.EndsWith("_Taunt", StringComparison.OrdinalIgnoreCase) || Model.Item.Code.Equals("Smackdown", StringComparison.OrdinalIgnoreCase);
+}
+
+<div class="w-full max-w-[1700px] mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-8 animate-fadeIn">
+    <!-- Breadcrumbs & Nav Bar -->
+    <div class="flex flex-wrap items-center justify-between gap-4">
+        <nav class="flex items-center space-x-2 text-xs font-semibold text-slate-400">
+            <a asp-controller="Store" asp-action="Index"
+               class="hover:text-amber-400 transition-colors flex items-center gap-1.5">
+                <i class="fas fa-store text-amber-500"></i>
+                <span>Store</span>
+            </a>
+            <i class="fas fa-chevron-right text-[10px] text-slate-600"></i>
+            <a asp-controller="Store" asp-action="Index" asp-route-category="@Model.Item.TypeName.ToLowerInvariant()"
+               class="hover:text-amber-400 transition-colors">
+                @Model.Item.TypeName
+            </a>
+            <i class="fas fa-chevron-right text-[10px] text-slate-600"></i>
+            <span class="text-slate-100 font-bold">@Model.Item.Name</span>
+        </nav>
+
+        <div class="flex items-center gap-3">
+            @if (Model.IsAuthenticated)
+            {
+                <div
+                    class="flex items-center gap-3 bg-slate-900/90 border border-slate-800 rounded-xl px-4 py-2 text-xs font-bold shadow-lg">
+                    <div class="flex items-center gap-1.5 text-amber-400">
+                        <i class="fas fa-coins text-amber-500"></i>
+                        <span id="userGoldDisplay">@Model.UserGold.ToString("N0")</span>
+                        <span class="text-[10px] text-amber-500/70 uppercase">Gold</span>
+                    </div>
+                    <span class="text-slate-700">|</span>
+                    <div class="flex items-center gap-1.5 text-slate-300">
+                        <i class="fas fa-circle text-slate-400"></i>
+                        <span id="userSilverDisplay">@Model.UserSilver.ToString("N0")</span>
+                        <span class="text-[10px] text-slate-400 uppercase">Silver</span>
+                    </div>
+                </div>
+            }
+
+            <a asp-controller="Store" asp-action="Index"
+               class="px-3.5 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-800 text-xs font-bold transition-all flex items-center gap-2">
+                <i class="fas fa-arrow-left"></i>
+                <span>Back to Store</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- Main Showcase Arena: 2 Column Layout -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+
+        <!-- Left Column: 3D Hero Showcase, Announcer Studio, Taunt Arena, or High-Res Display (7 cols) -->
+        <div
+            class="lg:col-span-7 bg-slate-950/90 rounded-3xl border border-amber-500/20 shadow-2xl shadow-amber-500/5 relative overflow-hidden flex flex-col min-h-[620px]">
+
+            @if (Model.Item.CanPreview3D && !string.IsNullOrEmpty(Model.Item.HeroName))
+            {
+                <!-- 3D Hero Viewport Canvas -->
+                <div id="product3DContainer"
+                     class="w-full flex-1 relative cursor-grab active:cursor-grabbing min-h-[520px] bg-radial-gradient">
+                    <canvas id="product3DCanvas" class="w-full h-full block" role="region" aria-label="Interactive 3D product preview">Your browser does not support HTML5 Canvas.</canvas>
+
+                    <!-- Top Bar Badges -->
+                    <div
+                        class="absolute top-4 left-4 right-4 z-10 flex items-center justify-between pointer-events-none">
+                        <div
+                            class="flex items-center gap-2 pointer-events-auto bg-slate-900/80 backdrop-blur-md px-3.5 py-1.5 rounded-xl border border-slate-700/60 shadow-lg">
+                            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                            <span class="text-xs font-bold text-slate-200">Interactive 3D Rig</span>
+                        </div>
+
+                        <div class="flex items-center gap-2 pointer-events-auto">
+                            <button id="btnOpenStoreAR" title="View in Tabletop AR (Turn on Camera)"
+                                    class="px-4 py-2 rounded-xl bg-gradient-to-b from-sky-500/25 via-slate-950 to-sky-950/80 hover:from-sky-400/40 hover:to-sky-900 border-2 border-sky-400 hover:border-sky-300 text-sky-300 hover:text-white backdrop-blur-md text-xs font-black transition-all flex items-center gap-2 shadow-xl shadow-sky-950/60 cursor-pointer ring-1 ring-sky-500/30">
+                                <i class="fas fa-camera text-sky-400"></i>
+                                <span>AR Tabletop</span>
+                            </button>
+                            <button id="btnResetView" title="Reset Camera"
+                                    class="px-4 py-2 rounded-xl bg-gradient-to-b from-amber-500/25 via-slate-950 to-amber-950/80 hover:from-amber-400/40 hover:to-amber-900 border-2 border-amber-400 hover:border-amber-300 text-amber-300 hover:text-white backdrop-blur-md text-xs font-black transition-all flex items-center gap-2 shadow-xl shadow-amber-950/60 cursor-pointer ring-1 ring-amber-500/30">
+                                <i class="fas fa-crosshairs text-amber-400"></i>
+                                <span>Reset View</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Loading Spinner Overlay -->
+                    <div id="product3DLoading"
+                         class="absolute inset-0 bg-slate-950/80 backdrop-blur-sm z-20 flex flex-col items-center justify-center space-y-3">
+                        <div
+                            class="w-12 h-12 border-4 border-amber-500/20 border-t-amber-500 rounded-full animate-spin"></div>
+                        <span id="product3DLoadingMsg" class="text-xs font-bold text-slate-200 font-mono">Loading 3D Hero Rig...</span>
+                    </div>
+                </div>
+
+                <!-- Bottom Transport & Sound Bar -->
+                <div
+                    class="bg-slate-900/95 border-t-2 border-amber-950/80 px-5 py-3.5 flex flex-wrap items-center justify-between gap-4 z-10">
+                    <div class="flex items-center gap-3 flex-1 min-w-[280px]">
+                        <div class="flex items-center gap-2">
+                            <span class="text-[11px] font-black text-amber-400/90 font-mono uppercase tracking-wider">Animation:</span>
+                            <select id="productAnimSelect"
+                                    class="bg-slate-950 text-amber-300 border-2 border-amber-500/60 text-xs rounded-xl px-3.5 py-1.5 focus:outline-none focus:border-amber-400 font-bold shadow-md cursor-pointer">
+                                <option value="">Loading animations...</option>
+                            </select>
+                        </div>
+
+                        <button id="btnPlayPause3D"
+                                class="px-4 py-2 rounded-xl bg-gradient-to-b from-amber-500/25 via-slate-950 to-amber-950/80 hover:from-amber-400/40 hover:to-amber-900 text-amber-300 hover:text-white border-2 border-amber-400 hover:border-amber-300 transition-all flex items-center gap-2 shadow-xl shadow-amber-950/60 text-xs font-black cursor-pointer ring-1 ring-amber-500/30">
+                            <i id="productPlayPauseIcon" class="fas fa-pause text-amber-400"></i>
+                            <span id="btnPlayPauseText">Pause</span>
+                        </button>
+
+                        <button id="btnSoundToggle3D"
+                                class="px-4 py-2 rounded-xl bg-gradient-to-b from-amber-500/25 via-slate-950 to-amber-950/80 hover:from-amber-400/40 hover:to-amber-900 text-amber-300 hover:text-white border-2 border-amber-400 hover:border-amber-300 transition-all flex items-center gap-2 shadow-xl shadow-amber-950/60 text-xs font-black cursor-pointer ring-1 ring-amber-500/30">
+                            <i id="productSoundIcon" class="fas fa-volume-up text-amber-400"></i>
+                            <span id="btnSoundText">Audio</span>
+                        </button>
+                    </div>
+
+                    <div class="flex items-center gap-4">
+                        <div
+                            class="flex items-center gap-2 bg-slate-950 px-3 py-1.5 rounded-xl border-2 border-amber-500/50 shadow-inner">
+                            <span class="text-[11px] font-black text-amber-400/90 uppercase tracking-wider font-mono">Speed:</span>
+                            <input id="productSpeedSlider" type="range" min="0.25" max="2.0" step="0.25" value="1.0"
+                                   class="w-20 accent-amber-500 cursor-pointer"/>
+                            <span id="productSpeedLabel"
+                                  class="text-xs font-mono font-black text-amber-300 w-12 text-right">1.00x</span>
+                        </div>
+                    </div>
+                </div>
+            }
+            else if (isAnnouncer)
+            {
+                <!-- Interactive Announcer Sound Studio -->
+                <div
+                    class="w-full flex-1 flex flex-col justify-between p-6 sm:p-8 relative bg-gradient-to-b from-slate-900/90 via-slate-950 to-slate-950 space-y-6">
+                    <!-- Top Showcase Header -->
+                    <div class="flex items-center justify-between border-b border-slate-800 pb-5">
+                        <div class="flex items-center gap-4">
+                            <div
+                                class="relative w-20 h-20 rounded-2xl overflow-hidden shadow-2xl border-2 border-amber-500/40 bg-slate-900 p-2 flex items-center justify-center">
+                                <img src="@Url.Action("GetIcon", "Assets3D", new { path = Model.Item.Resource })"
+                                     alt="@Model.Item.Name"
+                                     class="w-full h-full object-contain rounded-xl"
+                                     onerror="this.src='/images/icons/hero_default.png'"/>
+                            </div>
+                            <div>
+                                <div class="flex items-center gap-2">
+                                    <span
+                                        class="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-amber-500/20 text-amber-300 border border-amber-500/30">
+                                        🎙️ Announcer Pack
+                                    </span>
+                                    <span class="text-xs text-slate-400 font-mono">Audio Studio</span>
+                                </div>
+                                <h2 class="text-2xl font-black text-white tracking-tight mt-0.5">@Model.Item.Name</h2>
+                                <p class="text-xs text-slate-400 mt-0.5">Click any voice line below to audition
+                                    authentic in-game audio.</p>
+                            </div>
+                        </div>
+
+                        <!-- Equalizer Animation & Soundboard Quick Button -->
+                        <div class="flex items-center gap-3">
+                            <div id="announcerWaveform" class="h-6 flex items-center gap-1">
+                                <span class="sound-bar w-1 bg-amber-400 rounded-full transition-all duration-150"
+                                      style="height: 6px;"></span>
+                                <span class="sound-bar w-1 bg-pink-500 rounded-full transition-all duration-150"
+                                      style="height: 12px;"></span>
+                                <span class="sound-bar w-1 bg-purple-400 rounded-full transition-all duration-150"
+                                      style="height: 18px;"></span>
+                                <span class="sound-bar w-1 bg-cyan-400 rounded-full transition-all duration-150"
+                                      style="height: 10px;"></span>
+                                <span class="sound-bar w-1 bg-emerald-400 rounded-full transition-all duration-150"
+                                      style="height: 6px;"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Currently Playing Track Banner -->
+                    <div id="announcerPlayingBanner"
+                         class="bg-amber-950/30 border border-amber-500/30 rounded-2xl p-3.5 flex items-center justify-between shadow-inner">
+                        <div class="flex items-center gap-3">
+                            <span class="w-3 h-3 rounded-full bg-amber-400 animate-ping"></span>
+                            <span id="announcerCurrentTrackLabel" class="text-xs font-bold text-amber-200">
+                                Ready: Select a voice line below to play
+                            </span>
+                        </div>
+                        <span class="text-[10px] text-amber-400/70 uppercase tracking-wider font-mono font-bold">VFS Stream</span>
+                    </div>
+
+                    <!-- Voice Lines Interactive Trigger Grid -->
+                    <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                        <button type="button"
+                                onclick="playAnnouncerLine('@Model.Item.Code', 'first_blood', 'First Blood')"
+                                class="p-3.5 rounded-2xl bg-slate-900/90 hover:bg-gradient-to-r hover:from-amber-600/30 hover:to-purple-600/30 border border-slate-800 hover:border-amber-400/60 text-left transition-all shadow-md group cursor-pointer active:scale-95">
+                            <div class="flex items-center justify-between">
+                                <span
+                                    class="text-xs font-black text-white group-hover:text-amber-300">🩸 First Blood</span>
+                                <i class="fas fa-play text-[10px] text-amber-400 group-hover:translate-x-0.5 transition-transform"></i>
+                            </div>
+                            <span class="text-[10px] text-slate-400 mt-1 block">First kill announcement</span>
+                        </button>
+
+                        <button type="button"
+                                onclick="playAnnouncerLine('@Model.Item.Code', 'double_kill', 'Double Kill')"
+                                class="p-3.5 rounded-2xl bg-slate-900/90 hover:bg-gradient-to-r hover:from-amber-600/30 hover:to-purple-600/30 border border-slate-800 hover:border-amber-400/60 text-left transition-all shadow-md group cursor-pointer active:scale-95">
+                            <div class="flex items-center justify-between">
+                                <span
+                                    class="text-xs font-black text-white group-hover:text-amber-300">⚔️ Double Kill</span>
+                                <i class="fas fa-play text-[10px] text-amber-400 group-hover:translate-x-0.5 transition-transform"></i>
+                            </div>
+                            <span class="text-[10px] text-slate-400 mt-1 block">2 rapid kills</span>
+                        </button>
+
+                        <button type="button"
+                                onclick="playAnnouncerLine('@Model.Item.Code', '3_kills', 'Hat Trick (3x)')"
+                                class="p-3.5 rounded-2xl bg-slate-900/90 hover:bg-gradient-to-r hover:from-amber-600/30 hover:to-purple-600/30 border border-slate-800 hover:border-amber-400/60 text-left transition-all shadow-md group cursor-pointer active:scale-95">
+                            <div class="flex items-center justify-between">
+                                <span
+                                    class="text-xs font-black text-white group-hover:text-amber-300">🎩 Hat Trick</span>
+                                <i class="fas fa-play text-[10px] text-amber-400 group-hover:translate-x-0.5 transition-transform"></i>
+                            </div>
+                            <span class="text-[10px] text-slate-400 mt-1 block">3 consecutive kills</span>
+                        </button>
+
+                        <button type="button"
+                                onclick="playAnnouncerLine('@Model.Item.Code', '4_kills', 'Quad Kill (4x)')"
+                                class="p-3.5 rounded-2xl bg-slate-900/90 hover:bg-gradient-to-r hover:from-amber-600/30 hover:to-purple-600/30 border border-slate-800 hover:border-amber-400/60 text-left transition-all shadow-md group cursor-pointer active:scale-95">
+                            <div class="flex items-center justify-between">
+                                <span
+                                    class="text-xs font-black text-white group-hover:text-amber-300">💥 Quad Kill</span>
+                                <i class="fas fa-play text-[10px] text-amber-400 group-hover:translate-x-0.5 transition-transform"></i>
+                            </div>
+                            <span class="text-[10px] text-slate-400 mt-1 block">4 consecutive kills</span>
+                        </button>
+
+                        <button type="button"
+                                onclick="playAnnouncerLine('@Model.Item.Code', 'annihilation', 'ANNIHILATION! (5x)')"
+                                class="p-3.5 rounded-2xl bg-gradient-to-r from-red-950/60 to-purple-950/60 hover:from-red-900/80 hover:to-purple-900/80 border border-red-500/40 hover:border-red-400 text-left transition-all shadow-lg group cursor-pointer active:scale-95">
+                            <div class="flex items-center justify-between">
+                                <span
+                                    class="text-xs font-black text-rose-300 group-hover:text-white">💀 ANNIHILATION!</span>
+                                <i class="fas fa-play text-[10px] text-rose-400 group-hover:translate-x-0.5 transition-transform"></i>
+                            </div>
+                            <span class="text-[10px] text-rose-300/70 mt-1 block">5-man team wipeout</span>
+                        </button>
+
+                        <button type="button"
+                                onclick="playAnnouncerLine('@Model.Item.Code', '5_kills', 'Bloodlust (5x)')"
+                                class="p-3.5 rounded-2xl bg-slate-900/90 hover:bg-gradient-to-r hover:from-amber-600/30 hover:to-purple-600/30 border border-slate-800 hover:border-amber-400/60 text-left transition-all shadow-md group cursor-pointer active:scale-95">
+                            <div class="flex items-center justify-between">
+                                <span
+                                    class="text-xs font-black text-white group-hover:text-amber-300">🩸 Bloodlust</span>
+                                <i class="fas fa-play text-[10px] text-amber-400 group-hover:translate-x-0.5 transition-transform"></i>
+                            </div>
+                            <span class="text-[10px] text-slate-400 mt-1 block">5 kill killstreak</span>
+                        </button>
+
+                        <button type="button"
+                                onclick="playAnnouncerLine('@Model.Item.Code', '10_kills', 'Immortal (10x)')"
+                                class="p-3.5 rounded-2xl bg-slate-900/90 hover:bg-gradient-to-r hover:from-amber-600/30 hover:to-purple-600/30 border border-slate-800 hover:border-amber-400/60 text-left transition-all shadow-md group cursor-pointer active:scale-95">
+                            <div class="flex items-center justify-between">
+                                <span class="text-xs font-black text-white group-hover:text-amber-300">👑 Immortal</span>
+                                <i class="fas fa-play text-[10px] text-amber-400 group-hover:translate-x-0.5 transition-transform"></i>
+                            </div>
+                            <span class="text-[10px] text-slate-400 mt-1 block">10 kill streak</span>
+                        </button>
+
+                        <button type="button" onclick="playAnnouncerLine('@Model.Item.Code', 'nemesis', 'Nemesis!')"
+                                class="p-3.5 rounded-2xl bg-slate-900/90 hover:bg-gradient-to-r hover:from-amber-600/30 hover:to-purple-600/30 border border-slate-800 hover:border-amber-400/60 text-left transition-all shadow-md group cursor-pointer active:scale-95">
+                            <div class="flex items-center justify-between">
+                                <span class="text-xs font-black text-white group-hover:text-amber-300">😈 Nemesis</span>
+                                <i class="fas fa-play text-[10px] text-amber-400 group-hover:translate-x-0.5 transition-transform"></i>
+                            </div>
+                            <span class="text-[10px] text-slate-400 mt-1 block">Player domination</span>
+                        </button>
+
+                        <button type="button" onclick="playAnnouncerLine('@Model.Item.Code', 'payback', 'Retribution!')"
+                                class="p-3.5 rounded-2xl bg-slate-900/90 hover:bg-gradient-to-r hover:from-amber-600/30 hover:to-purple-600/30 border border-slate-800 hover:border-amber-400/60 text-left transition-all shadow-md group cursor-pointer active:scale-95">
+                            <div class="flex items-center justify-between">
+                                <span
+                                    class="text-xs font-black text-white group-hover:text-amber-300">⚡ Retribution</span>
+                                <i class="fas fa-play text-[10px] text-amber-400 group-hover:translate-x-0.5 transition-transform"></i>
+                            </div>
+                            <span class="text-[10px] text-slate-400 mt-1 block">Revenge payback kill</span>
+                        </button>
+
+                        <button type="button"
+                                onclick="playAnnouncerLine('@Model.Item.Code', 'humiliation', 'Humiliation!')"
+                                class="p-3.5 rounded-2xl bg-slate-900/90 hover:bg-gradient-to-r hover:from-amber-600/30 hover:to-purple-600/30 border border-slate-800 hover:border-amber-400/60 text-left transition-all shadow-md group cursor-pointer active:scale-95">
+                            <div class="flex items-center justify-between">
+                                <span
+                                    class="text-xs font-black text-white group-hover:text-amber-300">🎭 Humiliation</span>
+                                <i class="fas fa-play text-[10px] text-amber-400 group-hover:translate-x-0.5 transition-transform"></i>
+                            </div>
+                            <span class="text-[10px] text-slate-400 mt-1 block">Creep or tower kill</span>
+                        </button>
+
+                        <button type="button" onclick="playAnnouncerLine('@Model.Item.Code', 'rage_quit', 'Rage Quit!')"
+                                class="p-3.5 rounded-2xl bg-slate-900/90 hover:bg-gradient-to-r hover:from-amber-600/30 hover:to-purple-600/30 border border-slate-800 hover:border-amber-400/60 text-left transition-all shadow-md group cursor-pointer active:scale-95">
+                            <div class="flex items-center justify-between">
+                                <span
+                                    class="text-xs font-black text-white group-hover:text-amber-300">🤬 Rage Quit</span>
+                                <i class="fas fa-play text-[10px] text-amber-400 group-hover:translate-x-0.5 transition-transform"></i>
+                            </div>
+                            <span class="text-[10px] text-slate-400 mt-1 block">Enemy rage disconnect</span>
+                        </button>
+
+                        <button type="button"
+                                onclick="playAnnouncerLine('@Model.Item.Code', 'legion_wins', 'Victory Fanfare')"
+                                class="p-3.5 rounded-2xl bg-slate-900/90 hover:bg-gradient-to-r hover:from-amber-600/30 hover:to-purple-600/30 border border-slate-800 hover:border-amber-400/60 text-left transition-all shadow-md group cursor-pointer active:scale-95">
+                            <div class="flex items-center justify-between">
+                                <span
+                                    class="text-xs font-black text-white group-hover:text-amber-300">🏆 Legion Victory</span>
+                                <i class="fas fa-play text-[10px] text-amber-400 group-hover:translate-x-0.5 transition-transform"></i>
+                            </div>
+                            <span class="text-[10px] text-slate-400 mt-1 block">Victory herald theme</span>
+                        </button>
+                    </div>
+                </div>
+            }
+            else if (isTaunt)
+            {
+                <!-- Interactive Battlefield Taunt Arena -->
+                <div
+                    class="w-full flex-1 flex flex-col items-center justify-between p-8 relative bg-gradient-to-b from-slate-900/95 via-slate-950 to-slate-950 space-y-8">
+                    <!-- Top Badge -->
+                    <div class="w-full flex items-center justify-between border-b border-slate-800 pb-4">
+                        <div class="flex items-center gap-2">
+                            <span
+                                class="px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider bg-rose-500/20 text-rose-300 border border-rose-500/40">
+                                💀 Battlefield Taunt
+                            </span>
+                            <span class="text-xs text-slate-400 font-mono">Soundstage</span>
+                        </div>
+                        <button type="button" onclick="NexusSoundboard.openSoundboardModal()"
+                                class="px-3 py-1 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700 text-xs font-bold text-slate-300 hover:text-amber-400 transition-all flex items-center gap-2 cursor-pointer">
+                            <i class="fas fa-volume-up text-amber-400"></i>
+                            <span>Soundboard</span>
+                        </button>
+                    </div>
+
+                    <!-- Large Animated Taunt Crest -->
+                    <div class="flex flex-col items-center justify-center space-y-4 relative">
+                        <div
+                            class="absolute -inset-4 bg-gradient-to-r from-rose-600/20 via-amber-600/20 to-purple-600/20 rounded-full blur-2xl pointer-events-none"></div>
+                        <div
+                            class="relative w-48 h-48 rounded-3xl overflow-hidden shadow-2xl border-2 border-amber-500/40 bg-slate-950 p-4 flex items-center justify-center ring-4 ring-amber-500/10">
+                            <img src="@Url.Action("GetIcon", "Assets3D", new { path = Model.Item.Resource })"
+                                 alt="@Model.Item.Name"
+                                 class="w-full h-full object-contain rounded-2xl"
+                                 onerror="this.src='/images/icons/hero_default.png'"/>
+                        </div>
+                        <h3 class="text-xl font-black text-white">@Model.Item.Name</h3>
+                    </div>
+
+                    <!-- Big Play Taunt Sound Button -->
+                    <div class="w-full max-w-md space-y-4">
+                        <button type="button" onclick="playTauntSfx('@Model.Item.Code', 'cast', '@Model.Item.Name')"
+                                class="w-full py-4 px-6 rounded-2xl bg-gradient-to-r from-rose-600 via-amber-600 to-rose-600 hover:from-rose-500 hover:to-amber-500 text-white font-black text-sm tracking-wide uppercase shadow-xl shadow-rose-600/25 transition-all flex items-center justify-center gap-3 cursor-pointer active:scale-95 border border-rose-400/50">
+                            <i class="fas fa-bolt text-lg text-amber-300 animate-bounce"></i>
+                            <span>PLAY TAUNT SOUND EFFECT</span>
+                        </button>
+
+                        <div class="grid grid-cols-2 gap-3">
+                            <button type="button"
+                                    onclick="playTauntSfx('@Model.Item.Code', 'deathmetal', 'Heavy Metal Slam')"
+                                    class="py-2.5 px-3 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 hover:border-amber-500/40 text-slate-300 hover:text-white text-xs font-bold transition-all flex items-center justify-center gap-2 cursor-pointer">
+                                <i class="fas fa-guitar text-rose-400"></i>
+                                <span>Metal Slam</span>
+                            </button>
+                            <button type="button"
+                                    onclick="playTauntSfx('@Model.Item.Code', 'humiliation', 'Humiliation Gong')"
+                                    class="py-2.5 px-3 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 hover:border-amber-500/40 text-slate-300 hover:text-white text-xs font-bold transition-all flex items-center justify-center gap-2 cursor-pointer">
+                                <i class="fas fa-bell text-amber-400"></i>
+                                <span>Smackdown</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Status Label -->
+                    <div id="tauntPlayingStatus" class="text-center text-xs font-bold text-amber-400 font-mono">
+                        Ready to audition battlefield audio
+                    </div>
+                </div>
+            }
+            else
+            {
+                <!-- 2D High-Res Visual Showcase for Non-3D Items -->
+                <div class="w-full flex-1 flex flex-col items-center justify-center p-12 relative bg-slate-900/50">
+                    <div
+                        class="relative w-64 h-64 rounded-3xl overflow-hidden shadow-2xl border border-slate-700/60 bg-slate-950 p-4 flex items-center justify-center">
+                        <img src="@Url.Action("GetIcon", "Assets3D", new { path = Model.Item.Resource })"
+                             alt="@Model.Item.Name"
+                             class="w-full h-full object-contain rounded-2xl"
+                             onerror="this.src='/images/icons/hero_default.png'"/>
+                    </div>
+                </div>
+            }
+        </div>
+
+        <!-- Right Column: Details, Lore, Specs & Purchasing (5 cols) -->
+        <div class="lg:col-span-5 space-y-6">
+
+            <!-- Main Title Card -->
+            <div
+                class="bg-slate-900/90 border border-slate-800 rounded-3xl p-6 sm:p-8 shadow-xl space-y-5 backdrop-blur-xl relative overflow-hidden">
+                <div
+                    class="absolute -right-16 -top-16 w-48 h-48 bg-amber-500/10 rounded-full blur-3xl pointer-events-none"></div>
+
+                <div class="space-y-2">
+                    <div class="flex flex-wrap items-center gap-2">
+                        <span
+                            class="px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider bg-amber-500/15 border border-amber-500/30 text-amber-300">
+                            @Model.Item.TypeName
+                        </span>
+                        @if (!string.IsNullOrEmpty(Model.Item.HeroName))
+                        {
+                            <span
+                                class="px-3 py-1 rounded-full text-xs font-bold bg-slate-800 border border-slate-700 text-slate-300 font-mono">
+                                Hero: @Model.Item.HeroName
+                            </span>
+                        }
+                        @if (Model.Item.IsPremium)
+                        {
+                            <span
+                                class="px-2.5 py-1 rounded-full text-xs font-bold bg-purple-500/15 border border-purple-500/30 text-purple-300">
+                                <i class="fas fa-crown text-[10px]"></i> Premium
+                            </span>
+                        }
+                    </div>
+
+                    <h1 class="text-3xl sm:text-4xl font-black text-white tracking-tight">
+                        @Model.Item.Name
+                    </h1>
+                    <p class="text-xs font-mono text-slate-400">Code: @Model.Item.Code</p>
+                </div>
+
+                <!-- Price & Purchase Action Card -->
+                <div class="bg-slate-950/80 border border-slate-800/80 rounded-2xl p-5 space-y-4">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">@(Model.IsUnlockAllItemsEnabled ? "Vault Status" : "Purchase Price")</span>
+                        <div class="flex items-center gap-4">
+                            @if (Model.IsUnlockAllItemsEnabled)
+                            {
+                                <div class="flex items-center gap-1.5 text-sm font-black text-emerald-400">
+                                    <i class="fas fa-unlock text-emerald-400"></i>
+                                    <span>FREE • UNLOCKED FOR ALL ACCOUNTS</span>
+                                </div>
+                            }
+                            else
+                            {
+                                @if (Model.Item.GoldCost > 0)
+                                {
+                                    <div class="flex items-center gap-1.5 text-lg font-black text-amber-400">
+                                        <i class="fas fa-coins text-amber-500 text-base"></i>
+                                        <span>@Model.Item.GoldCost.ToString("N0")</span>
+                                        <span class="text-[10px] text-amber-500 font-bold">GOLD</span>
+                                    </div>
+                                }
+                                @if (Model.Item.SilverCost > 0)
+                                {
+                                    <div class="flex items-center gap-1.5 text-lg font-black text-slate-200">
+                                        <i class="fas fa-circle text-slate-400 text-xs"></i>
+                                        <span>@Model.Item.SilverCost.ToString("N0")</span>
+                                        <span class="text-[10px] text-slate-400 font-bold">SILVER</span>
+                                    </div>
+                                }
+                            }
+                        </div>
+                    </div>
+
+                    <!-- Action Button Container -->
+                    <div id="productActionBox" class="pt-2">
+                        @if (Model.IsOwnedByUser)
+                        {
+                            @if (Model.Item.IsEquippedByUser)
+                            {
+                                <div
+                                    class="w-full py-3.5 px-4 rounded-xl bg-slate-900/90 border border-slate-800 text-slate-500 text-sm font-bold text-center flex items-center justify-center gap-2 shadow-inner cursor-default opacity-80 select-none">
+                                    <i class="fas fa-check-circle text-emerald-500"></i>
+                                    <span>✓ EQUIPPED</span>
+                                </div>
+                            }
+                            else
+                            {
+                                <button onclick="equipCurrentItem(@Model.Item.Id, '@Model.Item.Code')"
+                                        class="w-full py-3.5 px-4 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 text-sm font-black text-center flex items-center justify-center gap-2 shadow-lg shadow-amber-500/20 transition-all cursor-pointer">
+                                    <i class="fas fa-bolt"></i>
+                                    <span>Equip in Loadout</span>
+                                </button>
+                            }
+                        }
+                        else if (!Model.IsAuthenticated)
+                        {
+                            <a asp-controller="Account" asp-action="Login"
+                               class="w-full py-3.5 px-4 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 text-sm font-black text-center flex items-center justify-center gap-2 shadow-lg shadow-amber-500/20 transition-all">
+                                <i class="fas fa-sign-in-alt"></i>
+                                <span>Log In to Unlock</span>
+                            </a>
+                        }
+                        else if (!Model.Item.IsEnabled || !Model.Item.Purchasable)
+                        {
+                            <button disabled
+                                    class="w-full py-3.5 px-4 rounded-xl bg-slate-800/80 text-slate-500 text-sm font-bold text-center cursor-not-allowed">
+                                Not Currently Available
+                            </button>
+                        }
+                        else
+                        {
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                @if (Model.Item.GoldCost > 0)
+                                {
+                                    <button
+                                        onclick="openPurchaseModal(@Model.Item.Id, '@Model.Item.Name.Replace("'", "\\'")', @Model.Item.GoldCost, 'gold')"
+                                        class="py-3 px-4 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs shadow-lg shadow-amber-500/20 transition-all flex items-center justify-center gap-2">
+                                        <i class="fas fa-coins"></i>
+                                        <span>Unlock (@Model.Item.GoldCost Gold)</span>
+                                    </button>
+                                }
+                                @if (Model.Item.SilverCost > 0)
+                                {
+                                    <button
+                                        onclick="openPurchaseModal(@Model.Item.Id, '@Model.Item.Name.Replace("'", "\\'")', @Model.Item.SilverCost, 'silver')"
+                                        class="py-3 px-4 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-100 font-black text-xs border border-slate-700 transition-all flex items-center justify-center gap-2">
+                                        <i class="fas fa-circle text-slate-400 text-[10px]"></i>
+                                        <span>Unlock (@Model.Item.SilverCost Silver)</span>
+                                    </button>
+                                }
+                            </div>
+                        }
+                    </div>
+                </div>
+
+                <!-- Staff Controls -->
+                @if (Model.IsStaff)
+                {
+                    <div class="pt-2 border-t border-slate-800/80 flex items-center justify-between">
+                        <span class="text-xs text-slate-500 font-mono">Product ID: #@Model.Item.Id</span>
+                        <button
+                            onclick="openPriceEditor(@Model.Item.Id, '@Model.Item.Name.Replace("'", "\\'")', @Model.Item.GoldCost, @Model.Item.SilverCost, @(Model.Item.IsEnabled ? "true" : "false"), @(Model.Item.Purchasable ? "true" : "false"))"
+                            class="px-3.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-amber-400 border border-slate-700 text-xs font-bold transition-all flex items-center gap-1.5">
+                            <i class="fas fa-pencil-alt"></i>
+                            <span>Staff Price Editor</span>
+                        </button>
+                    </div>
+                }
+            </div>
+
+            <!-- Item Specifications Card -->
+            <div class="bg-slate-900/90 border border-slate-800 rounded-3xl p-6 shadow-xl space-y-3 font-mono text-xs">
+                <h3 class="text-xs font-extrabold uppercase tracking-wider text-slate-300 mb-2 font-sans flex items-center gap-2">
+                    <i class="fas fa-info-circle text-amber-500"></i>
+                    <span>Item Specifications</span>
+                </h3>
+                <div class="flex justify-between py-1.5 border-b border-slate-800">
+                    <span class="text-slate-400">Category:</span>
+                    <span class="text-slate-100 font-bold">@Model.Item.TypeName</span>
+                </div>
+                <div class="flex justify-between py-1.5 border-b border-slate-800">
+                    <span class="text-slate-400">In-Game Code:</span>
+                    <span class="text-slate-100 font-bold">@Model.Item.Code</span>
+                </div>
+                <div class="flex justify-between py-1.5 border-b border-slate-800">
+                    <span class="text-slate-400">Resource Path:</span>
+                    <span class="text-slate-300 truncate max-w-xs">@Model.Item.Resource</span>
+                </div>
+                <div class="flex justify-between py-1.5">
+                    <span class="text-slate-400">Vault Status:</span>
+                    <span class="@(Model.IsOwnedByUser ? "text-emerald-400 font-bold" : "text-slate-400")">
+                        @(Model.IsOwnedByUser ? "Owned" : "Not In Vault")
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Related Hero Skins & Avatars -->
+    @if (Model.RelatedItems.Count > 0)
+    {
+        <div class="space-y-4 pt-6 border-t border-slate-800/80">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h2 class="text-xl font-black text-white tracking-tight flex items-center gap-2">
+                        <i class="fas fa-layer-group text-amber-500"></i>
+                        <span>More @Model.Item.HeroName Avatars</span>
+                    </h2>
+                    <p class="text-xs text-slate-400">Explore and collect all variant skins for this hero</p>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+                @foreach (var rel in Model.RelatedItems)
+                {
+                    <a asp-controller="Store" asp-action="Item" asp-route-id="@rel.Id"
+                       class="group @(rel.IsOwnedByUser ? "bg-slate-950/60 opacity-60 hover:opacity-100 border-2 border-transparent hover:border-slate-800 grayscale-[30%] hover:grayscale-0" : "bg-gradient-to-b from-stone-900/90 via-slate-950/90 to-stone-950/90 border-2 border-amber-500/60 hover:border-amber-400 shadow-md shadow-amber-950/30 hover:shadow-amber-500/20") rounded-2xl p-3 transition-all block">
+                        <div
+                            class="aspect-square rounded-xl overflow-hidden bg-slate-950 @(rel.IsOwnedByUser ? "border border-slate-800/40 opacity-75 group-hover:opacity-100" : "border border-amber-500/30 shadow-inner") relative mb-2.5">
+                            <img src="@Url.Action("GetIcon", "Assets3D", new { path = rel.Resource })"
+                                 alt="@rel.Name"
+                                 class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                                 onerror="this.src='/images/icons/hero_default.png'"/>
+                            @if (rel.IsOwnedByUser)
+                            {
+                                <div
+                                    class="absolute top-1.5 right-1.5 bg-emerald-500/90 text-slate-950 text-[10px] font-black px-1.5 py-0.5 rounded shadow">
+                                    ✓ OWNED
+                                </div>
+                            }
+                        </div>
+                        <div
+                            class="text-xs font-bold @(rel.IsOwnedByUser ? "text-slate-400 group-hover:text-slate-200" : "text-slate-200 group-hover:text-amber-400") truncate transition-colors">
+                            @rel.Name
+                        </div>
+                        <div class="flex items-center justify-between text-[11px] font-mono mt-1 text-slate-400">
+                            @if (rel.IsOwnedByUser)
+                            {
+                                <span class="text-emerald-400 font-bold text-[10px]">In Vault</span>
+                            }
+                            else
+                            {
+                                <span>@(rel.GoldCost > 0 ? rel.GoldCost + "g" : "")</span>
+                                <span>@(rel.SilverCost > 0 ? rel.SilverCost + "s" : "")</span>
+                            }
+                        </div>
+                    </a>
+                }
+            </div>
+        </div>
+    }
+</div>
+
+<!-- Purchase Confirmation Modal -->
+<div id="purchaseModal"
+     class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-950/80 backdrop-blur-md p-4 animate-fadeIn">
+    <div class="relative w-full max-w-md bg-slate-900 border border-amber-500/30 rounded-2xl shadow-2xl p-6 space-y-5">
+        <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+            <h3 class="text-base font-bold text-slate-100 flex items-center gap-2">
+                <i class="fas fa-lock text-amber-400"></i>
+                <span>Confirm Vault Unlock</span>
+            </h3>
+            <button type="button" onclick="closePurchaseModal()" aria-label="Close purchase modal" title="Close" class="text-slate-400 hover:text-white"><i class="fas fa-times"></i>
+            </button>
+        </div>
+
+        <div class="space-y-3 text-xs text-slate-300">
+            <p>You are about to unlock <strong id="buyItemTitle" class="text-amber-300 text-sm"></strong>.</p>
+            <div class="p-3 bg-slate-950/80 rounded-xl border border-slate-800 flex items-center justify-between">
+                <span class="text-slate-400">Deduction:</span>
+                <span id="buyCostDisplay" class="font-black text-sm text-slate-100"></span>
+            </div>
+            <p id="buyStatusMsg" class="hidden text-xs font-semibold"></p>
+        </div>
+
+        <input type="hidden" id="buyItemId"/>
+        <input type="hidden" id="buyCurrency"/>
+
+        <div class="flex items-center justify-end gap-3 pt-2">
+            <button onclick="closePurchaseModal()"
+                    class="px-4 py-2 rounded-xl bg-slate-800 text-slate-300 text-xs font-bold hover:bg-slate-700">Cancel
+            </button>
+            <button id="confirmBuyBtn" onclick="executePurchase()"
+                    class="px-5 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-black shadow-lg transition-all flex items-center gap-2">
+                <i class="fas fa-check"></i>
+                <span id="confirmBuyBtnText">Confirm Purchase</span>
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Staff Price Editor Modal -->
+@if (Model.IsStaff)
+{
+    <div id="priceEditorModal"
+         class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-950/80 backdrop-blur-md p-4 animate-fadeIn">
+        <div class="relative w-full max-w-md bg-slate-900 border border-slate-700 rounded-2xl shadow-2xl p-6 space-y-4">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                <div>
+                    <h3 class="text-sm font-bold text-slate-100">Edit Price & Visibility</h3>
+                    <p id="editItemId" class="text-[10px] font-mono text-amber-400"></p>
+                </div>
+                <button type="button" onclick="closePriceEditor()" aria-label="Close price editor" title="Close" class="text-slate-400 hover:text-white"><i
+                        class="fas fa-times"></i></button>
+            </div>
+
+            <input type="hidden" id="editItemHiddenId"/>
+
+            <div class="space-y-3 text-xs">
+                <div>
+                    <label class="block text-slate-400 font-bold mb-1">Gold Cost</label>
+                    <input id="editGoldCost" type="number" min="0"
+                           class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-slate-100 font-mono focus:border-amber-500 focus:outline-none"/>
+                </div>
+                <div>
+                    <label class="block text-slate-400 font-bold mb-1">Silver Cost</label>
+                    <input id="editSilverCost" type="number" min="0"
+                           class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-slate-100 font-mono focus:border-amber-500 focus:outline-none"/>
+                </div>
+                <div class="flex items-center gap-6 pt-1">
+                    <label class="flex items-center gap-2 text-slate-300 cursor-pointer">
+                        <input id="editIsEnabled" type="checkbox" class="w-4 h-4 accent-amber-500 rounded"/>
+                        <span>Enabled</span>
+                    </label>
+                    <label class="flex items-center gap-2 text-slate-300 cursor-pointer">
+                        <input id="editPurchasable" type="checkbox" class="w-4 h-4 accent-amber-500 rounded"/>
+                        <span>Purchasable</span>
+                    </label>
+                </div>
+                <p id="editStatusMsg" class="hidden text-xs font-semibold"></p>
+            </div>
+
+            <div class="flex items-center justify-end gap-3 pt-3 border-t border-slate-800">
+                <button onclick="closePriceEditor()"
+                        class="px-4 py-2 rounded-xl bg-slate-800 text-slate-300 text-xs font-bold hover:bg-slate-700">
+                    Cancel
+                </button>
+                <button id="savePriceBtn" onclick="saveStoreItemChanges()"
+                        class="px-5 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-black shadow-lg transition-all">
+                    Save Changes
+                </button>
+            </div>
+        </div>
+    </div>
+}
+
+<!-- Three.js Dependencies for Product 3D Viewport -->
+<script src="/lib/three/three.r16x.bundle.js"></script>
+
+<script>
+    // 3D Product Rig Engine
+    @if (Model.Item.CanPreview3D && !string.IsNullOrEmpty(Model.Item.HeroName))
+    {
+        <text>
+            (function () {
+                let scene, camera, renderer, controls, mixer, clock;
+                let currentModel = null;
+                let activeAction = null;
+                let actions = {};
+                let currentAudio = null;
+                let isMuted = false;
+                let isPaused = false;
+                let animSpeed = 1.0;
+                const hero = '@cleanHero';
+                const alt = '@altAvatar';
+                const resource = '@Model.Item.Resource';
+                let defaultCameraPos = new THREE.Vector3(0, 48, 165);
+                let defaultTarget = new THREE.Vector3(0, 26, 0);
+
+                if (document.readyState === 'loading') {
+                    window.addEventListener('DOMContentLoaded', init3D);
+                } else {
+                    init3D();
+                }
+
+                function init3D() {
+                    const container = document.getElementById('product3DContainer');
+                    const canvas = document.getElementById('product3DCanvas');
+                    if (!container || !canvas) return;
+
+                    const width = container.clientWidth;
+                    const height = container.clientHeight;
+
+                    scene = new THREE.Scene();
+                    scene.background = new THREE.Color(0x070b14);
+                    camera = new THREE.PerspectiveCamera(42, width / height, 0.1, 1000);
+                    camera.position.copy(defaultCameraPos);
+
+                    renderer = new THREE.WebGLRenderer({
+                        canvas: canvas,
+                        antialias: true,
+                        powerPreference: "high-performance"
+                    });
+                    renderer.setSize(width, height);
+                    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+                    renderer.shadowMap.enabled = true;
+                    if (window.KongorViewerCore) {
+                        window.KongorViewerCore.configureRendererColorSpace(renderer);
+                    } else if ('outputColorSpace' in renderer && THREE.SRGBColorSpace) {
+                        renderer.outputColorSpace = THREE.SRGBColorSpace;
+                    }
+
+                    controls = new THREE.OrbitControls(camera, renderer.domElement);
+                    controls.enableDamping = true;
+                    controls.dampingFactor = 0.05;
+                    controls.target.copy(defaultTarget);
+                    controls.maxDistance = 1500;
+                    controls.minDistance = 20;
+                    controls.maxPolarAngle = Math.PI / 2 + 0.05;
+
+                    // Studio Lighting (Preserves authentic diffuse colors without color tinting)
+                    const ambient = new THREE.AmbientLight(0xffffff, 1.4);
+                    scene.add(ambient);
+
+                    const key = new THREE.DirectionalLight(0xffffff, 1.6);
+                    key.position.set(80, 140, 120);
+                    scene.add(key);
+
+                    const fill = new THREE.DirectionalLight(0xffffff, 0.85);
+                    fill.position.set(-100, 80, 80);
+                    scene.add(fill);
+
+                    const rim = new THREE.DirectionalLight(0xf59e0b, 1.2);
+                    rim.position.set(0, 120, -150);
+                    scene.add(rim);
+
+                    // Pedestal Dais Platform (surface at y = 0)
+                    const pedestal = new THREE.Group();
+                    const grid = new THREE.GridHelper(160, 32, 0xf59e0b, 0x1e293b);
+                    grid.position.y = 0.05;
+                    pedestal.add(grid);
+                    scene.add(pedestal);
+
+                    clock = new THREE.Clock();
+                    animate();
+
+                    window.addEventListener('resize', onResize);
+
+                    // Hook Control Elements
+                    document.getElementById('btnOpenStoreAR')?.addEventListener('click', () => {
+                        if (window.KongorStoreAR) {
+                            window.KongorStoreAR.open({
+                                hero: '@cleanHero',
+                                alt: '@altAvatar',
+                                name: '@Html.Raw(Model.Item.Name.Replace("'", "\\'"))',
+                                resource: '@Html.Raw(Model.Item.Resource?.Replace("'", "\\'") ?? "")'
+                            });
+                        }
+                    });
+                    document.getElementById('btnResetView')?.addEventListener('click', () => {
+                        controls.target.copy(defaultTarget);
+                        camera.position.copy(defaultCameraPos);
+                        controls.update();
+                    });
+                    document.getElementById('btnPlayPause3D')?.addEventListener('click', () => {
+                        isPaused = !isPaused;
+                        const icon = document.getElementById('productPlayPauseIcon');
+                        if (icon) icon.className = isPaused ? 'fas fa-play' : 'fas fa-pause';
+                        const btn = document.getElementById('btnPlayPauseText');
+                        if (btn) btn.innerText = isPaused ? 'Resume' : 'Pause';
+                        if (isPaused) {
+                            if (audioTimeout) clearTimeout(audioTimeout);
+                            if (currentAudio) currentAudio.pause();
+                        } else {
+                            if (!isMuted && activeAction) {
+                                playAudio(activeAction.getClip().name);
+                            }
+                        }
+                    });
+
+                    document.getElementById('btnSoundToggle3D')?.addEventListener('click', () => {
+                        isMuted = !isMuted;
+                        const icon = document.getElementById('productSoundIcon');
+                        if (icon) icon.className = isMuted ? 'fas fa-volume-mute opacity-40' : 'fas fa-volume-up';
+                        const txt = document.getElementById('btnSoundText');
+                        if (txt) txt.innerText = isMuted ? 'Muted' : 'Audio';
+                        if (isMuted) {
+                            if (audioTimeout) clearTimeout(audioTimeout);
+                            if (currentAudio) currentAudio.pause();
+                        } else {
+                            if (!isPaused && activeAction) {
+                                playAudio(activeAction.getClip().name);
+                            }
+                        }
+                    });
+
+                    document.getElementById('productSpeedSlider')?.addEventListener('input', (e) => {
+                        animSpeed = parseFloat(e.target.value) || 1.0;
+                        document.getElementById('productSpeedLabel').innerText = animSpeed.toFixed(2) + 'x';
+                    });
+
+                    document.getElementById('productAnimSelect')?.addEventListener('change', (e) => {
+                        playAnim(e.target.value);
+                    });
+
+                    // Load 3D Model
+                    loadModel();
+                }
+
+                async function loadModel() {
+                    const altParam = alt ? `/${encodeURIComponent(alt)}` : '';
+                    const resQuery = resource ? `?resource=${encodeURIComponent(resource)}` : '';
+                    const url = `/api/v1/assets/3d/hero/${encodeURIComponent(hero)}${altParam}${resQuery}`;
+
+                    try {
+                        const resp = await fetch(url);
+                        if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+                        const buffer = await resp.arrayBuffer();
+
+                        const loader = new THREE.GLTFLoader();
+                        loader.parse(buffer, '', (gltf) => {
+                            if (currentModel) {
+                                scene.remove(currentModel);
+                            }
+
+                            currentModel = gltf.scene;
+
+                            // Configure Shadows & PBR Materials (Matches Store/Index.cshtml)
+                            currentModel.traverse((child) => {
+                                if (child.isMesh) {
+                                    child.castShadow = true;
+                                    child.receiveShadow = true;
+                                    if (child.material) {
+                                        const configureMaterial = (mat) => {
+                                            if (!mat) return;
+                                            mat.side = THREE.DoubleSide;
+                                            mat.roughness = 0.8;
+                                            mat.metalness = 0.1;
+                                            mat.transparent = false;
+                                            mat.depthWrite = true;
+                                            mat.color = new THREE.Color(0xffffff);
+
+                                            if (mat.map) {
+                                                if (window.KongorViewerCore) {
+                                                    window.KongorViewerCore.configureTextureColorSpace(mat.map);
+                                                } else if ('colorSpace' in mat.map && THREE.SRGBColorSpace) {
+                                                    mat.map.colorSpace = THREE.SRGBColorSpace;
+                                                }
+                                                mat.map.generateMipmaps = true;
+                                                mat.map.minFilter = THREE.LinearMipmapLinearFilter;
+                                                mat.map.magFilter = THREE.LinearFilter;
+                                                mat.map.needsUpdate = true;
+                                            }
+                                            if (mat.normalMap) {
+                                                mat.normalScale = new THREE.Vector2(1.0, 1.0);
+                                                mat.normalMap.generateMipmaps = true;
+                                                mat.normalMap.needsUpdate = true;
+                                            }
+                                            if (mat.emissiveMap) {
+                                                if (window.KongorViewerCore) {
+                                                    window.KongorViewerCore.configureTextureColorSpace(mat.emissiveMap);
+                                                } else if ('colorSpace' in mat.emissiveMap && THREE.SRGBColorSpace) {
+                                                    mat.emissiveMap.colorSpace = THREE.SRGBColorSpace;
+                                                }
+                                                mat.emissive = new THREE.Color(0xffffff);
+                                                mat.emissiveIntensity = 1.5;
+                                                mat.emissiveMap.needsUpdate = true;
+                                            }
+                                            mat.needsUpdate = true;
+                                        };
+
+                                        if (Array.isArray(child.material)) {
+                                            child.material.forEach(configureMaterial);
+                                        } else {
+                                            configureMaterial(child.material);
+                                        }
+                                    }
+                                }
+                            });
+
+                            // Reset transform
+                            currentModel.position.set(0, 0, 0);
+                            currentModel.rotation.set(0, 0, 0);
+                            currentModel.scale.set(1, 1, 1);
+                            currentModel.updateMatrixWorld(true);
+
+                            // Center horizontally and position feet at y = 0
+                            const bbox = new THREE.Box3().setFromObject(currentModel);
+                            const center = new THREE.Vector3();
+                            bbox.getCenter(center);
+                            const size = new THREE.Vector3();
+                            bbox.getSize(size);
+                            const maxDim = Math.max(size.x, size.y, size.z, 50);
+
+                            currentModel.position.x = -center.x;
+                            currentModel.position.z = -center.z;
+                            if (bbox.min.y < -0.1 && bbox.min.y > -15) {
+                                currentModel.position.y = -bbox.min.y;
+                            } else {
+                                currentModel.position.y = 0;
+                            }
+                            currentModel.updateMatrixWorld(true);
+
+                            scene.add(currentModel);
+
+                            // Auto-frame camera based on model bounding box dimensions (sweet spot)
+                            const targetHeight = Math.max(20, Math.min(size.y * 0.45, 36));
+                            const cameraDistance = Math.max(160, Math.min(maxDim * 1.55, 185));
+
+                            defaultCameraPos.set(0, targetHeight + 12, cameraDistance);
+                            defaultTarget.set(0, targetHeight, 0);
+
+                            camera.position.copy(defaultCameraPos);
+                            controls.target.copy(defaultTarget);
+                            controls.minDistance = 20;
+                            controls.maxDistance = 1500;
+                            controls.update();
+
+                            mixer = new THREE.AnimationMixer(currentModel);
+                            actions = {};
+
+                            mixer.addEventListener('finished', (e) => {
+                                onActionFinished(e.action);
+                            });
+
+                            const animSelect = document.getElementById('productAnimSelect');
+                            if (animSelect) animSelect.innerHTML = '';
+
+                            gltf.animations.forEach((clip) => {
+                                const act = mixer.clipAction(clip);
+                                actions[clip.name] = act;
+
+                                if (animSelect) {
+                                    const opt = document.createElement('option');
+                                    opt.value = clip.name;
+                                    opt.innerText = clip.name.replace(/_/g, ' ').toUpperCase();
+                                    animSelect.appendChild(opt);
+                                }
+                            });
+
+                            // Play Idle by default
+                            const idleAnim = gltf.animations.find(a => a.name.toLowerCase().includes('idle')) || gltf.animations[0];
+                            if (idleAnim) {
+                                playAnim(idleAnim.name);
+                                if (animSelect) animSelect.value = idleAnim.name;
+                            }
+
+                            const loadingOverlay = document.getElementById('product3DLoading');
+                            if (loadingOverlay) loadingOverlay.style.display = 'none';
+                        });
+                    } catch (e) {
+                        const msg = document.getElementById('product3DLoadingMsg');
+                        if (msg) msg.innerText = 'Failed to load 3D Model: ' + e.message;
+                    }
+                }
+
+                let audioTimeout = null;
+                let actionCycleTimeout = null;
+                let currentPlayingAnim = 'idle';
+
+                function playAnim(name) {
+                    if (!actions[name]) return;
+                    if (actionCycleTimeout) {
+                        clearTimeout(actionCycleTimeout);
+                        actionCycleTimeout = null;
+                    }
+
+                    currentPlayingAnim = name;
+                    const nextAction = actions[name];
+                    const rawAction = (name || 'idle').toLowerCase().trim();
+                    const isContinuous = rawAction.includes('idle') || rawAction.includes('walk') || rawAction.includes('run');
+
+                    if (activeAction && activeAction !== nextAction) {
+                        activeAction.fadeOut(0.25);
+                    }
+
+                    nextAction.reset();
+                    nextAction.fadeIn(0.25);
+
+                    if (isContinuous) {
+                        nextAction.setLoop(THREE.LoopRepeat);
+                        nextAction.clampWhenFinished = false;
+                    } else {
+                        nextAction.setLoop(THREE.LoopOnce, 1);
+                        nextAction.clampWhenFinished = true;
+                    }
+
+                    nextAction.play();
+                    activeAction = nextAction;
+
+                    if (!isPaused) {
+                        playAudio(name);
+                    }
+                }
+
+                function onActionFinished(action) {
+                    if (isPaused) return;
+                    const currentClip = currentPlayingAnim;
+                    const raw = currentClip.toLowerCase().trim();
+                    const isContinuous = raw.includes('idle') || raw.includes('walk') || raw.includes('run');
+                    if (isContinuous) return;
+
+                    // Crossfade to idle pose for 1.4s rest break
+                    let idleActionName = Object.keys(actions).find(k => k.toLowerCase().includes('idle'));
+                    if (idleActionName && actions[idleActionName]) {
+                        const idleAct = actions[idleActionName];
+                        if (activeAction) activeAction.fadeOut(0.25);
+                        idleAct.reset().fadeIn(0.25).play();
+                        activeAction = idleAct;
+                    }
+
+                    actionCycleTimeout = setTimeout(() => {
+                        if (isPaused || currentPlayingAnim !== currentClip) return;
+                        playAnim(currentClip);
+                    }, 1400);
+                }
+
+                function playAudio(actionName) {
+                    if (audioTimeout) {
+                        clearTimeout(audioTimeout);
+                        audioTimeout = null;
+                    }
+
+                    if (isMuted || isPaused || !hero) return;
+
+                    try {
+                        if (currentAudio) {
+                            currentAudio.pause();
+                            currentAudio.currentTime = 0;
+                            currentAudio = null;
+                        }
+
+                        const rawAction = (actionName || 'idle').toLowerCase().trim();
+                        let delayMs = rawAction.includes('attack') ? 350 : (rawAction.includes('ability') ? 250 : 0);
+
+                        audioTimeout = setTimeout(() => {
+                            if (isMuted || isPaused || !hero) return;
+                            const soundUrl = `/api/v1/assets/sound?hero=${encodeURIComponent(hero)}&alt=${encodeURIComponent(alt || '')}&action=${encodeURIComponent(rawAction)}&_t=${Date.now()}`;
+                            currentAudio = new Audio(soundUrl);
+                            currentAudio.onerror = () => { /* gracefully handle missing audio */
+                            };
+                            currentAudio.volume = 0.75;
+                            currentAudio.loop = false;
+                            currentAudio.playbackRate = animSpeed;
+                            currentAudio.play().catch(() => {
+                            });
+                        }, delayMs);
+                    } catch (err) {
+                    }
+                }
+
+                function onResize() {
+                    const container = document.getElementById('product3DContainer');
+                    if (!container || !renderer || !camera) return;
+                    const w = container.clientWidth;
+                    const h = container.clientHeight;
+                    camera.aspect = w / h;
+                    camera.updateProjectionMatrix();
+                    renderer.setSize(w, h);
+                }
+
+                function animate() {
+                    requestAnimationFrame(animate);
+                    const delta = clock.getDelta();
+                    if (mixer && !isPaused) {
+                        mixer.update(delta * animSpeed);
+                    }
+                    controls.update();
+                    renderer.render(scene, camera);
+                }
+            })();
+        </text>
+    }
+
+    // Equip in Loadout Handler
+    async function equipCurrentItem(itemId, itemCode) {
+        const actionBox = document.getElementById('productActionBox');
+        if (actionBox) {
+            actionBox.innerHTML = `
+                <div class="w-full py-3.5 px-4 rounded-xl bg-slate-800 text-amber-300 text-xs font-bold text-center flex items-center justify-center gap-2">
+                    <i class="fas fa-spinner fa-spin"></i>
+                    <span>Equipping in in-game loadout...</span>
+                </div>
+            `;
+        }
+
+        try {
+            const resp = await fetch('/store/equip', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({itemId: itemId, code: itemCode})
+            });
+
+            const data = await resp.json();
+
+            if (resp.ok && data.success) {
+                if (actionBox) {
+                    actionBox.innerHTML = `
+                        <div class="w-full py-3.5 px-4 rounded-xl bg-slate-900/90 border border-slate-800 text-slate-500 text-sm font-bold text-center flex items-center justify-center gap-2 shadow-inner cursor-default opacity-80 select-none">
+                            <i class="fas fa-check-circle text-emerald-500"></i>
+                            <span>✓ EQUIPPED</span>
+                        </div>
+                    `;
+                }
+            } else {
+                if (actionBox) {
+                    actionBox.innerHTML = `
+                        <button onclick="equipCurrentItem(${itemId}, '${itemCode}')" class="w-full py-3.5 px-4 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 text-sm font-black text-center flex items-center justify-center gap-2 shadow-lg shadow-amber-500/20 transition-all cursor-pointer">
+                            <i class="fas fa-bolt"></i>
+                            <span>Equip in Loadout</span>
+                        </button>
+                    `;
+                }
+                alert(data.error || "Failed to equip item.");
+            }
+        } catch (err) {
+            if (actionBox) {
+                actionBox.innerHTML = `
+                    <button onclick="equipCurrentItem(${itemId}, '${itemCode}')" class="w-full py-3.5 px-4 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 text-sm font-black text-center flex items-center justify-center gap-2 shadow-lg shadow-amber-500/20 transition-all cursor-pointer">
+                        <i class="fas fa-bolt"></i>
+                        <span>Equip in Loadout</span>
+                    </button>
+                `;
+            }
+            alert("Network error: " + err.message);
+        }
+    }
+
+    // Purchase Modal Functions
+    function openPurchaseModal(id, name, cost, currency) {
+        document.getElementById('buyItemId').value = id;
+        document.getElementById('buyItemTitle').innerText = name;
+        document.getElementById('buyCurrency').value = currency;
+        document.getElementById('buyCostDisplay').innerHTML = currency === 'gold'
+            ? `<span class="text-amber-400 font-bold">${cost} Gold Coins</span>`
+            : `<span class="text-slate-300 font-bold">${cost} Silver Coins</span>`;
+
+        const statusMsg = document.getElementById('buyStatusMsg');
+        statusMsg.classList.add('hidden');
+        document.getElementById('purchaseModal').style.display = 'flex';
+    }
+
+    function closePurchaseModal() {
+        document.getElementById('purchaseModal').style.display = 'none';
+    }
+
+    async function executePurchase() {
+        const id = parseInt(document.getElementById('buyItemId').value, 10);
+        const currency = document.getElementById('buyCurrency').value;
+        const buyBtn = document.getElementById('confirmBuyBtn');
+        const buyBtnText = document.getElementById('confirmBuyBtnText');
+        const statusMsg = document.getElementById('buyStatusMsg');
+
+        buyBtn.disabled = true;
+        buyBtnText.innerText = "Unlocking...";
+
+        try {
+            const resp = await fetch('/store/purchase', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({itemId: id, currency: currency})
+            });
+
+            const data = await resp.json();
+
+            if (resp.ok && data.success) {
+                statusMsg.innerText = "✓ " + data.message;
+                statusMsg.className = "text-xs font-semibold text-emerald-400";
+                statusMsg.classList.remove('hidden');
+
+                const goldEl = document.getElementById('userGoldDisplay');
+                if (goldEl && data.newGold !== undefined) goldEl.innerText = data.newGold.toLocaleString();
+
+                const silverEl = document.getElementById('userSilverDisplay');
+                if (silverEl && data.newSilver !== undefined) silverEl.innerText = data.newSilver.toLocaleString();
+
+                const actionBox = document.getElementById('productActionBox');
+                if (actionBox) {
+                    actionBox.innerHTML = `
+                        <div class="w-full py-3.5 px-4 rounded-xl bg-emerald-500/15 border border-emerald-500/40 text-emerald-300 text-sm font-black text-center flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/10">
+                            <i class="fas fa-check-circle text-base"></i>
+                            <span>Unlocked In Your Vault</span>
+                        </div>
+                    `;
+                }
+
+                setTimeout(() => {
+                    closePurchaseModal();
+                    buyBtn.disabled = false;
+                    buyBtnText.innerText = "Confirm Purchase";
+                }, 900);
+            } else {
+                statusMsg.innerText = "Error: " + (data.error || "Purchase failed.");
+                statusMsg.className = "text-xs font-semibold text-red-400";
+                statusMsg.classList.remove('hidden');
+                buyBtn.disabled = false;
+                buyBtnText.innerText = "Confirm Purchase";
+            }
+        } catch (err) {
+            statusMsg.innerText = "Network error: " + err.message;
+            statusMsg.className = "text-xs font-semibold text-red-400";
+            statusMsg.classList.remove('hidden');
+            buyBtn.disabled = false;
+            buyBtnText.innerText = "Confirm Purchase";
+        }
+    }
+
+    // Staff Price Editor Functions
+    @if (Model.IsStaff)
+    {
+        <text>
+            function openPriceEditor(id, name, gold, silver, enabled, purchasable) {
+                document.getElementById('editItemHiddenId').value = id;
+                document.getElementById('editItemId').innerText = 'Product ID: #' + id;
+                document.getElementById('editGoldCost').value = gold;
+                document.getElementById('editSilverCost').value = silver;
+                document.getElementById('editIsEnabled').checked = enabled;
+                document.getElementById('editPurchasable').checked = purchasable;
+
+                const statusMsg = document.getElementById('editStatusMsg');
+                statusMsg.classList.add('hidden');
+
+                document.getElementById('priceEditorModal').style.display = 'flex';
+            }
+
+            function closePriceEditor() {
+                document.getElementById('priceEditorModal').style.display = 'none';
+            }
+
+            async function saveStoreItemChanges() {
+                const id = parseInt(document.getElementById('editItemHiddenId').value, 10);
+                const gold = parseInt(document.getElementById('editGoldCost').value, 10) || 0;
+                const silver = parseInt(document.getElementById('editSilverCost').value, 10) || 0;
+                const isEnabled = document.getElementById('editIsEnabled').checked;
+                const purchasable = document.getElementById('editPurchasable').checked;
+
+                const saveBtn = document.getElementById('savePriceBtn');
+                const statusMsg = document.getElementById('editStatusMsg');
+
+                saveBtn.disabled = true;
+                saveBtn.innerText = "Saving...";
+
+                try {
+                    const resp = await fetch('/staff/store/update', {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify({
+                            id: id,
+                            goldCost: gold,
+                            silverCost: silver,
+                            isEnabled: isEnabled,
+                            purchasable: purchasable
+                        })
+                    });
+
+                    const data = await resp.json();
+
+                    if (resp.ok && data.success) {
+                        statusMsg.innerText = "✓ Saved and synchronized!";
+                        statusMsg.className = "text-xs font-semibold text-emerald-400";
+                        statusMsg.classList.remove('hidden');
+
+                        setTimeout(() => {
+                            closePriceEditor();
+                            window.location.reload();
+                        }, 800);
+                    } else {
+                        statusMsg.innerText = "Error: " + (data.error || "Save failed.");
+                        statusMsg.className = "text-xs font-semibold text-red-400";
+                        statusMsg.classList.remove('hidden');
+                        saveBtn.disabled = false;
+                        saveBtn.innerText = "Save Changes";
+                    }
+                } catch (err) {
+                    statusMsg.innerText = "Network error: " + err.message;
+                    statusMsg.className = "text-xs font-semibold text-red-400";
+                    statusMsg.classList.remove('hidden');
+                    saveBtn.disabled = false;
+                    saveBtn.innerText = "Save Changes";
+                }
+            }
+        </text>
+    }
+
+    // Audio Preview Helpers for Announcers & Taunts
+    function playAnnouncerLine(packCode, action, label) {
+        const url = `/api/v1/assets/sound?announcer=${encodeURIComponent(packCode)}&action=${encodeURIComponent(action)}`;
+        if (window.NexusSoundboard) {
+            NexusSoundboard.playUrl(url, label);
+        } else {
+            const audio = new Audio(url);
+            audio.play().catch(e => console.warn('Audio play failed:', e));
+        }
+
+        const labelEl = document.getElementById('announcerCurrentTrackLabel');
+        if (labelEl) {
+            labelEl.innerText = `🔊 Playing: ${label}`;
+        }
+    }
+
+    function playTauntSfx(tauntCode, action, label) {
+        const url = `/api/v1/assets/sound?taunt=${encodeURIComponent(tauntCode)}&action=${encodeURIComponent(action)}`;
+        if (window.NexusSoundboard) {
+            NexusSoundboard.playUrl(url, label);
+        } else {
+            const audio = new Audio(url);
+            audio.play().catch(e => console.warn('Audio play failed:', e));
+        }
+
+        const labelEl = document.getElementById('tauntPlayingStatus');
+        if (labelEl) {
+            labelEl.innerText = `🔊 Playing: ${label}`;
+        }
+    }
+</script>

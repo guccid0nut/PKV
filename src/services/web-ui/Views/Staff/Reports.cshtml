@@ -1,0 +1,1348 @@
+@model StaffReportsViewModel
+@{
+    ViewData["Title"] = "Staff Command Center - Player Reports";
+
+    string GetStatusBadgeClass(string status)
+    {
+        return status.ToUpperInvariant() switch
+        {
+            "PENDING" => "bg-amber-500/15 text-amber-300 border-amber-500/30",
+            "IN_REVIEW" => "bg-sky-500/15 text-sky-300 border-sky-500/30",
+            "RESOLVED" => "bg-emerald-500/15 text-emerald-300 border-emerald-500/30",
+            "DISMISSED" => "bg-slate-500/15 text-slate-400 border-slate-500/30",
+            _ => "bg-purple-500/15 text-purple-300 border-purple-500/30"
+        };
+    }
+
+    string GetReasonBadgeClass(string reason)
+    {
+        var lower = reason.ToLowerInvariant();
+        if (lower.Contains("grief") || lower.Contains("feed") || lower.Contains("afk") || lower.Contains("leaving"))
+            return "bg-rose-500/15 text-rose-300 border-rose-500/30";
+        if (lower.Contains("abuse") || lower.Contains("harass") || lower.Contains("toxic") || lower.Contains("verbal"))
+            return "bg-orange-500/15 text-orange-300 border-orange-500/30";
+        if (lower.Contains("cheat") || lower.Contains("hack") || lower.Contains("bot"))
+            return "bg-red-500/20 text-red-300 border-red-500/40";
+        return "bg-cyan-500/15 text-cyan-300 border-cyan-500/30";
+    }
+
+    string TimeAgo(DateTimeOffset dateTime)
+    {
+        var span = TimeProvider.System.GetUtcNow() - dateTime;
+        return span.TotalDays switch
+        {
+            > 30 => $"{(int)(span.TotalDays / 30)}mo ago",
+            >= 1 => $"{(int)span.TotalDays}d ago",
+            _ when span.TotalHours >= 1 => $"{(int)span.TotalHours}h ago",
+            _ when span.TotalMinutes >= 1 => $"{(int)span.TotalMinutes}m ago",
+            _ => "just now"
+        };
+    }
+}
+
+<div class="w-full max-w-[1700px] mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6 animate-fadeIn">
+    <!-- Top Header Banner -->
+    <div
+        class="relative overflow-hidden rounded-2xl p-5 sm:p-6 bg-gradient-to-r from-purple-950/70 via-slate-900/80 to-slate-950/90 border border-purple-500/25 shadow-xl backdrop-blur-xl">
+        <div
+            class="absolute -right-12 -top-12 w-64 h-64 bg-purple-600/15 rounded-full blur-3xl pointer-events-none"></div>
+        <div
+            class="absolute -left-12 -bottom-12 w-64 h-64 bg-pink-600/10 rounded-full blur-3xl pointer-events-none"></div>
+
+        <div class="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div class="space-y-1.5">
+                <div
+                    class="inline-flex items-center gap-2 px-3 py-0.5 rounded-full bg-purple-500/15 border border-purple-500/30 text-purple-300 text-xs font-bold tracking-wider uppercase">
+                    <span class="w-2 h-2 rounded-full bg-purple-400 animate-pulse"></span>
+                    <span>Staff Moderation Suite</span>
+                </div>
+                <h1 class="text-2xl sm:text-3xl font-black text-white tracking-tight">
+                    Player Reports & Disciplinary Queue
+                </h1>
+                <p class="text-slate-400 text-xs sm:text-sm max-w-3xl">
+                    Review and act on player submissions submitted through the in-game RAP system. Inspect match
+                    telemetry, review offense comments, and execute disciplinary actions (Mute, Suspend, Ban).
+                </p>
+            </div>
+
+            <div class="flex items-center gap-2 self-start md:self-auto">
+                <div class="flex items-center gap-1.5 bg-slate-950/80 p-1.5 rounded-xl border border-slate-800">
+                    <a asp-controller="Staff" asp-action="Reports"
+                       class="px-3.5 py-1.5 rounded-lg text-xs font-bold bg-purple-600 text-white shadow-md shadow-purple-600/20 transition-all flex items-center gap-2">
+                        <i class="fas fa-shield-alt"></i>
+                        <span>Player Reports</span>
+                    </a>
+                    <a asp-controller="Staff" asp-action="Invites"
+                       class="px-3.5 py-1.5 rounded-lg text-xs font-bold text-slate-400 hover:text-white transition-all flex items-center gap-2">
+                        <i class="fas fa-envelope-open-text"></i>
+                        <span>Invites &amp; Lineage</span>
+                    </a>
+                    <a asp-controller="Staff" asp-action="Streamers"
+                       class="px-3.5 py-1.5 rounded-lg text-xs font-bold text-slate-400 hover:text-[#C499FF] transition-all flex items-center gap-2">
+                        <i class="fab fa-twitch text-[#9146FF]"></i>
+                        <span>Streamers</span>
+                    </a>
+                    <a asp-controller="Staff" asp-action="Hosts"
+                       class="px-3.5 py-1.5 rounded-lg text-xs font-bold text-slate-400 hover:text-white transition-all flex items-center gap-2">
+                        <i class="fas fa-server"></i>
+                        <span>Volunteer Hosts</span>
+                    </a>
+                    <a asp-controller="Staff" asp-action="Inventory"
+                       class="px-3.5 py-1.5 rounded-lg text-xs font-bold text-slate-400 hover:text-white transition-all flex items-center gap-2">
+                        <i class="fas fa-boxes"></i>
+                        <span>Inventory Manager</span>
+                    </a>
+                    <a asp-controller="Store" asp-action="Index"
+                       class="px-3.5 py-1.5 rounded-lg text-xs font-bold text-slate-400 hover:text-amber-400 transition-all flex items-center gap-2">
+                        <i class="fas fa-store text-amber-500"></i>
+                        <span>Live Store</span>
+                    </a>
+                    <a href="/admin/issues"
+                       class="px-3.5 py-1.5 rounded-lg text-xs font-bold text-slate-400 hover:text-emerald-400 transition-all flex items-center gap-2"
+                       title="Developer Issues & Autonomous Self-Healing Telemetry">
+                        <i class="fas fa-bolt text-emerald-400"></i>
+                        <span>Issues &amp; Healing</span>
+                    </a>
+                </div>
+
+                <a asp-controller="Staff" asp-action="Reports"
+                   class="px-4 py-2 rounded-xl bg-purple-600/20 hover:bg-purple-600/30 text-purple-300 border border-purple-500/30 font-bold text-xs sm:text-sm flex items-center gap-2 transition-all">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                    </svg>
+                    <span>Refresh</span>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Metric KPI Stat Cards -->
+    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4">
+        <!-- Total Reports -->
+        <div
+            class="p-4 rounded-xl bg-slate-900/50 border border-slate-800/80 backdrop-blur-xl shadow-md hover:border-purple-500/30 transition-all">
+            <div class="text-slate-400 text-[11px] font-bold uppercase tracking-wider">Total Reports</div>
+            <div class="text-2xl font-black text-white mt-0.5">@Model.TotalReports</div>
+            <div class="text-[11px] text-purple-400 mt-1 flex items-center gap-1 font-medium">
+                <span>📁</span> <span>Lifetime Filed</span>
+            </div>
+        </div>
+
+        <!-- Pending Review -->
+        <div
+            class="p-4 rounded-xl bg-slate-900/50 border border-amber-500/25 backdrop-blur-xl shadow-md hover:border-amber-500/40 transition-all">
+            <div class="text-amber-300 text-[11px] font-bold uppercase tracking-wider">Pending Review</div>
+            <div class="text-2xl font-black text-amber-400 mt-0.5">@Model.PendingReports</div>
+            <div class="text-[11px] text-amber-400/80 mt-1 flex items-center gap-1 font-medium">
+                <span class="w-1.5 h-1.5 rounded-full bg-amber-400 animate-ping"></span> <span>Awaiting Action</span>
+            </div>
+        </div>
+
+        <!-- In Review -->
+        <div
+            class="p-4 rounded-xl bg-slate-900/50 border border-sky-500/25 backdrop-blur-xl shadow-md hover:border-sky-500/40 transition-all">
+            <div class="text-sky-300 text-[11px] font-bold uppercase tracking-wider">In Review</div>
+            <div class="text-2xl font-black text-sky-400 mt-0.5">@Model.InReviewReports</div>
+            <div class="text-[11px] text-sky-400/80 mt-1 flex items-center gap-1 font-medium">
+                <span>🔍</span> <span>Investigation</span>
+            </div>
+        </div>
+
+        <!-- Resolved -->
+        <div
+            class="p-4 rounded-xl bg-slate-900/50 border border-emerald-500/25 backdrop-blur-xl shadow-md hover:border-emerald-500/40 transition-all">
+            <div class="text-emerald-300 text-[11px] font-bold uppercase tracking-wider">Resolved</div>
+            <div class="text-2xl font-black text-emerald-400 mt-0.5">@Model.ResolvedReports</div>
+            <div class="text-[11px] text-emerald-400/80 mt-1 flex items-center gap-1 font-medium">
+                <span>✅</span> <span>Action Completed</span>
+            </div>
+        </div>
+
+        <!-- Dismissed -->
+        <div
+            class="p-4 rounded-xl bg-slate-900/50 border border-slate-800/80 backdrop-blur-xl shadow-md hover:border-slate-700 transition-all">
+            <div class="text-slate-400 text-[11px] font-bold uppercase tracking-wider">Dismissed</div>
+            <div class="text-2xl font-black text-slate-300 mt-0.5">@Model.DismissedReports</div>
+            <div class="text-[11px] text-slate-500 mt-1 flex items-center gap-1 font-medium">
+                <span>✖️</span> <span>Deemed Invalid</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Search & Filter Controls -->
+    <div class="p-4 rounded-xl bg-slate-900/60 border border-slate-800/80 backdrop-blur-xl space-y-3 shadow-lg">
+        <form method="get" asp-controller="Staff" asp-action="Reports"
+              class="flex flex-col md:flex-row gap-2.5 items-stretch md:items-center">
+            <!-- Search Text -->
+            <div class="relative flex-1 min-w-[200px]">
+                <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                    </svg>
+                </div>
+                <input type="text" name="query" value="@Model.SearchQuery"
+                       placeholder="Search player, reporter, reason, comment..."
+                       class="w-full pl-10 pr-4 py-2 rounded-xl bg-slate-950/80 border border-slate-700/80 text-white placeholder-slate-500 text-xs sm:text-sm focus:outline-none focus:border-purple-500 transition-all"/>
+            </div>
+
+            <!-- Status Filter -->
+            <div class="w-full md:w-44">
+                <select name="status"
+                        class="w-full px-3 py-2 rounded-xl bg-slate-950/80 border border-slate-700/80 text-slate-200 text-xs sm:text-sm focus:outline-none focus:border-purple-500 transition-all">
+                    <option value="">All Statuses</option>
+                    <option value="PENDING" selected="@(Model.StatusFilter == "PENDING")">Pending</option>
+                    <option value="IN_REVIEW" selected="@(Model.StatusFilter == "IN_REVIEW")">In Review</option>
+                    <option value="RESOLVED" selected="@(Model.StatusFilter == "RESOLVED")">Resolved</option>
+                    <option value="DISMISSED" selected="@(Model.StatusFilter == "DISMISSED")">Dismissed</option>
+                </select>
+            </div>
+
+            <!-- Match ID Filter -->
+            <div class="w-full md:w-36">
+                <input type="number" name="matchId"
+                       value="@(Model.MatchIdFilter > 0 ? Model.MatchIdFilter.ToString() : "")" placeholder="Match ID"
+                       class="w-full px-3 py-2 rounded-xl bg-slate-950/80 border border-slate-700/80 text-white placeholder-slate-500 text-xs sm:text-sm focus:outline-none focus:border-purple-500 transition-all"/>
+            </div>
+
+            <!-- Filter Submit & Reset -->
+            <div class="flex items-center gap-2">
+                <button type="submit"
+                        class="px-4 py-2 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs sm:text-sm shadow-md transition-all">
+                    Filter
+                </button>
+                <a asp-controller="Staff" asp-action="Reports"
+                   class="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold text-xs sm:text-sm transition-all">
+                    Reset
+                </a>
+            </div>
+        </form>
+
+        <!-- Quick Status Pills -->
+        <div class="flex items-center gap-2 overflow-x-auto pt-2 border-t border-slate-800/60">
+            <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider mr-1">Quick Filters:</span>
+            <a asp-controller="Staff" asp-action="Reports"
+               class="px-2.5 py-1 rounded-lg text-xs font-semibold @(string.IsNullOrEmpty(Model.StatusFilter) ? "bg-purple-600 text-white" : "bg-slate-800/80 text-slate-400 hover:text-white") transition-all">
+                All (@Model.TotalReports)
+            </a>
+            <a asp-controller="Staff" asp-action="Reports" asp-route-status="PENDING"
+               class="px-2.5 py-1 rounded-lg text-xs font-semibold @(Model.StatusFilter == "PENDING" ? "bg-amber-500 text-slate-950 font-bold" : "bg-slate-800/80 text-amber-400/80 hover:text-amber-300") transition-all">
+                Pending (@Model.PendingReports)
+            </a>
+            <a asp-controller="Staff" asp-action="Reports" asp-route-status="IN_REVIEW"
+               class="px-2.5 py-1 rounded-lg text-xs font-semibold @(Model.StatusFilter == "IN_REVIEW" ? "bg-sky-500 text-slate-950 font-bold" : "bg-slate-800/80 text-sky-400/80 hover:text-sky-300") transition-all">
+                In Review (@Model.InReviewReports)
+            </a>
+            <a asp-controller="Staff" asp-action="Reports" asp-route-status="RESOLVED"
+               class="px-2.5 py-1 rounded-lg text-xs font-semibold @(Model.StatusFilter == "RESOLVED" ? "bg-emerald-500 text-slate-950 font-bold" : "bg-slate-800/80 text-emerald-400/80 hover:text-emerald-300") transition-all">
+                Resolved (@Model.ResolvedReports)
+            </a>
+            <a asp-controller="Staff" asp-action="Reports" asp-route-status="DISMISSED"
+               class="px-2.5 py-1 rounded-lg text-xs font-semibold @(Model.StatusFilter == "DISMISSED" ? "bg-slate-600 text-white" : "bg-slate-800/80 text-slate-400 hover:text-white") transition-all">
+                Dismissed (@Model.DismissedReports)
+            </a>
+        </div>
+
+        @if (Model.ReportIdFilter.HasValue)
+        {
+            <div class="flex items-center gap-2 pt-2 border-t border-slate-800/60">
+                <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Active Target:</span>
+                <span
+                    class="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-purple-500/20 text-purple-300 border border-purple-500/40 text-xs font-bold shadow-sm">
+                    <span>🔍 Case #@Model.ReportIdFilter</span>
+                    <a asp-controller="Staff" asp-action="Reports"
+                       class="text-slate-400 hover:text-white ml-1 font-black" title="Clear case filter">✕</a>
+                </span>
+            </div>
+        }
+    </div>
+
+    <!-- Reports Data Table (Wide, Responsive, Never Cut Off) -->
+    <div class="rounded-2xl bg-slate-900/60 border border-slate-800/80 overflow-hidden shadow-xl backdrop-blur-xl">
+        @if (Model.Reports.Count == 0)
+        {
+            <div class="py-16 text-center space-y-3">
+                <div class="text-4xl">🛡️</div>
+                <h3 class="text-base font-bold text-white">No reports found</h3>
+                <p class="text-slate-400 text-xs">There are no reports matching your current filter criteria.</p>
+                <a asp-controller="Staff" asp-action="Reports"
+                   class="inline-block mt-1 text-xs text-purple-400 hover:text-purple-300 font-semibold underline">
+                    Clear filters
+                </a>
+            </div>
+        }
+        else
+        {
+            <div class="w-full overflow-x-auto">
+                <table class="w-full text-left border-collapse text-xs sm:text-sm">
+                    <thead>
+                    <tr class="border-b border-slate-800/80 bg-slate-950/70 text-[11px] uppercase font-bold text-slate-400 tracking-wider">
+                        <th class="py-3 px-3 w-14 text-center">ID</th>
+                        <th class="py-3 px-3 w-28">Status</th>
+                        <th class="py-3 px-3 w-48">Reported Target</th>
+                        <th class="py-3 px-3 w-44">Reporter</th>
+                        <th class="py-3 px-3 w-36">Match ID</th>
+                        <th class="py-3 px-3 w-36">Reason</th>
+                        <th class="py-3 px-4 min-w-[220px]">Disciplinary Action / Notes</th>
+                        <th class="py-3 px-3 w-32 text-right">Date</th>
+                        <th class="py-3 px-3 w-24 text-center">Actions</th>
+                    </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-800/50 font-medium text-slate-300">
+                    @foreach (var report in Model.Reports)
+                    {
+                        <tr class="hover:bg-slate-800/30 transition-all group" id="report-row-@report.ID">
+                            <!-- Report ID -->
+                            <td class="py-3 px-3 text-center text-xs font-mono font-bold text-purple-400">
+                                #@report.ID
+                            </td>
+
+                            <!-- Status Badge -->
+                            <td class="py-3 px-3">
+                                <span
+                                    class="px-2.5 py-0.5 rounded-full text-[11px] font-bold border @GetStatusBadgeClass(report.Status) inline-flex items-center gap-1.5"
+                                    id="badge-@report.ID">
+                                    @if (report.Status == "PENDING")
+                                    {
+                                        <span class="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse"></span>
+                                    }
+                                    <span>@report.Status</span>
+                                </span>
+                            </td>
+
+                            <!-- Reported Target Player -->
+                            <td class="py-3 px-3">
+                                <div class="flex items-center gap-2">
+                                    <div
+                                        class="w-7 h-7 rounded-lg bg-rose-500/15 border border-rose-500/30 flex items-center justify-center text-xs font-bold text-rose-300 shadow-sm flex-shrink-0">
+                                        🎯
+                                    </div>
+                                    <div class="min-w-0">
+                                        <div
+                                            class="font-bold text-rose-300 group-hover:text-rose-200 truncate">@report.ReportedAccountName</div>
+                                        @if (report.ReportedAccountID.HasValue)
+                                        {
+                                            <div class="text-[10px] text-slate-500 font-mono">
+                                                ID: @report.ReportedAccountID</div>
+                                        }
+                                    </div>
+                                </div>
+                            </td>
+
+                            <!-- Reporter -->
+                            <td class="py-3 px-3">
+                                <div class="flex items-center gap-2">
+                                    <div
+                                        class="w-7 h-7 rounded-lg bg-purple-500/15 border border-purple-500/30 flex items-center justify-center text-xs font-bold text-purple-300 shadow-sm flex-shrink-0">
+                                        👤
+                                    </div>
+                                    <div class="min-w-0">
+                                        <div
+                                            class="font-semibold text-slate-200 truncate">@report.ReporterAccountName</div>
+                                        @if (report.ReporterAccountID.HasValue)
+                                        {
+                                            <div class="text-[10px] text-slate-500 font-mono">
+                                                ID: @report.ReporterAccountID</div>
+                                        }
+                                    </div>
+                                </div>
+                            </td>
+
+                            <!-- Match ID -->
+                            <td class="py-3 px-3">
+                                @if (report.MatchID.HasValue)
+                                {
+                                    <a href="/matches/@report.MatchID" target="_blank"
+                                       class="px-2 py-0.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-cyan-400 hover:text-cyan-300 text-xs font-mono font-bold border border-cyan-500/20 transition-all inline-flex items-center gap-1 shadow-sm">
+                                        <span>⚔️ @report.MatchID</span>
+                                        <svg class="w-3 h-3 text-cyan-400" fill="none" stroke="currentColor"
+                                             viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                  d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
+                                        </svg>
+                                    </a>
+                                }
+                                else
+                                {
+                                    <span class="text-xs text-slate-500 font-mono">N/A</span>
+                                }
+                            </td>
+
+                            <!-- Reason -->
+                            <td class="py-3 px-3">
+                                <span
+                                    class="px-2 py-0.5 rounded-lg text-xs font-bold border @GetReasonBadgeClass(report.Reason) inline-block">
+                                    @report.Reason
+                                </span>
+                            </td>
+
+                            <!-- Disciplinary Action / Details -->
+                            <td class="py-3 px-4">
+                                @if (!string.IsNullOrWhiteSpace(report.PunishmentType) && report.PunishmentType != "NONE" && report.PunishmentType != "DISMISS")
+                                {
+                                    <div
+                                        class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-lg text-xs font-bold @(report.PunishmentType switch
+                                                                                                                           {
+                                                                                                                               "BAN" => "bg-red-500/20 text-red-300 border border-red-500/40",
+                                                                                                                               "SUSPEND" => "bg-amber-500/20 text-amber-300 border border-amber-500/40",
+                                                                                                                               _ => "bg-purple-500/20 text-purple-300 border border-purple-500/40"
+                                                                                                                           })">
+                                        <span>
+                                            @(report.PunishmentType switch
+                                            {
+                                                "BAN" => "🚫 BANNED",
+                                                "SUSPEND" => "⛔ SUSPENDED",
+                                                _ => "🔇 MUTED"
+                                            })
+                                        </span>
+                                        <span
+                                            class="text-slate-400 font-normal">(@(report.PunishmentDurationHours >= 800000 ? "Permanent" : (report.PunishmentDurationHours + "h")))</span>
+                                    </div>
+                                }
+                                else if (report.Status == "DISMISSED")
+                                {
+                                    <span class="text-xs text-slate-500 font-medium">🛡️ Dismissed (No Action)</span>
+                                }
+                                else
+                                {
+                                    <span class="text-xs text-slate-500 font-medium italic">Pending Judgment</span>
+                                }
+
+                                @if (!string.IsNullOrWhiteSpace(report.StaffNotes))
+                                {
+                                    <div class="text-[11px] text-purple-300 mt-1 font-semibold break-words"
+                                         title="Staff Note: @report.StaffNotes">
+                                        💬 Staff: @report.StaffNotes
+                                    </div>
+                                }
+                                else if (!string.IsNullOrWhiteSpace(report.Description))
+                                {
+                                    <div class="text-[11px] text-slate-400 mt-1 break-words"
+                                         title="Report Comment: @report.Description">
+                                        📝 @report.Description
+                                    </div>
+                                }
+                            </td>
+
+                            <!-- Timestamp -->
+                            <td class="py-3 px-3 text-right text-xs text-slate-400 whitespace-nowrap"
+                                title="@report.TimestampCreated.ToString("u")">
+                                <div class="font-semibold text-slate-300">@TimeAgo(report.TimestampCreated)</div>
+                                <div
+                                    class="text-[10px] text-slate-500 font-mono">@report.TimestampCreated.ToString("yyyy-MM-dd HH:mm") UTC
+                                </div>
+                            </td>
+
+                            <!-- Actions -->
+                            <td class="py-3 px-3 text-center">
+                                <div class="flex items-center justify-center gap-1.5">
+                                    @if (report.MatchID.HasValue)
+                                    {
+                                        <button type="button"
+                                                onclick="openEvidenceModal(@report.MatchID.Value, '@Html.Raw(Html.Encode(report.ReportedAccountName))', @report.ID)"
+                                                class="px-2.5 py-1 rounded-xl bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-300 border border-cyan-500/40 text-xs font-bold transition-all inline-flex items-center gap-1 shadow-sm"
+                                                title="Inspect in-game text & voice chat evidence">
+                                            <span>🎙️</span>
+                                            <span>Evidence</span>
+                                        </button>
+                                    }
+                                    <button
+                                        onclick="openJudgmentModal(@report.ID, '@Html.Raw(Html.Encode(report.ReportedAccountName))', '@Html.Raw(Html.Encode(report.ReporterAccountName))', '@Html.Raw(Html.Encode(report.Reason))', '@Html.Raw(Html.Encode(report.Description ?? ""))', @(report.MatchID.HasValue ? report.MatchID.Value.ToString() : "null"))"
+                                        class="px-3 py-1 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white text-xs font-bold shadow-sm shadow-purple-600/20 hover:scale-105 transition-all inline-flex items-center gap-1">
+                                        <span>⚖️</span>
+                                        <span>Judge</span>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination Bar -->
+            @if (Model.TotalPages > 1)
+            {
+                <div class="p-3.5 border-t border-slate-800/80 bg-slate-950/40 flex items-center justify-between gap-4">
+                    <div class="text-xs text-slate-400 font-semibold">
+                        Showing page @Model.PageNumber of @Model.TotalPages (@Model.TotalCount total reports)
+                    </div>
+                    <div class="flex items-center gap-2">
+                        @if (Model.PageNumber > 1)
+                        {
+                            <a asp-controller="Staff" asp-action="Reports" asp-route-page="@(Model.PageNumber - 1)"
+                               asp-route-status="@Model.StatusFilter" asp-route-query="@Model.SearchQuery"
+                               asp-route-matchId="@Model.MatchIdFilter"
+                               class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-bold text-slate-300 transition-all">
+                                Previous
+                            </a>
+                        }
+                        @if (Model.PageNumber < Model.TotalPages)
+                        {
+                            <a asp-controller="Staff" asp-action="Reports" asp-route-page="@(Model.PageNumber + 1)"
+                               asp-route-status="@Model.StatusFilter" asp-route-query="@Model.SearchQuery"
+                               asp-route-matchId="@Model.MatchIdFilter"
+                               class="px-3 py-1.5 rounded-lg bg-purple-600 hover:bg-purple-500 text-xs font-bold text-white transition-all">
+                                Next
+                            </a>
+                        }
+                    </div>
+                </div>
+            }
+        }
+    </div>
+</div>
+
+<!-- Glassmorphic Staff Judgment & Punishment Modal (Large & Prominent) -->
+<div id="judgment-modal"
+     class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 sm:p-6 bg-slate-950/85 backdrop-blur-md animate-fadeIn overflow-y-auto"
+     onclick="handleBackdropClick(event)">
+    <div id="judgment-modal-card"
+         class="relative w-full max-w-3xl bg-gradient-to-b from-slate-900 via-slate-900/95 to-slate-950 rounded-2xl sm:rounded-3xl border border-purple-500/35 shadow-2xl overflow-hidden p-6 sm:p-8 space-y-6 my-auto">
+        <!-- Ambient Glow Effect -->
+        <div
+            class="absolute -right-20 -top-20 w-72 h-72 bg-purple-600/20 rounded-full blur-3xl pointer-events-none"></div>
+        <div
+            class="absolute -left-20 -bottom-20 w-72 h-72 bg-rose-600/15 rounded-full blur-3xl pointer-events-none"></div>
+
+        <!-- Modal Header -->
+        <div class="flex items-center justify-between border-b border-slate-800 pb-4">
+            <div class="flex items-center gap-3.5">
+                <div
+                    class="w-12 h-12 rounded-2xl bg-purple-600/20 border border-purple-500/40 flex items-center justify-center text-2xl shadow-inner flex-shrink-0">
+                    ⚖️
+                </div>
+                <div>
+                    <h3 class="text-xl sm:text-2xl font-black text-white tracking-tight flex items-center gap-2.5">
+                        <span>Staff Disciplinary Judgment</span>
+                        <span id="modal-report-id"
+                              class="text-xs sm:text-sm font-mono text-purple-300 bg-purple-500/15 px-2.5 py-1 rounded-lg border border-purple-500/30 font-bold">#0</span>
+                    </h3>
+                    <p class="text-xs sm:text-sm text-slate-400 mt-0.5">Determine disciplinary action, punishment
+                        severity, and duration</p>
+                </div>
+            </div>
+            <button onclick="closeJudgmentModal()"
+                    title="Close (Esc)"
+                    class="w-9 h-9 rounded-xl bg-slate-800/80 hover:bg-slate-700 hover:text-white border border-slate-700/60 text-slate-400 flex items-center justify-center transition-all">
+                ✕
+            </button>
+        </div>
+
+        <!-- Offense Summary Banner -->
+        <div class="p-4 sm:p-5 rounded-2xl bg-slate-950/70 border border-slate-800 space-y-3">
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                <div class="space-y-0.5">
+                    <span
+                        class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Reported Player</span>
+                    <div class="flex items-center gap-1.5">
+                        <span class="text-xs">🎯</span>
+                        <span id="modal-target-player" class="font-black text-sm text-rose-300 truncate">Target</span>
+                    </div>
+                </div>
+                <div class="space-y-0.5">
+                    <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Filed By</span>
+                    <div class="flex items-center gap-1.5">
+                        <span class="text-xs">👤</span>
+                        <span id="modal-reporter-player"
+                              class="font-bold text-sm text-slate-200 truncate">Reporter</span>
+                    </div>
+                </div>
+                <div class="space-y-0.5">
+                    <span
+                        class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Offense Reason</span>
+                    <div class="flex items-center gap-1.5">
+                        <span class="text-xs">⚠️</span>
+                        <span id="modal-reason" class="font-bold text-sm text-amber-400 truncate">Reason</span>
+                    </div>
+                </div>
+                <div class="space-y-0.5">
+                    <span
+                        class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Match Context</span>
+                    <div id="modal-match-container" class="flex items-center gap-1.5">
+                        <span class="text-xs">⚔️</span>
+                        <span id="modal-match-text" class="font-mono font-bold text-xs text-cyan-400">N/A</span>
+                    </div>
+                </div>
+            </div>
+
+            <div
+                class="text-xs sm:text-sm text-slate-300 bg-slate-900/90 p-3 rounded-xl border border-slate-800/80 leading-relaxed flex items-start gap-2.5">
+                <span class="text-sm flex-shrink-0 mt-0.5">💬</span>
+                <div class="space-y-0.5 min-w-0">
+                    <span class="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Report Comment</span>
+                    <p id="modal-description" class="italic text-slate-200 break-words">Description</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Judgment Form -->
+        <form id="judgment-form" onsubmit="submitJudgment(event)" class="space-y-5">
+            @Html.AntiForgeryToken()
+            <input type="hidden" id="form-report-id" name="id"/>
+
+            <!-- Action Selector Radio Cards -->
+            <div class="space-y-2">
+                <div class="flex items-center justify-between">
+                    <label class="block text-xs font-black text-slate-300 uppercase tracking-wider">
+                        Select Punishment Action
+                    </label>
+                    <span class="text-[11px] text-purple-400 font-semibold">Choose severity tier</span>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                    <!-- Dismiss -->
+                    <label class="cursor-pointer group">
+                        <input type="radio" name="judgmentAction" value="DISMISS" class="peer sr-only"
+                               onchange="handleActionChange('DISMISS')"/>
+                        <div
+                            class="h-full p-4 rounded-2xl bg-slate-950/60 border border-slate-800 peer-checked:border-slate-300 peer-checked:bg-slate-800/40 peer-checked:ring-2 peer-checked:ring-slate-400/30 hover:border-slate-700 transition-all text-center space-y-2 flex flex-col justify-between">
+                            <div class="space-y-1">
+                                <div class="text-2xl">🛡️</div>
+                                <div class="text-sm font-bold text-slate-200">Dismiss</div>
+                                <div class="text-[11px] font-semibold text-slate-400">No Penalty</div>
+                            </div>
+                            <div class="text-[10px] text-slate-400 leading-tight border-t border-slate-800/60 pt-2">
+                                Exonerate or close without punitive measures
+                            </div>
+                        </div>
+                    </label>
+
+                    <!-- Mute -->
+                    <label class="cursor-pointer group">
+                        <input type="radio" name="judgmentAction" value="MUTE" class="peer sr-only" checked
+                               onchange="handleActionChange('MUTE')"/>
+                        <div
+                            class="h-full p-4 rounded-2xl bg-slate-950/60 border border-slate-800 peer-checked:border-purple-400 peer-checked:bg-purple-950/50 peer-checked:ring-2 peer-checked:ring-purple-500/40 hover:border-purple-500/40 transition-all text-center space-y-2 flex flex-col justify-between">
+                            <div class="space-y-1">
+                                <div class="text-2xl">🔇</div>
+                                <div class="text-sm font-bold text-purple-300">Mute</div>
+                                <div class="text-[11px] font-semibold text-purple-400/80">Communications</div>
+                            </div>
+                            <div class="text-[10px] text-slate-400 leading-tight border-t border-slate-800/60 pt-2">
+                                Silence in public chat, channel messages & whispers
+                            </div>
+                        </div>
+                    </label>
+
+                    <!-- Suspend -->
+                    <label class="cursor-pointer group">
+                        <input type="radio" name="judgmentAction" value="SUSPEND" class="peer sr-only"
+                               onchange="handleActionChange('SUSPEND')"/>
+                        <div
+                            class="h-full p-4 rounded-2xl bg-slate-950/60 border border-slate-800 peer-checked:border-amber-400 peer-checked:bg-amber-950/50 peer-checked:ring-2 peer-checked:ring-amber-500/40 hover:border-amber-500/40 transition-all text-center space-y-2 flex flex-col justify-between">
+                            <div class="space-y-1">
+                                <div class="text-2xl">⛔</div>
+                                <div class="text-sm font-bold text-amber-300">Suspend</div>
+                                <div class="text-[11px] font-semibold text-amber-400/80">Matchmaking Lock</div>
+                            </div>
+                            <div class="text-[10px] text-slate-400 leading-tight border-t border-slate-800/60 pt-2">
+                                Bar from Matchmaking queues; Custom games only
+                            </div>
+                        </div>
+                    </label>
+
+                    <!-- Ban -->
+                    <label class="cursor-pointer group">
+                        <input type="radio" name="judgmentAction" value="BAN" class="peer sr-only"
+                               onchange="handleActionChange('BAN')"/>
+                        <div
+                            class="h-full p-4 rounded-2xl bg-slate-950/60 border border-slate-800 peer-checked:border-rose-400 peer-checked:bg-rose-950/50 peer-checked:ring-2 peer-checked:ring-rose-500/40 hover:border-rose-500/40 transition-all text-center space-y-2 flex flex-col justify-between">
+                            <div class="space-y-1">
+                                <div class="text-2xl">🚫</div>
+                                <div class="text-sm font-bold text-rose-300">Ban</div>
+                                <div class="text-[11px] font-semibold text-rose-400/80">Full Account Lock</div>
+                            </div>
+                            <div class="text-[10px] text-slate-400 leading-tight border-t border-slate-800/60 pt-2">
+                                Terminate active sessions & revoke login access
+                            </div>
+                        </div>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Duration Selector -->
+            <div id="duration-container" class="space-y-2">
+                <label
+                    class="block text-xs font-black text-slate-300 uppercase tracking-wider flex items-center justify-between">
+                    <span>Punishment Duration</span>
+                    <span id="duration-calculated-preview" class="text-[11px] font-normal text-purple-400">Expires in 24h</span>
+                </label>
+                <select name="durationHours" id="duration-select" onchange="updateDurationPreview()"
+                        class="w-full bg-slate-950/90 border border-slate-700/80 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/30 rounded-xl px-4 py-3 text-sm text-slate-200 font-semibold outline-none transition-all cursor-pointer">
+                    <option value="1">1 Hour (Quick Cooldown)</option>
+                    <option value="12">12 Hours (Half Day)</option>
+                    <option value="24" selected>24 Hours (1 Day)</option>
+                    <option value="72">3 Days (72 Hours)</option>
+                    <option value="168">7 Days (1 Week)</option>
+                    <option value="720">30 Days (1 Month)</option>
+                    <option value="876000">Permanent (Indefinite Sanction)</option>
+                </select>
+            </div>
+
+            <!-- Staff Judgment Notes -->
+            <div class="space-y-2">
+                <label class="block text-xs font-black text-slate-300 uppercase tracking-wider">
+                    Staff Notes / Official Reasoning
+                </label>
+                <textarea name="notes" id="judgment-notes" rows="3"
+                          placeholder="Provide disciplinary reasoning, policy violation context, or case notes..."
+                          class="w-full bg-slate-950/90 border border-slate-700/80 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/30 rounded-xl p-3 text-sm text-slate-200 placeholder-slate-500 outline-none transition-all leading-relaxed"></textarea>
+            </div>
+
+            <!-- Modal Action Buttons -->
+            <div class="flex items-center justify-end gap-3 pt-2 border-t border-slate-800">
+                <button type="button" onclick="closeJudgmentModal()"
+                        class="px-5 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs sm:text-sm transition-all">
+                    Cancel
+                </button>
+                <button type="submit" id="submit-judgment-btn"
+                        class="px-6 py-2.5 rounded-xl bg-gradient-to-r from-purple-600 via-indigo-600 to-purple-600 hover:from-purple-500 hover:to-indigo-500 text-white font-bold text-xs sm:text-sm shadow-xl shadow-purple-600/30 hover:scale-[1.02] transition-all flex items-center gap-2">
+                    <span>⚡ Apply Judgment</span>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- In-Game Chat & Voice Evidence Modal -->
+<div id="match-evidence-modal"
+     class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md hidden transition-all duration-300"
+     onclick="handleEvidenceBackdropClick(event)">
+    <div
+        class="relative w-full max-w-4xl max-h-[92vh] flex flex-col rounded-3xl bg-slate-900 border border-slate-700/80 shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+
+        <!-- Modal Header -->
+        <div class="p-4 sm:p-6 border-b border-slate-800 bg-slate-950/60 flex items-center justify-between shrink-0">
+            <div class="flex items-center gap-3">
+                <div
+                    class="w-10 h-10 rounded-2xl bg-cyan-500/20 border border-cyan-500/40 flex items-center justify-center text-xl text-cyan-300 shadow-lg shadow-cyan-500/10">
+                    🎙️
+                </div>
+                <div>
+                    <h3 class="text-xl font-black text-white tracking-tight flex items-center gap-2.5">
+                        <span>Match Evidence Inspector</span>
+                        <span id="evidence-match-id"
+                              class="text-xs font-mono text-cyan-300 bg-cyan-500/15 px-2.5 py-1 rounded-lg border border-cyan-500/30 font-bold">#0</span>
+                    </h3>
+                    <p class="text-xs text-slate-400 mt-0.5">Review in-game all-chat, team chat, and voice audio
+                        communications</p>
+                </div>
+            </div>
+            <button onclick="closeEvidenceModal()" title="Close (Esc)"
+                    class="w-9 h-9 rounded-xl bg-slate-800/80 hover:bg-slate-700 hover:text-white border border-slate-700/60 text-slate-400 flex items-center justify-center transition-all">
+                ✕
+            </button>
+        </div>
+
+        <!-- Evidence Meta Bar -->
+        <div
+            class="p-3.5 sm:px-6 bg-slate-950/40 border-b border-slate-800/60 flex flex-wrap items-center justify-between gap-3 shrink-0">
+            <div class="flex flex-wrap items-center gap-2.5 text-xs font-semibold">
+                <span class="text-slate-400">Target Player:</span>
+                <span id="evidence-target-player"
+                      class="text-rose-400 font-bold px-2 py-0.5 rounded bg-rose-500/10 border border-rose-500/30">Target</span>
+                <span class="text-slate-600">•</span>
+                <span class="text-slate-400">Map:</span>
+                <span id="evidence-map-name" class="text-slate-200 capitalize">Caldavar</span>
+                <span class="text-slate-600">•</span>
+                <span class="text-slate-400">Duration:</span>
+                <span id="evidence-duration" class="font-mono text-slate-200">00:00</span>
+                <span class="text-slate-600">•</span>
+                <span id="evidence-source-badge"
+                      class="px-2 py-0.5 rounded text-[11px] font-bold bg-slate-800 text-slate-300 border border-slate-700">Source: Telemetry</span>
+            </div>
+            <div class="flex items-center gap-2">
+                <div id="evidence-suggested-time-container" class="hidden">
+                    <button type="button" id="evidence-suggested-time-btn"
+                            class="px-3 py-1 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/40 text-amber-300 text-xs font-bold transition-all flex items-center gap-1.5 shadow-sm">
+                        <span>⏱️ Incident Mentioned:</span>
+                        <span id="evidence-suggested-time-text" class="font-mono underline font-black">00:00</span>
+                        <span class="text-[10px] text-amber-200/80">(Seek Audio)</span>
+                    </button>
+                </div>
+                <!-- Re-Extract / Upload Buttons -->
+                <button type="button" onclick="triggerReExtraction()" id="btn-re-extract"
+                        class="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-xs font-bold text-slate-200 transition-all flex items-center gap-1 shadow-sm"
+                        title="Re-scan and parse replay file from server disk">
+                    <span>🔄 Re-Extract</span>
+                </button>
+                <label
+                    class="px-2.5 py-1 rounded-lg bg-cyan-600/20 hover:bg-cyan-600/30 border border-cyan-500/40 text-xs font-bold text-cyan-300 transition-all flex items-center gap-1 shadow-sm cursor-pointer"
+                    title="Upload an authentic .honreplay file to extract on-demand">
+                    <span>📂 Upload Replay</span>
+                    <input type="file" id="evidence-replay-upload-input" accept=".honreplay,.zip" class="hidden"
+                           onchange="handleReplayFileUpload(event)">
+                </label>
+            </div>
+        </div>
+
+        <!-- Real Roster Banner (Visible when parsed from genuine replay) -->
+        <div id="evidence-roster-container"
+             class="px-4 sm:px-6 py-2 bg-slate-950/80 border-b border-slate-800/60 hidden">
+            <div class="flex items-center gap-2 overflow-x-auto text-[11px]">
+                <span class="text-slate-500 font-bold uppercase tracking-wider shrink-0">Authentic Roster:</span>
+                <div id="evidence-roster-list" class="flex items-center gap-1.5 flex-wrap"></div>
+            </div>
+        </div>
+
+        <!-- Modal Body (Split: Voice Audio + Interactive Chat Log) -->
+        <div class="flex-1 overflow-y-auto p-4 sm:p-6 space-y-5">
+
+            <!-- Voice Comms Player Card -->
+            <div class="p-4 rounded-2xl bg-slate-950/70 border border-slate-800 space-y-3">
+                <div class="flex flex-wrap items-center justify-between gap-2">
+                    <div class="flex items-center gap-2">
+                        <span class="text-sm font-bold text-white flex items-center gap-1.5">
+                            <span>🎧</span>
+                            <span>In-Game Voice Comms (VoIP)</span>
+                        </span>
+                        <span
+                            class="px-2 py-0.5 rounded text-[10px] font-bold bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">Dual-Channel</span>
+                    </div>
+                    <div class="flex items-center gap-1.5">
+                        <button type="button" id="btn-voice-team1" onclick="switchVoiceTeam(1)"
+                                class="px-2.5 py-1 rounded-lg text-xs font-bold bg-emerald-600 text-white shadow-sm transition-all">
+                            🛡️ Team 1 (Legion)
+                        </button>
+                        <button type="button" id="btn-voice-team2" onclick="switchVoiceTeam(2)"
+                                class="px-2.5 py-1 rounded-lg text-xs font-bold bg-slate-800 text-slate-400 hover:text-white transition-all">
+                            ⚔️ Team 2 (Hellbourne)
+                        </button>
+                    </div>
+                </div>
+
+                <div class="space-y-2">
+                    <audio id="evidence-audio-player" controls preload="metadata"
+                           class="w-full h-10 rounded-xl bg-slate-900 border border-slate-700/60"></audio>
+                    <div class="flex items-center justify-between text-[11px] text-slate-400 px-1">
+                        <span>Click any chat message timestamp below to jump the voice player to that moment.</span>
+                        <div class="flex items-center gap-2">
+                            <button type="button" onclick="seekAudioRelative(-10)"
+                                    class="px-2 py-0.5 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 font-mono">
+                                -10s
+                            </button>
+                            <button type="button" onclick="seekAudioRelative(10)"
+                                    class="px-2 py-0.5 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 font-mono">
+                                +10s
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- In-Game Chat Console Card -->
+            <div class="rounded-2xl bg-slate-950/70 border border-slate-800 overflow-hidden space-y-0">
+                <!-- Chat Toolbar -->
+                <div
+                    class="p-3 bg-slate-950/90 border-b border-slate-800 flex flex-wrap items-center justify-between gap-2">
+                    <div class="flex items-center gap-1.5 overflow-x-auto">
+                        <button type="button" onclick="setChatFilter('all')" id="filter-chat-all"
+                                class="px-2.5 py-1 rounded-lg text-xs font-bold bg-purple-600 text-white transition-all">
+                            All (<span id="chat-count-all">0</span>)
+                        </button>
+                        <button type="button" onclick="setChatFilter('target')" id="filter-chat-target"
+                                class="px-2.5 py-1 rounded-lg text-xs font-bold bg-slate-800 text-slate-400 hover:text-white transition-all">
+                            🎯 Target Only (<span id="chat-count-target">0</span>)
+                        </button>
+                        <button type="button" onclick="setChatFilter('team')" id="filter-chat-team"
+                                class="px-2.5 py-1 rounded-lg text-xs font-bold bg-slate-800 text-slate-400 hover:text-white transition-all">
+                            Team Comms
+                        </button>
+                        <button type="button" onclick="setChatFilter('global')" id="filter-chat-global"
+                                class="px-2.5 py-1 rounded-lg text-xs font-bold bg-slate-800 text-slate-400 hover:text-white transition-all">
+                            All Chat
+                        </button>
+                    </div>
+                    <div class="relative min-w-[180px]">
+                        <input type="text" id="chat-search-input" oninput="applyChatFilters()"
+                               placeholder="Filter chat messages..."
+                               class="w-full px-2.5 py-1 rounded-lg bg-slate-900 border border-slate-700 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-purple-500">
+                    </div>
+                </div>
+
+                <!-- Chat Messages List -->
+                <div id="chat-messages-container"
+                     class="p-3 divide-y divide-slate-800/60 max-h-72 overflow-y-auto font-sans text-xs space-y-1">
+                    <div class="text-center py-8 text-slate-500">Loading match chat log...</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal Footer -->
+        <div
+            class="p-4 sm:p-5 border-t border-slate-800 bg-slate-950/80 flex flex-wrap items-center justify-between gap-3 shrink-0">
+            <div class="text-xs text-slate-400">
+                <span>Case Reference: </span>
+                <span id="evidence-report-ref" class="font-mono text-purple-300 font-bold">#0</span>
+            </div>
+            <div class="flex items-center gap-2">
+                <button type="button" onclick="closeEvidenceModal()"
+                        class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs transition-all">
+                    Close
+                </button>
+                <button type="button" id="evidence-open-judge-btn"
+                        class="px-4 py-2 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-bold text-xs shadow-md shadow-purple-600/30 transition-all flex items-center gap-1.5">
+                    <span>⚡ Apply Judgment</span>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    let currentEvidenceData = null;
+    let currentChatFilter = 'all';
+
+    async function openEvidenceModal(matchId, reportedPlayer, reportId) {
+        const modal = document.getElementById('match-evidence-modal');
+        document.getElementById('evidence-match-id').textContent = '#' + matchId;
+        document.getElementById('evidence-target-player').textContent = reportedPlayer || "Unknown";
+        document.getElementById('evidence-report-ref').textContent = reportId ? '#' + reportId : "Direct";
+
+        const judgeBtn = document.getElementById('evidence-open-judge-btn');
+        if (judgeBtn && reportId) {
+            judgeBtn.onclick = function () {
+                closeEvidenceModal();
+                const targetRow = document.getElementById('report-row-' + reportId);
+                if (targetRow) {
+                    const rowJudgeBtn = targetRow.querySelector('button[onclick*="openJudgmentModal"]');
+                    if (rowJudgeBtn) rowJudgeBtn.click();
+                }
+            };
+        }
+
+        modal.classList.remove('hidden');
+        document.getElementById('chat-messages-container').innerHTML = '<div class="text-center py-10 text-slate-400 animate-pulse">📡 Extracting in-game chat and audio stream telemetry...</div>';
+
+        try {
+            const res = await fetch(`/staff/matches/${matchId}/evidence?reportedAccountName=${encodeURIComponent(reportedPlayer || "")}`, {
+                headers: {"Accept": "application/json", "X-Requested-With": "XMLHttpRequest", "RequestVerificationToken": document.querySelector('input[name="__RequestVerificationToken"]')?.value || ""}
+            });
+
+            if (!res.ok) {
+                document.getElementById('chat-messages-container').innerHTML = '<div class="text-center py-8 text-rose-400">Failed to load match evidence. (Status ' + res.status + ')</div>';
+                return;
+            }
+
+            const data = await res.json();
+            renderEvidenceData(data);
+        } catch (err) {
+            console.error("Error loading match evidence:", err);
+            document.getElementById('chat-messages-container').innerHTML = '<div class="text-center py-8 text-rose-400">Error connecting to replay evidence service.</div>';
+        }
+    }
+
+    function renderEvidenceData(data) {
+        currentEvidenceData = data;
+
+        document.getElementById('evidence-map-name').textContent = data.mapName || "Caldavar";
+        document.getElementById('evidence-duration').textContent = data.formattedDuration || "00:00";
+
+        // Update Source Badge
+        const sourceBadge = document.getElementById('evidence-source-badge');
+        if (sourceBadge) {
+            if (data.evidenceSource === 'replay_archive') {
+                const sizeStr = data.replayFileSize ? ` • ${formatBytes(data.replayFileSize)}` : '';
+                sourceBadge.className = "px-2.5 py-0.5 rounded text-[11px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 shadow-sm";
+                sourceBadge.innerHTML = `🟢 Authentic .honreplay (${data.replayFileName || "Archive"}${sizeStr})`;
+            } else {
+                sourceBadge.className = "px-2.5 py-0.5 rounded text-[11px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/40 shadow-sm";
+                sourceBadge.innerHTML = `🟡 Telemetry Simulation (No Replay File)`;
+            }
+        }
+
+        // Update Roster List
+        const rosterContainer = document.getElementById('evidence-roster-container');
+        const rosterList = document.getElementById('evidence-roster-list');
+        if (rosterContainer && rosterList) {
+            if (data.rosterPlayers && data.rosterPlayers.length > 0) {
+                rosterContainer.classList.remove('hidden');
+                rosterList.innerHTML = data.rosterPlayers.map(p => `<span class="px-2 py-0.5 rounded bg-slate-800 text-slate-300 border border-slate-700 font-semibold">${escapeHtml(p)}</span>`).join('');
+            } else {
+                rosterContainer.classList.add('hidden');
+            }
+        }
+
+        const suggestedContainer = document.getElementById('evidence-suggested-time-container');
+        if (data.suggestedTimestampFormatted) {
+            suggestedContainer.classList.remove('hidden');
+            document.getElementById('evidence-suggested-time-text').textContent = data.suggestedTimestampFormatted;
+            document.getElementById('evidence-suggested-time-btn').onclick = function () {
+                const sec = Math.floor((data.suggestedTimestampMs || 0) / 1000);
+                seekVoiceAudio(sec);
+            };
+        } else {
+            suggestedContainer.classList.add('hidden');
+        }
+
+        switchVoiceTeam(1);
+        applyChatFilters();
+    }
+
+    async function triggerReExtraction() {
+        if (!currentEvidenceData) return;
+        const btn = document.getElementById('btn-re-extract');
+        const matchId = currentEvidenceData.matchId || currentEvidenceData.matchID;
+        const reportedPlayer = currentEvidenceData.reportedAccountName || "";
+
+        btn.disabled = true;
+        btn.innerHTML = '<span>⏳ Extracting...</span>';
+        document.getElementById('chat-messages-container').innerHTML = '<div class="text-center py-10 text-slate-400 animate-pulse">🔄 Re-scanning server storage and parsing .honreplay packet stream...</div>';
+
+        try {
+            const res = await fetch(`/staff/matches/${matchId}/evidence/extract?reportedAccountName=${encodeURIComponent(reportedPlayer)}`, {
+                method: "POST",
+                headers: {"Accept": "application/json", "X-Requested-With": "XMLHttpRequest", "RequestVerificationToken": document.querySelector('input[name="__RequestVerificationToken"]')?.value || ""}
+            });
+            if (res.ok) {
+                const data = await res.json();
+                renderEvidenceData(data);
+            } else {
+                alert("Failed to re-extract replay data (Status " + res.status + ")");
+            }
+        } catch (err) {
+            console.error("Re-extraction error:", err);
+            alert("Error during re-extraction");
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = '<span>🔄 Re-Extract</span>';
+        }
+    }
+
+    async function handleReplayFileUpload(event) {
+        if (!currentEvidenceData || !event.target.files || event.target.files.length === 0) return;
+        const file = event.target.files[0];
+        const matchId = currentEvidenceData.matchId || currentEvidenceData.matchID;
+        const reportedPlayer = currentEvidenceData.reportedAccountName || "";
+
+        const formData = new FormData();
+        formData.append("replayFile", file);
+
+        document.getElementById('chat-messages-container').innerHTML = `<div class="text-center py-10 text-cyan-300 animate-pulse">📂 Uploading and extracting genuine replay archive (${escapeHtml(file.name)})...</div>`;
+
+        try {
+            const res = await fetch(`/staff/matches/${matchId}/evidence/extract?reportedAccountName=${encodeURIComponent(reportedPlayer)}`, {
+                method: "POST",
+                body: formData,
+                headers: {"Accept": "application/json", "X-Requested-With": "XMLHttpRequest", "RequestVerificationToken": document.querySelector('input[name="__RequestVerificationToken"]')?.value || ""}
+            });
+            if (res.ok) {
+                const data = await res.json();
+                renderEvidenceData(data);
+            } else {
+                alert("Failed to extract uploaded replay (Status " + res.status + ")");
+            }
+        } catch (err) {
+            console.error("Upload error:", err);
+            alert("Error uploading replay file");
+        } finally {
+            event.target.value = "";
+        }
+    }
+
+    function formatBytes(bytes, decimals = 1) {
+        if (!bytes || bytes === 0) return '0 B';
+        const k = 1024;
+        const dm = decimals < 0 ? 0 : decimals;
+        const sizes = ['B', 'KB', 'MB', 'GB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
+    }
+
+    function closeEvidenceModal() {
+        const modal = document.getElementById('match-evidence-modal');
+        modal.classList.add('hidden');
+        const audio = document.getElementById('evidence-audio-player');
+        if (audio) {
+            audio.pause();
+            audio.src = "";
+        }
+    }
+
+    function handleEvidenceBackdropClick(e) {
+        if (e.target.id === 'match-evidence-modal') {
+            closeEvidenceModal();
+        }
+    }
+
+    function switchVoiceTeam(team) {
+        if (!currentEvidenceData) return;
+        const btn1 = document.getElementById('btn-voice-team1');
+        const btn2 = document.getElementById('btn-voice-team2');
+        const audio = document.getElementById('evidence-audio-player');
+
+        if (team === 1) {
+            btn1.className = "px-2.5 py-1 rounded-lg text-xs font-bold bg-emerald-600 text-white shadow-sm transition-all";
+            btn2.className = "px-2.5 py-1 rounded-lg text-xs font-bold bg-slate-800 text-slate-400 hover:text-white transition-all";
+            if (currentEvidenceData.voiceTrackLegionUrl) {
+                audio.src = currentEvidenceData.voiceTrackLegionUrl;
+            }
+        } else {
+            btn2.className = "px-2.5 py-1 rounded-lg text-xs font-bold bg-rose-600 text-white shadow-sm transition-all";
+            btn1.className = "px-2.5 py-1 rounded-lg text-xs font-bold bg-slate-800 text-slate-400 hover:text-white transition-all";
+            if (currentEvidenceData.voiceTrackHellbourneUrl) {
+                audio.src = currentEvidenceData.voiceTrackHellbourneUrl;
+            }
+        }
+    }
+
+    function seekVoiceAudio(seconds) {
+        const audio = document.getElementById('evidence-audio-player');
+        if (audio) {
+            audio.currentTime = seconds;
+            audio.play().catch(() => {
+            });
+        }
+    }
+
+    function seekAudioRelative(delta) {
+        const audio = document.getElementById('evidence-audio-player');
+        if (audio) {
+            audio.currentTime = Math.max(0, audio.currentTime + delta);
+        }
+    }
+
+    function setChatFilter(filter) {
+        currentChatFilter = filter;
+        const buttons = {
+            'all': document.getElementById('filter-chat-all'),
+            'target': document.getElementById('filter-chat-target'),
+            'team': document.getElementById('filter-chat-team'),
+            'global': document.getElementById('filter-chat-global')
+        };
+        for (const [key, btn] of Object.entries(buttons)) {
+            if (!btn) continue;
+            if (key === filter) {
+                btn.className = "px-2.5 py-1 rounded-lg text-xs font-bold bg-purple-600 text-white transition-all";
+            } else {
+                btn.className = "px-2.5 py-1 rounded-lg text-xs font-bold bg-slate-800 text-slate-400 hover:text-white transition-all";
+            }
+        }
+        applyChatFilters();
+    }
+
+    function applyChatFilters() {
+        if (!currentEvidenceData || !currentEvidenceData.chatLog) return;
+        const query = (document.getElementById('chat-search-input').value || "").toLowerCase().trim();
+        const chatLog = currentEvidenceData.chatLog;
+
+        const targetCount = chatLog.filter(c => c.isReportedPlayer).length;
+        document.getElementById('chat-count-all').textContent = chatLog.length;
+        document.getElementById('chat-count-target').textContent = targetCount;
+
+        let filtered = chatLog.filter(msg => {
+            if (currentChatFilter === 'target' && !msg.isReportedPlayer) return false;
+            if (currentChatFilter === 'team' && msg.channel !== 'TEAM') return false;
+            if (currentChatFilter === 'global' && msg.channel !== 'ALL') return false;
+            if (query && !msg.message.toLowerCase().includes(query) && !msg.playerName.toLowerCase().includes(query)) return false;
+            return true;
+        });
+
+        const container = document.getElementById('chat-messages-container');
+        if (filtered.length === 0) {
+            container.innerHTML = '<div class="text-center py-8 text-slate-500">No chat messages match the selected filters.</div>';
+            return;
+        }
+
+        container.innerHTML = filtered.map(msg => {
+            const sec = Math.floor(msg.timestampMs / 1000);
+            const isTarget = msg.isReportedPlayer;
+            const targetBadge = isTarget ? '<span class="px-1.5 py-0.5 rounded bg-rose-500/20 text-rose-300 border border-rose-500/30 text-[10px] font-bold">🎯 Reported</span>' : '';
+            const channelBadge = msg.channel === 'ALL'
+                ? '<span class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-cyan-500/15 text-cyan-300 border border-cyan-500/30">[ALL]</span>'
+                : (msg.team === 1
+                    ? '<span class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-emerald-500/15 text-emerald-300 border border-emerald-500/30">[LEGION]</span>'
+                    : '<span class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-rose-500/15 text-rose-300 border border-rose-500/30">[HELLBOURNE]</span>');
+
+            const rowStyle = isTarget ? 'bg-rose-950/25 border border-rose-500/30 shadow-sm' : 'hover:bg-slate-900/60';
+
+            return `
+                <div class="p-2 rounded-xl flex items-start gap-2.5 transition-all ${rowStyle}">
+                    <button type="button" onclick="seekVoiceAudio(${sec})" title="Click to seek voice audio to ${msg.formattedTime}" class="px-2 py-0.5 rounded-lg bg-slate-800 hover:bg-purple-600 text-slate-300 hover:text-white font-mono text-[11px] font-bold transition-all shrink-0">
+                        ⏱️ ${msg.formattedTime}
+                    </button>
+                    <div class="flex-1 min-w-0">
+                        <div class="flex items-center gap-1.5 flex-wrap">
+                            ${channelBadge}
+                            <span class="font-bold text-slate-200">${escapeHtml(msg.playerName)}</span>
+                            ${targetBadge}
+                        </div>
+                        <div class="text-slate-300 mt-1 text-xs break-words">${escapeHtml(msg.message)}</div>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+
+    function escapeHtml(text) {
+        if (!text) return "";
+        return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+    }
+
+    function openJudgmentModal(reportId, targetPlayer, reporter, reason, description, matchId) {
+        document.getElementById('form-report-id').value = reportId;
+        document.getElementById('modal-report-id').textContent = '#' + reportId;
+        document.getElementById('modal-target-player').textContent = targetPlayer;
+        document.getElementById('modal-reporter-player').textContent = reporter;
+        document.getElementById('modal-reason').textContent = reason;
+        document.getElementById('modal-description').textContent = description || "(No comment provided)";
+        document.getElementById('judgment-notes').value = reason ? `Disciplinary action for: ${reason}` : "";
+
+        const matchContainer = document.getElementById('modal-match-container');
+        if (matchId) {
+            matchContainer.innerHTML = `<span class="text-xs">⚔️</span><a href="/matches/${matchId}" target="_blank" class="font-mono font-bold text-xs text-cyan-400 hover:underline">#${matchId}</a>`;
+        } else {
+            matchContainer.innerHTML = `<span class="text-xs">⚔️</span><span class="font-mono font-bold text-xs text-slate-500">N/A</span>`;
+        }
+
+        const muteRadio = document.querySelector('input[name="judgmentAction"][value="MUTE"]');
+        if (muteRadio) muteRadio.checked = true;
+        handleActionChange('MUTE');
+
+        const durationSelect = document.getElementById('duration-select');
+        if (durationSelect) durationSelect.value = "24";
+        updateDurationPreview();
+
+        const modal = document.getElementById('judgment-modal');
+        modal.classList.remove('hidden');
+    }
+
+    function closeJudgmentModal() {
+        const modal = document.getElementById('judgment-modal');
+        modal.classList.add('hidden');
+    }
+
+    function handleBackdropClick(e) {
+        if (e.target.id === 'judgment-modal') {
+            closeJudgmentModal();
+        }
+    }
+
+    document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape') {
+            const judgeModal = document.getElementById('judgment-modal');
+            if (judgeModal && !judgeModal.classList.contains('hidden')) {
+                closeJudgmentModal();
+            }
+            const evidenceModal = document.getElementById('match-evidence-modal');
+            if (evidenceModal && !evidenceModal.classList.contains('hidden')) {
+                closeEvidenceModal();
+            }
+        }
+    });
+
+    function handleActionChange(action) {
+        const durationContainer = document.getElementById('duration-container');
+        if (action === 'DISMISS') {
+            durationContainer.style.display = 'none';
+        } else {
+            durationContainer.style.display = 'block';
+            updateDurationPreview();
+        }
+    }
+
+    function updateDurationPreview() {
+        const durationSelect = document.getElementById('duration-select');
+        const preview = document.getElementById('duration-calculated-preview');
+        if (!durationSelect || !preview) return;
+
+        const hours = parseInt(durationSelect.value, 10);
+        if (hours >= 800000) {
+            preview.textContent = "Permanent sanction (indefinite duration)";
+            return;
+        }
+
+        const targetDate = new Date(Date.now() + hours * 3600 * 1000);
+        preview.textContent = `Expires on ${targetDate.toLocaleDateString(undefined, {
+            month: 'short',
+            day: 'numeric',
+            year: 'numeric'
+        })} at ${targetDate.toLocaleTimeString(undefined, {hour: '2-digit', minute: '2-digit'})}`;
+    }
+
+    async function submitJudgment(e) {
+        e.preventDefault();
+        const form = document.getElementById('judgment-form');
+        const reportId = document.getElementById('form-report-id').value;
+        const formData = new FormData(form);
+
+        const submitBtn = document.getElementById('submit-judgment-btn');
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<span>⏳ Applying Judgment...</span>';
+
+        try {
+            const res = await fetch(`/staff/reports/${reportId}/judge`, {
+                method: "POST",
+                body: formData,
+                headers: {
+                    "X-Requested-With": "XMLHttpRequest",
+                    "Accept": "application/json"
+                }
+            });
+
+            if (res.ok) {
+                const data = await res.json();
+                if (data.success) {
+                    closeJudgmentModal();
+                    location.reload();
+                } else {
+                    alert(data.message || "Failed to apply judgment");
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = '<span>⚡ Apply Judgment</span>';
+                }
+            } else {
+                alert("Action failed with status: " + res.status);
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<span>⚡ Apply Judgment</span>';
+            }
+        } catch (err) {
+            console.error("Failed to submit judgment", err);
+            alert("Error submitting judgment");
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = '<span>⚡ Apply Judgment</span>';
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        const urlParams = new URLSearchParams(window.location.search);
+        const queryParam = urlParams.get('query') || urlParams.get('reportId');
+        const openJudge = urlParams.get('openJudge') === 'true';
+        let targetId = @(Model.ReportIdFilter.HasValue ? Model.ReportIdFilter.Value.ToString() : "null");
+
+        if (!targetId && queryParam) {
+            const clean = queryParam.trim().replace(/^#/, '');
+            if (/^\d+$/.test(clean)) {
+                targetId = clean;
+            }
+        }
+        if (!targetId) {
+            const pathMatch = window.location.pathname.match(/\/staff\/reports\/(\d+)/i);
+            if (pathMatch) {
+                targetId = pathMatch[1];
+            }
+        }
+        if (!targetId && window.location.hash) {
+            const hashMatch = window.location.hash.match(/report-row-(\d+)/);
+            if (hashMatch) {
+                targetId = hashMatch[1];
+            }
+        }
+
+        if (targetId) {
+            const targetRow = document.getElementById('report-row-' + targetId);
+            if (targetRow) {
+                targetRow.scrollIntoView({behavior: 'smooth', block: 'center'});
+                targetRow.classList.add('bg-purple-900/50', 'ring-2', 'ring-purple-400', 'shadow-2xl', 'shadow-purple-950/80');
+
+                if (openJudge || @(Model.ReportIdFilter.HasValue ? "true" : "false")) {
+                    const judgeBtn = targetRow.querySelector('button[onclick*="openJudgmentModal"]');
+                    if (judgeBtn) {
+                        setTimeout(() => judgeBtn.click(), 300);
+                    }
+                }
+            }
+        }
+    });
+</script>

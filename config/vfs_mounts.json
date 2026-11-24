@@ -1,0 +1,36 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "version": "1.0.0",
+  "description": "Project Kongor K2 VFS Mount List Specification (Lowest to Highest Priority)",
+  "mount_order_low_to_high": [
+    "base",
+    "game",
+    "ClientPackageFiles",
+    "../shared",
+    "KONGOR/configuration",
+    "KONGOR/updates",
+    "KONGOR/extensions",
+    "override"
+  ],
+  "mod_param_string": "base;game;ClientPackageFiles;../shared;KONGOR/configuration;KONGOR/updates;KONGOR/extensions;override",
+  "archive_load_order": [
+    "resources0.s2z",
+    "resources1.s2z",
+    "resources2.s2z",
+    "resources3.s2z",
+    "resources4.s2z",
+    "resources5.s2z",
+    "resources94.s2z",
+    "resources95.s2z",
+    "resources96.s2z",
+    "resources97.s2z",
+    "resources98.s2z",
+    "resources99.s2z",
+    "textures.s2z"
+  ],
+  "notes": [
+    "K2 processes -mod entries left-to-right, where later entries override earlier entries.",
+    "Loose files in ClientPackageFiles take precedence over game/ archives.",
+    "userdata/Heroes of Newerth x64/ mirrors the mount structure for user overrides."
+  ]
+}

@@ -1,0 +1,214 @@
+{
+  "schemaVersion": 1,
+  "description": "Authoritative Main Menu Panel Matrix mapping every HoN_Main.menuPanels.table entry in main_v2.lua to either an active clickable button or a documented exemption.",
+  "interfaceName": "main",
+  "settleTimeoutMs": 2000,
+  "activePanels": [
+    {
+      "panelKey": "map_selection",
+      "buttonWidget": "midbar_button_matchmaking",
+      "fallbackButtonWidgets": ["main_playerinfo_play"],
+      "targetWidget": "map_selection",
+      "fallbackTargetWidgets": ["matchmaking", "map_selection"],
+      "closeAction": "reclick_or_toggle",
+      "requiresLoggedIn": false
+    },
+    {
+      "panelKey": "player_ladder",
+      "buttonWidget": "midbar_button_ladder",
+      "fallbackButtonWidgets": [],
+      "targetWidget": "player_ladder",
+      "fallbackTargetWidgets": ["player_ladder"],
+      "closeAction": "reclick_or_toggle",
+      "requiresLoggedIn": true
+    },
+    {
+      "panelKey": "compendium",
+      "buttonWidget": "midbar_button_compendium",
+      "fallbackButtonWidgets": [],
+      "targetWidget": "compendium",
+      "fallbackTargetWidgets": ["learnatorium", "learnatorium_base", "compendium"],
+      "closeAction": "reclick_or_toggle",
+      "requiresLoggedIn": false
+    },
+    {
+      "panelKey": "wareffort_new",
+      "buttonWidget": "midbar_button_wareffort",
+      "fallbackButtonWidgets": [],
+      "targetWidget": "wareffort_new",
+      "fallbackTargetWidgets": ["wareffort_new"],
+      "closeAction": "reclick_or_toggle",
+      "requiresLoggedIn": true
+    },
+    {
+      "panelKey": "watch_system",
+      "buttonWidget": "sysbar_replay_button",
+      "fallbackButtonWidgets": ["sysbar_hontv_button", "midbar_button_hontour"],
+      "targetWidget": "watch_system",
+      "fallbackTargetWidgets": ["watch_system", "hontour_lobby", "hontour"],
+      "closeAction": "reclick_or_toggle",
+      "requiresLoggedIn": false
+    },
+    {
+      "panelKey": "plinko",
+      "buttonWidget": "midbar_button_plinko",
+      "fallbackButtonWidgets": [],
+      "targetWidget": "plinko",
+      "fallbackTargetWidgets": ["plinko"],
+      "closeAction": "reclick_or_toggle",
+      "requiresLoggedIn": false
+    },
+    {
+      "panelKey": "store_container2",
+      "buttonWidget": "midbar_button_store",
+      "fallbackButtonWidgets": [],
+      "targetWidget": "store_container2",
+      "fallbackTargetWidgets": ["store_container2", "store_container"],
+      "closeAction": "reclick_or_toggle",
+      "requiresLoggedIn": true
+    },
+    {
+      "panelKey": "playerstats",
+      "buttonWidget": "homepage_selfInfo_playername_btn",
+      "fallbackButtonWidgets": [],
+      "targetWidget": "playerstats",
+      "fallbackTargetWidgets": ["playerstats"],
+      "closeAction": "reclick_or_toggle",
+      "requiresLoggedIn": false
+    },
+    {
+      "panelKey": "game_options",
+      "buttonWidget": "sysbar_options_button",
+      "fallbackButtonWidgets": ["sysbar_options_btn"],
+      "targetWidget": "game_options",
+      "fallbackTargetWidgets": ["game_options"],
+      "closeAction": "reclick_or_toggle",
+      "requiresLoggedIn": false
+    },
+    {
+      "panelKey": "hosted_game",
+      "buttonWidget": "sysbar_hostGame",
+      "fallbackButtonWidgets": [],
+      "targetWidget": "hosted_game",
+      "fallbackTargetWidgets": ["hosted_game", "game_list"],
+      "closeAction": "reclick_or_toggle",
+      "requiresLoggedIn": false
+    },
+    {
+      "panelKey": "change_log",
+      "buttonWidget": "sysbar_changelog_button",
+      "fallbackButtonWidgets": [],
+      "targetWidget": "change_log",
+      "fallbackTargetWidgets": ["change_log"],
+      "closeAction": "reclick_or_toggle",
+      "requiresLoggedIn": false
+    }
+  ],
+  "exemptPanels": [
+    {
+      "panelKey": "news",
+      "reason": "Auto-MOTD popup panel; superseded by homepage news carousel",
+      "verificationMode": "exempt_legacy"
+    },
+    {
+      "panelKey": "store_container",
+      "reason": "Legacy FE2 v1 store container; superseded by store_container2 when cg_store2_ is true",
+      "verificationMode": "exempt_legacy"
+    },
+    {
+      "panelKey": "web_browser_panel",
+      "reason": "Embedded web browser container triggered only by external URLs",
+      "verificationMode": "exempt_contextual"
+    },
+    {
+      "panelKey": "player_tour",
+      "reason": "First-time player splash overlay",
+      "verificationMode": "exempt_contextual"
+    },
+    {
+      "panelKey": "player_tour_stats",
+      "reason": "Sub-panel opened from inside playerstats tour button",
+      "verificationMode": "exempt_subpanel"
+    },
+    {
+      "panelKey": "player_motd",
+      "reason": "Contextual message-of-the-day slide-down",
+      "verificationMode": "exempt_contextual"
+    },
+    {
+      "panelKey": "offline_replays",
+      "reason": "Legacy offline replay viewer; superseded by watch_system replay tab",
+      "verificationMode": "exempt_legacy"
+    },
+    {
+      "panelKey": "game_list",
+      "reason": "Legacy server browser panel; superseded by hosted_game in FE2 v2",
+      "verificationMode": "exempt_legacy"
+    },
+    {
+      "panelKey": "matchmaking",
+      "reason": "Legacy FE2 matchmaking panel; midbar_button_matchmaking opens map_selection in FE2 v2",
+      "verificationMode": "exempt_legacy"
+    },
+    {
+      "panelKey": "match_stats",
+      "reason": "Post-match rewards/stats screen requiring a completed match ID",
+      "verificationMode": "exempt_contextual"
+    },
+    {
+      "panelKey": "tutorial",
+      "reason": "First-launch tutorial prompt panel",
+      "verificationMode": "exempt_contextual"
+    },
+    {
+      "panelKey": "retrieve_password",
+      "reason": "Pre-login lost password recovery form",
+      "verificationMode": "exempt_prelogin"
+    },
+    {
+      "panelKey": "form_create_paid_account",
+      "reason": "Legacy paid account creation form",
+      "verificationMode": "exempt_legacy"
+    },
+    {
+      "panelKey": "form_create_subaccount",
+      "reason": "Sub-account creation modal form",
+      "verificationMode": "exempt_contextual"
+    },
+    {
+      "panelKey": "form_name_change",
+      "reason": "Account rename purchase modal form",
+      "verificationMode": "exempt_contextual"
+    },
+    {
+      "panelKey": "main_splash_maliken",
+      "reason": "Promotional splash screen overlay",
+      "verificationMode": "exempt_splash"
+    },
+    {
+      "panelKey": "main_splash_new_player",
+      "reason": "New player walkthrough splash screen",
+      "verificationMode": "exempt_splash"
+    },
+    {
+      "panelKey": "main_splash_referral_popup_1",
+      "reason": "Referral promotional popup 1",
+      "verificationMode": "exempt_splash"
+    },
+    {
+      "panelKey": "main_splash_referral_popup_2",
+      "reason": "Referral promotional popup 2",
+      "verificationMode": "exempt_splash"
+    },
+    {
+      "panelKey": "hontour",
+      "reason": "Scheduled tournament match overlay; midbar_button_hontour opens watch_system in standard regions",
+      "verificationMode": "exempt_region_gated"
+    },
+    {
+      "panelKey": "rap_status",
+      "reason": "Report-A-Player conduct summary gated by cl_Rap2Enable",
+      "verificationMode": "exempt_contextual"
+    }
+  ]
+}

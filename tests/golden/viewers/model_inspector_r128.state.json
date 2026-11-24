@@ -1,0 +1,20 @@
+{
+  "viewerId": "model_inspector_r128",
+  "threeRevision": "r168",
+  "legacyBaselineRevision": "r128",
+  "step6_5a_core_extract_ssim": 1.0,
+  "step6_5a_core_extract_local_max_7x7": 0.0,
+  "step6_5b_rebaselined": true,
+  "dracoMeshoptEnabled": true,
+  "lightIntensityCalibration": "candela_pi",
+  "renderer": "Google SwiftShader (--use-gl=angle --use-angle=swiftshader)",
+  "devicePixelRatio": 1,
+  "viewport": {
+    "width": 320,
+    "height": 240
+  },
+  "timestamp": 0,
+  "playheadPaused": true,
+  "colorSpace": "srgb",
+  "imageSha256": "b4b8adb57cd1d8e44483fb258cd4a98fa9786e6cbdd26ab922b72510d45de472"
+}

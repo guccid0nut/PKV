@@ -1,0 +1,16 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# SPDX-FileCopyrightText: 2026 guccidonut and Project KONGOR V Contributors
+
+- op: replace
+  path: /spec/replicas
+  value: 5
+- op: replace
+  path: /spec/strategy
+  value:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+- op: replace
+  path: /spec/template/spec/template/spec/containers/0/imagePullPolicy
+  value: Always

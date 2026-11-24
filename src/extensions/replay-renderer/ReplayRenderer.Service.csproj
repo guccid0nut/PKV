@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <RootNamespace>ReplayRenderer.Service</RootNamespace>
+    <AssemblyName>ReplayRenderer.Service</AssemblyName>
+  </PropertyGroup>
+
+
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App"/>
+  </ItemGroup>
+
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\libs\service-defaults\ASPIRE.ServiceDefaults.csproj"/>
+    <ProjectReference Include="..\..\libs\protocol-core\Kongor.Core.csproj"/>
+    <ProjectReference Include="..\..\libs\contracts\NEXUS.Contracts.csproj"/>
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="ReplayRenderer.Tests"/>
+  </ItemGroup>
+
+</Project>

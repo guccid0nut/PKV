@@ -1,0 +1,181 @@
+{
+  "schema_version": "2.0.0",
+  "dossier_id": "DOSSIER-NG-K2-SCROLLBAR-SLIDER-VMT-HOOK",
+  "created_utc": "2026-11-17T21:55:00Z",
+  "status": "verified",
+  "authority_scope": "client_cosmetic_only",
+  "title": "K2 CScrollbarSlider::MouseDown Vtable Slot 32 Hook & CSlider::MouseDown Track Click-to-Jump Guard",
+  "target": {
+    "binary_name": "k2_x64.dll",
+    "base_address": "0x180000000",
+    "rva": "0x009A6BB0",
+    "vtable_rva": "0x00F52C38",
+    "vtable_slot_rva": "0x00F52D38",
+    "vtable_slot_index": 32,
+    "base_class_target_rva": "0x009C9D80",
+    "function_name": "CScrollbarSlider::MouseDown",
+    "symbol_name": "CScrollbarSlider::MouseDown (vtable 0xF52C38 slot 32 @ 0xF52D38 -> 0x9A6BB0; base CSlider::MouseDown @ 0x9C9D80)",
+    "sha256": "83129f17664bac0b89cbb1cbbb6119be56a1a97507068656c5c52f4783944f95",
+    "instruction_bytes_sha256": "0ee9c5d437a9f4e1166cea9a0147629003ce77503cc6e935cde8ad42edb9fafd",
+    "base_class_instruction_bytes_sha256": "366b4484335b41db11065495efb487c8f5e3162a07e198af12f0843d3e1ad606",
+    "signature_mask": "48 89 5C 24 08 48 89 74 24 10 57 48 83 EC 20 48",
+    "base_class_signature_mask": "81 FA 37 01 00 00 0F 85 2F 01 00 00 48 89 6C 24",
+    "calling_convention": "__fastcall (Win64 ABI)"
+  },
+  "virtual_dispatch_used": true,
+  "vtable_rva_pinned": true,
+  "interface": {
+    "calling_convention": "__fastcall",
+    "class_name": "CScrollbarSlider",
+    "vtable_index": 32,
+    "return_type": "void",
+    "parameters": [
+      {
+        "name": "this",
+        "type": "CScrollbarSlider*",
+        "register_or_stack": "RCX"
+      },
+      {
+        "name": "eButton",
+        "type": "int",
+        "register_or_stack": "EDX"
+      },
+      {
+        "name": "v2CursorPos",
+        "type": "const CVec2f*",
+        "register_or_stack": "R8"
+      }
+    ]
+  },
+  "decompiled_c": "void __fastcall CScrollbarSlider::MouseDown(CScrollbarSlider *this, int eButton, const CVec2f *v2CursorPos)\n{\n    IWidget *pParent = *(IWidget **)((uint8_t *)this + 0x88);\n    if (pParent != nullptr && *((uint8_t *)pParent + 0xCD) == 0x14) {\n        if (eButton == 0x13A) {\n            CScrollbar_WheelUp(pParent); // FUN_1809a6690\n        } else {\n            if (eButton != 0x13B) {\n                return; // Swallows BUTTON_MOUSEL (0x137) on scrollbar tracks!\n            }\n            CScrollbar_WheelDown(pParent); // FUN_1809a66e0\n        }\n    }\n    CSlider::MouseDown(this, eButton, v2CursorPos); // FUN_1809c9d80\n}",
+  "branch_annotations": [
+    {
+      "rva": "0x009A6BD1",
+      "condition": "this->m_pParent (+0x88) == nullptr -> falls through to CSlider::MouseDown (+0x9C9D80)",
+      "covered_by_obligation": "OBL-NG-SCROLLBAR-02"
+    },
+    {
+      "rva": "0x009A6BDA",
+      "condition": "this->m_pParent->m_eType (+0xCD) != 0x14 (WIDGET_SCROLLBAR) -> falls through to CSlider::MouseDown (+0x9C9D80)",
+      "covered_by_obligation": "OBL-NG-SCROLLBAR-02"
+    },
+    {
+      "rva": "0x009A6BE2",
+      "condition": "eButton == 0x13A (BUTTON_WHEELUP) -> invokes FUN_1809A6690 and falls through",
+      "covered_by_obligation": "OBL-NG-SCROLLBAR-02"
+    },
+    {
+      "rva": "0x009A6BF1",
+      "condition": "eButton != 0x13B (BUTTON_WHEELDOWN), including 0x137 (BUTTON_MOUSEL) -> early RET at 0x9A6C14 in retail; intercepted by Hooked_CScrollbarSlider_MouseDown to invoke CSlider::MouseDown (+0x9C9D80)",
+      "covered_by_obligation": "OBL-NG-SCROLLBAR-02"
+    },
+    {
+      "rva": "0x009C9D86",
+      "condition": "CSlider::MouseDown entry guard: eButton != 0x137 -> JNZ 0x9C9EBB (RET)",
+      "covered_by_obligation": "OBL-NG-SCROLLBAR-01"
+    },
+    {
+      "rva": "0x009C9E1E",
+      "condition": "CSlider::MouseDown loads m_pHandle (*(CSliderHandle**)(this + 0x190)) and dereferences [m_pHandle + 0x48] and [v2CursorPos] (+0x9C9E76) before calling CSliderHandle::DoSlide (+0x9CB200)",
+      "covered_by_obligation": "OBL-NG-SCROLLBAR-02"
+    }
+  ],
+  "dependencies": {
+    "callees": [
+      "k2_x64.dll+0x9A6690 (CScrollbar::ScrollStepUp)",
+      "k2_x64.dll+0x9A66E0 (CScrollbar::ScrollStepDown)",
+      "k2_x64.dll+0x9C9D80 (CSlider::MouseDown)",
+      "k2_x64.dll+0x9CB200 (CSliderHandle::DoSlide)"
+    ],
+    "callers": [
+      "k2_x64.dll+0xF52D38 (CScrollbarSlider vtable slot 32 / +0x100)",
+      "k2_x64.dll+0x9A6C80 (CScrollbarSlider::CScrollbarSlider)",
+      "k2_x64.dll+0x9A4A60 (CScrollbar::CScrollbar)"
+    ],
+    "referenced_strings": [],
+    "struct_offsets": {
+      "0x00": "vptr (CScrollbarSlider vtable @ k2_x64.dll+0xF52C38; CSlider vtable @ k2_x64.dll+0xF56B00)",
+      "0x40": "m_recArea (CRectf: left +0x40, top +0x44, right +0x48, bottom +0x4C)",
+      "0x88": "m_pParent (IWidget*; CScrollbar has m_eType == 0x14 at +0xCD)",
+      "0x90": "m_pInterface (CInterface*)",
+      "0x188": "m_pSlot (CSliderSlot*)",
+      "0x190": "m_pHandle (CSliderHandle*; dereferenced unconditionally in CSlider::MouseDown at +0x9C9E1E)"
+    },
+    "global_mutations": [
+      "k2_x64.dll+0xF52D38 (8-byte vtable slot pointer in .rdata)"
+    ]
+  },
+  "provenance_chain": {
+    "ui_trigger": "Left-click (BUTTON_MOUSEL = 0x137) on any K2 <scrollbar> slider track",
+    "engine_binding": "CInterface::ProcessInputMouseButton -> IWidget vtable[32] (+0x100) MouseDown",
+    "native_dispatch": "k2_x64.dll::CScrollbarSlider::MouseDown (+0x9A6BB0) -> Hooked_CScrollbarSlider_MouseDown -> k2_x64.dll::CSlider::MouseDown (+0x9C9D80)"
+  },
+  "triangulation": {
+    "static_source": "Ghidra ProjectKongor.rep (/k2_x64.dll-64104e) + raw PE .rdata/.text inspection confirming CScrollbarSlider vtable @ 0xF52C38, slot 32 @ 0xF52D38 -> 0x1809A6BB0 (RVA 0x9A6BB0, 16B prologue 48 89 5C 24 08 48 89 74 24 10 57 48 83 EC 20 48), and CSlider vtable @ 0xF56B00, slot 32 @ 0xF56C00 -> 0x1809C9D80 (RVA 0x9C9D80, 16B prologue 81 FA 37 01 00 00 0F 85 2F 01 00 00 48 89 6C 24).",
+    "dynamic_source": "NativeGuard vtable slot verification + native_guard_unit_tests synthetic vtable/prologue mismatch and button-routing tests."
+  },
+  "counterevidence_searched": "Decompiled both CScrollbarSlider::MouseDown (+0x9A6BB0) and CSlider::MouseDown (+0x9C9D80..+0x9C9EBB) plus CScrollbar::CScrollbar (+0x9A4A60). Confirmed CScrollbarSlider (size 0x270) is a direct subclass of CSlider with zero layout shift, and identified that CSlider::MouseDown unconditionally dereferences m_pHandle (*(void**)(this + 0x190)) at +0x9C9E1E and cursorPos (R8) at +0x9C9E76 without null guards.",
+  "negative_control": "When vtable slot 0xF52D38 does not point to pBase + 0x9A6BB0 or either prologue at +0x9A6BB0 / +0x9C9D80 mismatches retail bytes, VMT hook installation aborts cleanly without mutating .rdata; at runtime, non-0x137 buttons (0x13A wheel-up, 0x13B wheel-down) and null m_pHandle / null cursorPos inputs bypass CSlider::MouseDown (+0x9C9D80) without faulting.",
+  "post_patch_state_invariant": "If VMT signature verification fails or runtime pointer guards reject null thisPtr/cursorPos/m_pHandle, CScrollbarSlider vtable[32] and widget state remain untouched and wheel scrolling continues via retail CScrollbarSlider::MouseDown (+0x9A6BB0).",
+  "negative_control_crash_input": "Mismatched k2_x64.dll build where +0xF52D38 != pBase+0x9A6BB0, or BUTTON_MOUSEL (0x137) dispatch with cursorPos == nullptr or m_pHandle (*(void**)(this+0x190)) == nullptr.",
+  "cleanroom_mapping": {
+    "source_file": "native/proxies/native_guard/vfs_and_hooks.cpp",
+    "symbol_name": "Hooked_CScrollbarSlider_MouseDown",
+    "test_file": "native/proxies/native_guard/tests/native_guard_unit_tests.cpp",
+    "test_method": "TestScrollbarSliderVmtSignatureAndDispatchGuards"
+  },
+  "obligations": [
+    {
+      "id": "OBL-NG-SCROLLBAR-01",
+      "category": "vmt_and_prologue_signature_guard",
+      "condition_type": "state_guard",
+      "evidence_rva": "0x00F52D38",
+      "description": "Before patching CScrollbarSlider vtable slot 32 (k2_x64.dll + 0xF52D38), verify that *ppSlot equals retail CScrollbarSlider::MouseDown (pBase + 0x9A6BB0, or is already Hooked_CScrollbarSlider_MouseDown), verify the 15-byte RIP-free prologue at pBase + 0x9A6BB0 (48 89 5C 24 08 48 89 74 24 10 57 48 83 EC 20), and verify the 12-byte CMP/JNZ prologue at CSlider::MouseDown pBase + 0x9C9D80 (81 FA 37 01 00 00 0F 85 2F 01 00 00), aborting VMT hook installation with diagnostic logging on any mismatch.",
+      "status": "satisfied",
+      "satisfied_in": "native/proxies/native_guard/vfs_and_hooks.cpp",
+      "verified_by_test": "native/proxies/native_guard/tests/native_guard_unit_tests.cpp",
+      "test_method": "TestScrollbarSliderVmtSignatureAndDispatchGuards",
+      "rationale": null
+    },
+    {
+      "id": "OBL-NG-SCROLLBAR-02",
+      "category": "button_routing_and_null_deref_guard",
+      "condition_type": "dispatch_call",
+      "evidence_rva": "0x009C9E1E",
+      "description": "In Hooked_CScrollbarSlider_MouseDown, guard against null thisPtr, null cursorPos, and null CSlider::m_pHandle (*(void* const*)((const uint8_t*)thisPtr + 0x190) == nullptr) before invoking CSlider::MouseDown (k2_x64.dll + 0x9C9D80) on BUTTON_MOUSEL (0x137) inside a protected SEH frame, while delegating BUTTON_WHEELUP (0x13A), BUTTON_WHEELDOWN (0x13B), and all non-0x137 buttons to g_origScrollbarSliderMouseDown (k2_x64.dll + 0x9A6BB0).",
+      "status": "satisfied",
+      "satisfied_in": "native/proxies/native_guard/vfs_and_hooks.cpp",
+      "verified_by_test": "native/proxies/native_guard/tests/native_guard_unit_tests.cpp",
+      "test_method": "TestScrollbarSliderVmtSignatureAndDispatchGuards",
+      "rationale": null
+    },
+    {
+      "id": "OBL-NG-SCROLLBAR-03",
+      "category": "vmt_page_protection_and_rollback_safety",
+      "condition_type": "state_guard",
+      "evidence_rva": "0x00F52D38",
+      "description": "Preserve original CScrollbarSlider::MouseDown pointer (g_origScrollbarSliderMouseDown = pBase + 0x9A6BB0) prior to VMT slot write, ensure idempotent re-entry if *ppSlot already equals Hooked_CScrollbarSlider_MouseDown, and restore original .rdata page permissions via VirtualProtect after writing k2_x64.dll + 0xF52D38.",
+      "status": "satisfied",
+      "satisfied_in": "native/proxies/native_guard/vfs_and_hooks.cpp",
+      "verified_by_test": "native/proxies/native_guard/tests/native_guard_unit_tests.cpp",
+      "test_method": "TestScrollbarSliderVmtSignatureAndDispatchGuards",
+      "rationale": null
+    }
+  ],
+  "limitations_and_unknowns": {
+    "triangulation_status": "dynamically_confirmed",
+    "triangulation_notes": "Confirmed across Ghidra ProjectKongor.rep (/k2_x64.dll-64104e) and both on-disk client binaries (games/client/k2_x64.dll and games/client/windows-x64/k2_x64.dll): vtable slot 0xF52D38 == 0x1809A6BB0 and CSlider vtable slot 0xF56C00 == 0x1809C9D80.",
+    "unknown_offsets": [],
+    "indirect_calls": [
+      {
+        "rva": "0x009C9E70",
+        "instruction": "CALL qword ptr [RAX + 0x1A0]",
+        "status": "resolved",
+        "target_symbol": "IWidget::DoEvent (WEVENT_STARTDRAG / 0x15 on m_pHandle->m_pParent)",
+        "rationale": "Invoked inside retail CSlider::MouseDown after verifying m_pHandle (+0x190) is non-null."
+      }
+    ]
+  },
+  "notes": "See FN-011 for K2 manual clip-scroll pattern; this VMT hook enables native track click-to-jump on all K2 CScrollbarSlider instances without bypassing mousewheel step handlers (0x13A / 0x13B).",
+  "closure_digest_sha256": "f51f0cd8d3374dde68728521525d2083205045d41be5a919cb4ae4392bb5addc"
+}

@@ -1,0 +1,13 @@
+{
+  "solution": {
+    "path": "..\\ProjectKongor.slnx",
+    "projects": [
+      "src\\extensions\\modding\\Kongor.Modding.csproj",
+      "src\\tools\\mod-cli\\ModCli.csproj",
+      "src\\tools\\prebake-tool\\prebake-tool.csproj",
+      "src\\libs\\protocol-core\\Kongor.Core.csproj",
+      "tests\\unit\\extensions\\Kongor.Modding.Tests\\Kongor.Modding.Tests.csproj",
+      "tests\\integration\\ASPIRE.Prebaking.Tests\\ASPIRE.Prebaking.Tests.csproj"
+    ]
+  }
+}

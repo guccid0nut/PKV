@@ -1,0 +1,48 @@
+{
+  "$schema": "https://raw.githubusercontent.com/stryker-mutator/stryker-net/master/src/Stryker.Core/Stryker.Core/stryker-config.schema.json",
+  "stryker-config": {
+    "solution": "ProjectKongor.slnx",
+    "concurrency": 4,
+    "mutation-level": "Standard",
+    "coverage-analysis": "perTest",
+    "log-level": "info",
+    "thresholds": {
+      "high": 80,
+      "low": 60,
+      "break": 50
+    },
+    "since": {
+      "enabled": true,
+      "ignore-changes-in": [
+        "tests/**/*",
+        "docs/**/*",
+        "infra/**/*",
+        "scripts/**/*"
+      ],
+      "target": "origin/main"
+    },
+    "reporters": [
+      "progress",
+      "clear-text",
+      "markdown",
+      "json",
+      "html"
+    ],
+    "ignore-mutations": [
+      "string"
+    ],
+    "ignore-methods": [
+      "Log*",
+      "Trace*",
+      "WriteLine",
+      "ToString"
+    ],
+    "mutate": [
+      "src/libs/contracts/Cdn/**/*.cs",
+      "src/extensions/cdn-broker/Services/Update/**/*.cs",
+      "src/tools/kongor-cli/Mcp/Protocol/**/*.cs",
+      "!**/obj/**",
+      "!**/bin/**"
+    ]
+  }
+}

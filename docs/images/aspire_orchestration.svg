@@ -1,0 +1,120 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1150 780" width="100%" height="100%" style="background-color: #0d1117; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#161b22"/>
+      <stop offset="100%" stop-color="#0d1117"/>
+    </linearGradient>
+    <marker id="arrowIndigo" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 8 5 L 0 9 z" fill="#818cf8"/>
+    </marker>
+    <marker id="arrowPurple" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 8 5 L 0 9 z" fill="#bc8cff"/>
+    </marker>
+    <marker id="arrowGreen" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 8 5 L 0 9 z" fill="#3fb950"/>
+    </marker>
+    <filter id="shadow" x="-5%" y="-5%" width="110%" height="110%">
+      <feDropShadow dx="0" dy="4" stdDeviation="5" flood-color="#000000" flood-opacity="0.5"/>
+    </filter>
+  </defs>
+
+  <rect width="100%" height="100%" fill="url(#bgGrad)" rx="12"/>
+  <rect width="100%" height="100%" fill="none" stroke="#30363d" stroke-width="1.5" rx="12"/>
+
+  <!-- TITLE -->
+  <text x="575" y="40" text-anchor="middle" fill="#f0f6fc" font-size="18" font-weight="700">📊 .NET Aspire Local Cluster Orchestration</text>
+
+  <!-- ASPIRE HOST SUBGRAPH -->
+  <g filter="url(#shadow)">
+    <rect x="40" y="65" width="1070" height="120" rx="10" fill="#161b22" stroke="#6366f1" stroke-width="1.5"/>
+    <rect x="40" y="65" width="1070" height="30" rx="10" fill="#6366f1" fill-opacity="0.25"/>
+    <text x="60" y="86" fill="#a5b4fc" font-size="13" font-weight="700">⚙️ .NET Aspire Application Host (AppHost)</text>
+
+    <rect x="60" y="105" width="480" height="65" rx="8" fill="#21262d" stroke="#6366f1" stroke-width="1.2"/>
+    <text x="300" y="130" text-anchor="middle" fill="#f0f6fc" font-size="13" font-weight="700">📊 Aspire Web Dashboard</text>
+    <text x="300" y="152" text-anchor="middle" fill="#a5b4fc" font-size="11">https://localhost:5550 • Unified Structured Logs &amp; OTLP</text>
+
+    <rect x="610" y="105" width="480" height="65" rx="8" fill="#21262d" stroke="#6366f1" stroke-width="1.2"/>
+    <text x="850" y="130" text-anchor="middle" fill="#f0f6fc" font-size="13" font-weight="700">🔥 Grafana Pyroscope Profiler</text>
+    <text x="850" y="152" text-anchor="middle" fill="#a5b4fc" font-size="11">http://localhost:4040 • Continuous CPU &amp; Allocation Profiling</text>
+  </g>
+
+  <!-- MICROSERVICES SUBGRAPH -->
+  <g filter="url(#shadow)">
+    <rect x="40" y="225" width="1070" height="270" rx="10" fill="#161b22" stroke="#2ea043" stroke-width="1.5"/>
+    <rect x="40" y="225" width="1070" height="30" rx="10" fill="#2ea043" fill-opacity="0.25"/>
+    <text x="60" y="246" fill="#56d364" font-size="13" font-weight="700">💻 .NET 10 Microservices Stack</text>
+
+    <g>
+      <!-- DB Context -->
+      <rect x="60" y="270" width="190" height="90" rx="8" fill="#21262d" stroke="#3fb950" stroke-width="1.2"/>
+      <text x="155" y="298" text-anchor="middle" fill="#f0f6fc" font-size="12" font-weight="700">🗄️ database-context</text>
+      <text x="155" y="320" text-anchor="middle" fill="#8b949e" font-size="11">Port 5553 (MERRICK)</text>
+      <text x="155" y="340" text-anchor="middle" fill="#7ee787" font-size="10">Schema Migration / Seed</text>
+
+      <!-- Master Server -->
+      <rect x="275" y="270" width="190" height="90" rx="8" fill="#21262d" stroke="#3fb950" stroke-width="1.2"/>
+      <text x="370" y="298" text-anchor="middle" fill="#f0f6fc" font-size="12" font-weight="700">🏛️ master-server</text>
+      <text x="370" y="320" text-anchor="middle" fill="#8b949e" font-size="11">Port 55555 (KONGOR)</text>
+      <text x="370" y="340" text-anchor="middle" fill="#7ee787" font-size="10">SRP Auth &amp; Stats API</text>
+
+      <!-- Chat Server -->
+      <rect x="490" y="270" width="190" height="90" rx="8" fill="#21262d" stroke="#3fb950" stroke-width="1.2"/>
+      <text x="585" y="298" text-anchor="middle" fill="#f0f6fc" font-size="12" font-weight="700">💬 chat-server</text>
+      <text x="585" y="320" text-anchor="middle" fill="#8b949e" font-size="11">Ports 5554 / 11031+</text>
+      <text x="585" y="340" text-anchor="middle" fill="#7ee787" font-size="10">TRANSMUTANSTEIN</text>
+
+      <!-- Web API -->
+      <rect x="705" y="270" width="190" height="90" rx="8" fill="#21262d" stroke="#3fb950" stroke-width="1.2"/>
+      <text x="800" y="298" text-anchor="middle" fill="#f0f6fc" font-size="12" font-weight="700">🔌 web-portal-api</text>
+      <text x="800" y="320" text-anchor="middle" fill="#8b949e" font-size="11">Ports 5200 / 5201</text>
+      <text x="800" y="340" text-anchor="middle" fill="#7ee787" font-size="10">ZORGATH REST API</text>
+
+      <!-- Web UI -->
+      <rect x="920" y="270" width="170" height="90" rx="8" fill="#21262d" stroke="#3fb950" stroke-width="1.2"/>
+      <text x="1005" y="298" text-anchor="middle" fill="#f0f6fc" font-size="12" font-weight="700">🌐 web-portal-ui</text>
+      <text x="1005" y="320" text-anchor="middle" fill="#8b949e" font-size="11">Ports 5266 / 5557</text>
+      <text x="1005" y="340" text-anchor="middle" fill="#7ee787" font-size="10">DAWNBRINGER Portal</text>
+    </g>
+
+    <!-- Optional Fleet row -->
+    <rect x="60" y="385" width="1030" height="85" rx="8" fill="#21262d" stroke="#d29922" stroke-width="1.2"/>
+    <text x="80" y="415" fill="#f0883e" font-size="13" font-weight="700">🎮 Dedicated Server Fleet (Optional Node: COMPEL)</text>
+    <text x="80" y="438" fill="#c9d1d9" font-size="11">COMPEL Dedicated Server Manager: Ports 11235+ / 21235+ (Win32 Job Object Sandbox &amp; UDP Rate Limiting)</text>
+    <text x="80" y="456" fill="#8b949e" font-size="11">Registers server slots with KONGOR master-server and reports heartbeats via REST.</text>
+  </g>
+
+  <!-- CONTAINERS SUBGRAPH -->
+  <g filter="url(#shadow)">
+    <rect x="40" y="535" width="1070" height="210" rx="10" fill="#161b22" stroke="#a371f7" stroke-width="1.5"/>
+    <rect x="40" y="535" width="1070" height="30" rx="10" fill="#a371f7" fill-opacity="0.25"/>
+    <text x="60" y="556" fill="#bc8cff" font-size="13" font-weight="700">📦 Containerized Infrastructure &amp; Databases</text>
+
+    <!-- Redis -->
+    <rect x="60" y="585" width="310" height="135" rx="8" fill="#21262d" stroke="#a371f7" stroke-width="1.2"/>
+    <text x="215" y="615" text-anchor="middle" fill="#f0f6fc" font-size="12" font-weight="700">⚡ distributed-cache (Redis 7)</text>
+    <text x="215" y="638" text-anchor="middle" fill="#8b949e" font-size="11">Port 6379 (Container)</text>
+    <text x="215" y="660" text-anchor="middle" fill="#d2a8ff" font-size="10">Session Vault &amp; Proofs</text>
+    <text x="215" y="680" text-anchor="middle" fill="#8b949e" font-size="10">RedisInsight: Port 5540</text>
+
+    <!-- SQL Server -->
+    <rect x="420" y="585" width="310" height="135" rx="8" fill="#21262d" stroke="#a371f7" stroke-width="1.2"/>
+    <text x="575" y="615" text-anchor="middle" fill="#f0f6fc" font-size="12" font-weight="700">🗄️ database-server (SQL Server)</text>
+    <text x="575" y="638" text-anchor="middle" fill="#8b949e" font-size="11">Port 1433 (Container)</text>
+    <text x="575" y="660" text-anchor="middle" fill="#d2a8ff" font-size="10">Local Development Database</text>
+    <text x="575" y="680" text-anchor="middle" fill="#8b949e" font-size="10">Auto-created by Aspire</text>
+
+    <!-- Supabase / External -->
+    <rect x="780" y="585" width="310" height="135" rx="8" fill="#21262d" stroke="#a371f7" stroke-width="1.2"/>
+    <text x="935" y="615" text-anchor="middle" fill="#f0f6fc" font-size="12" font-weight="700">🌐 Supabase / PostgreSQL</text>
+    <text x="935" y="638" text-anchor="middle" fill="#8b949e" font-size="11">Cloud Production DB</text>
+    <text x="935" y="660" text-anchor="middle" fill="#d2a8ff" font-size="10">DATABASE_PROVIDER=PostgreSQL</text>
+    <text x="935" y="680" text-anchor="middle" fill="#8b949e" font-size="10">Zero-Config Direct Handoff</text>
+  </g>
+
+  <!-- Connectors -->
+  <path d="M 300 170 L 300 225" stroke="#818cf8" stroke-width="1.5" stroke-dasharray="4" marker-end="url(#arrowIndigo)"/>
+  <path d="M 850 170 L 850 225" stroke="#818cf8" stroke-width="1.5" stroke-dasharray="4" marker-end="url(#arrowIndigo)"/>
+  <path d="M 370 360 L 215 585" stroke="#a371f7" stroke-width="1.5" marker-end="url(#arrowPurple)"/>
+  <path d="M 155 360 L 575 585" stroke="#a371f7" stroke-width="1.5" marker-end="url(#arrowPurple)"/>
+</svg>

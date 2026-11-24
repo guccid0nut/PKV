@@ -1,0 +1,1001 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="using:NEXUS.ControlPanel.GUI.ViewModels"
+             xmlns:services="using:NEXUS.ControlPanel.GUI.Services"
+             mc:Ignorable="d" d:DesignWidth="1000" d:DesignHeight="800"
+             x:Class="NEXUS.ControlPanel.GUI.Views.UsersView"
+             x:DataType="vm:UsersViewModel">
+
+    <Grid RowDefinitions="Auto,Auto,*" Margin="16">
+
+        <!-- Row 0: Top KPI Stats & Refresh Bar -->
+        <Grid Grid.Row="0" Margin="0,0,0,14" RowDefinitions="Auto,Auto">
+
+            <!-- Header & Database Status -->
+            <Grid Grid.Row="0" ColumnDefinitions="*,Auto" Margin="0,0,0,10">
+                <StackPanel Grid.Column="0" Spacing="2">
+                    <TextBlock Text="USER &amp; ACCOUNT MANAGEMENT" FontSize="11" FontWeight="Bold"
+                               Foreground="#00F0FF" LetterSpacing="1.5" />
+                    <TextBlock
+                        Text="Inspect user master profiles, manage linked in-game accounts, and convert roles to STAFF or HOST."
+                        FontSize="11.5" Foreground="#94A3B8" />
+                </StackPanel>
+
+                <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                    <!-- Database / API Health Status Badge -->
+                    <Border IsVisible="{Binding IsDatabaseConnected}"
+                            Background="#064E3B" BorderBrush="#059669" BorderThickness="1"
+                            CornerRadius="6" Padding="8,4" VerticalAlignment="Center"
+                            ToolTip.Tip="{Binding StatusMessage}">
+                        <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
+                            <Ellipse Width="6" Height="6" Fill="#10B981" />
+                            <TextBlock Text="{Binding ConnectionStatusText}" FontSize="10" FontWeight="Bold" Foreground="#6EE7B7" />
+                        </StackPanel>
+                    </Border>
+                    <Border IsVisible="{Binding !IsDatabaseConnected}"
+                            Background="#451A03" BorderBrush="#D97706" BorderThickness="1"
+                            CornerRadius="6" Padding="8,4" VerticalAlignment="Center"
+                            ToolTip.Tip="{Binding StatusMessage}">
+                        <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
+                            <Ellipse Width="6" Height="6" Fill="#F59E0B" />
+                            <TextBlock Text="{Binding ConnectionStatusText}" FontSize="10" FontWeight="Bold" Foreground="#FCD34D" />
+                        </StackPanel>
+                    </Border>
+
+                    <Button Classes="secondary" Command="{Binding RefreshStatsCommand}" Padding="10,6">
+                        <StackPanel Orientation="Horizontal" Spacing="6">
+                            <TextBlock Text="🔄" />
+                            <TextBlock Text="Refresh Stats" FontWeight="SemiBold" FontSize="11.5" />
+                        </StackPanel>
+                    </Button>
+                </StackPanel>
+            </Grid>
+
+            <!-- 4 KPI Summary Cards -->
+            <Grid Grid.Row="1" ColumnDefinitions="*,*,*,*">
+
+                <!-- 1. Total Users -->
+                <Border Grid.Column="0" Classes="card" Margin="0,0,5,0" Padding="12,10" Background="#1E293B">
+                    <StackPanel Spacing="3">
+                        <TextBlock Text="👥 TOTAL USERS" FontSize="9" FontWeight="Bold" Foreground="#94A3B8"
+                                   LetterSpacing="1" />
+                        <TextBlock Text="{Binding TotalUsers}" FontSize="22" FontWeight="Black" Foreground="#00F0FF" />
+                        <TextBlock Text="Registered master accounts" FontSize="9.5" Foreground="#64748B"
+                                   TextTrimming="CharacterEllipsis" />
+                    </StackPanel>
+                </Border>
+
+                <!-- 2. Total In-Game Accounts -->
+                <Border Grid.Column="1" Classes="card" Margin="5,0,5,0" Padding="12,10" Background="#1E293B">
+                    <StackPanel Spacing="3">
+                        <TextBlock Text="🎮 HON ACCOUNTS" FontSize="9" FontWeight="Bold" Foreground="#94A3B8"
+                                   LetterSpacing="1" />
+                        <TextBlock Text="{Binding TotalAccounts}" FontSize="22" FontWeight="Black" Foreground="#38BDF8" />
+                        <TextBlock Text="Game sub-accounts created" FontSize="9.5" Foreground="#64748B"
+                                   TextTrimming="CharacterEllipsis" />
+                    </StackPanel>
+                </Border>
+
+                <!-- 3. Staff Members -->
+                <Border Grid.Column="2" Classes="card" Margin="5,0,5,0" Padding="12,10" Background="#1E293B">
+                    <StackPanel Spacing="3">
+                        <TextBlock Text="🛡️ STAFF MEMBERS" FontSize="9" FontWeight="Bold" Foreground="#94A3B8"
+                                   LetterSpacing="1" />
+                        <TextBlock Text="{Binding TotalStaff}" FontSize="22" FontWeight="Black" Foreground="#A855F7" />
+                        <TextBlock Text="Admin &amp; moderator users" FontSize="9.5" Foreground="#64748B"
+                                   TextTrimming="CharacterEllipsis" />
+                    </StackPanel>
+                </Border>
+
+                <!-- 4. Server Hosts -->
+                <Border Grid.Column="3" Classes="card" Margin="5,0,0,0" Padding="12,10" Background="#1E293B">
+                    <StackPanel Spacing="3">
+                        <TextBlock Text="🖥️ SERVER HOSTS" FontSize="9" FontWeight="Bold" Foreground="#94A3B8"
+                                   LetterSpacing="1" />
+                        <TextBlock Text="{Binding TotalHosts}" FontSize="22" FontWeight="Black" Foreground="#10B981" />
+                        <TextBlock Text="Game server host accounts" FontSize="9.5" Foreground="#64748B"
+                                   TextTrimming="CharacterEllipsis" />
+                    </StackPanel>
+                </Border>
+
+            </Grid>
+        </Grid>
+
+        <!-- Row 1: Search & Filter Toolbar + Action Feedback Banner -->
+        <StackPanel Grid.Row="1" Spacing="8" Margin="0,0,0,12">
+
+            <!-- Search & Filters Row -->
+            <Grid ColumnDefinitions="*,Auto">
+
+                <!-- Search Input Box -->
+                <Grid Grid.Column="0" ColumnDefinitions="*,Auto" Margin="0,0,10,0">
+                    <TextBox Grid.Column="0"
+                             Text="{Binding SearchQuery, Mode=TwoWay}"
+                             Watermark="Search by Nickname, Main Account, Sub Account, Discord, or ID..."
+                             Background="#1E293B"
+                             Foreground="#F8FAFC"
+                             BorderBrush="#334155"
+                             CornerRadius="8"
+                             FontSize="12"
+                             Padding="10,8" />
+
+                    <Button Grid.Column="1" Classes="secondary" Command="{Binding ClearSearchCommand}" Margin="6,0,0,0"
+                            Padding="10,6">
+                        <TextBlock Text="✕ Clear" FontSize="11.5" />
+                    </Button>
+                </Grid>
+
+                <!-- Role Filter Badges -->
+                <WrapPanel Grid.Column="1" Orientation="Horizontal">
+                    <Button Classes="secondary" Command="{Binding SetRoleFilterCommand}" CommandParameter="ALL"
+                            Padding="8,6" Margin="0,0,4,0">
+                        <TextBlock Text="All Users" FontSize="11.5" />
+                    </Button>
+                    <Button Classes="secondary" Command="{Binding SetRoleFilterCommand}" CommandParameter="STAFF"
+                            Padding="8,6" Margin="0,0,4,0">
+                        <TextBlock Text="🛡️ Staff Only" FontSize="11.5" />
+                    </Button>
+                    <Button Classes="secondary" Command="{Binding SetRoleFilterCommand}" CommandParameter="HOST"
+                            Padding="8,6" Margin="0,0,4,0">
+                        <TextBlock Text="🖥️ Hosts Only" FontSize="11.5" />
+                    </Button>
+                    <Button Classes="secondary" Command="{Binding SetRoleFilterCommand}" CommandParameter="STANDARD"
+                            Padding="8,6">
+                        <TextBlock Text="👤 Standard Users" FontSize="11.5" />
+                    </Button>
+                </WrapPanel>
+            </Grid>
+
+            <!-- Feedback Notification Banner -->
+            <Border IsVisible="{Binding IsActionFeedbackVisible, FallbackValue=False}"
+                    Background="#1E293B"
+                    BorderBrush="{Binding IsActionFeedbackSuccess, Converter={x:Null}, FallbackValue=Transparent}"
+                    BorderThickness="1"
+                    CornerRadius="8"
+                    Padding="10,6">
+                <Grid ColumnDefinitions="*,Auto">
+                    <TextBlock Grid.Column="0"
+                               Text="{Binding ActionFeedbackText, FallbackValue=''}"
+                               FontSize="11.5"
+                               FontWeight="SemiBold"
+                               Foreground="{Binding IsActionFeedbackSuccess, Converter={x:Null}, FallbackValue=Transparent}"
+                               VerticalAlignment="Center" />
+                    <Button Grid.Column="1" Classes="secondary" Command="{Binding DismissFeedbackCommand}"
+                            Padding="6,2">
+                        <TextBlock Text="✕" FontSize="11" />
+                    </Button>
+                </Grid>
+            </Border>
+
+        </StackPanel>
+
+        <!-- Row 2: Master-Detail Two-Column Layout -->
+        <Grid Grid.Row="2" ColumnDefinitions="Auto,*">
+
+            <!-- Left Panel: Registered Users List with Avatars & Search Filter -->
+            <Border Grid.Column="0" Classes="card" Margin="0,0,4,0" Padding="10" Width="330" Background="#0F172A">
+                <Grid RowDefinitions="Auto,*">
+
+                    <TextBlock Grid.Row="0"
+                               Text="REGISTERED USERS"
+                               FontSize="10.5"
+                               FontWeight="Bold"
+                               Foreground="#00F0FF"
+                               LetterSpacing="1"
+                               Margin="4,0,0,6" />
+
+                    <ListBox Grid.Row="1"
+                             ItemsSource="{Binding Users}"
+                             SelectedItem="{Binding SelectedUser, Mode=TwoWay}"
+                             Background="Transparent"
+                             BorderThickness="0">
+                        <ListBox.Styles>
+                            <Style Selector="ListBoxItem">
+                                <Setter Property="Padding" Value="0" />
+                                <Setter Property="Margin" Value="0,0,0,5" />
+                                <Setter Property="CornerRadius" Value="8" />
+                                <Setter Property="Background" Value="#1E293B" />
+                                <Setter Property="BorderBrush" Value="#334155" />
+                                <Setter Property="BorderThickness" Value="1" />
+                            </Style>
+                            <Style Selector="ListBoxItem:selected /template/ ContentPresenter">
+                                <Setter Property="Background" Value="#332204" />
+                                <Setter Property="BorderBrush" Value="#F59E0B" />
+                                <Setter Property="BorderThickness" Value="1.5" />
+                                <Setter Property="CornerRadius" Value="8" />
+                            </Style>
+                            <Style Selector="ListBoxItem:pointerover /template/ ContentPresenter">
+                                <Setter Property="Background" Value="#2A384C" />
+                                <Setter Property="BorderBrush" Value="#475569" />
+                                <Setter Property="CornerRadius" Value="8" />
+                            </Style>
+                            <Style Selector="ListBoxItem:selected:pointerover /template/ ContentPresenter">
+                                <Setter Property="Background" Value="#453008" />
+                                <Setter Property="BorderBrush" Value="#FBBF24" />
+                                <Setter Property="BorderThickness" Value="1.5" />
+                                <Setter Property="CornerRadius" Value="8" />
+                            </Style>
+                        </ListBox.Styles>
+                        <ListBox.ItemTemplate>
+                            <DataTemplate x:DataType="services:UserDetailDto">
+                                <Border Background="Transparent"
+                                        CornerRadius="8"
+                                        Padding="8,6">
+                                    <Grid ColumnDefinitions="Auto,*">
+
+                                        <!-- Avatar Circle (Discord or Kongor Default) -->
+                                        <Border Grid.Column="0"
+                                                Width="36"
+                                                Height="36"
+                                                CornerRadius="18"
+                                                ClipToBounds="True"
+                                                Background="#0F172A"
+                                                BorderBrush="#38BDF8"
+                                                BorderThickness="1.5"
+                                                Margin="0,0,8,0"
+                                                VerticalAlignment="Center">
+                                            <Panel>
+                                                <TextBlock Text="🛡️"
+                                                           FontSize="15"
+                                                           HorizontalAlignment="Center"
+                                                           VerticalAlignment="Center"
+                                                           Opacity="0.4"
+                                                           IsVisible="{Binding !HasAvatar}" />
+                                                <Image Source="{Binding AvatarBitmap}"
+                                                       Stretch="UniformToFill"
+                                                       Width="36"
+                                                       Height="36"
+                                                       IsVisible="{Binding HasAvatar}" />
+                                            </Panel>
+                                        </Border>
+
+                                        <StackPanel Grid.Column="1" Spacing="3">
+
+                                            <!-- Top Line: ID, Display Name, Role Tag -->
+                                            <Grid ColumnDefinitions="Auto,*,Auto">
+                                                <Border Grid.Column="0" Background="#334155" CornerRadius="4"
+                                                        Padding="4,1" Margin="0,0,4,0">
+                                                    <TextBlock
+                                                        Text="{Binding Id, StringFormat='#{0}', FallbackValue='#0'}"
+                                                        FontSize="9" FontWeight="Bold" Foreground="#94A3B8" />
+                                                </Border>
+
+                                                <TextBlock Grid.Column="1"
+                                                           Text="{Binding DisplayName, FallbackValue=''}" FontSize="12"
+                                                           FontWeight="Bold" Foreground="#00F0FF"
+                                                           TextTrimming="CharacterEllipsis" />
+
+                                                <Border Grid.Column="2" Background="#4C1D95" CornerRadius="4"
+                                                        Padding="4,1"
+                                                        IsVisible="{Binding IsStaff, FallbackValue=False}">
+                                                    <TextBlock Text="STAFF" FontSize="8" FontWeight="Bold"
+                                                               Foreground="#C084FC" />
+                                                </Border>
+                                            </Grid>
+
+                                            <!-- Discord Tag if present -->
+                                            <TextBlock
+                                                Text="{Binding DiscordId, StringFormat='Discord ID: {0}', FallbackValue=''}"
+                                                FontSize="8.5"
+                                                Foreground="#818CF8"
+                                                TextTrimming="CharacterEllipsis"
+                                                IsVisible="{Binding DiscordId, Converter={x:Null}, FallbackValue=False}" />
+
+                                            <!-- Linked Accounts Badges (Main, Host, Sub) -->
+                                            <WrapPanel Orientation="Horizontal">
+
+                                                <!-- Main Account Badge -->
+                                                <Border Background="#0F172A" BorderBrush="#0284C7" BorderThickness="1"
+                                                        CornerRadius="4" Padding="3,1" Margin="0,0,3,2">
+                                                    <TextBlock
+                                                        Text="{Binding MainAccount.Name, StringFormat='👑 Main: {0}', FallbackValue='👑 No Main'}"
+                                                        FontSize="8.5"
+                                                        FontWeight="SemiBold"
+                                                        Foreground="#38BDF8" />
+                                                </Border>
+
+                                                <!-- Host Accounts Badge -->
+                                                <Border Background="#0F172A" BorderBrush="#059669" BorderThickness="1"
+                                                        CornerRadius="4" Padding="3,1" Margin="0,0,3,2"
+                                                        IsVisible="{Binding HasHostAccounts, FallbackValue=False}">
+                                                    <TextBlock
+                                                        Text="{Binding HostAccounts.Count, StringFormat='🖥️ {0} Host(s)', FallbackValue='🖥️ 0 Host(s)'}"
+                                                        FontSize="8.5"
+                                                        FontWeight="SemiBold"
+                                                        Foreground="#34D399" />
+                                                </Border>
+
+                                                <!-- Sub Accounts Badge -->
+                                                <Border Background="#0F172A" BorderBrush="#7C3AED" BorderThickness="1"
+                                                        CornerRadius="4" Padding="3,1" Margin="0,0,3,2"
+                                                        IsVisible="{Binding HasSubAccounts, FallbackValue=False}">
+                                                    <TextBlock
+                                                        Text="{Binding SubAccounts.Count, StringFormat='🎮 {0} Sub(s)', FallbackValue='🎮 0 Sub(s)'}"
+                                                        FontSize="8.5"
+                                                        FontWeight="SemiBold"
+                                                        Foreground="#C084FC" />
+                                                </Border>
+
+                                            </WrapPanel>
+
+                                        </StackPanel>
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+
+                </Grid>
+            </Border>
+
+            <!-- Right Panel: Selected User Profile & Management Inspector -->
+            <Border Grid.Column="1" Classes="card" Margin="4,0,0,0" Padding="12" Background="#0F172A">
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+
+                    <StackPanel Spacing="10">
+
+                        <!-- Empty State when no user is selected -->
+                        <Border IsVisible="{Binding !HasSelectedUser, FallbackValue=True}" Padding="30"
+                                HorizontalAlignment="Center" VerticalAlignment="Center">
+                            <StackPanel Spacing="10" HorizontalAlignment="Center">
+                                <TextBlock Text="👥" FontSize="36" HorizontalAlignment="Center" />
+                                <TextBlock Text="No User Selected" FontSize="16" FontWeight="Bold" Foreground="#94A3B8"
+                                           HorizontalAlignment="Center" />
+                                <TextBlock
+                                    Text="Search or select a user from the directory to view their main account, sub-accounts, and host servers."
+                                    FontSize="12" Foreground="#64748B" HorizontalAlignment="Center" />
+                            </StackPanel>
+                        </Border>
+
+                        <!-- User Detail View -->
+                        <StackPanel IsVisible="{Binding HasSelectedUser, FallbackValue=False}" Spacing="10">
+
+                            <!-- Profile Header Box (With Authentic Discord Avatar / Kongor Default) -->
+                            <Border Background="#1E293B" BorderBrush="#334155" BorderThickness="1" CornerRadius="10"
+                                    Padding="12">
+                                <Grid ColumnDefinitions="Auto,*,Auto">
+
+                                    <!-- Avatar Image (Discord or Kongor Default) -->
+                                    <Border Grid.Column="0"
+                                            Width="48"
+                                            Height="48"
+                                            CornerRadius="24"
+                                            ClipToBounds="True"
+                                            Background="#0F172A"
+                                            BorderBrush="#00F0FF"
+                                            BorderThickness="2"
+                                            Margin="0,0,12,0"
+                                            VerticalAlignment="Center">
+                                        <Panel>
+                                            <TextBlock Text="🛡️"
+                                                       FontSize="22"
+                                                       HorizontalAlignment="Center"
+                                                       VerticalAlignment="Center"
+                                                       Opacity="0.4"
+                                                       IsVisible="{Binding !SelectedUser.HasAvatar, FallbackValue=True}" />
+                                            <Image Source="{Binding SelectedUser.AvatarBitmap, FallbackValue={x:Null}}"
+                                                   Stretch="UniformToFill"
+                                                   Width="48"
+                                                   Height="48"
+                                                   IsVisible="{Binding SelectedUser.HasAvatar, FallbackValue=False}" />
+                                        </Panel>
+                                    </Border>
+
+                                    <!-- User Identification -->
+                                    <StackPanel Grid.Column="1" Spacing="4" VerticalAlignment="Center">
+                                        <WrapPanel Orientation="Horizontal">
+                                            <TextBlock Text="{Binding SelectedUser.DisplayName, FallbackValue=''}"
+                                                       FontSize="15" FontWeight="Black" Foreground="#00F0FF"
+                                                       Margin="0,0,6,0" />
+                                            <Border Background="#0F172A" BorderBrush="#334155" BorderThickness="1"
+                                                    CornerRadius="4" Padding="5,1" Margin="0,0,4,0">
+                                                <TextBlock
+                                                    Text="{Binding SelectedUser.Id, StringFormat='ID: #{0}', FallbackValue=''}"
+                                                    FontSize="9.5" FontWeight="Bold" Foreground="#94A3B8" />
+                                            </Border>
+                                            <Border Background="#4C1D95" CornerRadius="4" Padding="5,1"
+                                                    IsVisible="{Binding SelectedUser.IsStaff, FallbackValue=False}">
+                                                <TextBlock Text="STAFF" FontSize="8.5" FontWeight="Bold"
+                                                           Foreground="#C084FC" />
+                                            </Border>
+                                        </WrapPanel>
+
+                                        <WrapPanel Orientation="Horizontal">
+                                            <TextBlock
+                                                Text="{Binding SelectedUser.RoleName, StringFormat='Role: {0}', FallbackValue=''}"
+                                                FontSize="10.5" FontWeight="SemiBold" Foreground="#38BDF8"
+                                                Margin="0,0,8,0" />
+                                            <TextBlock
+                                                Text="{Binding SelectedUser.DiscordId, StringFormat='Discord ID: {0}', FallbackValue=''}"
+                                                FontSize="10.5" Foreground="#A78BFA" Margin="0,0,8,0"
+                                                IsVisible="{Binding SelectedUser.DiscordId, Converter={x:Null}, FallbackValue=False}" />
+                                            <TextBlock
+                                                Text="{Binding SelectedUser.Accounts.Count, StringFormat='Total Accounts: {0}', FallbackValue=0}"
+                                                FontSize="10.5" Foreground="#94A3B8" />
+                                        </WrapPanel>
+                                    </StackPanel>
+
+                                    <!-- Experience & Level Badge -->
+                                    <StackPanel Grid.Column="2" Spacing="2" HorizontalAlignment="Right"
+                                                VerticalAlignment="Center" Margin="6,0,0,0">
+                                        <TextBlock
+                                            Text="{Binding SelectedUser.TotalLevel, StringFormat='⭐ Level {0}', FallbackValue=1}"
+                                            FontSize="12.5" FontWeight="Bold" Foreground="#38BDF8"
+                                            HorizontalAlignment="Right" />
+                                        <TextBlock
+                                            Text="{Binding SelectedUser.TotalExperience, StringFormat='{}{0:N0} Total XP', FallbackValue=0}"
+                                            FontSize="9.5" Foreground="#64748B" HorizontalAlignment="Right" />
+                                    </StackPanel>
+
+                                </Grid>
+                            </Border>
+
+                            <!-- 2-Column Responsive Dashboard Grid for Inspector Cards -->
+                            <Grid ColumnDefinitions="*,*" Margin="0,2,0,0">
+
+                                <!-- Left Column: Economy & Role Permissions -->
+                                <StackPanel Grid.Column="0" Spacing="10" Margin="0,0,5,0">
+
+                                    <!-- Editable Economy & Currencies Card -->
+                                    <Border Background="#1E293B" BorderBrush="#334155" BorderThickness="1"
+                                            CornerRadius="10" Padding="12">
+                                        <StackPanel Spacing="8">
+
+                                            <Grid ColumnDefinitions="*,Auto">
+                                                <StackPanel Grid.Column="0" Spacing="2">
+                                                    <TextBlock Text="USER ECONOMY &amp; CURRENCIES" FontSize="10.5"
+                                                               FontWeight="Bold" Foreground="#00F0FF" LetterSpacing="1" />
+                                                    <TextBlock Text="Edit Gold, Silver, and Tickets." FontSize="10"
+                                                               Foreground="#94A3B8" />
+                                                </StackPanel>
+
+                                                <!-- Save Button appears dynamically only when changes exist -->
+                                                <Button Grid.Column="1"
+                                                        Classes="success"
+                                                        Command="{Binding SaveCurrenciesCommand}"
+                                                        IsVisible="{Binding HasCurrencyChanges}"
+                                                        Padding="10,5"
+                                                        VerticalAlignment="Center">
+                                                    <StackPanel Orientation="Horizontal" Spacing="6">
+                                                        <TextBlock Text="💾" FontSize="11" />
+                                                        <TextBlock Text="Save Currencies" FontWeight="Bold"
+                                                                   FontSize="11" />
+                                                    </StackPanel>
+                                                </Button>
+                                            </Grid>
+
+                                            <!-- Currency Input Controls (Stacked Full-Width Rows) -->
+                                            <StackPanel Spacing="6">
+
+                                                <!-- Gold Coins Row -->
+                                                <Border Background="#0F172A" BorderBrush="#334155" BorderThickness="1"
+                                                        CornerRadius="8" Padding="10,7">
+                                                    <Grid ColumnDefinitions="130,*">
+                                                        <StackPanel Grid.Column="0" Orientation="Horizontal"
+                                                                    Spacing="5" VerticalAlignment="Center">
+                                                            <TextBlock Text="🪙" FontSize="12" />
+                                                            <TextBlock Text="GOLD COINS" FontSize="10"
+                                                                       FontWeight="Bold" Foreground="#FBBF24"
+                                                                       LetterSpacing="0.5" VerticalAlignment="Center" />
+                                                        </StackPanel>
+                                                        <NumericUpDown Grid.Column="1"
+                                                                       Value="{Binding EditableGoldCoins, Mode=TwoWay}"
+                                                                       Minimum="0"
+                                                                       Maximum="99999999"
+                                                                       FormatString="N0"
+                                                                       Background="#1E293B"
+                                                                       Foreground="#F8FAFC"
+                                                                       BorderBrush="#475569"
+                                                                       CornerRadius="6"
+                                                                       FontSize="12.5"
+                                                                       Padding="6,3"
+                                                                       HorizontalAlignment="Stretch" />
+                                                    </Grid>
+                                                </Border>
+
+                                                <!-- Silver Coins Row -->
+                                                <Border Background="#0F172A" BorderBrush="#334155" BorderThickness="1"
+                                                        CornerRadius="8" Padding="10,7">
+                                                    <Grid ColumnDefinitions="130,*">
+                                                        <StackPanel Grid.Column="0" Orientation="Horizontal"
+                                                                    Spacing="5" VerticalAlignment="Center">
+                                                            <TextBlock Text="🥈" FontSize="12" />
+                                                            <TextBlock Text="SILVER COINS" FontSize="10"
+                                                                       FontWeight="Bold" Foreground="#CBD5E1"
+                                                                       LetterSpacing="0.5" VerticalAlignment="Center" />
+                                                        </StackPanel>
+                                                        <NumericUpDown Grid.Column="1"
+                                                                       Value="{Binding EditableSilverCoins, Mode=TwoWay}"
+                                                                       Minimum="0"
+                                                                       Maximum="99999999"
+                                                                       FormatString="N0"
+                                                                       Background="#1E293B"
+                                                                       Foreground="#F8FAFC"
+                                                                       BorderBrush="#475569"
+                                                                       CornerRadius="6"
+                                                                       FontSize="12.5"
+                                                                       Padding="6,3"
+                                                                       HorizontalAlignment="Stretch" />
+                                                    </Grid>
+                                                </Border>
+
+                                                <!-- Plinko Tickets Row -->
+                                                <Border Background="#0F172A" BorderBrush="#334155" BorderThickness="1"
+                                                        CornerRadius="8" Padding="10,7">
+                                                    <Grid ColumnDefinitions="130,*">
+                                                        <StackPanel Grid.Column="0" Orientation="Horizontal"
+                                                                    Spacing="5" VerticalAlignment="Center">
+                                                            <TextBlock Text="🎟️" FontSize="12" />
+                                                            <TextBlock Text="PLINKO TICKETS" FontSize="10"
+                                                                       FontWeight="Bold" Foreground="#F472B6"
+                                                                       LetterSpacing="0.5" VerticalAlignment="Center" />
+                                                        </StackPanel>
+                                                        <NumericUpDown Grid.Column="1"
+                                                                       Value="{Binding EditablePlinkoTickets, Mode=TwoWay}"
+                                                                       Minimum="0"
+                                                                       Maximum="999999"
+                                                                       FormatString="N0"
+                                                                       Background="#1E293B"
+                                                                       Foreground="#F8FAFC"
+                                                                       BorderBrush="#475569"
+                                                                       CornerRadius="6"
+                                                                       FontSize="12.5"
+                                                                       Padding="6,3"
+                                                                       HorizontalAlignment="Stretch" />
+                                                    </Grid>
+                                                </Border>
+
+                                            </StackPanel>
+
+                                        </StackPanel>
+                                    </Border>
+
+                                    <!-- Role Conversion & Promotion Actions Card -->
+                                    <Border Background="#1E293B" BorderBrush="#334155" BorderThickness="1"
+                                            CornerRadius="10" Padding="12">
+                                        <StackPanel Spacing="8">
+                                            <TextBlock Text="ROLE CONVERSIONS &amp; PERMISSIONS" FontSize="10.5"
+                                                       FontWeight="Bold" Foreground="#00F0FF" LetterSpacing="1" />
+                                            <TextBlock Text="Instantly promote user or revert to standard."
+                                                       FontSize="10" Foreground="#94A3B8" />
+
+                                            <WrapPanel Orientation="Horizontal">
+                                                <!-- 1. Promote to Staff -->
+                                                <Button Classes="primary"
+                                                        Command="{Binding PromoteToStaffCommand}"
+                                                        Margin="0,0,6,6"
+                                                        Padding="9,5">
+                                                    <StackPanel Orientation="Horizontal" Spacing="5">
+                                                        <TextBlock Text="🛡️" FontSize="11" />
+                                                        <TextBlock Text="Promote to STAFF" FontWeight="Bold"
+                                                                   FontSize="10.5" />
+                                                    </StackPanel>
+                                                </Button>
+
+                                                <!-- 2. Promote to Host -->
+                                                <Button Classes="success"
+                                                        Command="{Binding PromoteToHostCommand}"
+                                                        Margin="0,0,6,6"
+                                                        Padding="9,5">
+                                                    <StackPanel Orientation="Horizontal" Spacing="5">
+                                                        <TextBlock Text="🖥️" FontSize="11" />
+                                                        <TextBlock Text="Grant HOST Privileges" FontWeight="Bold"
+                                                                   FontSize="10.5" />
+                                                    </StackPanel>
+                                                </Button>
+
+                                                <!-- 3. Revert to User -->
+                                                <Button Classes="secondary"
+                                                        Command="{Binding RevertToUserCommand}"
+                                                        Margin="0,0,0,6"
+                                                        Padding="9,5">
+                                                    <StackPanel Orientation="Horizontal" Spacing="5">
+                                                        <TextBlock Text="👤" FontSize="11" />
+                                                        <TextBlock Text="Revert to USER" FontWeight="SemiBold"
+                                                                   FontSize="10.5" />
+                                                    </StackPanel>
+                                                </Button>
+                                            </WrapPanel>
+                                        </StackPanel>
+                                    </Border>
+
+                                </StackPanel>
+
+                                <!-- Right Column: In-Game Accounts, Server Hosts, & Sub-Accounts -->
+                                <StackPanel Grid.Column="1" Spacing="10" Margin="5,0,0,0">
+
+                                    <!-- Section 1: 👑 MAIN IN-GAME ACCOUNT -->
+                                    <Border Background="#1E293B" BorderBrush="#0284C7" BorderThickness="1.5"
+                                            CornerRadius="10" Padding="12">
+                                        <StackPanel Spacing="8">
+                                            <StackPanel Spacing="2">
+                                                <StackPanel Orientation="Horizontal" Spacing="6"
+                                                            VerticalAlignment="Center">
+                                                    <TextBlock Text="👑" FontSize="13" />
+                                                    <TextBlock Text="MAIN IN-GAME ACCOUNT" FontSize="11"
+                                                               FontWeight="Bold" Foreground="#38BDF8" LetterSpacing="1" />
+                                                </StackPanel>
+                                                <TextBlock
+                                                    Text="Primary player identity in match logs &amp; leaderboards"
+                                                    FontSize="10" Foreground="#64748B" />
+                                            </StackPanel>
+                                            <Border Background="#0F172A" BorderBrush="#334155" BorderThickness="1"
+                                                    CornerRadius="8" Padding="10,8"
+                                                    DataContext="{Binding SelectedUser.MainAccount, FallbackValue={x:Null}}">
+                                                <Grid ColumnDefinitions="Auto,*,Auto,Auto" VerticalAlignment="Center">
+
+                                                    <!-- Account Avatar / Custom Icon -->
+                                                    <Border Grid.Column="0"
+                                                            Width="32"
+                                                            Height="32"
+                                                            CornerRadius="16"
+                                                            ClipToBounds="True"
+                                                            Background="#1E293B"
+                                                            BorderBrush="#38BDF8"
+                                                            BorderThickness="1.5"
+                                                            Margin="0,0,10,0"
+                                                            VerticalAlignment="Center">
+                                                        <Panel>
+                                                            <TextBlock Text="👑"
+                                                                       FontSize="14"
+                                                                       HorizontalAlignment="Center"
+                                                                       VerticalAlignment="Center"
+                                                                       Opacity="0.6"
+                                                                       IsVisible="{Binding !HasAvatar}" />
+                                                            <Image Source="{Binding AvatarBitmap}"
+                                                                   Stretch="UniformToFill"
+                                                                   Width="32"
+                                                                   Height="32"
+                                                                   IsVisible="{Binding HasAvatar}" />
+                                                        </Panel>
+                                                    </Border>
+
+                                                    <!-- Account Name & Vanity Details -->
+                                                    <StackPanel Grid.Column="1" Spacing="2" VerticalAlignment="Center"
+                                                                Margin="0,0,8,0">
+                                                        <TextBlock
+                                                            Text="{Binding Name, FallbackValue='(No Main Account)'}"
+                                                            FontSize="13" FontWeight="Black" Foreground="#F8FAFC"
+                                                            TextTrimming="CharacterEllipsis" />
+                                                        <WrapPanel Orientation="Horizontal">
+                                                            <TextBlock
+                                                                Text="{Binding AscensionLevel, StringFormat='Ascension: Lvl {0}', FallbackValue='Ascension: Lvl 1'}"
+                                                                FontSize="9" Foreground="#38BDF8" Margin="0,0,6,0" />
+                                                            <Border Background="#1E293B" CornerRadius="3" Padding="4,0"
+                                                                    IsVisible="{Binding HasCustomIcon}">
+                                                                <TextBlock Text="{Binding IconDisplay}" FontSize="8"
+                                                                           Foreground="#A78BFA" FontWeight="SemiBold" />
+                                                            </Border>
+                                                        </WrapPanel>
+                                                    </StackPanel>
+
+                                                    <!-- Account Type Dropdown -->
+                                                    <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="5"
+                                                                VerticalAlignment="Center" Margin="0,0,6,0">
+                                                        <TextBlock Text="Type:" FontSize="10" Foreground="#94A3B8"
+                                                                   VerticalAlignment="Center" />
+                                                        <ComboBox
+                                                            ItemsSource="{x:Static vm:UsersViewModel.AvailableAccountTypes}"
+                                                            SelectedItem="{Binding Type, Mode=TwoWay, FallbackValue={x:Null}}"
+                                                            Background="#1E293B"
+                                                            Foreground="#F8FAFC"
+                                                            Width="105"
+                                                            FontSize="10.5"
+                                                            Padding="5,2" />
+                                                    </StackPanel>
+
+                                                    <!-- Save Changes Button -->
+                                                    <Button Grid.Column="3"
+                                                            Classes="secondary"
+                                                            Command="{Binding $parent[UserControl].((vm:UsersViewModel)DataContext).UpdateAccountRoleCommand, FallbackValue={x:Null}}"
+                                                            CommandParameter="{Binding}"
+                                                            Padding="8,4"
+                                                            VerticalAlignment="Center">
+                                                        <TextBlock Text="💾 Save" FontSize="10.5" />
+                                                    </Button>
+
+                                                </Grid>
+                                            </Border>
+                                        </StackPanel>
+                                    </Border>
+
+                                    <!-- Section 2: 🖥️ DEDICATED SERVER HOST ACCOUNTS -->
+                                    <Border Background="#1E293B" BorderBrush="#059669" BorderThickness="1.5"
+                                            CornerRadius="10" Padding="12"
+                                            IsVisible="{Binding SelectedUser.HasHostAccounts, FallbackValue=False}">
+                                        <StackPanel Spacing="8">
+                                            <StackPanel Spacing="2">
+                                                <StackPanel Orientation="Horizontal" Spacing="6"
+                                                            VerticalAlignment="Center">
+                                                    <TextBlock Text="🖥️" FontSize="13" />
+                                                    <TextBlock
+                                                        Text="{Binding SelectedUser.HostAccounts.Count, StringFormat='DEDICATED SERVER HOST ACCOUNTS ({0})', FallbackValue='DEDICATED SERVER HOST ACCOUNTS (0)'}"
+                                                        FontSize="11"
+                                                        FontWeight="Bold"
+                                                        Foreground="#34D399"
+                                                        LetterSpacing="1" />
+                                                </StackPanel>
+                                                <TextBlock Text="COMPEL Server Operator Accounts" FontSize="10"
+                                                           Foreground="#64748B" />
+                                            </StackPanel>
+
+                                            <ItemsControl
+                                                ItemsSource="{Binding SelectedUser.HostAccounts, FallbackValue={x:Null}}">
+                                                <ItemsControl.ItemTemplate>
+                                                    <DataTemplate x:DataType="services:AccountItemDto">
+                                                        <Border Background="#0F172A" BorderBrush="#334155"
+                                                                BorderThickness="1" CornerRadius="8" Padding="10,8"
+                                                                Margin="0,0,0,8">
+                                                            <StackPanel Spacing="6">
+                                                                <!-- Top Row: Name, Type Dropdown, Save -->
+                                                                <Grid ColumnDefinitions="*,Auto,Auto"
+                                                                      VerticalAlignment="Center">
+
+                                                                    <!-- Host Name -->
+                                                                    <StackPanel Grid.Column="0" Spacing="2"
+                                                                            VerticalAlignment="Center" Margin="0,0,8,0">
+                                                                        <TextBlock
+                                                                            Text="{Binding Name, FallbackValue=''}"
+                                                                            FontSize="12.5" FontWeight="Bold"
+                                                                            Foreground="#34D399"
+                                                                            TextTrimming="CharacterEllipsis" />
+                                                                        <TextBlock Text="Server Host" FontSize="9"
+                                                                                Foreground="#10B981" />
+                                                                    </StackPanel>
+
+                                                                    <!-- Account Type Dropdown -->
+                                                                    <StackPanel Grid.Column="1"
+                                                                            Orientation="Horizontal"
+                                                                            Spacing="5" VerticalAlignment="Center"
+                                                                            Margin="0,0,6,0">
+                                                                        <TextBlock Text="Type:" FontSize="10"
+                                                                                Foreground="#94A3B8"
+                                                                                VerticalAlignment="Center" />
+                                                                        <ComboBox
+                                                                            ItemsSource="{x:Static vm:UsersViewModel.AvailableAccountTypes}"
+                                                                            SelectedItem="{Binding Type, Mode=TwoWay, FallbackValue={x:Null}}"
+                                                                            Background="#1E293B"
+                                                                            Foreground="#F8FAFC"
+                                                                            Width="105"
+                                                                            FontSize="10.5"
+                                                                            Padding="5,2" />
+                                                                    </StackPanel>
+
+                                                                    <!-- Save Changes Button -->
+                                                                    <Button Grid.Column="2"
+                                                                            Classes="secondary"
+                                                                            Command="{Binding $parent[UserControl].((vm:UsersViewModel)DataContext).UpdateAccountRoleCommand, FallbackValue={x:Null}}"
+                                                                            CommandParameter="{Binding}"
+                                                                            Padding="8,4"
+                                                                            VerticalAlignment="Center">
+                                                                        <TextBlock Text="💾 Save" FontSize="10.5" />
+                                                                    </Button>
+
+                                                                </Grid>
+
+                                                                <!-- Divider -->
+                                                                <Border Height="1" Background="#1E293B" Margin="0,2" />
+
+                                                                <!-- Row 2: Host Password Controls -->
+                                                                <Grid ColumnDefinitions="85,*,Auto"
+                                                                      VerticalAlignment="Center">
+                                                                    <TextBlock Grid.Column="0" Text="🔑 Password:"
+                                                                               FontSize="10"
+                                                                               Foreground="#94A3B8"
+                                                                               VerticalAlignment="Center" />
+                                                                    <Border Grid.Column="1" Background="#1E293B"
+                                                                            CornerRadius="5"
+                                                                            Padding="7,3" Margin="0,0,6,0"
+                                                                            VerticalAlignment="Center">
+                                                                        <TextBlock Text="{Binding HostPasswordDisplay}"
+                                                                                FontFamily="Consolas, monospace"
+                                                                                FontSize="10.5" Foreground="#38BDF8"
+                                                                                VerticalAlignment="Center"
+                                                                                TextTrimming="CharacterEllipsis" />
+                                                                    </Border>
+                                                                    <StackPanel Grid.Column="2"
+                                                                            Orientation="Horizontal" Spacing="4"
+                                                                            VerticalAlignment="Center">
+                                                                        <Button Classes="secondary" Padding="6,3"
+                                                                                Command="{Binding $parent[UserControl].((vm:UsersViewModel)DataContext).ToggleRevealHostPasswordCommand, FallbackValue={x:Null}}"
+                                                                                CommandParameter="{Binding}"
+                                                                                ToolTip.Tip="Reveal or hide plain host password">
+                                                                            <TextBlock
+                                                                                Text="{Binding PasswordRevealIcon}"
+                                                                                FontSize="10" />
+                                                                        </Button>
+                                                                        <Button Classes="secondary" Padding="6,3"
+                                                                                Command="{Binding $parent[UserControl].((vm:UsersViewModel)DataContext).CopyHostPasswordCommand, FallbackValue={x:Null}}"
+                                                                                CommandParameter="{Binding}"
+                                                                                ToolTip.Tip="Copy host password to clipboard">
+                                                                            <TextBlock Text="📋 Copy" FontSize="10" />
+                                                                        </Button>
+                                                                        <Button Classes="secondary" Padding="6,3"
+                                                                                Command="{Binding $parent[UserControl].((vm:UsersViewModel)DataContext).ResetHostPasswordCommand, FallbackValue={x:Null}}"
+                                                                                CommandParameter="{Binding}"
+                                                                                ToolTip.Tip="Reset and generate new host password">
+                                                                            <TextBlock Text="🔄 Reset" FontSize="10"
+                                                                                    Foreground="#F59E0B" />
+                                                                        </Button>
+                                                                    </StackPanel>
+                                                                </Grid>
+
+                                                                <!-- Row 3: COMPEL Auth Token Controls -->
+                                                                <Grid ColumnDefinitions="85,*,Auto"
+                                                                      VerticalAlignment="Center">
+                                                                    <TextBlock Grid.Column="0" Text="🛡️ Auth Token:"
+                                                                               FontSize="10"
+                                                                               Foreground="#94A3B8"
+                                                                               VerticalAlignment="Center" />
+                                                                    <Border Grid.Column="1" Background="#1E293B"
+                                                                            CornerRadius="5"
+                                                                            Padding="7,3" Margin="0,0,6,0"
+                                                                            VerticalAlignment="Center">
+                                                                        <TextBlock Text="{Binding AuthTokenDisplay}"
+                                                                                FontFamily="Consolas, monospace"
+                                                                                FontSize="10.5" Foreground="#C084FC"
+                                                                                VerticalAlignment="Center"
+                                                                                TextTrimming="CharacterEllipsis" />
+                                                                    </Border>
+                                                                    <StackPanel Grid.Column="2"
+                                                                            Orientation="Horizontal" Spacing="4"
+                                                                            VerticalAlignment="Center">
+                                                                        <Button Classes="secondary" Padding="6,3"
+                                                                                Command="{Binding $parent[UserControl].((vm:UsersViewModel)DataContext).ToggleRevealAuthTokenCommand, FallbackValue={x:Null}}"
+                                                                                CommandParameter="{Binding}"
+                                                                                ToolTip.Tip="Reveal or hide plain COMPEL auth token">
+                                                                            <TextBlock
+                                                                                Text="{Binding AuthTokenRevealIcon}"
+                                                                                FontSize="10" />
+                                                                        </Button>
+                                                                        <Button Classes="secondary" Padding="6,3"
+                                                                                Command="{Binding $parent[UserControl].((vm:UsersViewModel)DataContext).CopyAuthTokenCommand, FallbackValue={x:Null}}"
+                                                                                CommandParameter="{Binding}"
+                                                                                ToolTip.Tip="Copy COMPEL auth token to clipboard">
+                                                                            <TextBlock Text="📋 Copy" FontSize="10" />
+                                                                        </Button>
+                                                                        <Button Classes="secondary" Padding="6,3"
+                                                                                Command="{Binding $parent[UserControl].((vm:UsersViewModel)DataContext).ResetAuthTokenCommand, FallbackValue={x:Null}}"
+                                                                                CommandParameter="{Binding}"
+                                                                                ToolTip.Tip="Reset and generate new COMPEL auth token">
+                                                                            <TextBlock Text="🔄 Reset" FontSize="10"
+                                                                                    Foreground="#F59E0B" />
+                                                                        </Button>
+                                                                    </StackPanel>
+                                                                </Grid>
+
+                                                            </StackPanel>
+                                                        </Border>
+                                                    </DataTemplate>
+                                                </ItemsControl.ItemTemplate>
+                                            </ItemsControl>
+                                        </StackPanel>
+                                    </Border>
+
+                                    <!-- Section 3: 🎮 SUB-ACCOUNTS / SMURFS / ALTS -->
+                                    <Border Background="#1E293B" BorderBrush="#7C3AED" BorderThickness="1.5"
+                                            CornerRadius="10" Padding="12"
+                                            IsVisible="{Binding SelectedUser.HasSubAccounts, FallbackValue=False}">
+                                        <StackPanel Spacing="8">
+                                            <StackPanel Spacing="2">
+                                                <StackPanel Orientation="Horizontal" Spacing="6"
+                                                            VerticalAlignment="Center">
+                                                    <TextBlock Text="🎮" FontSize="13" />
+                                                    <TextBlock
+                                                        Text="{Binding SelectedUser.SubAccounts.Count, StringFormat='SUB-ACCOUNTS &amp; ALTS ({0})', FallbackValue='SUB-ACCOUNTS &amp; ALTS (0)'}"
+                                                        FontSize="11"
+                                                        FontWeight="Bold"
+                                                        Foreground="#C084FC"
+                                                        LetterSpacing="1" />
+                                                </StackPanel>
+                                                <TextBlock Text="Player secondary &amp; smurf profiles" FontSize="10"
+                                                           Foreground="#64748B" />
+                                            </StackPanel>
+
+                                            <ItemsControl
+                                                ItemsSource="{Binding SelectedUser.SubAccounts, FallbackValue={x:Null}}">
+                                                <ItemsControl.ItemTemplate>
+                                                    <DataTemplate x:DataType="services:AccountItemDto">
+                                                        <Border Background="#0F172A" BorderBrush="#334155"
+                                                                BorderThickness="1" CornerRadius="8" Padding="10,8"
+                                                                Margin="0,0,0,6">
+                                                            <Grid ColumnDefinitions="Auto,*,Auto,Auto"
+                                                                  VerticalAlignment="Center">
+
+                                                                <!-- Sub-Account Avatar / Custom Icon -->
+                                                                <Border Grid.Column="0"
+                                                                        Width="28"
+                                                                        Height="28"
+                                                                        CornerRadius="14"
+                                                                        ClipToBounds="True"
+                                                                        Background="#1E293B"
+                                                                        BorderBrush="#A855F7"
+                                                                        BorderThickness="1.5"
+                                                                        Margin="0,0,8,0"
+                                                                        VerticalAlignment="Center">
+                                                                    <Panel>
+                                                                        <TextBlock Text="🎮"
+                                                                                   FontSize="12"
+                                                                                   HorizontalAlignment="Center"
+                                                                                   VerticalAlignment="Center"
+                                                                                   Opacity="0.6"
+                                                                                   IsVisible="{Binding !HasAvatar}" />
+                                                                        <Image Source="{Binding AvatarBitmap}"
+                                                                               Stretch="UniformToFill"
+                                                                               Width="28"
+                                                                               Height="28"
+                                                                               IsVisible="{Binding HasAvatar}" />
+                                                                    </Panel>
+                                                                </Border>
+
+                                                                <!-- Account Name & Icon Tag -->
+                                                                <StackPanel Grid.Column="1" Spacing="2"
+                                                                            VerticalAlignment="Center" Margin="0,0,8,0">
+                                                                    <TextBlock Text="{Binding Name, FallbackValue=''}"
+                                                                               FontSize="12.5" FontWeight="Bold"
+                                                                               Foreground="#F8FAFC"
+                                                                               TextTrimming="CharacterEllipsis" />
+                                                                    <WrapPanel Orientation="Horizontal">
+                                                                        <TextBlock Text="Sub-Account" FontSize="9"
+                                                                                   Foreground="#A855F7" Margin="0,0,6,0" />
+                                                                        <Border Background="#1E293B" CornerRadius="3" Padding="4,0"
+                                                                                IsVisible="{Binding HasCustomIcon}">
+                                                                            <TextBlock Text="{Binding IconDisplay}" FontSize="8"
+                                                                                       Foreground="#A78BFA" FontWeight="SemiBold" />
+                                                                        </Border>
+                                                                    </WrapPanel>
+                                                                </StackPanel>
+
+                                                                <!-- Account Type Dropdown -->
+                                                                <StackPanel Grid.Column="2" Orientation="Horizontal"
+                                                                            Spacing="5" VerticalAlignment="Center"
+                                                                            Margin="0,0,6,0">
+                                                                    <TextBlock Text="Type:" FontSize="10"
+                                                                               Foreground="#94A3B8"
+                                                                               VerticalAlignment="Center" />
+                                                                    <ComboBox
+                                                                        ItemsSource="{x:Static vm:UsersViewModel.AvailableAccountTypes}"
+                                                                        SelectedItem="{Binding Type, Mode=TwoWay, FallbackValue={x:Null}}"
+                                                                        Background="#1E293B"
+                                                                        Foreground="#F8FAFC"
+                                                                        Width="105"
+                                                                        FontSize="10.5"
+                                                                        Padding="5,2" />
+                                                                </StackPanel>
+
+                                                                <!-- Save Changes Button -->
+                                                                <Button Grid.Column="3"
+                                                                        Classes="secondary"
+                                                                        Command="{Binding $parent[UserControl].((vm:UsersViewModel)DataContext).UpdateAccountRoleCommand, FallbackValue={x:Null}}"
+                                                                        CommandParameter="{Binding}"
+                                                                        Padding="8,4"
+                                                                        VerticalAlignment="Center">
+                                                                    <TextBlock Text="💾 Save" FontSize="10.5" />
+                                                                </Button>
+
+                                                            </Grid>
+                                                        </Border>
+                                                    </DataTemplate>
+                                                </ItemsControl.ItemTemplate>
+                                            </ItemsControl>
+                                        </StackPanel>
+                                    </Border>
+
+                                </StackPanel>
+
+                            </Grid>
+
+                        </StackPanel>
+
+                    </StackPanel>
+
+                </ScrollViewer>
+            </Border>
+
+        </Grid>
+
+    </Grid>
+
+</UserControl>

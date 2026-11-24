@@ -1,0 +1,76 @@
+name: Diff-Scoped Mutation Testing (Stryker.NET)
+
+on:
+  pull_request:
+    paths:
+      - 'src/**/*.cs'
+      - 'tests/unit/**/*.cs'
+      - 'stryker-config.json'
+      - 'scripts/qa/run_diff_stryker.ps1'
+      - '.github/workflows/mutation-testing.yml'
+  workflow_dispatch:
+    inputs:
+      base_ref:
+        description: 'Git base ref for diff-scoped mutation analysis'
+        required: false
+        default: 'origin/main'
+      dry_run:
+        description: 'Plan only without executing mutants'
+        required: false
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+env:
+  DOTNET_NOLOGO: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: true
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
+  GITHUB_ACTIONS: 'true'
+
+jobs:
+  diff-scoped-stryker:
+    name: Diff-Scoped Stryker.NET Mutation Gate
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: pwsh
+    steps:
+      - name: Checkout (Full History for Git Diff)
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9 # v4
+        with:
+          global-json-file: global.json
+          dotnet-quality: 'ga'
+          cache: true
+          cache-dependency-path: Directory.Packages.props
+
+      - name: Install Pinned Stryker.NET CLI
+        if: ${{ !inputs.dry_run }}
+        run: |
+          dotnet tool install --tool-path .tools/stryker dotnet-stryker --version 4.5.0
+          "$PWD/.tools/stryker" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+
+      - name: Run Diff-Scoped Stryker.NET
+        run: |
+          $baseRef = if ("${{ github.event_name }}" -eq "pull_request") {
+            "origin/${{ github.base_ref }}"
+          } else {
+            "${{ inputs.base_ref }}"
+          }
+          $dryRunFlag = "${{ inputs.dry_run }}" -eq "true"
+          ./scripts/qa/run_diff_stryker.ps1 -BaseRef $baseRef -HeadRef HEAD -ConfigPath stryker-config.json -OutputDir artifacts/stryker -DryRun:$dryRunFlag
+
+      - name: Upload Stryker Mutation Reports
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: stryker-diff-mutation-reports
+          path: artifacts/stryker/
+          if-no-files-found: ignore
+          retention-days: 14

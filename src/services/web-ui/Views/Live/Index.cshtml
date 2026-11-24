@@ -1,0 +1,415 @@
+@model List<LiveMatchData>
+@{
+    ViewData["Title"] = "Live Matches - Spectate In-Game Action";
+}
+
+<div class="w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6 animate-fadeIn">
+    <!-- Header Banner -->
+    <div
+        class="relative overflow-hidden rounded-2xl p-6 bg-gradient-to-r from-red-950/60 via-purple-950/70 to-slate-950 border border-red-500/20 shadow-xl backdrop-blur-xl">
+        <div class="absolute -right-10 -top-10 w-64 h-64 bg-red-600/10 rounded-full blur-3xl pointer-events-none"></div>
+        <div
+            class="absolute -left-10 -bottom-10 w-64 h-64 bg-purple-600/15 rounded-full blur-3xl pointer-events-none"></div>
+
+        <div class="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div class="space-y-1.5">
+                <div class="flex items-center gap-2">
+                    <div
+                        class="inline-flex items-center gap-2 px-3 py-0.5 rounded-full bg-red-500/20 border border-red-500/40 text-red-300 text-xs font-black tracking-wider uppercase">
+                        <span class="w-2 h-2 rounded-full bg-red-500 animate-ping"></span>
+                        <span>LIVE SPECTATOR HUB</span>
+                    </div>
+                    <div
+                        class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-purple-500/20 border border-purple-500/40 text-purple-300 text-xs font-bold tracking-wider uppercase">
+                        <span>🛡️ STAFF ONLY (WIP)</span>
+                    </div>
+                </div>
+                <h1 class="text-3xl sm:text-4xl font-extrabold text-white tracking-tight flex items-center gap-3">
+                    <span>Live Ongoing Matches</span>
+                    <span id="active-matches-count"
+                          class="text-xs font-mono font-bold bg-slate-800/90 text-purple-300 px-3 py-1 rounded-full border border-purple-500/30">
+                        @Model.Count Active
+                    </span>
+                </h1>
+                <p class="text-slate-400 text-xs sm:text-sm max-w-3xl">
+                    Watch real-time matches currently being fought on Project KONGOR game servers. Spectate live 2D hero
+                    movements, team scoreboards, and combat telemetry directly in your browser.
+                </p>
+            </div>
+
+            <!-- Real-Time Connection Pulse Badge & Quick Prune Action -->
+            <div class="flex items-center gap-3">
+                <button id="btn-prune-matches"
+                        class="px-3.5 py-2 rounded-xl bg-slate-900/90 hover:bg-slate-800 border border-slate-700 text-slate-300 hover:text-white font-bold text-xs flex items-center gap-2 shadow-sm transition-all"
+                        title="Clear completed or idle matches">
+                    <span>🧹</span>
+                    <span>Prune Idle</span>
+                </button>
+                <div id="live-connection-badge"
+                     class="px-4 py-2 rounded-xl bg-emerald-950/60 border border-emerald-500/40 text-emerald-400 font-bold text-xs sm:text-sm flex items-center gap-2.5 shadow-lg shadow-emerald-950/50 backdrop-blur-md transition-all">
+                    <span id="live-connection-dot" class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                    <span id="live-connection-text" class="tracking-wide uppercase font-mono text-[11px] sm:text-xs">Live Sync Active</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Active Matches Container -->
+    <div id="live-matches-container">
+        @if (Model.Count == 0)
+        {
+            <div class="py-20 text-center rounded-2xl bg-slate-900/40 border border-slate-800/80 space-y-3">
+                <div class="text-4xl">⚔️</div>
+                <h3 class="text-lg font-bold text-white">No active matches at the moment</h3>
+                <p class="text-slate-400 text-xs max-w-md mx-auto">
+                    All battles have concluded. Join the matchmaking queue in the HoN Game Client to launch a new match!
+                </p>
+            </div>
+        }
+        else
+        {
+            <div id="live-matches-grid" class="grid grid-cols-1 xl:grid-cols-2 gap-5">
+                @foreach (var match in Model)
+                {
+                    var legionPlayers = match.Players.Where(p => p.Team == 1).ToList();
+                    var hellbournePlayers = match.Players.Where(p => p.Team == 2).ToList();
+
+                    <div id="match-card-@match.MatchID"
+                         class="glass-card rounded-2xl p-5 border border-slate-800/80 hover:border-purple-500/40 transition-all space-y-4 shadow-xl">
+                        <!-- Top Match Bar -->
+                        <div class="flex items-center justify-between border-b border-slate-800/80 pb-3">
+                            <div class="flex items-center gap-2.5">
+                                <span class="w-2.5 h-2.5 rounded-full bg-red-500 animate-ping"></span>
+                                <span class="text-sm font-black text-white">Match #@match.MatchID</span>
+                                <span
+                                    class="px-2.5 py-0.5 rounded-md bg-slate-800 text-purple-300 text-[11px] font-bold border border-purple-500/20">
+                                    @match.GameMode
+                                </span>
+                            </div>
+                            <div class="flex items-center gap-3">
+                                <span id="match-time-@match.MatchID"
+                                      class="text-xs font-mono font-bold text-emerald-400 bg-emerald-950/40 px-2.5 py-0.5 rounded-md border border-emerald-500/20">
+                                    ⏱️ @match.FormattedTime
+                                </span>
+                                <span class="text-xs text-slate-400 font-medium">@match.ServerName</span>
+                            </div>
+                        </div>
+
+                        <!-- Team Score Banner -->
+                        <div
+                            class="grid grid-cols-3 items-center text-center p-3 rounded-xl bg-slate-950/60 border border-slate-800/60">
+                            <div class="text-left space-y-0.5">
+                                <div class="text-xs font-bold text-sky-400 uppercase tracking-wider">Legion</div>
+                                <div id="score-legion-@match.MatchID"
+                                     class="text-2xl font-black text-white">@match.ScoreLegion</div>
+                            </div>
+                            <div class="text-center">
+                                <div class="text-[10px] text-slate-500 uppercase font-bold tracking-widest">VS</div>
+                                <div class="text-xs font-semibold text-slate-400">@match.Map.ToUpper()</div>
+                            </div>
+                            <div class="text-right space-y-0.5">
+                                <div class="text-xs font-bold text-rose-400 uppercase tracking-wider">Hellbourne</div>
+                                <div id="score-hell-@match.MatchID"
+                                     class="text-2xl font-black text-white">@match.ScoreHellbourne</div>
+                            </div>
+                        </div>
+
+                        <!-- Team Hero Avatars Roster -->
+                        <div class="space-y-2 text-xs">
+                            <!-- Legion Row -->
+                            <div
+                                class="flex items-center justify-between p-2 rounded-xl bg-sky-950/20 border border-sky-500/20">
+                                <span class="font-bold text-sky-300 w-16 text-left">Legion</span>
+                                <div id="roster-legion-@match.MatchID" class="flex items-center gap-1.5 flex-wrap">
+                                    @foreach (var p in legionPlayers)
+                                    {
+                                        <div class="relative group cursor-pointer"
+                                             title="@p.AccountName (@p.HeroDisplayName) - Level @p.Level">
+                                            <div
+                                                class="w-8 h-8 rounded-lg overflow-hidden border border-sky-500/40 bg-slate-900">
+                                                <img
+                                                    src="/images/heroes/@(p.HeroIdentifier.ToLower().Replace("hero_", "")).png"
+                                                    onError="this.src='/images/heroes/default.png';"
+                                                    class="w-full h-full object-cover" alt=""/>
+                                            </div>
+                                            <span
+                                                class="absolute -bottom-1 -right-1 bg-slate-950 text-sky-400 text-[8px] font-bold px-1 rounded-full border border-sky-500/40">
+                                                @p.Level
+                                            </span>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+
+                            <!-- Hellbourne Row -->
+                            <div
+                                class="flex items-center justify-between p-2 rounded-xl bg-rose-950/20 border border-rose-500/20">
+                                <span class="font-bold text-rose-300 w-16 text-left">Hellbourne</span>
+                                <div id="roster-hell-@match.MatchID" class="flex items-center gap-1.5 flex-wrap">
+                                    @foreach (var p in hellbournePlayers)
+                                    {
+                                        <div class="relative group cursor-pointer"
+                                             title="@p.AccountName (@p.HeroDisplayName) - Level @p.Level">
+                                            <div
+                                                class="w-8 h-8 rounded-lg overflow-hidden border border-rose-500/40 bg-slate-900">
+                                                <img
+                                                    src="/images/heroes/@(p.HeroIdentifier.ToLower().Replace("hero_", "")).png"
+                                                    onError="this.src='/images/heroes/default.png';"
+                                                    class="w-full h-full object-cover" alt=""/>
+                                            </div>
+                                            <span
+                                                class="absolute -bottom-1 -right-1 bg-slate-950 text-amber-400 text-[8px] font-bold px-1 rounded-full border border-amber-500/40">
+                                                @p.Level
+                                            </span>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Spectate Action Button -->
+                        <div class="pt-2 flex items-center justify-end">
+                            <a href="/live/@match.MatchID"
+                               class="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-gradient-to-r from-purple-600 via-indigo-600 to-purple-600 hover:from-purple-500 hover:to-indigo-500 text-white font-bold text-xs sm:text-sm shadow-md shadow-purple-600/30 hover:scale-[1.02] transition-all flex items-center justify-center gap-2">
+                                <span>👁️</span>
+                                <span>Spectate 2D Live Minimap</span>
+                            </a>
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.0/signalr.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const container = document.getElementById('live-matches-container');
+            const countBadge = document.getElementById('active-matches-count');
+            const badge = document.getElementById('live-connection-badge');
+            const badgeDot = document.getElementById('live-connection-dot');
+            const badgeText = document.getElementById('live-connection-text');
+
+            function getHeroIcon(heroId) {
+                if (!heroId) return '/images/heroes/default.png';
+                let clean = heroId.toLowerCase().replace('hero_', '').replace(/_/g, '').trim();
+                const aliasMap = {
+                    'flameguard': 'pyromancer', 'hiro': 'swiftblade', 'frosty': 'glacius',
+                    'hunter': 'bloodhunter', 'krixi': 'valkyrie', 'shaman': 'dementedshaman',
+                    'witchslayer': 'witchslayer', 'flint': 'flintbeastwood', 'rocky': 'pebbles',
+                    'yogi': 'wildsoul', 'plant': 'keeperoftheforest', 'treant': 'deadwood',
+                    'wolfman': 'warbeast', 'succubis': 'succubus'
+                };
+                if (aliasMap[clean]) clean = aliasMap[clean];
+                return `/images/heroes/${clean}.png`;
+            }
+
+            function formatTime(seconds) {
+                const m = Math.floor((seconds || 0) / 60);
+                const s = (seconds || 0) % 60;
+                return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+            }
+
+            function renderMatches(matches) {
+                if (countBadge) {
+                    countBadge.textContent = `${matches.length} Active`;
+                }
+
+                if (!matches || matches.length === 0) {
+                    container.innerHTML = `
+                        <div class="py-20 text-center rounded-2xl bg-slate-900/40 border border-slate-800/80 space-y-3">
+                            <div class="text-4xl">⚔️</div>
+                            <h3 class="text-lg font-bold text-white">No active matches at the moment</h3>
+                            <p class="text-slate-400 text-xs max-w-md mx-auto">
+                                All battles have concluded. Join the matchmaking queue in the HoN Game Client to launch a new match!
+                            </p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                let html = '<div id="live-matches-grid" class="grid grid-cols-1 xl:grid-cols-2 gap-5">';
+                for (const match of matches) {
+                    const matchId = match.matchID || match.matchId || 0;
+                    const elapsed = match.elapsedSeconds !== undefined ? match.elapsedSeconds : (match.ElapsedSeconds || 0);
+                    const serverName = match.serverName || match.ServerName || 'Game Server';
+                    const gameMode = match.gameMode || match.GameMode || 'Normal';
+                    const mapName = match.map || match.Map || 'caldavar';
+                    const scoreLegion = match.scoreLegion !== undefined ? match.scoreLegion : (match.ScoreLegion || 0);
+                    const scoreHell = match.scoreHellbourne !== undefined ? match.scoreHellbourne : (match.ScoreHellbourne || 0);
+                    const players = match.players || match.Players || [];
+
+                    const legion = players.filter(p => (p.team || p.Team) === 1);
+                    const hell = players.filter(p => (p.team || p.Team) === 2);
+
+                    const legionHtml = legion.length > 0 ? legion.map(p => {
+                        const name = p.accountName || p.AccountName || `Player #${p.accountID || p.AccountID || 1}`;
+                        const hero = p.heroDisplayName || p.HeroDisplayName || 'Picking Hero...';
+                        const heroId = p.heroIdentifier || p.HeroIdentifier || '';
+                        const level = p.level || p.Level || 1;
+                        return `
+                            <div class="relative group cursor-pointer" title="${name} (${hero}) - Level ${level}">
+                                <div class="w-8 h-8 rounded-lg overflow-hidden border border-sky-500/40 bg-slate-900">
+                                    <img src="${getHeroIcon(heroId)}" onError="this.src='/images/heroes/default.png';" alt="${hero || 'Hero'}" class="w-full h-full object-cover"/>
+                                </div>
+                                <span class="absolute -bottom-1 -right-1 bg-slate-950 text-sky-400 text-[8px] font-bold px-1 rounded-full border border-sky-500/40">
+                                    ${level}
+                                </span>
+                            </div>
+                        `;
+                    }).join('') : '<span class="text-[10px] text-slate-500 italic p-1">Waiting for players...</span>';
+
+                    const hellHtml = hell.length > 0 ? hell.map(p => {
+                        const name = p.accountName || p.AccountName || `Player #${p.accountID || p.AccountID || 1}`;
+                        const hero = p.heroDisplayName || p.HeroDisplayName || 'Picking Hero...';
+                        const heroId = p.heroIdentifier || p.HeroIdentifier || '';
+                        const level = p.level || p.Level || 1;
+                        return `
+                            <div class="relative group cursor-pointer" title="${name} (${hero}) - Level ${level}">
+                                <div class="w-8 h-8 rounded-lg overflow-hidden border border-rose-500/40 bg-slate-900">
+                                    <img src="${getHeroIcon(heroId)}" onError="this.src='/images/heroes/default.png';" alt="${hero || 'Hero'}" class="w-full h-full object-cover"/>
+                                </div>
+                                <span class="absolute -bottom-1 -right-1 bg-slate-950 text-rose-400 text-[8px] font-bold px-1 rounded-full border border-rose-500/40">
+                                    ${level}
+                                </span>
+                            </div>
+                        `;
+                    }).join('') : '<span class="text-[10px] text-slate-500 italic p-1">Waiting for players...</span>';
+
+                    html += `
+                        <div id="match-card-${matchId}" class="glass-card rounded-2xl p-5 border border-slate-800/80 hover:border-purple-500/40 transition-all space-y-4 shadow-xl animate-fadeIn">
+                            <div class="flex items-center justify-between border-b border-slate-800/80 pb-3">
+                                <div class="flex items-center gap-2.5">
+                                    <span class="w-2.5 h-2.5 rounded-full bg-red-500 animate-ping"></span>
+                                    <span class="text-sm font-black text-white">Match #${matchId}</span>
+                                    <span class="px-2.5 py-0.5 rounded-md bg-slate-800 text-purple-300 text-[11px] font-bold border border-purple-500/20">
+                                        ${gameMode}
+                                    </span>
+                                </div>
+                                <div class="flex items-center gap-3">
+                                    <span id="match-time-${matchId}" class="text-xs font-mono font-bold text-emerald-400 bg-emerald-950/40 px-2.5 py-0.5 rounded-md border border-emerald-500/20">
+                                        ⏱️ ${formatTime(elapsed)}
+                                    </span>
+                                    <span class="text-xs text-slate-400 font-medium">${serverName}</span>
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-3 items-center text-center p-3 rounded-xl bg-slate-950/60 border border-slate-800/60">
+                                <div class="text-left space-y-0.5">
+                                    <div class="text-xs font-bold text-sky-400 uppercase tracking-wider">Legion</div>
+                                    <div id="score-legion-${matchId}" class="text-2xl font-black text-white">${scoreLegion}</div>
+                                </div>
+                                <div class="text-center">
+                                    <div class="text-[10px] text-slate-500 uppercase font-bold tracking-widest">VS</div>
+                                    <div class="text-xs font-semibold text-slate-400">${mapName.toUpperCase()}</div>
+                                </div>
+                                <div class="text-right space-y-0.5">
+                                    <div class="text-xs font-bold text-rose-400 uppercase tracking-wider">Hellbourne</div>
+                                    <div id="score-hell-${matchId}" class="text-2xl font-black text-white">${scoreHell}</div>
+                                </div>
+                            </div>
+
+                            <div class="space-y-2 text-xs">
+                                <div class="flex items-center justify-between p-2 rounded-xl bg-sky-950/20 border border-sky-500/20">
+                                    <span class="font-bold text-sky-300 w-16 text-left">Legion</span>
+                                    <div class="flex items-center gap-1.5 flex-wrap">
+                                        ${legionHtml}
+                                    </div>
+                                </div>
+
+                                <div class="flex items-center justify-between p-2 rounded-xl bg-rose-950/20 border border-rose-500/20">
+                                    <span class="font-bold text-rose-300 w-16 text-left">Hellbourne</span>
+                                    <div class="flex items-center gap-1.5 flex-wrap">
+                                        ${hellHtml}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="pt-2 flex items-center justify-end">
+                                <a href="/live/${matchId}" class="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-gradient-to-r from-purple-600 via-indigo-600 to-purple-600 hover:from-purple-500 hover:to-indigo-500 text-white font-bold text-xs sm:text-sm shadow-md shadow-purple-600/30 hover:scale-[1.02] transition-all flex items-center justify-center gap-2">
+                                    <span>👁️</span>
+                                    <span>Spectate 2D Live Minimap</span>
+                                </a>
+                            </div>
+                        </div>
+                    `;
+                }
+                html += '</div>';
+                container.innerHTML = html;
+            }
+
+            if (typeof signalR === 'undefined') {
+                console.warn('[Live Overview] SignalR client not loaded.');
+                return;
+            }
+
+            const connection = new signalR.HubConnectionBuilder()
+                .withUrl('/hubs/live-matches')
+                .withAutomaticReconnect([0, 1000, 3000, 5000, 10000])
+                .configureLogging(signalR.LogLevel.Warning)
+                .build();
+
+            connection.on('OnOverviewUpdated', (matches) => {
+                renderMatches(matches);
+            });
+
+            connection.onreconnecting(() => {
+                if (badge && badgeDot && badgeText) {
+                    badge.className = 'px-4 py-2 rounded-xl bg-amber-950/60 border border-amber-500/40 text-amber-400 font-bold text-xs sm:text-sm flex items-center gap-2.5 shadow-lg shadow-amber-950/50 backdrop-blur-md transition-all';
+                    badgeDot.className = 'w-2.5 h-2.5 rounded-full bg-amber-400 animate-ping';
+                    badgeText.textContent = 'Reconnecting...';
+                }
+            });
+
+            connection.onreconnected(() => {
+                if (badge && badgeDot && badgeText) {
+                    badge.className = 'px-4 py-2 rounded-xl bg-emerald-950/60 border border-emerald-500/40 text-emerald-400 font-bold text-xs sm:text-sm flex items-center gap-2.5 shadow-lg shadow-emerald-950/50 backdrop-blur-md transition-all';
+                    badgeDot.className = 'w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse';
+                    badgeText.textContent = 'Live Sync Active';
+                }
+                connection.invoke('JoinOverview');
+            });
+
+            connection.onclose(() => {
+                if (badge && badgeDot && badgeText) {
+                    badge.className = 'px-4 py-2 rounded-xl bg-rose-950/60 border border-rose-500/40 text-rose-400 font-bold text-xs sm:text-sm flex items-center gap-2.5 shadow-lg shadow-rose-950/50 backdrop-blur-md transition-all';
+                    badgeDot.className = 'w-2.5 h-2.5 rounded-full bg-rose-400';
+                    badgeText.textContent = 'Disconnected';
+                }
+            });
+
+            const pruneBtn = document.getElementById('btn-prune-matches');
+            if (pruneBtn) {
+                pruneBtn.addEventListener('click', async () => {
+                    pruneBtn.disabled = true;
+                    pruneBtn.innerHTML = '<span>⏳</span><span>Pruning...</span>';
+                    try {
+                        const res = await fetch('/api/live/prune', {method: 'POST'});
+                        if (res.ok) {
+                            window.location.reload();
+                        }
+                    } catch (e) {
+                        console.error('Error pruning matches', e);
+                    } finally {
+                        pruneBtn.disabled = false;
+                        pruneBtn.innerHTML = '<span>🧹</span><span>Prune Idle</span>';
+                    }
+                });
+            }
+
+            connection.start().then(() => {
+                console.log('[Live Overview] SignalR connected. Subscribing to overview room...');
+                connection.invoke('JoinOverview');
+            }).catch(err => {
+                console.error('[Live Overview] SignalR connection failed:', err);
+                if (badge && badgeDot && badgeText) {
+                    badge.className = 'px-4 py-2 rounded-xl bg-rose-950/60 border border-rose-500/40 text-rose-400 font-bold text-xs sm:text-sm flex items-center gap-2.5 shadow-lg shadow-rose-950/50 backdrop-blur-md transition-all';
+                    badgeDot.className = 'w-2.5 h-2.5 rounded-full bg-rose-400';
+                    badgeText.textContent = 'Offline';
+                }
+            });
+        });
+    </script>
+}

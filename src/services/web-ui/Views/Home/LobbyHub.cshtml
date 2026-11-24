@@ -1,0 +1,574 @@
+@{
+    Layout = null;
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>NEXUS - In-Game Lobby Hub</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800;900&family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;600;700;800&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --gold-primary: #f5c842;
+            --gold-accent: #d4af37;
+            --gold-dark: #8c6d1f;
+            --bg-dark: #07090e;
+            --bg-card: rgba(14, 18, 27, 0.75);
+            --bg-card-hover: rgba(22, 28, 42, 0.85);
+            --border-gold: rgba(212, 175, 55, 0.35);
+            --border-gold-glow: rgba(245, 200, 66, 0.6);
+            --cyan-glow: #00d2ff;
+            --purple-glow: #9d4edd;
+            --text-main: #e2e8f0;
+            --text-muted: #94a3b8;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+        }
+
+        body {
+            background: radial-gradient(ellipse at 50% 15%, #151c2c 0%, #090c13 60%, #040508 100%);
+            color: var(--text-main);
+            font-family: 'Inter', sans-serif;
+            overflow: hidden;
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 24px;
+            position: relative;
+        }
+
+        /* Ambient glowing background runes */
+        .ambient-glow {
+            position: absolute;
+            top: -20%;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 650px;
+            height: 350px;
+            background: radial-gradient(circle, rgba(212, 175, 55, 0.18) 0%, rgba(157, 78, 221, 0.08) 50%, transparent 70%);
+            pointer-events: none;
+            z-index: 0;
+            filter: blur(40px);
+        }
+
+        /* Top Header Bar */
+        .hub-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            z-index: 1;
+            padding-bottom: 16px;
+            border-bottom: 1px solid rgba(212, 175, 55, 0.25);
+        }
+
+        .brand-container {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .brand-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 8px;
+            background: linear-gradient(135deg, #2a2210, #141006);
+            border: 1.5px solid var(--gold-primary);
+            box-shadow: 0 0 16px rgba(245, 200, 66, 0.4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Cinzel', serif;
+            font-size: 22px;
+            font-weight: 800;
+            color: var(--gold-primary);
+        }
+
+        .brand-text h1 {
+            font-family: 'Cinzel', serif;
+            font-size: 22px;
+            font-weight: 800;
+            letter-spacing: 1.5px;
+            background: linear-gradient(90deg, #fff2cc, #f5c842, #e5a720);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-transform: uppercase;
+        }
+
+        .brand-text p {
+            font-size: 11px;
+            color: var(--text-muted);
+            letter-spacing: 0.8px;
+            text-transform: uppercase;
+        }
+
+        .server-status-pill {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(16, 185, 129, 0.12);
+            border: 1px solid rgba(16, 185, 129, 0.4);
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            color: #34d399;
+            box-shadow: 0 0 12px rgba(16, 185, 129, 0.2);
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: #10b981;
+            box-shadow: 0 0 8px #10b981;
+            animation: pulse-dot 2s infinite;
+        }
+
+        @@keyframes pulse-dot {
+            0%, 100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+            50% {
+                opacity: 0.5;
+                transform: scale(0.85);
+            }
+        }
+
+        /* Main Grid Content */
+        .hub-grid {
+            display: grid;
+            grid-template-columns: 1.45fr 1fr;
+            gap: 20px;
+            flex: 1;
+            margin-top: 18px;
+            z-index: 1;
+            height: calc(100% - 90px);
+        }
+
+        /* Left Column: Spotlight Video & News Carousel */
+        .spotlight-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-gold);
+            border-radius: 12px;
+            backdrop-filter: blur(16px);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+            position: relative;
+        }
+
+        .video-container {
+            width: 100%;
+            height: 250px;
+            position: relative;
+            background: #000;
+            border-bottom: 1px solid var(--border-gold);
+        }
+
+        .video-container iframe, .video-container video {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        .video-badge {
+            position: absolute;
+            top: 12px;
+            left: 12px;
+            background: rgba(220, 38, 38, 0.85);
+            color: #fff;
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.8px;
+            text-transform: uppercase;
+            box-shadow: 0 0 10px rgba(220, 38, 38, 0.6);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        /* Tabs & News List */
+        .news-tabs {
+            display: flex;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            background: rgba(8, 11, 17, 0.6);
+        }
+
+        .news-tab {
+            padding: 10px 18px;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border-bottom: 2px solid transparent;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .news-tab:hover {
+            color: #fff;
+        }
+
+        .news-tab.active {
+            color: var(--gold-primary);
+            border-bottom: 2px solid var(--gold-primary);
+            background: rgba(212, 175, 55, 0.06);
+        }
+
+        .news-content-list {
+            padding: 14px;
+            overflow-y: auto;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .news-content-list::-webkit-scrollbar {
+            width: 5px;
+        }
+
+        .news-content-list::-webkit-scrollbar-thumb {
+            background: var(--gold-dark);
+            border-radius: 4px;
+        }
+
+        .news-item {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 8px;
+            padding: 10px 14px;
+            transition: all 0.2s ease;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .news-item:hover {
+            background: rgba(212, 175, 55, 0.08);
+            border-color: var(--border-gold);
+            transform: translateX(4px);
+        }
+
+        .news-title {
+            font-size: 13px;
+            font-weight: 600;
+            color: #f1f5f9;
+        }
+
+        .news-meta {
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-top: 2px;
+        }
+
+        .news-tag {
+            font-size: 10px;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-weight: 700;
+            text-transform: uppercase;
+            background: rgba(212, 175, 55, 0.15);
+            color: var(--gold-primary);
+            border: 1px solid rgba(212, 175, 55, 0.3);
+        }
+
+        /* Right Column: Hero Spotlight & Community Hub */
+        .right-column {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .hero-spotlight-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-gold);
+            border-radius: 12px;
+            padding: 16px;
+            backdrop-filter: blur(16px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero-spotlight-card::before {
+            content: '';
+            position: absolute;
+            right: -20px;
+            top: -20px;
+            width: 120px;
+            height: 120px;
+            background: radial-gradient(circle, rgba(212, 175, 55, 0.2), transparent 70%);
+            pointer-events: none;
+        }
+
+        .hero-portrait {
+            width: 70px;
+            height: 70px;
+            border-radius: 10px;
+            border: 1.5px solid var(--gold-primary);
+            box-shadow: 0 0 16px rgba(212, 175, 55, 0.3);
+            object-fit: cover;
+            background: #111;
+        }
+
+        .hero-details h3 {
+            font-family: 'Cinzel', serif;
+            font-size: 16px;
+            color: #fff;
+            font-weight: 700;
+        }
+
+        .hero-details p {
+            font-size: 11px;
+            color: var(--gold-primary);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .hero-details .desc {
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-top: 4px;
+            line-height: 1.4;
+        }
+
+        /* Community Discord Banner */
+        .community-card {
+            background: linear-gradient(135deg, rgba(88, 101, 242, 0.15), rgba(15, 23, 42, 0.8));
+            border: 1px solid rgba(88, 101, 242, 0.35);
+            border-radius: 12px;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            gap: 12px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+            flex: 1;
+        }
+
+        .community-card h4 {
+            font-family: 'Outfit', sans-serif;
+            font-size: 15px;
+            color: #fff;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .community-card p {
+            font-size: 12px;
+            color: #cbd5e1;
+            line-height: 1.5;
+        }
+
+        .discord-btn {
+            background: #5865f2;
+            color: #fff;
+            border: none;
+            padding: 10px 16px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-align: center;
+            text-decoration: none;
+            display: block;
+            box-shadow: 0 4px 14px rgba(88, 101, 242, 0.4);
+        }
+
+        .discord-btn:hover {
+            background: #4752c4;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(88, 101, 242, 0.6);
+        }
+    </style>
+</head>
+<body>
+<div class="ambient-glow"></div>
+
+<!-- Header -->
+<header class="hub-header">
+    <div class="brand-container">
+        <div class="brand-icon">K</div>
+        <div class="brand-text">
+            <h1>NEXUS KONGOR</h1>
+            <p>Official Client Portal & Live Hub</p>
+        </div>
+    </div>
+
+    <div class="server-status-pill">
+        <div class="status-dot"></div>
+        <span>Master Server Online</span>
+    </div>
+</header>
+
+<!-- Main Grid Content -->
+<main class="hub-grid">
+    <!-- Left: Featured Video Spotlight & News -->
+    <section class="spotlight-card">
+        <div class="video-container">
+            <div class="video-badge">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" style="margin-right: 4px;">
+                    <path
+                        d="M11.571 4.714h1.715v5.143H11.57zm4.715 0H18v5.143h-1.714zM6 0L1.714 4.286v15.428h5.143V24l4.286-4.286h3.428L22.286 12V0zm14.571 11.143l-3.428 3.428h-3.429l-3 3v-3H6.857V1.714h13.714Z"/>
+                </svg>
+                🔴 LIVE STREAM • theguccidonut
+            </div>
+            <iframe
+                src="https://player.twitch.tv/?channel=theguccidonut&parent=localhost&parent=127.0.0.1&parent=masterserver.newbs.io&parent=dawnbringer.newbs.io&parent=newbs.io&autoplay=true&muted=false"
+                height="100%"
+                width="100%"
+                allowfullscreen="true"
+                scrolling="no"
+                frameborder="0">
+            </iframe>
+        </div>
+
+        <div class="news-tabs">
+            <div class="news-tab active" onclick="switchTab(this, 'announcements')">Announcements</div>
+            <div class="news-tab" onclick="switchTab(this, 'patch_notes')">Patch Notes</div>
+            <div class="news-tab" onclick="switchTab(this, 'tournaments')">Tournaments</div>
+        </div>
+
+        <div class="news-content-list" id="newsContent">
+            <div class="news-item">
+                <div>
+                    <div class="news-title">Welcome to NEXUS KONGOR 5.0.0!</div>
+                    <div class="news-meta">Full 64-bit client restoration with Discord Rich Presence & 500+ FPS
+                        unlocked.
+                    </div>
+                </div>
+                <span class="news-tag">Release</span>
+            </div>
+            <div class="news-item">
+                <div>
+                    <div class="news-title">Patch 5.0.0 Balance Updates</div>
+                    <div class="news-meta">Hero adjustments for Lord Salforis, Riptide, and Deadwood.</div>
+                </div>
+                <span class="news-tag">Balance</span>
+            </div>
+            <div class="news-item">
+                <div>
+                    <div class="news-title">Upcoming Community 5v5 Mid Wars Cup</div>
+                    <div class="news-meta">Signups open on Discord with exclusive gold coin & avatar prizes!</div>
+                </div>
+                <span class="news-tag">Event</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- Right: Hero Spotlight & Discord Community -->
+    <div class="right-column">
+        <!-- Hero Spotlight -->
+        <section class="hero-spotlight-card">
+            <img src="/images/heroes/hero_riptide.png" onerror="this.src='/images/heroes/hero_gladiator.png'"
+                 alt="Hero Spotlight" class="hero-portrait"/>
+            <div class="hero-details">
+                <p>Hero Spotlight</p>
+                <h3>Riptide</h3>
+                <div class="desc">Master of tidal surges and relentless water vortexes. Dominates the lanes with water
+                    control and lockdown.
+                </div>
+            </div>
+        </section>
+
+        <!-- Discord Community Card -->
+        <section class="community-card">
+            <div>
+                <h4>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                        <path
+                            d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994.021-.041.001-.09-.041-.106a13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.929 1.793 8.18 1.793 12.061 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.893.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.028zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z"/>
+                    </svg>
+                    Join the Official Community
+                </h4>
+                <p>Find matches, participate in tournaments, report bugs, and chat directly with developers and players
+                    worldwide.</p>
+            </div>
+            <a href="https://discord.gg/kongor" target="_blank" class="discord-btn">Join Discord Server</a>
+        </section>
+    </div>
+</main>
+
+<script>
+    function switchTab(element, tabName) {
+        document.querySelectorAll('.news-tab').forEach(el => el.classList.remove('active'));
+        element.classList.add('active');
+
+        const newsContent = document.getElementById('newsContent');
+        if (tabName === 'announcements') {
+            newsContent.innerHTML = `
+                    <div class="news-item">
+                        <div>
+                            <div class="news-title">Welcome to NEXUS KONGOR 5.0.0!</div>
+                            <div class="news-meta">Full 64-bit client restoration with Discord Rich Presence & 500+ FPS unlocked.</div>
+                        </div>
+                        <span class="news-tag">Release</span>
+                    </div>
+                    <div class="news-item">
+                        <div>
+                            <div class="news-title">Server Infrastructure Modernization</div>
+                            <div class="news-meta">Global matchmaking with instant queue notifications and zero-latency routing.</div>
+                        </div>
+                        <span class="news-tag">Server</span>
+                    </div>
+                `;
+        } else if (tabName === 'patch_notes') {
+            newsContent.innerHTML = `
+                    <div class="news-item">
+                        <div>
+                            <div class="news-title">Patch 5.0.0 Balance Updates</div>
+                            <div class="news-meta">Hero adjustments for Lord Salforis, Riptide, and Deadwood.</div>
+                        </div>
+                        <span class="news-tag">Balance</span>
+                    </div>
+                    <div class="news-item">
+                        <div>
+                            <div class="news-title">Item Adjustments: Portal Key & Geometer's Bane</div>
+                            <div class="news-meta">Cooldown tweaks and mana efficiency changes.</div>
+                        </div>
+                        <span class="news-tag">Items</span>
+                    </div>
+                `;
+        } else if (tabName === 'tournaments') {
+            newsContent.innerHTML = `
+                    <div class="news-item">
+                        <div>
+                            <div class="news-title">Upcoming Community 5v5 Mid Wars Cup</div>
+                            <div class="news-meta">Signups open on Discord with exclusive gold coin & avatar prizes!</div>
+                        </div>
+                        <span class="news-tag">Event</span>
+                    </div>
+                `;
+        }
+    }
+</script>
+</body>
+</html>

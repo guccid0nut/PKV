@@ -1,0 +1,18 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# SPDX-FileCopyrightText: 2026 guccidonut and Project KONGOR V Contributors
+
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - fleet.yaml
+  - fleet-autoscaler.yaml
+
+configMapGenerator:
+  - name: kongor-fleet-config
+    options:
+      disableNameSuffixHash: true
+    literals:
+      - SERVER_NAME_PREFIX=^oKONGOR ARENA ^r
+      - MASTER_SERVER_HOST_PORT=master-server:55555
+      - MASTER_SERVER_URL=http://master-server:55555

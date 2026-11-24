@@ -1,0 +1,1601 @@
+@{
+    var currentPath = (Context.Request.Path.Value ?? "").ToLowerInvariant();
+
+    bool IsPathActive(string targetPath)
+    {
+        if (targetPath == "/")
+        {
+            return currentPath == "/" || string.IsNullOrEmpty(currentPath) || currentPath == "/home" || currentPath == "/home/index";
+        }
+
+        var cleanTarget = targetPath.Trim('/').ToLowerInvariant();
+        var cleanCurrent = currentPath.Trim('/').ToLowerInvariant();
+
+        return cleanCurrent == cleanTarget ||
+               cleanCurrent.StartsWith(cleanTarget + "/") ||
+               cleanCurrent == "home/" + cleanTarget ||
+               cleanCurrent.StartsWith("home/" + cleanTarget + "/") ||
+               (cleanTarget == "codex" && (cleanCurrent.StartsWith("hero") || cleanCurrent.StartsWith("home/hero")));
+    }
+
+
+    string GetDropdownBtnClass(bool hasActiveChild)
+    {
+        return hasActiveChild
+            ? "text-xs font-bold px-2.5 xl:px-3 py-1.5 rounded-xl bg-amber-500/15 text-amber-300 border border-amber-500/40 shadow-sm shadow-amber-950/30 transition-all flex items-center gap-1.5 whitespace-nowrap cursor-pointer"
+            : "text-xs font-semibold px-2.5 xl:px-3 py-1.5 rounded-xl bg-slate-900/80 hover:bg-slate-800 text-slate-300 hover:text-cyan-300 border border-slate-700/60 hover:border-cyan-500/30 transition-all flex items-center gap-1.5 whitespace-nowrap cursor-pointer";
+    }
+
+    string GetDropdownItemClass(string targetPath)
+    {
+        var active = IsPathActive(targetPath);
+        return active
+            ? "flex items-center gap-2.5 px-3 py-2 rounded-xl bg-amber-500/15 text-amber-300 border border-amber-500/30 text-xs font-bold transition-all shadow-sm"
+            : "flex items-center gap-2.5 px-3 py-2 rounded-xl hover:bg-slate-800/90 text-slate-300 hover:text-white text-xs font-semibold transition-all";
+    }
+
+    string GetMobileNavClass(string targetPath)
+    {
+        var active = IsPathActive(targetPath);
+        return active
+            ? "w-full py-2.5 px-3.5 rounded-xl bg-amber-500/15 text-amber-300 border border-amber-500/40 text-xs font-bold flex items-center gap-2.5 transition-all shadow-sm"
+            : "w-full py-2.5 px-3.5 rounded-xl bg-slate-900/80 hover:bg-slate-800 text-slate-300 hover:text-cyan-300 border border-slate-700/60 text-xs font-semibold flex items-center gap-2.5 transition-all";
+    }
+
+    string GetStaffDropdownItemClass(string targetPath)
+    {
+        var active = IsPathActive(targetPath);
+        return active
+            ? "flex items-center gap-2.5 px-3 py-2 rounded-xl bg-purple-500/25 text-purple-100 border border-purple-500/50 text-xs font-black transition-all shadow-md shadow-purple-950/40 ring-1 ring-purple-400/40"
+            : "flex items-center gap-2.5 px-3 py-2 rounded-xl bg-purple-950/45 hover:bg-purple-900/65 text-purple-200 hover:text-white border border-purple-500/35 text-xs font-bold transition-all shadow-sm";
+    }
+
+    string GetMobileStaffNavClass(string targetPath)
+    {
+        var active = IsPathActive(targetPath);
+        return active
+            ? "w-full py-2.5 px-3.5 rounded-xl bg-purple-600/30 text-purple-200 border border-purple-500/50 text-xs font-black flex items-center gap-2.5 transition-all shadow-md"
+            : "w-full py-2.5 px-3.5 rounded-xl bg-purple-950/40 hover:bg-purple-900/60 text-purple-300 hover:text-purple-200 border border-purple-500/30 text-xs font-bold flex items-center gap-2.5 transition-all";
+    }
+
+    var isStaffUser = DAWNBRINGER.WebPortal.UI.Infrastructure.StaffAuthorizationHelper.IsStaff(User);
+
+    var isDiscordConnected = User.Identity?.IsAuthenticated == true &&
+                             (User.HasClaim(c => c.Type == "discord_id" || c.Type == "urn:discord:id" || c.Type == "urn:discord:avatar") ||
+                              !string.IsNullOrEmpty(User.FindFirst("discord_id")?.Value) ||
+                              !string.IsNullOrEmpty(User.FindFirst("urn:discord:id")?.Value));
+
+    var layoutConfig = Context.RequestServices.GetService(typeof(Microsoft.Extensions.Configuration.IConfiguration)) as Microsoft.Extensions.Configuration.IConfiguration;
+    var isStandaloneMode = string.Equals(layoutConfig?["KONGOR_STANDALONE"], "true", StringComparison.OrdinalIgnoreCase) ||
+                           string.Equals(layoutConfig?["KONGOR_STANDALONE"], "1", StringComparison.OrdinalIgnoreCase);
+    var isPendingRegistration = User.HasClaim("pending_registration", "true");
+    var hasAccountIdClaim = !string.IsNullOrWhiteSpace(User.FindFirst("AccountId")?.Value);
+    var isFullyOnboardedUser = User.Identity?.IsAuthenticated == true &&
+                               !isPendingRegistration &&
+                               (isStandaloneMode ||
+                                (isDiscordConnected && hasAccountIdClaim) ||
+                                string.Equals(User.Identity.AuthenticationType, "TestAuth", StringComparison.OrdinalIgnoreCase) ||
+                                string.Equals(User.Identity.AuthenticationType, "TestCookieAuth", StringComparison.OrdinalIgnoreCase));
+
+    var rawHeaderReturnUrl = Context.Request.Query["returnUrl"].ToString();
+    var safeHeaderReturnUrl = !string.IsNullOrWhiteSpace(rawHeaderReturnUrl) && Url.IsLocalUrl(rawHeaderReturnUrl) ? rawHeaderReturnUrl : null;
+    var rawHeaderInvite = Context.Request.Query["invite"].ToString();
+
+    bool isMatchesActive = IsPathActive("/matches") || IsPathActive("/stats") || IsPathActive("/leaderboard") || IsPathActive("/clans") || (isStaffUser && (IsPathActive("/live") || IsPathActive("/tools/replays") || IsPathActive("/tools/replay-studio")));
+    bool isCompendiumActive = IsPathActive("/codex") || IsPathActive("/items") || IsPathActive("/guides") || (isStaffUser && IsPathActive("/lore"));
+    bool isArmoryActive = IsPathActive("/store") || (isStaffUser && (IsPathActive("/staff/inventory") || IsPathActive("/tools/inventory")));
+    bool isArMiniGamesActive = IsPathActive("/ar-mini-games") || IsPathActive("/AR-Mini-Games");
+    bool isPlatformActive = IsPathActive("/cloud") || IsPathActive("/setup") || IsPathActive("/tools/message-generator") || (isStaffUser && (IsPathActive("/docs") || IsPathActive("/developer-docs") || IsPathActive("/staff") || IsPathActive("/admin/issues") || IsPathActive("/System/Issues") || IsPathActive("/staff/issues")));
+}
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>@ViewData["Title"] - Project KONGOR Web Portal</title>
+
+    <!-- Open Graph / Discord & Social Embeds -->
+    <meta property="og:type" content="website"/>
+    <meta property="og:site_name" content="Project KONGOR"/>
+    <meta property="og:title" content="@(ViewData["Title"] ?? "Web Portal") — Project KONGOR"/>
+    <meta property="og:description" content="@(ViewData["Description"] ?? "Private server platform and modern runtime for Heroes of Newerth")"/>
+    <meta property="og:image" content="@(ViewData["OgImage"] ?? "/images/logo-nobg.png")"/>
+
+    <!-- Twitter / X Card -->
+    <meta name="twitter:card" content="summary_large_image"/>
+    <meta name="twitter:title" content="@(ViewData["Title"] ?? "Web Portal") — Project KONGOR"/>
+    <meta name="twitter:description" content="@(ViewData["Description"] ?? "Private server platform and modern runtime for Heroes of Newerth")"/>
+
+    <!-- General SEO -->
+    <meta name="description" content="@(ViewData["Description"] ?? "Project KONGOR — Private server platform and modern runtime for Heroes of Newerth")"/>
+
+    <!-- Favicon & App Icons -->
+    <link rel="icon" type="image/x-icon" href="~/favicon.ico"/>
+    <link rel="icon" type="image/png" sizes="32x32" href="~/favicon.png"/>
+    <link rel="apple-touch-icon" href="~/images/kongor-icon.png"/>
+    <link rel="preconnect" href="https://fonts.googleapis.com"/>
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin/>
+    <link rel="stylesheet" href="~/css/tailwind.css" asp-append-version="true"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+          integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA=="
+          crossorigin="anonymous" referrerpolicy="no-referrer" media="print" onload="this.media='all'"/>
+    <link rel="stylesheet" href="~/css/profile_cosmetics.css" asp-append-version="true"/>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" media="print" onload="this.media='all'"/>
+    <noscript>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap"/>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer"/>
+    </noscript>
+    <style>
+        /* Render-blocking Google Fonts CSS import moved to non-blocking stylesheet link above */
+
+        body {
+            font-family: 'Outfit', 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+            font-size-adjust: from-font;
+            overflow-x: hidden;
+        }
+
+        /* Accessibility: high-contrast focus indicator for keyboard navigation */
+        :focus-visible {
+            outline: 2px solid rgb(245, 158, 11) !important;
+            outline-offset: 2px !important;
+        }
+
+        :focus:not(:focus-visible) {
+            outline: none;
+        }
+
+        .glass-panel {
+            background: rgba(15, 23, 42, 0.75);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+        }
+
+        .glass-card {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.02) 100%);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .glass-card:hover {
+            border-color: rgba(168, 85, 247, 0.4);
+            box-shadow: 0 0 25px rgba(168, 85, 247, 0.15);
+        }
+
+        .glow-purple {
+            box-shadow: 0 0 35px -5px rgba(168, 85, 247, 0.4);
+        }
+
+        .glow-discord {
+            box-shadow: 0 0 30px -5px rgba(88, 101, 242, 0.4);
+        }
+
+        @@keyframes pulseGlow {
+            0%, 100% {
+                opacity: 0.4;
+                transform: scale(1);
+            }
+            50% {
+                opacity: 0.7;
+                transform: scale(1.05);
+            }
+        }
+
+        .animate-pulse-glow {
+            animation: pulseGlow 8s ease-in-out infinite;
+        }
+
+        /* Scrollbar suppression with standard CSS + guarded legacy WebKit fallback */
+        .no-scrollbar {
+            scrollbar-width: none;
+        }
+
+        @@supports not (scrollbar-width: none) {
+            .no-scrollbar::-webkit-scrollbar {
+                display: none;
+                width: 0;
+                height: 0;
+            }
+        }
+
+        .drag-scroll-strip {
+            cursor: grab;
+            -webkit-user-drag: none;
+        }
+
+        .drag-scroll-strip.is-dragging {
+            cursor: grabbing;
+        }
+
+        /* Desktop mega-nav submenu hover bridge & forgiving downward hit corridor */
+        .nav-dropdown-panel {
+            overflow: visible;
+        }
+
+        .nav-dropdown-panel::before {
+            content: "";
+            position: absolute;
+            top: -16px;
+            left: -16px;
+            right: -16px;
+            height: 22px;
+            background: transparent;
+            pointer-events: auto;
+        }
+
+        .nav-dropdown.is-open > .nav-dropdown-panel {
+            visibility: visible !important;
+            opacity: 1 !important;
+            pointer-events: auto !important;
+        }
+
+        .nav-dropdown.is-open .nav-dropdown-chevron {
+            transform: rotate(180deg);
+            color: rgb(251, 191, 36);
+        }
+    </style>
+</head>
+<body
+    class="bg-slate-950 text-slate-100 min-h-screen flex flex-col antialiased selection:bg-purple-500 selection:text-white overflow-x-hidden">
+<!-- Accessibility: Skip-to-content link for keyboard / screen reader users -->
+<a href="#main-content"
+   class="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[100] focus:px-4 focus:py-2 focus:bg-slate-900 focus:text-amber-300 focus:border-2 focus:border-amber-400 focus:rounded-xl focus:shadow-2xl focus:outline-none font-bold text-xs">
+    Skip to main content
+</a>
+<header class="w-full glass-panel sticky top-0 z-50 border-b border-slate-800/80 bg-slate-950/90 backdrop-blur-2xl">
+    <div class="w-full max-w-[1920px] mx-auto px-3 sm:px-5 lg:px-8 py-2 flex items-center justify-between gap-3 lg:gap-4 relative">
+        
+        <!-- Left: Mobile Toggle & Brand Logo -->
+        <div class="flex items-center gap-2.5 sm:gap-3 flex-shrink-0">
+            @if (isFullyOnboardedUser)
+            {
+                <!-- Mobile Menu Toggle Button (< lg) -->
+                <div class="lg:hidden flex items-center">
+                    <button id="mobile-menu-toggle" type="button" aria-expanded="false" aria-controls="mobile-menu"
+                            class="p-2 rounded-xl bg-slate-900/80 border border-slate-700/80 text-slate-300 hover:text-white hover:border-purple-500/50 focus:outline-none transition-all flex items-center justify-center">
+                        <svg class="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path id="hamburger-icon" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+                                  d="M4 6h16M4 12h16M4 18h16"/>
+                            <path id="close-icon" class="hidden" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+                                  d="M6 18L18 6M6 6l12 12"/>
+                        </svg>
+                    </button>
+                </div>
+            }
+
+            <!-- Brand Logo -->
+            <a href="/" class="flex items-center gap-2.5 group flex-shrink-0" title="Project KONGOR Home">
+                <img src="/images/logo-nobg.png" alt="PROJECT KONGOR" width="36" height="36" fetchpriority="high" decoding="async"
+                     class="h-8 sm:h-9 w-auto flex-shrink-0 group-hover:scale-105 transition-transform drop-shadow-lg"/>
+                <span class="text-base sm:text-lg xl:text-xl font-black tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-purple-400 via-pink-400 to-amber-400 leading-none whitespace-nowrap drop-shadow-sm hidden xs:inline">
+                    PROJECT KONGOR
+                </span>
+            </a>
+        </div>
+
+        @if (isFullyOnboardedUser)
+        {
+        <!-- Center: Desktop Grouped Mega-Nav Dropdowns (>= lg) -->
+        <nav class="hidden lg:flex items-center gap-1.5 xl:gap-2 flex-shrink-0" aria-label="Primary navigation">
+            <!-- Dropdown 1: Matches & Live -->
+            <div class="relative group nav-dropdown">
+                <button type="button" aria-haspopup="true" aria-expanded="false" class="nav-dropdown-trigger @GetDropdownBtnClass(isMatchesActive)">
+                    @if (isStaffUser)
+                    {
+                        <span class="w-2 h-2 rounded-full bg-red-500 animate-ping inline-block mr-0.5"></span>
+                    }
+                    <span>Matches & Live</span>
+                    <svg class="nav-dropdown-chevron w-3 h-3 text-slate-400 group-hover:text-amber-400 transition-transform group-hover:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                    </svg>
+                </button>
+                <div class="nav-dropdown-panel invisible opacity-0 group-hover:visible group-hover:opacity-100 group-focus-within:visible group-focus-within:opacity-100 absolute top-full left-0 mt-1.5 w-60 p-1.5 rounded-2xl bg-slate-900/95 border border-slate-700/90 shadow-2xl backdrop-blur-2xl transition-all duration-150 z-50 space-y-0.5">
+                    @if (isStaffUser)
+                    {
+                        <a asp-controller="Live" asp-action="Index" class="@GetStaffDropdownItemClass("/live")">
+                            <span class="w-2 h-2 rounded-full bg-red-500 animate-pulse"></span>
+                            <div class="flex flex-col min-w-0">
+                                <div class="flex items-center gap-1.5">
+                                    <span>Live Matches</span>
+                                    <span class="text-[9px] px-1.5 py-0.2 rounded bg-purple-500/25 text-purple-200 border border-purple-400/40 font-bold uppercase tracking-wider">Staff</span>
+                                </div>
+                                <span class="text-[10px] text-purple-300/90 font-normal">Real-time spectator radar</span>
+                            </div>
+                        </a>
+                    }
+                    @if (User.Identity?.IsAuthenticated == true)
+                    {
+                        <a asp-controller="Home" asp-action="Matches" class="@GetDropdownItemClass("/matches")">
+                            <span>⚔️</span>
+                            <div class="flex flex-col min-w-0">
+                                <span>Match History</span>
+                                <span class="text-[10px] text-slate-400 font-normal">Scoreboards & replays</span>
+                            </div>
+                        </a>
+                        <a asp-controller="Home" asp-action="Stats" class="@GetDropdownItemClass("/stats")">
+                            <span>📊</span>
+                            <div class="flex flex-col min-w-0">
+                                <span>Player Stats</span>
+                                <span class="text-[10px] text-slate-400 font-normal">MMR, KDR & Hero mastery</span>
+                            </div>
+                        </a>
+                    }
+                    <a asp-controller="Home" asp-action="Leaderboard" class="@GetDropdownItemClass("/leaderboard")">
+                        <span aria-hidden="true">🏆</span>
+                        <div class="flex flex-col min-w-0">
+                            <span>Leaderboard</span>
+                            <span class="text-[10px] text-slate-400 font-normal">Top ranked Newerth players</span>
+                        </div>
+                    </a>
+                    <a asp-controller="Clans" asp-action="Index" class="@GetDropdownItemClass("/clans")">
+                        <span aria-hidden="true">🛡️</span>
+                        <div class="flex flex-col min-w-0">
+                            <span>Clans</span>
+                            <span class="text-[10px] text-slate-400 font-normal">Standings, tags &amp; member rosters</span>
+                        </div>
+                    </a>
+                    @if (isStaffUser)
+                    {
+                        <div role="link"
+                             aria-disabled="true"
+                             data-staff-disabled="replay-studio"
+                             title="Deferred future work — Headless Linux Docker K2 client POV recorder"
+                             class="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold bg-purple-950/20 border border-purple-500/20 text-slate-400 opacity-50 grayscale cursor-not-allowed select-none">
+                            <span>🎬</span>
+                            <div class="flex flex-col min-w-0">
+                                <div class="flex items-center gap-1 flex-wrap">
+                                    <span>Replay Studio</span>
+                                    <span class="text-[9px] px-1.5 py-0.2 rounded bg-purple-500/20 text-purple-200 border border-purple-400/35 font-bold uppercase tracking-wider">Staff</span>
+                                    <span class="text-[9px] px-1.5 py-0.2 rounded bg-slate-800 text-slate-300 border border-slate-600 font-bold uppercase tracking-wider">Future</span>
+                                </div>
+                                <span class="text-[10px] text-slate-400 font-normal">Deferred · Docker client POV</span>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <!-- Dropdown 2: Compendium -->
+            <div class="relative group nav-dropdown">
+                <button type="button" aria-haspopup="true" aria-expanded="false" class="nav-dropdown-trigger @GetDropdownBtnClass(isCompendiumActive)">
+                    <span>📚</span>
+                    <span>Compendium</span>
+                    <svg class="nav-dropdown-chevron w-3 h-3 text-slate-400 group-hover:text-amber-400 transition-transform group-hover:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                    </svg>
+                </button>
+                <div class="nav-dropdown-panel invisible opacity-0 group-hover:visible group-hover:opacity-100 group-focus-within:visible group-focus-within:opacity-100 absolute top-full left-0 mt-1.5 w-56 p-1.5 rounded-2xl bg-slate-900/95 border border-slate-700/90 shadow-2xl backdrop-blur-2xl transition-all duration-150 z-50 space-y-0.5">
+                    <a asp-controller="Home" asp-action="Codex" class="@GetDropdownItemClass("/codex")">
+                        <span>🦸</span>
+                        <div class="flex flex-col min-w-0">
+                            <span>Hero Codex</span>
+                            <span class="text-[10px] text-slate-400 font-normal">All 128 heroes & abilities</span>
+                        </div>
+                    </a>
+                    <a asp-controller="Home" asp-action="Items" class="@GetDropdownItemClass("/items")">
+                        <span>📦</span>
+                        <div class="flex flex-col min-w-0">
+                            <span>Item Compendium</span>
+                            <span class="text-[10px] text-slate-400 font-normal">Recipes, stats & passive FX</span>
+                        </div>
+                    </a>
+                    <a asp-controller="Guide" asp-action="Index" class="@GetDropdownItemClass("/guides")">
+                        <span>📜</span>
+                        <div class="flex flex-col min-w-0">
+                            <span>Hero Guides</span>
+                            <span class="text-[10px] text-slate-400 font-normal">Community builds & leveling</span>
+                        </div>
+                    </a>
+                    @if (isStaffUser)
+                    {
+                        <a href="/lore" class="@GetStaffDropdownItemClass("/lore")">
+                            <span>📖</span>
+                            <div class="flex flex-col min-w-0">
+                                <div class="flex items-center gap-1.5">
+                                    <span>Newerth Lore</span>
+                                    <span class="text-[9px] px-1.5 py-0.2 rounded bg-purple-500/25 text-purple-200 border border-purple-400/40 font-bold uppercase tracking-wider">Staff</span>
+                                </div>
+                                <span class="text-[10px] text-purple-300/90 font-normal">Interactive comic archives</span>
+                            </div>
+                        </a>
+                    }
+                </div>
+            </div>
+
+            <!-- Dropdown 3: Armory & Store -->
+            <div class="relative group nav-dropdown">
+                <button type="button" aria-haspopup="true" aria-expanded="false" class="nav-dropdown-trigger @GetDropdownBtnClass(isArmoryActive)">
+                    <span>🏪</span>
+                    <span>Armory</span>
+                    <svg class="nav-dropdown-chevron w-3 h-3 text-slate-400 group-hover:text-amber-400 transition-transform group-hover:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                    </svg>
+                </button>
+                <div class="nav-dropdown-panel invisible opacity-0 group-hover:visible group-hover:opacity-100 group-focus-within:visible group-focus-within:opacity-100 absolute top-full left-0 mt-1.5 w-56 p-1.5 rounded-2xl bg-slate-900/95 border border-slate-700/90 shadow-2xl backdrop-blur-2xl transition-all duration-150 z-50 space-y-0.5">
+                    <a asp-controller="Store" asp-action="Index" class="@GetDropdownItemClass("/store")">
+                        <span>✨</span>
+                        <div class="flex flex-col min-w-0">
+                            <span>Vanity Store</span>
+                            <span class="text-[10px] text-slate-400 font-normal">Avatars, Taunts & Announcers</span>
+                        </div>
+                    </a>
+                    <a href="/store?category=plinko" class="@GetDropdownItemClass("/store?category=plinko")">
+                        <span>🎪</span>
+                        <div class="flex flex-col min-w-0">
+                            <span>Goblin Plinko</span>
+                            <span class="text-[10px] text-slate-400 font-normal">Daily drop & coin rewards</span>
+                        </div>
+                    </a>
+                    @if (isStaffUser)
+                    {
+                        <a asp-controller="Staff" asp-action="Inventory" class="@GetStaffDropdownItemClass("/staff/inventory")">
+                            <span>🎒</span>
+                            <div class="flex flex-col min-w-0">
+                                <div class="flex items-center gap-1.5">
+                                    <span>Inventory Management</span>
+                                    <span class="text-[9px] px-1.5 py-0.2 rounded bg-purple-500/25 text-purple-200 border border-purple-400/40 font-bold uppercase tracking-wider">Staff</span>
+                                </div>
+                                <span class="text-[10px] text-purple-300/90 font-normal">Player vaults & cosmetic grants</span>
+                            </div>
+                        </a>
+                    }
+                </div>
+            </div>
+
+            <!-- Dropdown 4: AR Mini Games (Requires Discord Login) -->
+            <div class="relative group nav-dropdown">
+                <button type="button" aria-haspopup="true" aria-expanded="false" class="nav-dropdown-trigger @GetDropdownBtnClass(isArMiniGamesActive)">
+                    <span class="text-xs">🎮</span>
+                    <span>AR Mini Games</span>
+                    <span class="px-1.5 py-0.5 bg-gradient-to-r from-purple-500/30 to-amber-500/30 text-amber-300 border border-amber-500/40 rounded text-[9px] font-black uppercase tracking-wider">AR</span>
+                    <svg class="nav-dropdown-chevron w-3 h-3 text-slate-400 group-hover:text-amber-400 transition-transform group-hover:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                    </svg>
+                </button>
+                <div class="nav-dropdown-panel invisible opacity-0 group-hover:visible group-hover:opacity-100 group-focus-within:visible group-focus-within:opacity-100 absolute top-full left-0 mt-1.5 w-64 p-1.5 rounded-2xl bg-slate-900/95 border border-slate-700/90 shadow-2xl backdrop-blur-2xl transition-all duration-150 z-50 space-y-0.5">
+                    @if (isDiscordConnected)
+                    {
+                        <a href="/ar-mini-games" class="@GetDropdownItemClass("/ar-mini-games")">
+                            <span>🕹️</span>
+                            <div class="flex flex-col min-w-0">
+                                <span class="flex items-center gap-1.5 font-bold">
+                                    Donut <span class="text-amber-400 font-black">AR</span>cade Hub
+                                    <span class="px-1.5 py-0.5 bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 rounded text-[9px] font-black uppercase">All Games</span>
+                                </span>
+                                <span class="text-[10px] text-slate-400 font-normal">Donut Mixed Reality Arcade</span>
+                            </div>
+                        </a>
+                        <a href="/ar-mini-games/monkey-checkers" class="@GetDropdownItemClass("/ar-mini-games/monkey-checkers")">
+                            <span>👑</span>
+                            <div class="flex flex-col min-w-0">
+                                <span class="flex items-center gap-1.5 font-bold">
+                                    Monkey King Checkers
+                                    <span class="px-1.5 py-0.5 bg-amber-500/20 text-amber-300 border border-amber-500/40 rounded text-[9px] font-black uppercase">1v1 / AI</span>
+                                </span>
+                                <span class="text-[10px] text-amber-400/90 font-normal">Tabletop Legion vs Hellbourne</span>
+                            </div>
+                        </a>
+                        <a href="/ar-mini-games/devo-wars" class="@GetDropdownItemClass("/ar-mini-games/devo-wars")">
+                            <span>🥩</span>
+                            <div class="flex flex-col min-w-0">
+                                <span class="flex items-center gap-1.5 font-bold">
+                                    DevoWars AR 1v1
+                                    <span class="px-1.5 py-0.5 bg-rose-500/20 text-rose-300 border border-rose-500/40 rounded text-[9px] font-black uppercase">PVP Duel</span>
+                                </span>
+                                <span class="text-[10px] text-rose-400 font-normal">Tabletop Devourer Hook Battle</span>
+                            </div>
+                        </a>
+                        <a href="/ar-mini-games/chess" class="@GetDropdownItemClass("/ar-mini-games/chess")">
+                            <span>♟️</span>
+                            <div class="flex flex-col min-w-0">
+                                <span class="flex items-center gap-1.5 font-bold">
+                                    KONGOR AR Chess
+                                    <span class="px-1.5 py-0.5 bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 rounded text-[9px] font-black uppercase">1v1 / AI</span>
+                                </span>
+                                <span class="text-[10px] text-emerald-400/90 font-normal">Tabletop Legion vs Hellbourne</span>
+                            </div>
+                        </a>
+                        <div class="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs text-slate-500 opacity-55 grayscale cursor-not-allowed select-none" title="Chrono-Pong: Riftbreaker — Future Development">
+                            <span>⏳</span>
+                            <div class="flex flex-col min-w-0">
+                                <span class="flex items-center gap-1.5 font-bold text-slate-400">
+                                    Chrono-Pong: Riftbreaker
+                                    <span class="px-1.5 py-0.5 bg-slate-800 text-slate-400 border border-slate-700 rounded text-[9px] font-black uppercase">Future Dev</span>
+                                </span>
+                                <span class="text-[10px] text-slate-500 font-normal">Future Development</span>
+                            </div>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="p-3 text-center space-y-2">
+                            <div class="w-10 h-10 mx-auto rounded-xl bg-[#5865F2]/20 border border-[#5865F2]/40 text-[#5865F2] flex items-center justify-center text-lg shadow-inner">
+                                <i class="fab fa-discord"></i>
+                            </div>
+                            <div>
+                                <span class="block text-xs font-bold text-white">Discord Login Required</span>
+                                <span class="block text-[10px] text-slate-400 mt-0.5">Sign in with your Discord account to play AR Mini Games.</span>
+                            </div>
+                            <form asp-controller="Account" asp-action="LoginDiscord" method="post" class="w-full">
+                                <input type="hidden" name="returnUrl" value="/ar-mini-games" />
+                                <button type="submit" class="w-full py-1.5 px-3 rounded-xl bg-[#5865F2] hover:bg-[#4752C4] text-white font-bold text-xs flex items-center justify-center gap-1.5 transition-all shadow-md">
+                                    <i class="fab fa-discord text-xs"></i>
+                                    <span>Login with Discord</span>
+                                </button>
+                            </form>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <!-- Dropdown 5: Platform & Tools -->
+            <div class="relative group nav-dropdown">
+                <button type="button" aria-haspopup="true" aria-expanded="false" class="nav-dropdown-trigger @GetDropdownBtnClass(isPlatformActive)">
+                    <span>⚙️</span>
+                    <span>Platform</span>
+                    <svg class="nav-dropdown-chevron w-3 h-3 text-slate-400 group-hover:text-amber-400 transition-transform group-hover:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                    </svg>
+                </button>
+                <div class="nav-dropdown-panel invisible opacity-0 group-hover:visible group-hover:opacity-100 group-focus-within:visible group-focus-within:opacity-100 absolute top-full left-0 mt-1.5 w-56 p-1.5 rounded-2xl bg-slate-900/95 border border-slate-700/90 shadow-2xl backdrop-blur-2xl transition-all duration-150 z-50 space-y-0.5">
+                    @if (User.Identity?.IsAuthenticated == true)
+                    {
+                        <a asp-controller="Home" asp-action="Cloud" class="@GetDropdownItemClass("/cloud")">
+                            <span>☁️</span>
+                            <div class="flex flex-col min-w-0">
+                                <span>Cloud Sync</span>
+                                <span class="text-[10px] text-slate-400 font-normal">Keybinds & client profiles</span>
+                            </div>
+                        </a>
+                        <a asp-controller="Home" asp-action="Setup" class="@GetDropdownItemClass("/setup")">
+                            <span>🚀</span>
+                            <div class="flex flex-col min-w-0">
+                                <span>PKV Setup</span>
+                                <span class="text-[10px] text-slate-400 font-normal">Open-source PKV repo &amp; BYOA</span>
+                            </div>
+                        </a>
+                    }
+                    <a asp-controller="Tools" asp-action="MessageGenerator" class="@GetDropdownItemClass("/tools/message-generator")">
+                        <span>🎨</span>
+                        <div class="flex flex-col min-w-0">
+                            <span>Text Generator</span>
+                            <span class="text-[10px] text-slate-400 font-normal">Custom in-game color chat</span>
+                        </div>
+                    </a>
+                    @if (isStaffUser)
+                    {
+                        <a href="/docs" target="_blank" rel="noopener noreferrer" class="@GetStaffDropdownItemClass("/docs")">
+                            <span>📖</span>
+                            <div class="flex flex-col min-w-0">
+                                <div class="flex items-center gap-1.5">
+                                    <span>Developer Docs</span>
+                                    <span class="text-[9px] px-1.5 py-0.2 rounded bg-purple-500/25 text-purple-200 border border-purple-400/40 font-bold uppercase tracking-wider">Staff</span>
+                                </div>
+                                <span class="text-[10px] text-purple-300/90 font-normal">DocFX API &amp; Engine docs ↗</span>
+                            </div>
+                        </a>
+                        <a href="/admin/issues" class="@GetStaffDropdownItemClass("/admin/issues")">
+                            <span>⚡</span>
+                            <div class="flex flex-col min-w-0">
+                                <div class="flex items-center gap-1.5">
+                                    <span>Issues &amp; Telemetry</span>
+                                    <span class="text-[9px] px-1.5 py-0.2 rounded bg-purple-500/25 text-purple-200 border border-purple-400/40 font-bold uppercase tracking-wider">Staff</span>
+                                </div>
+                                <span class="text-[10px] text-purple-300/90 font-normal">Self-healing &amp; live triage</span>
+                            </div>
+                        </a>
+                        <a asp-controller="Staff" asp-action="Reports" class="@GetStaffDropdownItemClass("/staff")">
+                            <span>🛡️</span>
+                            <div class="flex flex-col min-w-0">
+                                <div class="flex items-center gap-1.5">
+                                    <span>Staff Portal</span>
+                                    <span class="text-[9px] px-1.5 py-0.2 rounded bg-purple-500/25 text-purple-200 border border-purple-400/40 font-bold uppercase tracking-wider">Staff</span>
+                                </div>
+                                <span class="text-[10px] text-purple-300/90 font-normal">Reports &amp; Host moderation</span>
+                            </div>
+                        </a>
+                    }
+                </div>
+            </div>
+        </nav>
+        }
+
+        <!-- Right: Integrated Spotlight Search Bar & Profile/Auth -->
+        <div class="flex items-center gap-2 sm:gap-3 flex-1 justify-end max-w-lg">
+            @if (isFullyOnboardedUser)
+            {
+                <!-- Dedicated Global Command Search Bar (Players, Clans, Heroes, Items) -->
+                <div class="relative flex-1 max-w-[200px] sm:max-w-xs xl:max-w-sm">
+                    <div class="relative flex items-center">
+                        <input type="text" id="globalNavSearchInput"
+                               aria-label="Search Newerth players, clans, heroes, and items"
+                               placeholder="Search Newerth... (Ctrl+K)"
+                               autocomplete="off"
+                               class="w-full px-3 py-1.5 pl-8 pr-12 rounded-xl bg-slate-900/90 border border-purple-500/30 text-white placeholder-slate-400 text-xs focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400 transition-all shadow-inner"/>
+                        <svg class="w-3.5 h-3.5 text-purple-400 absolute left-2.5 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                        </svg>
+                        <div class="absolute right-2 flex items-center gap-1 pointer-events-none hidden sm:flex">
+                            <kbd id="globalSearchShortcutBadge" class="px-1.5 py-0.5 rounded bg-slate-800/90 border border-slate-700 text-[10px] font-mono text-slate-400 font-bold">Ctrl+K</kbd>
+                        </div>
+                        <button id="globalNavSearchClear" type="button"
+                                class="hidden absolute right-8 sm:right-9 text-slate-500 hover:text-slate-300 text-xs font-bold pointer-events-auto">
+                            ✕
+                        </button>
+                    </div>
+
+                    <!-- Global Search Dropdown Menu (Solid bg-slate-950 prevents background bleed-through) -->
+                    <div id="globalNavSearchResults"
+                         class="hidden absolute right-0 sm:left-0 top-full mt-2 w-[290px] sm:w-full sm:min-w-[360px] max-w-md sm:max-w-lg bg-slate-950 border border-slate-700/90 rounded-2xl shadow-2xl overflow-hidden z-[70] max-h-96 overflow-y-auto divide-y divide-slate-800/80">
+                    </div>
+                </div>
+            }
+
+            <!-- Profile Capsule or Discord Connect -->
+            @if (isFullyOnboardedUser)
+            {
+                <div class="flex items-center gap-1.5 sm:gap-2 bg-slate-900/90 p-1 pl-1.5 pr-1.5 rounded-2xl border border-slate-800 flex-shrink-0">
+                    <a asp-controller="Account" asp-action="Settings"
+                       class="flex items-center gap-1.5 group hover:opacity-90 transition-all p-0.5 rounded-xl hover:bg-slate-800/60 cursor-pointer"
+                       title="Account Settings & Password">
+                        <div class="w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-gradient-to-tr from-purple-500 to-pink-500 p-0.5 shadow-md flex-shrink-0 group-hover:scale-110 transition-transform">
+                            <img src="@Url.Action("GetMyAvatar", "Account")"
+                                 onError="this.onerror=null;this.src='/images/default-avatar.png';" alt="Avatar"
+                                 class="w-full h-full object-cover rounded-full bg-slate-900"/>
+                        </div>
+                        <span class="text-xs font-bold text-white max-w-[70px] xl:max-w-[100px] truncate group-hover:text-purple-300 transition-colors hidden xs:inline">
+                            @User.Identity!.Name
+                        </span>
+                    </a>
+                    <form asp-controller="Account" asp-action="Logout" method="post" class="inline">
+                        <button type="submit"
+                                class="px-2 py-1 rounded-xl bg-red-500/10 hover:bg-red-500/20 text-red-400 hover:text-red-300 text-[11px] font-semibold transition-all border border-red-500/20">
+                            Logout
+                        </button>
+                    </form>
+                </div>
+            }
+            else if (isPendingRegistration)
+            {
+                <div class="flex items-center gap-2 bg-slate-900/90 p-1 pl-2.5 pr-1.5 rounded-2xl border border-amber-500/30 flex-shrink-0">
+                    <a asp-controller="Account" asp-action="Register"
+                       class="text-xs font-bold text-amber-300 hover:text-amber-200 transition-colors">
+                        Finish Account Setup
+                    </a>
+                    <form asp-controller="Account" asp-action="Logout" method="post" class="inline">
+                        <button type="submit"
+                                class="px-2 py-1 rounded-xl bg-red-500/10 hover:bg-red-500/20 text-red-400 hover:text-red-300 text-[11px] font-semibold transition-all border border-red-500/20">
+                            Logout
+                        </button>
+                    </form>
+                </div>
+            }
+            else
+            {
+                <form asp-controller="Account" asp-action="LoginDiscord" method="post" class="inline flex-shrink-0">
+                    @if (!string.IsNullOrEmpty(safeHeaderReturnUrl))
+                    {
+                        <input type="hidden" name="returnUrl" value="@safeHeaderReturnUrl" />
+                    }
+                    @if (!string.IsNullOrWhiteSpace(rawHeaderInvite))
+                    {
+                        <input type="hidden" name="invite" value="@rawHeaderInvite.Trim()" />
+                    }
+                    <button type="submit"
+                            class="px-3 sm:px-3.5 py-1.5 rounded-xl bg-[#5865F2] hover:bg-[#4752C4] text-white font-bold text-xs flex items-center gap-1.5 sm:gap-2 transition-all duration-300 shadow-md shadow-[#5865F2]/20 glow-discord cursor-pointer">
+                        <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 100 100">
+                            <path d="M85.22,24.958c-11.459-8.575-22.438-8.334-22.438-8.334l-1.122,1.282c13.623,4.087,19.954,10.097,19.954,10.097c-19.491-10.731-44.317-10.654-64.59,0c0,0,6.571-6.331,20.996-10.418l-0.801-0.962c0,0-10.899-0.24-22.438,8.334c0,0-11.54,20.755-11.54,46.319c0,0,6.732,11.54,24.442,12.101c0,0,2.965-3.526,5.369-6.571c-10.177-3.045-14.024-9.376-14.024-9.376c6.394,4.001,12.859,6.505,20.916,8.094c13.108,2.698,29.413-0.076,41.591-8.094c0,0-4.007,6.491-14.505,9.456c2.404,2.965,5.289,6.411,5.289,6.411c17.71-0.561,24.441-12.101,24.441-12.02C96.759,45.713,85.22,24.958,85.22,24.958z M35.055,63.824c-4.488,0-8.174-3.927-8.174-8.815c0.328-11.707,16.102-11.671,16.348,0C43.229,59.897,39.622,63.824,35.055,63.824z M64.304,63.824c-4.488,0-8.174-3.927-8.174-8.815c0.36-11.684,15.937-11.689,16.348,0C72.478,59.897,68.872,63.824,64.304,63.824z"/>
+                        </svg>
+                        <span class="hidden sm:inline">Connect Discord</span>
+                        <span class="sm:hidden">Discord</span>
+                    </button>
+                </form>
+            }
+        </div>
+    </div>
+
+    @if (isFullyOnboardedUser)
+    {
+    <!-- Mobile Navigation Drawer / Panel (< lg) -->
+    <div id="mobile-menu"
+         class="hidden lg:hidden w-full bg-slate-950/98 backdrop-blur-2xl border-t border-purple-500/20 px-4 py-5 space-y-4 shadow-2xl transition-all max-h-[85vh] overflow-y-auto">
+        <div class="max-w-md mx-auto space-y-4">
+            @if (User.Identity?.IsAuthenticated == true)
+            {
+                <!-- User Profile Header -->
+                <a asp-controller="Account" asp-action="Settings"
+                   class="flex items-center gap-3 p-3 rounded-2xl bg-slate-900/90 border border-purple-500/30 hover:border-purple-500/60 transition-all cursor-pointer">
+                    <div class="w-12 h-12 rounded-full bg-gradient-to-tr from-purple-500 via-pink-500 to-amber-400 p-0.5 shadow-md flex-shrink-0">
+                        <img src="@Url.Action("GetMyAvatar", "Account")"
+                             onError="this.onerror=null;this.src='/images/default-avatar.png';" alt="Avatar"
+                             class="w-full h-full object-cover rounded-full bg-slate-900"/>
+                    </div>
+                    <div class="flex flex-col min-w-0">
+                        <span class="text-xs text-slate-400">Signed in as</span>
+                        <span class="text-base font-black text-white truncate">@User.Identity.Name</span>
+                        <span class="text-[11px] text-amber-400 font-semibold">Account Settings & Password →</span>
+                    </div>
+                </a>
+            }
+
+            <!-- Categorized Mobile Navigation Groups -->
+            <div class="space-y-3">
+                <!-- Group 1: Matches & Live -->
+                <div class="space-y-1">
+                    <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400 px-1">⚔️ Matches & Live</span>
+                    <div class="grid grid-cols-1 gap-1.5">
+                        @if (isStaffUser)
+                        {
+                            <a asp-controller="Live" asp-action="Index" class="@GetMobileStaffNavClass("/live")">
+                                <span class="w-2 h-2 rounded-full bg-red-500 animate-ping mr-1"></span>
+                                <span>Live Matches (Spectator)</span>
+                                <span class="ml-auto text-[9px] px-1.5 py-0.5 rounded bg-purple-500/25 text-purple-200 border border-purple-400/40 font-bold uppercase">Staff</span>
+                            </a>
+                        }
+                        @if (User.Identity?.IsAuthenticated == true)
+                        {
+                            <a asp-controller="Home" asp-action="Matches" class="@GetMobileNavClass("/matches")">
+                                <span>⚔️ Match History</span>
+                            </a>
+                            <a asp-controller="Home" asp-action="Stats" class="@GetMobileNavClass("/stats")">
+                                <span>📊 Player Statistics & Analytics</span>
+                            </a>
+                        }
+                        <a asp-controller="Home" asp-action="Leaderboard" class="@GetMobileNavClass("/leaderboard")">
+                            <span>🏆 Newerth Leaderboards</span>
+                        </a>
+                        <a asp-controller="Clans" asp-action="Index" class="@GetMobileNavClass("/clans")">
+                            <span>🛡️ Clans Directory &amp; Rosters</span>
+                        </a>
+                        @if (isStaffUser)
+                        {
+                            <div role="link"
+                                 aria-disabled="true"
+                                 data-staff-disabled="replay-studio"
+                                 title="Deferred future work — Headless Linux Docker K2 client POV recorder"
+                                 class="px-3.5 py-2 rounded-xl text-xs font-semibold flex items-center gap-2.5 bg-purple-950/20 border border-purple-500/20 text-slate-400 opacity-50 grayscale cursor-not-allowed select-none">
+                                <span>🎬 Replay Studio (Future)</span>
+                                <span class="ml-auto text-[9px] px-1.5 py-0.5 rounded bg-purple-500/20 text-purple-200 border border-purple-400/35 font-bold uppercase">Staff</span>
+                            </div>
+                        }
+                    </div>
+                </div>
+
+                <!-- Group 2: Compendium -->
+                <div class="space-y-1">
+                    <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400 px-1">📚 Compendium</span>
+                    <div class="grid grid-cols-1 gap-1.5">
+                        <a asp-controller="Home" asp-action="Codex" class="@GetMobileNavClass("/codex")">
+                            <span>🦸 Hero Codex</span>
+                        </a>
+                        <a asp-controller="Home" asp-action="Items" class="@GetMobileNavClass("/items")">
+                            <span>📦 Item Compendium</span>
+                        </a>
+                        <a asp-controller="Guide" asp-action="Index" class="@GetMobileNavClass("/guides")">
+                            <span>📜 Hero Guides Studio</span>
+                        </a>
+                        @if (isStaffUser)
+                        {
+                            <a href="/lore" class="@GetMobileStaffNavClass("/lore")">
+                                <span>📖 Newerth Lore Archives</span>
+                                <span class="ml-auto text-[9px] px-1.5 py-0.5 rounded bg-purple-500/25 text-purple-200 border border-purple-400/40 font-bold uppercase">Staff</span>
+                            </a>
+                        }
+                    </div>
+                </div>
+
+                <!-- Group 3: Armory -->
+                <div class="space-y-1">
+                    <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400 px-1">🏪 Armory</span>
+                    <div class="grid grid-cols-1 gap-1.5">
+                        <a asp-controller="Store" asp-action="Index" class="@GetMobileNavClass("/store")">
+                            <span>✨ Vanity Store</span>
+                        </a>
+                        <a href="/store?category=plinko" class="@GetMobileNavClass("/store?category=plinko")">
+                            <span>🎪 Goblin Plinko & Daily Drop</span>
+                        </a>
+                        @if (isStaffUser)
+                        {
+                            <a asp-controller="Staff" asp-action="Inventory" class="@GetMobileStaffNavClass("/staff/inventory")">
+                                <span>🎒 Inventory Management</span>
+                                <span class="ml-auto text-[9px] px-1.5 py-0.5 rounded bg-purple-500/25 text-purple-200 border border-purple-400/40 font-bold uppercase">Staff</span>
+                            </a>
+                        }
+                    </div>
+                </div>
+
+                <!-- Group 4: AR Mini Games (Requires Discord) -->
+                <div class="space-y-1">
+                    <div class="flex items-center justify-between px-1">
+                        <span class="text-[10px] font-bold uppercase tracking-wider text-amber-400">🎮 AR Mini Games</span>
+                        @if (!isDiscordConnected)
+                        {
+                            <span class="text-[9px] font-bold text-indigo-400 bg-indigo-950/80 px-1.5 py-0.5 rounded border border-indigo-500/30">
+                                Discord Req.
+                            </span>
+                        }
+                    </div>
+                    <div class="grid grid-cols-1 gap-1.5">
+                        @if (isDiscordConnected)
+                        {
+                            <a href="/ar-mini-games" class="@GetMobileNavClass("/ar-mini-games")">
+                                <span>🕹️ Donut <span class="text-amber-400 font-bold">AR</span>cade Hub</span>
+                            </a>
+                            <a href="/ar-mini-games/monkey-checkers" class="@GetMobileNavClass("/ar-mini-games/monkey-checkers")">
+                                <span>👑 Monkey King AR Checkers</span>
+                            </a>
+                            <a href="/ar-mini-games/devo-wars" class="@GetMobileNavClass("/ar-mini-games/devo-wars")">
+                                <span>🥩 DevoWars AR 1v1</span>
+                            </a>
+                            <a href="/ar-mini-games/chess" class="@GetMobileNavClass("/ar-mini-games/chess")">
+                                <span>♟️ KONGOR AR Chess</span>
+                            </a>
+                            <div class="flex items-center justify-between px-3 py-2 rounded-xl text-xs text-slate-500 bg-slate-900/40 border border-slate-800/60 opacity-55 grayscale cursor-not-allowed select-none">
+                                <span>⏳ Chrono-Pong: Riftbreaker</span>
+                                <span class="text-[9px] font-black uppercase px-1.5 py-0.5 rounded bg-slate-800 text-slate-400 border border-slate-700">Future Dev</span>
+                            </div>
+                        }
+                        else
+                        {
+                            <form asp-controller="Account" asp-action="LoginDiscord" method="post" class="w-full">
+                                <input type="hidden" name="returnUrl" value="/ar-mini-games" />
+                                <button type="submit" class="w-full py-2 px-3 rounded-xl bg-slate-900/90 border border-[#5865F2]/40 hover:border-[#5865F2] text-white text-xs font-semibold flex items-center justify-between transition-all">
+                                    <span class="flex items-center gap-2">
+                                        <i class="fab fa-discord text-[#5865F2]"></i>
+                                        <span>Login to unlock AR Games</span>
+                                    </span>
+                                    <span class="text-[10px] text-amber-400 font-bold">Sign In &rarr;</span>
+                                </button>
+                            </form>
+                        }
+                    </div>
+                </div>
+
+                <!-- Group 5: Platform & Setup -->
+                <div class="space-y-1">
+                    <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400 px-1">⚙️ Platform</span>
+                    <div class="grid grid-cols-1 gap-1.5">
+                        @if (User.Identity?.IsAuthenticated == true)
+                        {
+                            <a asp-controller="Home" asp-action="Cloud" class="@GetMobileNavClass("/cloud")">
+                                <span>☁️ Cloud Backups &amp; Sync</span>
+                            </a>
+                            <a asp-controller="Home" asp-action="Setup" class="@GetMobileNavClass("/setup")">
+                                <span>🚀 Project KONGOR V (PKV) Setup</span>
+                            </a>
+                        }
+                        <a asp-controller="Tools" asp-action="MessageGenerator" class="@GetMobileNavClass("/tools/message-generator")">
+                            <span>🎨 In-Game Text Message Generator</span>
+                        </a>
+                        @if (isStaffUser)
+                        {
+                            <a href="/docs" target="_blank" rel="noopener noreferrer" class="@GetMobileStaffNavClass("/docs")">
+                                <span>📖 Developer Docs (DocFX)</span>
+                                <span class="ml-auto text-[9px] px-1.5 py-0.5 rounded bg-purple-500/25 text-purple-200 border border-purple-400/40 font-bold uppercase">Staff</span>
+                            </a>
+                            <a href="/admin/issues" class="@GetMobileStaffNavClass("/admin/issues")">
+                                <span>⚡ Issues &amp; Telemetry</span>
+                                <span class="ml-auto text-[9px] px-1.5 py-0.5 rounded bg-purple-500/25 text-purple-200 border border-purple-400/40 font-bold uppercase">Staff</span>
+                            </a>
+                            <a asp-controller="Staff" asp-action="Reports" class="@GetMobileStaffNavClass("/staff")">
+                                <span>🛡️ Staff Moderation Portal</span>
+                                <span class="ml-auto text-[9px] px-1.5 py-0.5 rounded bg-purple-500/25 text-purple-200 border border-purple-400/40 font-bold uppercase">Staff</span>
+                            </a>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            @if (User.Identity?.IsAuthenticated == true)
+            {
+                <form asp-controller="Account" asp-action="Logout" method="post" class="pt-2">
+                    <button type="submit"
+                            class="w-full py-2.5 px-4 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 font-bold text-xs transition-all border border-rose-500/20 flex items-center justify-center gap-2">
+                        <span>🚪</span>
+                        <span>Logout Account</span>
+                    </button>
+                </form>
+            }
+            else
+            {
+                <form asp-controller="Account" asp-action="LoginDiscord" method="post" class="pt-2">
+                    <button type="submit"
+                            class="w-full py-3 px-4 rounded-xl bg-[#5865F2] hover:bg-[#4752C4] text-white font-bold text-xs flex items-center justify-center gap-2.5 transition-all duration-300 shadow-xl shadow-[#5865F2]/20 glow-discord">
+                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 100 100">
+                            <path d="M85.22,24.958c-11.459-8.575-22.438-8.334-22.438-8.334l-1.122,1.282c13.623,4.087,19.954,10.097,19.954,10.097c-19.491-10.731-44.317-10.654-64.59,0c0,0,6.571-6.331,20.996-10.418l-0.801-0.962c0,0-10.899-0.24-22.438,8.334c0,0-11.54,20.755-11.54,46.319c0,0,6.732,11.54,24.442,12.101c0,0,2.965-3.526,5.369-6.571c-10.177-3.045-14.024-9.376-14.024-9.376c6.394,4.001,12.859,6.505,20.916,8.094c13.108,2.698,29.413-0.076,41.591-8.094c0,0-4.007,6.491-14.505,9.456c2.404,2.965,5.289,6.411,5.289,6.411c17.71-0.561,24.441-12.101,24.441-12.02C96.759,45.713,85.22,24.958,85.22,24.958z M35.055,63.824c-4.488,0-8.174-3.927-8.174-8.815c0.328-11.707,16.102-11.671,16.348,0C43.229,59.897,39.622,63.824,35.055,63.824z M64.304,63.824c-4.488,0-8.174-3.927-8.174-8.815c0.36-11.684,15.937-11.689,16.348,0C72.478,59.897,68.872,63.824,64.304,63.824z"/>
+                        </svg>
+                        <span>Connect with Discord</span>
+                    </button>
+                </form>
+            }
+        </div>
+    </div>
+    }
+</header>
+
+<main id="main-content" role="main" class="flex-grow flex flex-col w-full relative overflow-x-hidden">
+    <!-- Ambient Background Effects -->
+    <div class="absolute top-0 left-0 w-full h-full overflow-hidden -z-10 pointer-events-none">
+        <div
+            class="absolute top-[-10%] left-[-10%] w-[50vw] h-[50vw] max-w-[600px] max-h-[600px] rounded-full bg-purple-900/20 blur-[130px] animate-pulse-glow"></div>
+        <div
+            class="absolute bottom-[-10%] right-[-10%] w-[50vw] h-[50vw] max-w-[600px] max-h-[600px] rounded-full bg-blue-900/20 blur-[130px] animate-pulse-glow"
+            style="animation-delay: 4s;"></div>
+        <div
+            class="absolute top-[30%] right-[20%] w-[35vw] h-[35vw] max-w-[400px] max-h-[400px] rounded-full bg-pink-900/15 blur-[120px]"></div>
+    </div>
+
+    @RenderBody()
+</main>
+
+<footer class="p-4 sm:p-6 text-center text-slate-500 text-xs glass-panel mt-auto">
+    <div
+        class="w-full max-w-[1920px] mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row justify-between items-center gap-4">
+        <div class="flex items-center gap-2">
+            <span class="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
+            @if (isFullyOnboardedUser)
+            {
+                <a asp-controller="System" asp-action="Metrics"
+                   class="text-slate-400 hover:text-slate-200 font-medium transition-colors">PROJECT KONGOR
+                    Infrastructure</a>
+            }
+            else
+            {
+                <span class="text-slate-400 font-medium">PROJECT KONGOR Infrastructure</span>
+            }
+        </div>
+        <div>
+            &copy; 2026 Project KONGOR V (guccidonut; foundational [K]ONGOR lineage) &bull; Unofficial &amp; unaffiliated with Garena / S2 / Frostburn &bull; <a href="https://github.com/guccidonut/PKV" target="_blank" rel="noopener noreferrer" class="text-purple-400 hover:text-purple-300 underline">AGPL-3.0-or-later Source</a>@if (isFullyOnboardedUser){<text> &bull; </text><a asp-controller="Home" asp-action="Privacy"
+                                                      class="hover:text-slate-300 transition-colors">Privacy Policy</a>}
+        </div>
+        <div class="flex items-center gap-3">
+            @if (isFullyOnboardedUser && isStaffUser)
+            {
+                <a href="/docs" target="_blank" rel="noopener noreferrer"
+                   title="Open ProjectKongor Developer Documentation & API Hub (DocFX)"
+                   class="px-3.5 py-1.5 rounded-xl bg-purple-950/45 hover:bg-purple-900/65 text-purple-200 hover:text-white border border-purple-500/35 text-xs font-bold transition-all flex items-center gap-2 shadow-sm">
+                    <span>📖</span>
+                    <span>Developer Docs (DocFX)</span>
+                </a>
+            }
+            <a href="https://discord.com/invite/N6pKzGDqUH" target="_blank" rel="noopener noreferrer"
+               class="px-3.5 py-1.5 rounded-xl bg-[#5865F2]/10 hover:bg-[#5865F2]/20 text-[#5865F2] hover:text-white border border-[#5865F2]/30 text-xs font-bold transition-all flex items-center gap-2 shadow-sm">
+                <span>💬</span>
+                <span>Discord Community</span>
+            </a>
+        </div>
+    </div>
+</footer>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const toggleBtn = document.getElementById("mobile-menu-toggle");
+        const mobileMenu = document.getElementById("mobile-menu");
+        const hamburgerIcon = document.getElementById("hamburger-icon");
+        const closeIcon = document.getElementById("close-icon");
+
+        if (toggleBtn && mobileMenu) {
+            toggleBtn.addEventListener("click", function () {
+                const isHidden = mobileMenu.classList.contains("hidden");
+                if (isHidden) {
+                    mobileMenu.classList.remove("hidden");
+                    toggleBtn.setAttribute("aria-expanded", "true");
+                    if (hamburgerIcon) hamburgerIcon.classList.add("hidden");
+                    if (closeIcon) closeIcon.classList.remove("hidden");
+                } else {
+                    mobileMenu.classList.add("hidden");
+                    toggleBtn.setAttribute("aria-expanded", "false");
+                    if (hamburgerIcon) hamburgerIcon.classList.remove("hidden");
+                    if (closeIcon) closeIcon.classList.add("hidden");
+                }
+            });
+        }
+
+        // Global Navigation Search Script with Instant Client-Side Cache & Request Cancellation
+        const globalSearchInput = document.getElementById("globalNavSearchInput");
+        const globalSearchResults = document.getElementById("globalNavSearchResults");
+        const globalSearchClear = document.getElementById("globalNavSearchClear");
+        const globalSearchCache = new Map();
+        let globalSearchAbortController = null;
+        let globalDebounceTimer = null;
+        let selectedSearchIndex = -1;
+
+        const isMacPlatform = typeof navigator !== "undefined" && /Mac|iPhone|iPod|iPad/i.test(navigator.platform || navigator.userAgent);
+        const shortcutBadgeEl = document.getElementById("globalSearchShortcutBadge");
+        if (shortcutBadgeEl) {
+            shortcutBadgeEl.textContent = isMacPlatform ? "⌘K" : "Ctrl+K";
+        }
+        if (globalSearchInput) {
+            globalSearchInput.placeholder = isMacPlatform ? "Search Newerth... (⌘K)" : "Search Newerth... (Ctrl+K)";
+        }
+
+        function updateSearchHighlight(rows) {
+            rows.forEach((row, idx) => {
+                if (idx === selectedSearchIndex) {
+                    row.classList.add("bg-amber-500/20", "border-amber-500/50", "ring-1", "ring-amber-400/60");
+                    row.classList.remove("hover:bg-amber-500/10");
+                    row.scrollIntoView({block: "nearest"});
+                } else {
+                    row.classList.remove("bg-amber-500/20", "border-amber-500/50", "ring-1", "ring-amber-400/60");
+                    row.classList.add("hover:bg-amber-500/10");
+                }
+            });
+        }
+
+        function clearGlobalSearch() {
+            if (globalSearchAbortController) {
+                globalSearchAbortController.abort();
+                globalSearchAbortController = null;
+            }
+            if (globalSearchInput) {
+                globalSearchInput.value = "";
+            }
+            if (globalSearchClear) {
+                globalSearchClear.classList.add("hidden");
+            }
+            if (globalSearchResults) {
+                globalSearchResults.classList.add("hidden");
+                globalSearchResults.innerHTML = "";
+            }
+            selectedSearchIndex = -1;
+        }
+
+        function toSafeRelativeUrl(rawUrl) {
+            if (typeof rawUrl !== "string") return "#";
+            const trimmed = rawUrl.trim();
+            return trimmed.startsWith("/") && !trimmed.startsWith("//") ? trimmed : "#";
+        }
+
+        function renderSearchResults(data, query) {
+            globalSearchResults.replaceChildren();
+            selectedSearchIndex = -1;
+            if (data && data.length > 0) {
+                data.forEach(item => {
+                    const row = document.createElement("a");
+                    row.href = toSafeRelativeUrl(item.url);
+                    const badgeLabel = String(item.badge || item.type || "RESULT").toUpperCase();
+                    const isStaffPage = badgeLabel === "STAFF";
+                    row.className = isStaffPage
+                        ? "flex items-center justify-between px-3.5 py-2.5 bg-purple-950/35 hover:bg-purple-900/50 text-purple-100 hover:text-white transition-colors cursor-pointer border-b border-purple-500/25 last:border-0"
+                        : "flex items-center justify-between px-3.5 py-2.5 hover:bg-amber-500/10 text-slate-200 hover:text-white transition-colors cursor-pointer border-b border-slate-800/60 last:border-0";
+
+                    const fallbackIcon = item.type === "hero" ? "/images/heroes/default.png" :
+                        item.type === "item" ? "/images/items/default.png" :
+                            item.type === "store" ? (item.heroIcon || "/images/heroes/default.png") :
+                                "/images/default-avatar.png";
+
+                    const iconSrc = item.iconUrl || item.avatarUrl || item.icon || fallbackIcon;
+                    const displayName = String(item.name || item.title || "Result");
+                    const isPlayer = item.type === "player";
+                    const imgShape = isPlayer ? "rounded-full border border-purple-500/40" : "rounded-xl border border-slate-700";
+
+                    const badgeClass = isStaffPage ? "bg-purple-500/25 text-purple-200 border-purple-400/40" :
+                        item.type === "clan" ? "bg-indigo-500/20 text-indigo-300 border-indigo-400/40" :
+                        item.type === "hero" ? "bg-emerald-500/20 text-emerald-300 border-emerald-500/30" :
+                        item.type === "item" ? "bg-sky-500/20 text-sky-300 border-sky-500/30" :
+                            item.type === "store" ? "bg-amber-500/20 text-amber-300 border-amber-500/40" :
+                                item.type === "page" ? "bg-cyan-500/20 text-cyan-300 border-cyan-500/30" :
+                                    "bg-purple-500/20 text-purple-300 border-purple-500/30";
+
+                    const leftWrap = document.createElement("div");
+                    leftWrap.className = "flex items-center gap-3 min-w-0";
+
+                    if (item.type === "clan") {
+                        const crestBox = document.createElement("div");
+                        crestBox.className = "w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-indigo-950/80 border border-indigo-500/45 text-indigo-200 flex items-center justify-center flex-shrink-0 shadow text-[10px] font-black tracking-tight px-0.5 truncate";
+                        crestBox.textContent = "[" + String(item.icon || "CLN") + "]";
+                        leftWrap.appendChild(crestBox);
+                    } else if (item.type === "page") {
+                        const pageBoxClass = isStaffPage
+                            ? "bg-purple-950/80 border-purple-500/45 text-purple-200"
+                            : "bg-cyan-950/80 border-cyan-500/40 text-cyan-300";
+                        const pageBox = document.createElement("div");
+                        pageBox.className = "w-7 h-7 sm:w-8 sm:h-8 rounded-xl " + pageBoxClass + " border flex items-center justify-center flex-shrink-0 shadow text-sm";
+                        pageBox.setAttribute("aria-hidden", "true");
+                        pageBox.textContent = String(item.icon || "📄");
+                        leftWrap.appendChild(pageBox);
+                    } else {
+                        const img = document.createElement("img");
+                        img.src = iconSrc;
+                        img.alt = "";
+                        img.className = "w-7 h-7 sm:w-8 sm:h-8 " + imgShape + " object-cover bg-slate-800 flex-shrink-0";
+                        img.addEventListener("error", function () {
+                            if (img.dataset.fallbackApplied) return;
+                            img.dataset.fallbackApplied = "1";
+                            img.src = fallbackIcon;
+                        });
+                        leftWrap.appendChild(img);
+                    }
+
+                    const textCol = document.createElement("div");
+                    textCol.className = "flex flex-col min-w-0";
+
+                    const nameSpan = document.createElement("span");
+                    nameSpan.className = "font-bold text-xs sm:text-sm text-slate-100 truncate";
+                    nameSpan.textContent = displayName;
+                    textCol.appendChild(nameSpan);
+
+                    if (item.subtitle) {
+                        const subSpan = document.createElement("span");
+                        subSpan.className = "text-[11px] text-slate-400 truncate";
+                        subSpan.textContent = String(item.subtitle);
+                        textCol.appendChild(subSpan);
+                    }
+
+                    leftWrap.appendChild(textCol);
+
+                    const badgeSpan = document.createElement("span");
+                    badgeSpan.className = "text-[9px] sm:text-[10px] font-black px-2 py-0.5 rounded-full border " + badgeClass + " uppercase tracking-wider flex-shrink-0 ml-2";
+                    badgeSpan.textContent = badgeLabel;
+
+                    row.append(leftWrap, badgeSpan);
+                    row.addEventListener('click', function () {
+                        globalSearchResults.classList.add("hidden");
+                    });
+
+                    globalSearchResults.appendChild(row);
+                });
+                globalSearchResults.classList.remove("hidden");
+                selectedSearchIndex = 0;
+                const rows = globalSearchResults.querySelectorAll("a");
+                updateSearchHighlight(rows);
+            } else {
+                selectedSearchIndex = -1;
+                const noResult = document.createElement("div");
+                noResult.className = "px-4 py-3 text-xs text-slate-400 text-center";
+                noResult.textContent = "No results found matching '" + query + "'";
+                globalSearchResults.appendChild(noResult);
+                globalSearchResults.classList.remove("hidden");
+            }
+        }
+
+        if (globalSearchInput && globalSearchResults) {
+            globalSearchInput.addEventListener("keydown", function (e) {
+                const rows = globalSearchResults.querySelectorAll("a");
+                const isVisible = !globalSearchResults.classList.contains("hidden") && rows.length > 0;
+
+                if (e.key === "ArrowDown") {
+                    if (!isVisible) return;
+                    e.preventDefault();
+                    selectedSearchIndex = (selectedSearchIndex + 1) % rows.length;
+                    updateSearchHighlight(rows);
+                } else if (e.key === "ArrowUp") {
+                    if (!isVisible) return;
+                    e.preventDefault();
+                    selectedSearchIndex = selectedSearchIndex <= 0 ? rows.length - 1 : selectedSearchIndex - 1;
+                    updateSearchHighlight(rows);
+                } else if (e.key === "Enter") {
+                    if (!isVisible) return;
+                    e.preventDefault();
+                    const targetIndex = selectedSearchIndex >= 0 && selectedSearchIndex < rows.length ? selectedSearchIndex : 0;
+                    if (rows[targetIndex]) {
+                        window.location.href = rows[targetIndex].href;
+                    }
+                } else if (e.key === "Escape") {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    if (globalSearchInput.value.length > 0) {
+                        clearGlobalSearch();
+                    } else {
+                        clearGlobalSearch();
+                        globalSearchInput.blur();
+                    }
+                }
+            });
+
+            globalSearchInput.addEventListener("input", function () {
+                clearTimeout(globalDebounceTimer);
+                selectedSearchIndex = -1;
+                const query = globalSearchInput.value.trim();
+
+                if (globalSearchClear) {
+                    if (query.length > 0) globalSearchClear.classList.remove("hidden");
+                    else globalSearchClear.classList.add("hidden");
+                }
+
+                if (query.length < 2) {
+                    if (globalSearchAbortController) {
+                        globalSearchAbortController.abort();
+                        globalSearchAbortController = null;
+                    }
+                    globalSearchResults.classList.add("hidden");
+                    globalSearchResults.innerHTML = "";
+                    return;
+                }
+
+                // Instant cache hit: render immediately with 0ms delay!
+                const cacheKey = query.toLowerCase();
+                if (globalSearchCache.has(cacheKey)) {
+                    renderSearchResults(globalSearchCache.get(cacheKey), query);
+                    return;
+                }
+
+                globalDebounceTimer = setTimeout(() => {
+                    if (globalSearchAbortController) {
+                        globalSearchAbortController.abort();
+                    }
+                    globalSearchAbortController = new AbortController();
+
+                    fetch("/api/global/search?q=" + encodeURIComponent(query), {signal: globalSearchAbortController.signal})
+                        .then(res => res.json())
+                        .then(data => {
+                            globalSearchCache.set(cacheKey, data);
+                            if (globalSearchInput.value.trim().toLowerCase() === cacheKey) {
+                                renderSearchResults(data, query);
+                            }
+                        })
+                        .catch(err => {
+                            if (err.name !== 'AbortError') {
+                                console.error("Global search error:", err);
+                            }
+                        });
+                }, 120);
+            });
+
+            if (globalSearchClear) {
+                globalSearchClear.addEventListener("click", function () {
+                    globalSearchInput.value = "";
+                    globalSearchResults.classList.add("hidden");
+                    globalSearchResults.innerHTML = "";
+                    globalSearchClear.classList.add("hidden");
+                    selectedSearchIndex = -1;
+                    globalSearchInput.focus();
+                });
+            }
+
+            document.addEventListener("click", function (e) {
+                if (!globalSearchInput.contains(e.target) && !globalSearchResults.contains(e.target)) {
+                    globalSearchResults.classList.add("hidden");
+                    selectedSearchIndex = -1;
+                }
+            });
+
+            // Upgraded Double-Shift & Cmd+K Shortcut Handler
+            // CRITICAL: Pushing and holding Shift is strictly prevented from triggering search
+            let shiftPressStartTime = 0;
+            let lastShiftTapReleaseTime = 0;
+
+            function focusAndOpenGlobalSearch() {
+                if (globalSearchInput) {
+                    globalSearchInput.focus();
+                    globalSearchInput.select();
+                    globalSearchInput.scrollIntoView({behavior: 'smooth', block: 'nearest'});
+                    if (globalSearchInput.value.trim().length >= 2 && globalSearchResults && globalSearchResults.children.length > 0) {
+                        globalSearchResults.classList.remove("hidden");
+                    }
+                }
+            }
+
+            document.addEventListener("keydown", function (e) {
+                // Ignore OS key-repeat events when holding keys down!
+                if (e.repeat) return;
+
+                // Cmd+K (Mac) or Ctrl+K (Windows/Linux)
+                if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+                    e.preventDefault();
+                    focusAndOpenGlobalSearch();
+                    return;
+                }
+
+                if (e.key === "Shift") {
+                    const now = Date.now();
+                    // Only trigger if the previous Shift release was a quick tap within the last 350ms
+                    if (now - lastShiftTapReleaseTime < 350 && lastShiftTapReleaseTime > 0) {
+                        e.preventDefault();
+                        focusAndOpenGlobalSearch();
+                        lastShiftTapReleaseTime = 0;
+                    } else {
+                        shiftPressStartTime = now;
+                    }
+                } else if (e.key === "Escape") {
+                    if (globalSearchInput) {
+                        if (globalSearchInput.value.length > 0) {
+                            clearGlobalSearch();
+                        } else if (document.activeElement === globalSearchInput) {
+                            clearGlobalSearch();
+                            globalSearchInput.blur();
+                        }
+                    }
+                }
+            });
+
+            document.addEventListener("keyup", function (e) {
+                if (e.key === "Shift") {
+                    const pressDuration = Date.now() - shiftPressStartTime;
+                    // ONLY count as a tap if released quickly (< 250ms)
+                    // If user pushed and held Shift (sprinting, caps, etc.), discard it!
+                    if (pressDuration < 250 && shiftPressStartTime > 0) {
+                        lastShiftTapReleaseTime = Date.now();
+                    } else {
+                        lastShiftTapReleaseTime = 0;
+                    }
+                    shiftPressStartTime = 0;
+                }
+            });
+        }
+    });
+</script>
+
+@if (isFullyOnboardedUser)
+{
+<!-- Floating Soundboard Quick Trigger -->
+<button onclick="NexusSoundboard.openSoundboardModal()"
+        title="Open HoN Announcer Soundboard"
+        class="fixed bottom-6 right-6 z-40 px-3.5 py-3 rounded-2xl bg-slate-900/90 hover:bg-slate-800 border border-amber-500/40 text-amber-300 font-bold text-xs shadow-2xl shadow-amber-950/50 hover:scale-105 transition-all flex items-center gap-2 backdrop-blur-xl group">
+    <span class="text-base group-hover:animate-bounce">🔊</span>
+    <span class="hidden sm:inline">Soundboard</span>
+</button>
+
+<script src="~/js/soundboard.js" defer asp-append-version="true"></script>
+<script src="~/js/brag_card_generator.js" defer asp-append-version="true"></script>
+<script src="~/js/kongor-viewer-core.js" defer asp-append-version="true"></script>
+@await Html.PartialAsync("_VanityBoothModal")
+@await Html.PartialAsync("_StoreARModal")
+<script>
+    (() => {
+        const loadedBundles = new Map();
+        function loadKongorScriptOnce(src) {
+            if (!loadedBundles.has(src)) {
+                loadedBundles.set(src, new Promise((resolve, reject) => {
+                    const s = document.createElement('script');
+                    s.src = src;
+                    s.onload = () => resolve();
+                    s.onerror = (err) => { loadedBundles.delete(src); reject(err); };
+                    document.head.appendChild(s);
+                }));
+            }
+            return loadedBundles.get(src);
+        }
+
+        const vanityBundleUrl = '@Url.Content("~/js/vanity_booth_3d.js")';
+        const storeArBundleUrl = '@Url.Content("~/js/store_ar.js")';
+
+        window.VanityBooth3D = {
+            __isLazyStub: true,
+            openHero: async (...args) => {
+                await loadKongorScriptOnce(vanityBundleUrl);
+                if (window.VanityBooth3D && !window.VanityBooth3D.__isLazyStub) {
+                    return window.VanityBooth3D.openHero(...args);
+                }
+            },
+            openModel: async (...args) => {
+                await loadKongorScriptOnce(vanityBundleUrl);
+                if (window.VanityBooth3D && !window.VanityBooth3D.__isLazyStub) {
+                    return window.VanityBooth3D.openModel(...args);
+                }
+            },
+            close: () => {
+                const m = document.getElementById('vanityBoothModal');
+                if (m) {
+                    if (typeof m.close === 'function' && m.open) m.close();
+                    m.removeAttribute('open');
+                }
+            }
+        };
+
+        window.KongorStoreAR = {
+            __isLazyStub: true,
+            open: async (...args) => {
+                await loadKongorScriptOnce(storeArBundleUrl);
+                if (window.KongorStoreAR && !window.KongorStoreAR.__isLazyStub) {
+                    return window.KongorStoreAR.open(...args);
+                }
+            },
+            close: () => {
+                const m = document.getElementById('storeArModal');
+                if (m) {
+                    if (typeof m.close === 'function' && m.open) m.close();
+                    m.classList.add('hidden');
+                    m.classList.remove('flex');
+                }
+            }
+        };
+
+        // Desktop top-navbar dropdown persistence: keeps submenu open on downward pointer movement,
+        // supports click/tap/keyboard activation, and closes cleanly only when leaving submenu or pressing Escape.
+        (function initDesktopNavDropdowns() {
+            const dropdowns = Array.from(document.querySelectorAll('.nav-dropdown'));
+            if (!dropdowns.length) return;
+
+            let openDropdown = null;
+            let closeTimer = null;
+
+            function clearCloseTimer() {
+                if (closeTimer !== null) {
+                    clearTimeout(closeTimer);
+                    closeTimer = null;
+                }
+            }
+
+            function setDropdownState(dd, shouldOpen) {
+                const trigger = dd.querySelector('.nav-dropdown-trigger');
+                if (shouldOpen) {
+                    clearCloseTimer();
+                    dropdowns.forEach(other => {
+                        if (other !== dd) {
+                            other.classList.remove('is-open');
+                            const otherBtn = other.querySelector('.nav-dropdown-trigger');
+                            if (otherBtn) otherBtn.setAttribute('aria-expanded', 'false');
+                        }
+                    });
+                    dd.classList.add('is-open');
+                    if (trigger) trigger.setAttribute('aria-expanded', 'true');
+                    openDropdown = dd;
+                } else {
+                    dd.classList.remove('is-open');
+                    if (trigger) trigger.setAttribute('aria-expanded', 'false');
+                    if (openDropdown === dd) openDropdown = null;
+                }
+            }
+
+            function closeAllDropdowns(restoreFocusToTrigger = false) {
+                clearCloseTimer();
+                const prev = openDropdown;
+                dropdowns.forEach(dd => setDropdownState(dd, false));
+                if (restoreFocusToTrigger && prev) {
+                    const trigger = prev.querySelector('.nav-dropdown-trigger');
+                    if (trigger) trigger.focus();
+                }
+            }
+
+            function isPointerInsideSafeZone(dd, clientX, clientY) {
+                const trigger = dd.querySelector('.nav-dropdown-trigger');
+                const panel = dd.querySelector('.nav-dropdown-panel');
+                if (!trigger || !panel) return false;
+
+                const tRect = trigger.getBoundingClientRect();
+                const pRect = panel.getBoundingClientRect();
+
+                // 1. Inside trigger button (with small cushion)
+                if (clientX >= tRect.left - 6 && clientX <= tRect.right + 6 &&
+                    clientY >= tRect.top - 6 && clientY <= tRect.bottom + 6) {
+                    return true;
+                }
+
+                // 2. Inside downward corridor bridging trigger bottom -> submenu top (covers straight & diagonal downward motion)
+                const minLeft = Math.min(tRect.left, pRect.left) - 24;
+                const maxRight = Math.max(tRect.right, pRect.right) + 24;
+                if (clientX >= minLeft && clientX <= maxRight &&
+                    clientY >= tRect.bottom - 6 && clientY <= pRect.top + 10) {
+                    return true;
+                }
+
+                // 3. Inside submenu panel itself (with slight outer border cushion)
+                if (clientX >= pRect.left - 10 && clientX <= pRect.right + 10 &&
+                    clientY >= pRect.top - 8 && clientY <= pRect.bottom + 10) {
+                    return true;
+                }
+
+                return false;
+            }
+
+            dropdowns.forEach(dd => {
+                const trigger = dd.querySelector('.nav-dropdown-trigger');
+                const panel = dd.querySelector('.nav-dropdown-panel');
+
+                dd.addEventListener('pointerenter', function (e) {
+                    if (e.pointerType === 'touch') return;
+                    setDropdownState(dd, true);
+                });
+
+                dd.addEventListener('pointerleave', function (e) {
+                    if (e.pointerType === 'touch') return;
+                    if (isPointerInsideSafeZone(dd, e.clientX, e.clientY)) {
+                        return;
+                    }
+                    clearCloseTimer();
+                    closeTimer = setTimeout(() => {
+                        if (openDropdown === dd) {
+                            setDropdownState(dd, false);
+                        }
+                    }, 90);
+                });
+
+                if (trigger) {
+                    trigger.addEventListener('click', function (e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        const currentlyOpen = dd.classList.contains('is-open');
+                        setDropdownState(dd, !currentlyOpen);
+                    });
+
+                    trigger.addEventListener('keydown', function (e) {
+                        if (e.key === 'ArrowDown' || e.key === 'Enter' || e.key === ' ') {
+                            e.preventDefault();
+                            setDropdownState(dd, true);
+                            if (panel) {
+                                const firstLink = panel.querySelector('a[href], button:not([disabled])');
+                                if (firstLink) firstLink.focus();
+                            }
+                        }
+                    });
+                }
+
+                if (panel) {
+                    panel.addEventListener('click', function (e) {
+                        const disabledItem = e.target.closest('[aria-disabled="true"]');
+                        if (disabledItem) {
+                            e.preventDefault();
+                            e.stopPropagation();
+                        }
+                    });
+                }
+            });
+
+            document.addEventListener('pointermove', function (e) {
+                if (!openDropdown || e.pointerType === 'touch') return;
+                // Check if pointer entered a sibling dropdown directly
+                const hoveredSibling = e.target && e.target.closest ? e.target.closest('.nav-dropdown') : null;
+                if (hoveredSibling && hoveredSibling !== openDropdown) {
+                    setDropdownState(hoveredSibling, true);
+                    return;
+                }
+                if (isPointerInsideSafeZone(openDropdown, e.clientX, e.clientY)) {
+                    clearCloseTimer();
+                } else if (closeTimer === null) {
+                    const targetDd = openDropdown;
+                    closeTimer = setTimeout(() => {
+                        if (openDropdown === targetDd) {
+                            setDropdownState(targetDd, false);
+                        }
+                    }, 80);
+                }
+            }, { passive: true });
+
+            document.addEventListener('pointerdown', function (e) {
+                if (!openDropdown) return;
+                if (!openDropdown.contains(e.target)) {
+                    closeAllDropdowns(false);
+                }
+            });
+
+            document.addEventListener('keydown', function (e) {
+                if (e.key === 'Escape' && openDropdown) {
+                    const restoreFocus = openDropdown.contains(document.activeElement);
+                    closeAllDropdowns(restoreFocus);
+                }
+            });
+        })();
+    })();
+</script>
+<script type="speculationrules">
+{
+    "prefetch": [{
+        "where": {
+            "and": [
+                { "href_matches": "/*" },
+                { "not": { "href_matches": "/Account/*" } },
+                { "not": { "href_matches": "/account/*" } },
+                { "not": { "href_matches": "/Staff/*" } },
+                { "not": { "href_matches": "/staff*" } },
+                { "not": { "href_matches": "/Admin/*" } },
+                { "not": { "href_matches": "/admin/*" } },
+                { "not": { "href_matches": "/System/*" } },
+                { "not": { "href_matches": "/system/*" } },
+                { "not": { "href_matches": "/live*" } },
+                { "not": { "href_matches": "/matches/live*" } },
+                { "not": { "href_matches": "/lore*" } },
+                { "not": { "href_matches": "/docs*" } },
+                { "not": { "href_matches": "/developer-docs*" } },
+                { "not": { "href_matches": "/tools/replay*" } },
+                { "not": { "href_matches": "/tools/inventory*" } },
+                { "not": { "href_matches": "/replays*" } },
+                { "not": { "href_matches": "/replay-studio*" } },
+                { "not": { "href_matches": "/api/*" } },
+                { "not": { "href_matches": "/hubs/*" } },
+                { "not": { "href_matches": "/*logout*" } },
+                { "not": { "href_matches": "/*signout*" } },
+                { "not": { "selector_matches": "[data-no-prefetch], [download], [target=_blank]" } }
+            ]
+        },
+        "eagerness": "moderate"
+    }]
+}
+</script>
+}
+@await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

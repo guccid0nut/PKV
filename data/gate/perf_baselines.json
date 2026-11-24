@@ -1,0 +1,24 @@
+﻿{
+    "nvidia_geforce_rtx_4060_ti_2560x1440_200Hz_offscreen_paced":  {
+                                                                       "hardwareKey":  "nvidia_geforce_rtx_4060_ti_2560x1440_200Hz_offscreen_paced",
+                                                                       "gpuName":  "NVIDIA GeForce RTX 4060 Ti",
+                                                                       "resolution":  "2560x1440",
+                                                                       "targetFps":  200,
+                                                                       "windowProfile":  "offscreen_paced",
+                                                                       "calibratedAtUtc":  "2026-11-21T18:02:07.3195694+00:00",
+                                                                       "commitSha":  "8011d6902444",
+                                                                       "windowsAveraged":  3,
+                                                                       "averageFps":  194.77,
+                                                                       "medianFps":  202.8,
+                                                                       "p1LowFps":  60.23,
+                                                                       "p01LowFps":  44.81,
+                                                                       "p50FrameTimeMs":  4.931,
+                                                                       "p95FrameTimeMs":  9.014,
+                                                                       "p99FrameTimeMs":  13.069,
+                                                                       "p999FrameTimeMs":  19.747,
+                                                                       "maxFrameTimeMs":  25.448,
+                                                                       "rateGt8msPerSec":  19.02,
+                                                                       "rateGt10msPerSec":  4.44,
+                                                                       "avgDrawCalls":  1647.4
+                                                                   }
+}

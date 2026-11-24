@@ -1,0 +1,112 @@
+<!-- Project KONGOR Webstore: Tabletop AR Companion Modal -->
+<dialog id="storeArModal"
+        closedby="any"
+        class="kongor-dialog fixed inset-0 m-0 p-0 w-screen h-screen max-w-none max-h-none z-[100] hidden bg-slate-950 select-none overflow-hidden border-0 transition-opacity duration-300"
+        aria-labelledby="storeArHeroTitle">
+
+    <!-- Camera Video Feed for Phone / Webcam AR Passthrough -->
+    <video id="storeArVideo" 
+           autoplay 
+           playsinline 
+           webkit-playsinline="true" 
+           muted 
+           class="absolute inset-0 w-full h-full object-cover z-0 hidden pointer-events-none"></video>
+
+    <!-- Three.js WebGL Interactive Canvas Layer -->
+    <div id="storeArCanvasContainer" class="absolute inset-0 z-10 w-full h-full cursor-pointer touch-none">
+        <canvas id="storeArCanvas" class="w-full h-full block" role="region" aria-label="Webstore item 3D augmented reality viewer">Your browser does not support HTML5 Canvas.</canvas>
+    </div>
+
+    <!-- Top Sleek Glassmorphic Floating HUD -->
+    <div class="absolute top-3 left-3 right-3 z-30 flex flex-wrap items-center justify-between gap-2 pointer-events-none">
+        
+        <!-- Left: Hero Identity Badge -->
+        <div class="flex items-center gap-2 pointer-events-auto bg-slate-900/90 backdrop-blur-xl px-3.5 py-1.5 rounded-2xl border border-sky-500/30 shadow-2xl shadow-sky-950/50">
+            <span id="storeArStatusDot" class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
+            <div class="flex flex-col">
+                <span id="storeArHeroTitle" class="text-xs font-black text-white tracking-wider uppercase font-mono">Store AR</span>
+                <span id="storeArModeSubtitle" class="text-[10px] text-sky-400 font-bold">Studio Desk Mode</span>
+            </div>
+        </div>
+
+        <!-- Right: AR Control Suite -->
+        <div class="flex items-center flex-wrap gap-2 pointer-events-auto">
+            
+            <!-- Camera Toggle Button -->
+            <button id="btnStoreArToggleCamera" 
+                    type="button"
+                    class="px-3.5 py-1.5 rounded-xl bg-slate-900/90 hover:bg-slate-800 text-slate-200 border border-slate-700/70 backdrop-blur-xl text-xs font-bold transition-all flex items-center gap-2 shadow-lg hover:border-sky-400 active:scale-95 cursor-pointer">
+                <i class="fas fa-camera text-sky-400"></i>
+                <span id="storeArCameraBtnText">Enable Camera</span>
+            </button>
+
+            <!-- Scale Preset Selector -->
+            <div class="flex items-center gap-1 bg-slate-900/90 border border-slate-700/70 rounded-xl px-2 py-1 backdrop-blur-xl shadow-lg">
+                <span class="text-[10px] font-black uppercase text-amber-400 font-mono hidden sm:inline">Scale:</span>
+                <select id="storeArScaleSelect" 
+                        class="bg-slate-950 text-amber-300 text-[11px] font-bold rounded-lg px-2 py-0.5 border border-amber-500/40 focus:outline-none cursor-pointer">
+                    <option value="0.6">Mini (15cm)</option>
+                    <option value="1.0" selected>Desk (25cm)</option>
+                    <option value="1.8">Statue (45cm)</option>
+                    <option value="4.5">Life-Size (1.8m)</option>
+                </select>
+            </div>
+
+            <!-- Animation Action Selector -->
+            <div class="hidden sm:flex items-center gap-1 bg-slate-900/90 border border-slate-700/70 rounded-xl px-2 py-1 backdrop-blur-xl shadow-lg">
+                <span class="text-[10px] font-black uppercase text-slate-400 font-mono">Action:</span>
+                <select id="storeArAnimSelect" 
+                        class="bg-slate-950 text-slate-200 text-[11px] font-bold rounded-lg px-2 py-0.5 border border-slate-700 focus:outline-none cursor-pointer max-w-[110px] truncate">
+                    <option value="">Animations</option>
+                </select>
+            </div>
+
+            <!-- Audio Toggle -->
+            <button id="btnStoreArToggleAudio" 
+                    type="button"
+                    title="Toggle Audio"
+                    class="p-2 rounded-xl bg-slate-900/90 hover:bg-slate-800 text-slate-200 border border-slate-700/70 backdrop-blur-xl text-xs font-bold transition-all flex items-center shadow-lg active:scale-95 cursor-pointer">
+                <i id="storeArAudioIcon" class="fas fa-volume-up text-emerald-400"></i>
+            </button>
+
+            <!-- Reset Placement Button -->
+            <button id="btnStoreArResetPlacement" 
+                    type="button"
+                    title="Center Figurine on Table"
+                    class="p-2 rounded-xl bg-slate-900/90 hover:bg-slate-800 text-slate-200 border border-slate-700/70 backdrop-blur-xl text-xs font-bold transition-all flex items-center shadow-lg active:scale-95 cursor-pointer">
+                <i class="fas fa-crosshairs text-amber-400"></i>
+            </button>
+
+            <!-- Close Modal Button -->
+            <button id="btnStoreArClose" 
+                    type="button"
+                    title="Close AR Viewer"
+                    onclick="window.KongorStoreAR.close()"
+                    class="px-2.5 py-1.5 rounded-xl bg-rose-950/80 hover:bg-rose-900/90 text-rose-200 border border-rose-600/50 backdrop-blur-xl text-xs font-black transition-all flex items-center gap-1.5 shadow-lg active:scale-95 cursor-pointer">
+                <i class="fas fa-times"></i>
+                <span class="hidden sm:inline">Exit</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Bottom Interaction Guidance Hint Pill -->
+    <div class="absolute bottom-4 left-1/2 -translate-x-1/2 z-20 pointer-events-none">
+        <div id="storeArInstructionPill" 
+             class="bg-slate-900/85 backdrop-blur-md px-4 py-2 rounded-full border border-sky-500/30 text-slate-200 text-xs font-medium shadow-2xl flex items-center gap-2 animate-pulse">
+            <i class="fas fa-hand-pointer text-sky-400 text-xs"></i>
+            <span>Click table to walk &bull; Left-drag hero to rotate &bull; Right-drag to reposition</span>
+        </div>
+    </div>
+
+    <!-- Loading Spinner & State Overlay -->
+    <div id="storeArLoading" class="absolute inset-0 bg-slate-950/85 backdrop-blur-md z-40 flex flex-col items-center justify-center space-y-4">
+        <div class="relative w-14 h-14">
+            <div class="absolute inset-0 border-4 border-sky-500/20 rounded-full"></div>
+            <div class="absolute inset-0 border-4 border-sky-400 border-t-transparent rounded-full animate-spin"></div>
+        </div>
+        <div class="flex flex-col items-center">
+            <span id="storeArLoadingTitle" class="text-sm font-black text-white tracking-wide">Manifesting Hero in AR...</span>
+            <span id="storeArLoadingProgress" class="text-xs text-sky-400 font-mono mt-1">Streaming 3D Mesh Geometry</span>
+        </div>
+    </div>
+</dialog>

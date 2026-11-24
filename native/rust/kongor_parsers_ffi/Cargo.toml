@@ -1,0 +1,19 @@
+# SPDX-License-Identifier: MPL-2.0
+# SPDX-FileCopyrightText: 2026 guccidonut and Project KONGOR V Contributors
+# This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
+# If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
+
+[package]
+name = "kongor_parsers_ffi"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+description = "C-ABI staticlib bridge exposing safe kongor_parsers to Project Kongor C++17 native targets"
+
+[lib]
+name = "kongor_parsers_ffi"
+crate-type = ["staticlib", "rlib"]
+
+[dependencies]
+kongor_parsers = { path = "../kongor_parsers" }

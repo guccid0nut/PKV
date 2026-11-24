@@ -1,0 +1,25 @@
+{
+    "schemaVersion":  "1.0.0",
+    "capturedAt":  "2026-10-17T02:54:45.3499814-05:00",
+    "host":  "kongor-build-host",
+    "budgets":  {
+                    "gateCheckTotalMaxMs":  5000,
+                    "gateCheckTier4MaxMs":  500,
+                    "exportSymbolsCuratedMaxMs":  2500,
+                    "verifyObligationsAllMaxMs":  2000,
+                    "workerLockStaleReapCliMaxMs":  250
+                },
+    "measurements":  {
+                         "gateCheckTotalMs":  1750,
+                         "gateCheckTiersMs":  {
+                                                  "T1":  812,
+                                                  "T2":  191,
+                                                  "T3":  22,
+                                                  "T4":  5,
+                                                  "T5":  603
+                                              },
+                         "exportSymbolsCuratedMs":  326,
+                         "verifyObligationsAllMs":  55,
+                         "workerLockStaleReapCliMs":  28
+                     }
+}

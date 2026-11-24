@@ -1,0 +1,109 @@
+Project KONGOR V ("PKV") — Legal Notice, Multi-Licensing & Upstream Attribution
+================================================================================
+
+Copyright (c) 2026 guccidonut and Project KONGOR V Contributors.
+Portions Copyright (c) 2022-2026 [K]ONGOR and Project KONGOR Contributors.
+Portions Copyright (c) Denis Koroskin (korDen), Theli (theli-ua), Anton Romanov (KRAT0Sz, 2024-2026 K2-Blender Contributors), and Shawn Presser (shawwn).
+
+Canonical Source Repository: https://github.com/guccid0nut/PKV
+
+1. Multi-License Directory Map
+------------------------------
+Project KONGOR V uses a directory-scoped open-source licensing model:
+
+- Root Platform, Services, Launchers, CLI, TAO MCP, Scripts & Tests (`src/`, `scripts/`, `tests/`, `infra/`, `tools/`):
+  Licensed under the GNU Affero General Public License v3.0 or later (`AGPL-3.0-or-later`).
+  See `LICENSE` at the repository root.
+  (Exception: `src/tools/blender/io_scene_hon/` links against Blender's `bpy` API and is distributed under
+  `GPL-3.0-or-later`, compatible with `AGPL-3.0` pursuant to AGPL-3.0 Section 13; `infra/ebpf/` and
+  `native/ebpf/` carry `Dual BSD/GPL` for Linux kernel eBPF verifier compatibility.)
+
+- Native C/C++ Engine Interop, Proxies, Vulkan Layer & Native Tools (`native/`, excluding third-party paths below):
+  Original Project KONGOR V code, licensed under the Mozilla Public License 2.0 (`MPL-2.0`).
+  See `native/LICENSE` and `native/README.md`. (`MPL-2.0` is Secondary-License compatible with `AGPL-3.0` per MPL-2.0 Section 3.3.)
+
+- Documentation & Architecture Guides (`docs/`):
+  Licensed under Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International (`CC BY-NC-SA 4.0`).
+  See `docs/LICENSE.md`.
+
+- Third-Party Submodules & Vendored Dependencies (`native/deps/rmlui`, `native/deps/libdeflate`,
+  `native/deps/mimalloc`, `native/deps/miniz`, `native/deps/stb_truetype.h`, `native/vulkan-layer/deps/`,
+  `native/vulkan-layer/include/vulkan/`, `native/tools/luac51/lua-5.1.5`, and web UI frontend libraries):
+  Governed by their respective upstream permissive licenses (`MIT`, `Apache-2.0`, `Zlib`, `SIL OFL 1.1`).
+  See `THIRD_PARTY_NOTICES.md`.
+
+2. TAO (Together As One) MCP Server — Authorship & AGPL-3.0 Section 7 Notice
+----------------------------------------------------------------------------
+The TAO (Together As One) Model Context Protocol (MCP) Server, unified `kongor` CLI & global shim
+subsystem, Zero-Focus-Theft Mailbox IPC protocol, and VFS index/self-healing tool suite
+(`src/tools/kongor-cli/`, `src/tools/kongor-shim/`, `src/tools/tao_mcp.py`, `src/tools/MCP.py`,
+`src/tools/kongor/`, `scripts/dev/install_tao_mcp.ps1`) are 100% original software authored by
+`guccidonut` for Project KONGOR V (`https://github.com/guccid0nut/PKV`) and licensed under
+`AGPL-3.0-or-later`.
+
+Pursuant to GNU AGPL-3.0 Section 7(b), Section 7(c), and Section 7(e), all redistributions, forks,
+and modified versions of TAO MCP or `Kongor.Cli` MUST:
+  (a) Preserve reasonable legal notices and author attributions crediting `guccidonut` and
+      `Project KONGOR V (https://github.com/guccid0nut/PKV)` in source files, `NOTICE`, and interactive
+      version/status outputs (`AGPL-3.0` Section 7(b));
+  (b) Refrain from misrepresenting the origin of TAO MCP, and clearly mark modified versions as changed
+      from the original Project KONGOR V software (`AGPL-3.0` Section 7(c)); and
+  (c) Refrain from using the names `guccidonut`, `Project KONGOR V`, `PKV`, or `TAO MCP` to endorse or
+      promote derived products without prior written permission (`AGPL-3.0` Section 7(e)).
+
+3. Foundational Upstream & Preservation Community Attribution
+-------------------------------------------------------------
+Project KONGOR V gratefully credits the open-source pioneers whose work made preservation possible:
+
+- [K]ONGOR and Project KONGOR Contributors (https://github.com/Project-KONGOR-Open-Source):
+  Foundational protocol research, database schema, and service architecture in upstream `NEXUS`
+  (`MERRICK`, `KONGOR.MasterServer`, `TRANSMUTANSTEIN`, `ZORGATH`, `DAWNBRINGER`), `WILLOWMAKER`,
+  `COMPEL`, and `CODEX`, originally published under `AGPL-3.0`. All upstream copyright notices are
+  preserved in accordance with `AGPL-3.0` Sections 4, 5, and 7.
+
+- Denis Koroskin (`korDen` — https://github.com/korDen/honserver):
+  Early public protocol documentation and chat handshake salt constant enabling legacy client compatibility.
+
+- Anton Romanov (`KRAT0Sz` / `why2k` — https://github.com/KRAT0Sz/K2-Blender-master & https://github.com/KRAT0Sz/KONGOR-TOOL), `RedBear`, & `Theli` (https://github.com/theli-ua/pyHoNBot):
+  MIT-licensed Blender K2 SMDL/CLIP/material pipeline foundations (`2024-2026 Anton Romanov, K2-Blender Contributors`), Apache-2.0 `KONGOR-TOOL` Blender 4.2+/5.0 architecture & K2 asset pipeline insights (`KRAT0Sz` / `why2k` with foundational K2 format assistance from `RedBear`), and early SRP authentication research (`Theli`).
+
+- Tactical Bot Brains & HoNBots Community Pioneers (`tkt-hon`, `kairus101`, `St0l3n_ID`, `Anakonda`, `Sparks1992`, `AsiaPingPong`):
+  Autonomous tactical bot decision tree models and Mid Wars bot heuristics, built on foundational game engine bot scripts by S2 Games and Frostburn Studios.
+
+- Craig Mason-Jones (`JSON4Lua`):
+  MIT-licensed JSON encoding/decoding library for Lua (`Copyright (c) 2009 Craig Mason-Jones`).
+
+- Shawn Presser (`shawwn` — https://github.com/shawwn/hon), `manu311`, and `mrhappyasthma`:
+  Public `chatserver_protocol.h` constants, Linux Flatpak packaging patterns, and community preservation tooling.
+
+- Classic HoN Modding & Custom Map Community Creators (`Bang!`, `Notausgang`, `HyperXewl` / `xewl`, `Valky`,
+  `Cralle`, and the HoN Custom Map Contest & Custom Maps community authors):
+  Years of UI craftsmanship, custom game modes, and community maps preserved for historical play.
+
+- Tribute to the Original Creators & Caretakers of Heroes of Newerth (`S2 Games`, `Frostburn Studios` & `Garena`):
+  Respectful recognition to every engineer, designer, artist, animator, sound designer, QA tester, and
+  community manager who built and sustained Heroes of Newerth and the K2 Engine across 2009-2022—with
+  special appreciation to `ElementUser` (`EU`) for his years of dedication to scripts, bug fixes, tooltips,
+  UI updates, Public Beta Test (`PBT`) patches, and direct community communication across S2 Games and
+  Frostburn Studios, alongside `Fielding`, `Idejder`, `Nome`, `Wza`, `HyperXewl` (`xewl`), `Kros`, `Buro`,
+  `MacroHard`, `Diva`, `AceJR`, `CJK`, `SoundWizard`, `MsPudding`, `Nigma`, `BreakCPK`, and the entire
+  original development staff. (Named strictly in historical gratitude; none of these individuals or studios
+  are affiliated with or endorse Project KONGOR V.)
+
+- AI-Assisted Engineering & Educational Transparency (`docs/ai-gratitude-and-methodology.md`):
+  Gratitude to Google / DeepMind (`Gemini` & `Antigravity`), Anthropic (`Claude`, `Claude Code`, and the
+  open `Model Context Protocol` specification), JetBrains (`Junie`, `PyCharm`, & `Rider`), and OpenAI
+  (`GPT` & `Codex`) for pair-programming, cross-model code review, and debugging assistance under human
+  direction. (None of these providers are affiliated with or endorse Project KONGOR V.)
+
+4. Independent Project & Non-Affiliation Disclaimer
+---------------------------------------------------
+- Project KONGOR V (`PKV`) is an independent open-source continuation maintained by `guccidonut`.
+  It is NOT affiliated with, operated by, or officially endorsed by the original `[K]ONGOR` team
+  or Kongor Studios (`HoN Reborn`).
+- Heroes of Newerth(TM) and Newerth(TM), together with all retail game binaries, `.s2z` archives,
+  3D models, textures, icons, audio, and official characters/lore, are the intellectual property of
+  Garena Online Private Limited (and historically S2 Games and Frostburn Studios). Project KONGOR V is
+  not affiliated with, sponsored by, or endorsed by Garena, S2 Games, or Frostburn Studios, and this
+  public source repository distributes zero retail Heroes of Newerth assets or executables.
+- See `INTEROPERABILITY_AND_DMCA.md`, `NAMING_POLICY.md`, and `THIRD_PARTY_NOTICES.md` for complete details.

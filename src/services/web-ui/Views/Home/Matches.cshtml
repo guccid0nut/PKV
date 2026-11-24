@@ -1,0 +1,151 @@
+@{
+    ViewData["Title"] = "Match History";
+    var matches = ViewData["RecentMatches"] as List<PlayerStatistics>;
+    var matchDtoMap = ViewData["MatchStatsMap"] as Dictionary<int, MatchStatisticsDto>;
+    var matchStatsMap = ViewData["MatchStatsMap"] as Dictionary<int, MatchStatistics>;
+
+    string FormatMapName(string? map)
+    {
+        return MapCatalog.FormatMapName(map);
+    }
+
+    string FormatMapIconPath(string? map)
+    {
+        if (string.IsNullOrWhiteSpace(map))
+        {
+            return "/images/maps/caldavar.png";
+        }
+
+        var rawMap = map.ToLowerInvariant().Replace("maps/", "").Trim();
+        return rawMap switch
+        {
+            "caldavar" or "forests_of_caldavar" or "caldavar_1v1" => "/images/maps/caldavar.png",
+            "caldavar_old" => "/images/maps/caldavar_old.png",
+            "caldavar_reborn" => "/images/maps/caldavar_reborn.png",
+            "midwars_reborn" or "midwarsreborn" => "/images/maps/midwars_reborn.png",
+            "midwars" or "midwars_old" or "midwarsold" => "/images/maps/midwars.png",
+            "grimmscross" or "grimmscrossing" => "/images/maps/grimmscrossing.png",
+            "watchtower" => "/images/maps/watchtower.png",
+            "riftwars" => "/images/maps/riftwars.png",
+            "devowars" => "/images/maps/devowars.png",
+            "soccer" or "strikers" or "hon_strikers" => "/images/maps/soccer.png",
+            "team_deathmatch" => "/images/maps/team_deathmatch.png",
+            _ => $"/images/maps/{rawMap}.png"
+        };
+    }
+
+    string FormatGameMode(PlayerStatistics playerStat, string? gameMode)
+    {
+        var isRanked = playerStat.RankedMatch > 0
+                       || (gameMode?.Contains("ranked", StringComparison.OrdinalIgnoreCase) ?? false)
+                       || (gameMode?.Contains("matchmaking", StringComparison.OrdinalIgnoreCase) ?? false);
+
+        return isRanked ? "Ranked" : "Public Match";
+    }
+}
+
+<div class="w-full max-w-6xl mx-auto py-8 px-4 space-y-8 animate-fade-in-up">
+    <!-- Breadcrumb & Header -->
+    <div class="flex items-center justify-between">
+        <div>
+            <a href="/" class="text-xs text-purple-400 hover:underline font-semibold flex items-center gap-1 mb-2">
+                <span>←</span> Back to Dashboard
+            </a>
+            <h1 class="text-3xl md:text-4xl font-black text-white tracking-tight">Match History</h1>
+            <p class="text-slate-400 text-xs md:text-sm mt-1">Review recent match scoreboards and replay statistics</p>
+        </div>
+    </div>
+
+    <!-- Match List Container -->
+    <div class="space-y-4">
+        @if (matches is { Count: > 0 })
+        {
+            var matchRowIdx = 0;
+            @foreach (var match in matches)
+            {
+                var isWin = match.Win > 0;
+                var isBelowFoldMatch = matchRowIdx++ >= 6;
+                var matchCvClass = isBelowFoldMatch ? "kongor-cv-row" : "";
+                string? matchMap = null;
+                string? gameMode = null;
+                if (matchDtoMap != null && matchDtoMap.TryGetValue(match.MatchID, out var mdto))
+                {
+                    matchMap = mdto.Map;
+                    gameMode = mdto.Mode;
+                }
+                else if (matchStatsMap != null && matchStatsMap.TryGetValue(match.MatchID, out var ms))
+                {
+                    matchMap = ms.Map;
+                    gameMode = ms.GameMode;
+                }
+
+                var mapName = FormatMapName(matchMap);
+                var mapIcon = FormatMapIconPath(matchMap);
+                var modeName = FormatGameMode(match, gameMode);
+                var heroDisplayName = Heroes.ResolveHeroDisplayName(match.HeroIdentifier);
+
+                <div onclick="window.location.href='/matches/@match.MatchID'"
+                     class="glass-card @matchCvClass p-4 sm:p-6 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-4 text-center sm:text-left border border-slate-800 hover:border-purple-500/50 hover:bg-slate-800/30 hover:scale-[1.005] transition-all cursor-pointer group">
+                    <div class="flex flex-col sm:flex-row items-center gap-3 sm:gap-4">
+                        <div class="flex items-center gap-3">
+                            <div
+                                class="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl @(isWin ? "bg-emerald-500/20 border-emerald-500/30 text-emerald-400" : "bg-rose-500/20 border-rose-500/30 text-rose-400") border flex items-center justify-center font-black text-xs sm:text-sm flex-shrink-0">
+                                @(isWin ? "WIN" : "LOSS")
+                            </div>
+                            <div
+                                class="w-12 h-12 rounded-xl overflow-hidden bg-slate-900 border border-purple-500/30 shadow-lg shadow-purple-950/40 flex-shrink-0 group-hover:border-purple-400 transition-all">
+                                <img
+                                    src="@(DAWNBRINGER.WebPortal.UI.Services.HeroAndMapAssetResolver.ResolveHeroIconUrl(match.HeroIdentifier))"
+                                    onError="this.onerror=null;this.src='/images/heroes/default.png';"
+                                    alt="@heroDisplayName" width="48" height="48" @(isBelowFoldMatch ? Html.Raw("loading=\"lazy\" decoding=\"async\"") : Html.Raw("decoding=\"async\""))
+                                    class="w-full h-full object-cover"/>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="flex flex-wrap items-center justify-center sm:justify-start gap-2 mb-1">
+                                <span class="text-white font-bold text-base group-hover:text-purple-300 transition-all">Match #@match.MatchID</span>
+                                <span
+                                    class="px-3 py-1 rounded-full bg-slate-800 border border-slate-700/80 text-slate-300 text-xs font-semibold flex items-center gap-2 shadow-sm">
+                                    <img src="@(DAWNBRINGER.WebPortal.UI.Services.HeroAndMapAssetResolver.ResolveMapIconUrl(matchMap))" width="20" height="20" loading="lazy" decoding="async" onError="this.onerror=null;this.src='/images/maps/default.png';"
+                                         class="w-4 h-4 sm:w-5 sm:h-5 rounded-md object-contain filter drop-shadow"
+                                         alt="@mapName"/>
+                                    <span>@mapName</span>
+                                </span>
+                            </div>
+                            <p class="text-xs text-slate-400">Hero: <span
+                                    class="text-purple-300 font-semibold">@heroDisplayName</span> · Mode: @modeName</p>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center justify-center gap-2.5 w-full sm:w-auto flex-wrap">
+                        <a href="/matches/@match.MatchID" onclick="event.stopPropagation();"
+                           class="px-3.5 py-2 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs shadow-md shadow-purple-600/30 transition-all flex items-center justify-center gap-1.5 z-10">
+                            <span>🗺️</span>
+                            <span>2D Replay</span>
+                        </a>
+                        <a href="/replays/@match.MatchID" onclick="event.stopPropagation();"
+                           class="px-3.5 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-300 hover:text-white font-semibold text-xs transition-all flex items-center justify-center gap-1.5 z-10">
+                            <span>💾</span>
+                            <span>Replay</span>
+                        </a>
+                    </div>
+                </div>
+            }
+        }
+        else
+        {
+            <!-- Clean Empty State when 0 real matches played -->
+            <div class="p-12 text-center rounded-2xl bg-slate-900/40 border border-slate-800/80 space-y-3">
+                <div
+                    class="w-16 h-16 rounded-full bg-slate-800/80 border border-slate-700 flex items-center justify-center text-3xl mx-auto mb-2">
+                    ⚔️
+                </div>
+                <h3 class="text-xl font-bold text-white">No Recent Matches Recorded</h3>
+                <p class="text-slate-400 text-sm max-w-md mx-auto leading-relaxed">
+                    Play matches in Project KONGOR to view your recent match history, scoreboards, and downloadable
+                    replay files.
+                </p>
+            </div>
+        }
+    </div>
+</div>

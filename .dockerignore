@@ -1,0 +1,47 @@
+# Deny-by-default allowlist so Docker BuildKit never scans multi-GB local workstation folders
+# (e.g., games/, artifacts/, logs/, scratch/)
+*
+
+!LICENSE
+!NOTICE
+!THIRD_PARTY_NOTICES.md
+
+!artifacts/
+artifacts/*
+!artifacts/publish/
+!artifacts/publish/**
+
+!infra/
+infra/*
+!infra/docker/
+!infra/docker/**
+
+!src/
+src/*
+
+!native/
+native/*
+!native/LICENSE
+!native/include/
+native/include/*
+!native/include/kongor_deterministic_math.h
+!native/proxies/
+native/proxies/*
+!native/proxies/native_guard/
+native/proxies/native_guard/*
+!native/proxies/native_guard/linux_native_guard.cpp
+!native/proxies/native_guard/linux_queue_arcade.h
+!native/proxies/hon_ping_shim/
+native/proxies/hon_ping_shim/*
+!native/proxies/hon_ping_shim/hon_ping_shim.c
+!native/proxies/hon_ping_shim/hon_ping_protocol.h
+
+# Host-mounted 1.27 GB prebaked 3D .glb models (mounted read-only into web-ui via WEB_UI_PREBAKED_MOUNT_PATH)
+artifacts/publish/web-ui/wwwroot/assets/prebaked
+artifacts/publish/web-ui/wwwroot/assets/prebaked/**
+
+**/*.pdb
+**/*.lock
+**/*.lock~
+**/*.tmp
+

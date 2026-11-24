@@ -1,0 +1,92 @@
+﻿<Project>
+  <PropertyGroup>
+    <!-- Target Framework & Language Standards -->
+    <TargetFramework>net11.0</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <WarningsAsErrors>nullable</WarningsAsErrors>
+    <EnableNETAnalyzers>true</EnableNETAnalyzers>
+    <AnalysisMode>Recommended</AnalysisMode>
+    <AnalysisLevel>latest-recommended</AnalysisLevel>
+    <EnforceCodeStyleInBuild>false</EnforceCodeStyleInBuild>
+    <GenerateDocumentationFile Condition="'$(Configuration)' == 'Release'">true</GenerateDocumentationFile>
+    <NoWarn>$(NoWarn);1591;CS0618</NoWarn>
+
+    <!-- Assembly Metadata & Versioning (Hybrid SemVer 5.0.2 + CalVer 20261121 + Engine Protocol v5.0.0) -->
+    <VersionPrefix>5.0.2</VersionPrefix>
+    <VersionSuffix></VersionSuffix>
+    <Version>5.0.2</Version>
+    <AssemblyVersion>5.0.2.2026</AssemblyVersion>
+    <FileVersion>5.0.2.2026</FileVersion>
+    <InformationalVersion>v5.0.2+2026.11.21 (Engine Protocol v5.0.0)</InformationalVersion>
+    <Company>Project KONGOR V (guccidonut)</Company>
+    <Product>Project KONGOR V — Cleanroom Platform &amp; Modernization Suite</Product>
+    <Copyright>Copyright © 2026 guccidonut and Project KONGOR V Contributors; Portions Copyright © 2022-2026 [K]ONGOR and Contributors</Copyright>
+    <PackageLicenseExpression Condition="'$(PackageLicenseExpression)' == ''">AGPL-3.0-or-later</PackageLicenseExpression>
+    <RepositoryUrl Condition="'$(RepositoryUrl)' == ''">https://github.com/guccid0nut/PKV</RepositoryUrl>
+    <RepositoryType Condition="'$(RepositoryType)' == ''">git</RepositoryType>
+
+    <!-- Deterministic & Reproducible Builds -->
+    <Deterministic>true</Deterministic>
+    <ContinuousIntegrationBuild Condition="'$(GITHUB_ACTIONS)' == 'true' or '$(Configuration)' == 'Release' or '$(PlaytestBuild)' == 'true'">true</ContinuousIntegrationBuild>
+    <PathMap Condition="'$(ContinuousIntegrationBuild)' == 'true' or '$(PlaytestBuild)' == 'true'">$(MSBuildThisFileDirectory)=/_/</PathMap>
+    <EnableSourceLink Condition="'$(GITHUB_ACTIONS)' != 'true'">false</EnableSourceLink>
+    <EnableSourceControlManagerQueries Condition="'$(GITHUB_ACTIONS)' != 'true'">false</EnableSourceControlManagerQueries>
+
+    <!-- Build Performance & Optimization -->
+    <AccelerateBuildsInVisualStudio>true</AccelerateBuildsInVisualStudio>
+    <ProduceReferenceAssembly>true</ProduceReferenceAssembly>
+    <BuildInParallel>true</BuildInParallel>
+    <SkipCopyUnchangedFiles>true</SkipCopyUnchangedFiles>
+    <UseSharedCompilation>true</UseSharedCompilation>
+    <DisableMsCoverageReferencedPathMaps Condition="'$(DisableMsCoverageReferencedPathMaps)' == ''">true</DisableMsCoverageReferencedPathMaps>
+    <CopyRetryCount>3</CopyRetryCount>
+    <CopyRetryDelayMilliseconds>150</CopyRetryDelayMilliseconds>
+    <TieredPGO>true</TieredPGO>
+    <PublishReadyToRun Condition="'$(Configuration)' == 'Release'">true</PublishReadyToRun>
+
+    <!-- Standalone / Playtest Distributable Build Toggle (-p:PlaytestBuild=true) -->
+    <PlaytestBuild Condition="'$(PlaytestBuild)' == ''">false</PlaytestBuild>
+    <DefineConstants Condition="'$(PlaytestBuild)' == 'true'">$(DefineConstants);PLAYTEST_BUILD</DefineConstants>
+    <RuntimeFrameworkVersion Condition="'$(SelfContained)' == 'true' and '$(BundledNETCoreAppPackageVersion)' != ''">$(BundledNETCoreAppPackageVersion)</RuntimeFrameworkVersion>
+
+    <!-- Unified Solution-Wide User Secrets Vault (omitted in playtest builds so binaries carry zero UserSecretsIdAttribute) -->
+    <UserSecretsId Condition="'$(PlaytestBuild)' != 'true'">00005072-6f6a-6563-7420-4b4f4e474f52</UserSecretsId>
+
+    <!-- Advisory Warning Suppressions (External NuGet advisories and Aspire preview notices only) -->
+    <NoWarn>$(NoWarn);ASPIRE004;NU1608;NU1510;NU1901;NU1902;NU1903;NU1904</NoWarn>
+    <WarningsNotAsErrors>$(WarningsNotAsErrors);NU1901;NU1902;NU1903;NU1904</WarningsNotAsErrors>
+  </PropertyGroup>
+
+  <!-- Native AOT & Trimming Warning Policy -->
+  <PropertyGroup Condition="'$(IsAotCompatible)' == 'true'">
+    <EnableTrimAnalyzer>true</EnableTrimAnalyzer>
+    <EnableSingleFileAnalyzer>true</EnableSingleFileAnalyzer>
+    <WarningsAsErrors>$(WarningsAsErrors);IL2026;IL2091;IL3050;IL3056</WarningsAsErrors>
+  </PropertyGroup>
+
+  <ItemGroup Condition="'$(PublishAot)' == 'true'">
+    <LinkerArg Include="/PDBALTPATH:%_PDB%" />
+  </ItemGroup>
+
+  <!-- Global Code Quality Analyzers & Banned APIs -->
+  <ItemGroup>
+    <PackageReference Include="Microsoft.CodeAnalysis.BannedApiAnalyzers">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <AdditionalFiles Include="$(MSBuildThisFileDirectory)BannedSymbols.txt" Link="Properties/BannedSymbols.txt"/>
+  </ItemGroup>
+
+  <!-- Documented, non-expired vulnerability baseline waivers (see scripts/.nuget_vulnerability_baseline.json) -->
+  <ItemGroup>
+    <NuGetAuditSuppress Include="https://github.com/advisories/GHSA-gwg2-r3hj-4w44" />
+    <NuGetAuditSuppress Include="https://github.com/advisories/GHSA-j3p4-wp97-rph4" />
+    <NuGetAuditSuppress Include="https://github.com/advisories/GHSA-j9gm-c75j-xc9q" />
+    <NuGetAuditSuppress Include="https://github.com/advisories/GHSA-jjfr-hcj7-qf5w" />
+    <NuGetAuditSuppress Include="https://github.com/advisories/GHSA-v76p-62qx-wwq2" />
+    <NuGetAuditSuppress Include="https://github.com/advisories/GHSA-wmxv-xphr-5c9g" />
+  </ItemGroup>
+</Project>

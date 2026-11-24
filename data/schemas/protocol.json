@@ -1,0 +1,212 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Project Kongor Unified Engine & Fast-Bus Protocol Schema",
+  "version": "2.0.0",
+  "description": "Authoritative contract schema for cross-language code generation across C++, C#, and Lua",
+  "constants": [
+    { "name": "KONGOR_SHM_MAGIC", "type": "uint32", "value": "0x4B4F4E47", "description": "ASCII 'KONG' magic identifier" },
+    { "name": "KONGOR_SHM_VERSION_1", "type": "uint32", "value": 1, "description": "Legacy 64-byte header version" },
+    { "name": "KONGOR_SHM_VERSION_2", "type": "uint32", "value": 2, "description": "Modern 192-byte Seqlock 3-cache-line header version" },
+    { "name": "KONGOR_SHM_CURRENT_VERSION", "type": "uint32", "value": 2, "description": "Active production version" },
+    { "name": "KONGOR_SHM_DEFAULT_CAPACITY", "type": "uint32", "value": 4096, "description": "Ring buffer capacity in slots" },
+    { "name": "KONGOR_SHM_HEADER_SIZE_V1", "type": "uint32", "value": 64, "description": "Header size in bytes for V1" },
+    { "name": "KONGOR_SHM_HEADER_SIZE_V2", "type": "uint32", "value": 192, "description": "Header size in bytes for V2" },
+    { "name": "KONGOR_SHM_RECORD_SIZE", "type": "uint32", "value": 64, "description": "Record size in bytes matching 1 cache line" },
+    { "name": "KONGOR_VOICE_PTT_TEAM", "type": "uint64", "value": "0x00000001", "description": "Push-To-Talk Team channel active" },
+    { "name": "KONGOR_VOICE_PTT_LANE", "type": "uint64", "value": "0x00000002", "description": "Push-To-Talk Lane channel active" },
+    { "name": "KONGOR_VOICE_PTT_PARTY", "type": "uint64", "value": "0x00000004", "description": "Push-To-Talk Party channel active" },
+    { "name": "KONGOR_VOICE_PTT_MENTOR", "type": "uint64", "value": "0x00000008", "description": "Push-To-Talk Mentor channel active" },
+    { "name": "KONGOR_PACKET_PING", "type": "uint16", "value": "0x0001", "description": "Heartbeat ping packet" },
+    { "name": "KONGOR_PACKET_PONG", "type": "uint16", "value": "0x0002", "description": "Heartbeat pong response" },
+    { "name": "KONGOR_PACKET_COMMAND", "type": "uint16", "value": "0x0003", "description": "Engine command dispatch" },
+    { "name": "KONGOR_PACKET_TELEMETRY", "type": "uint16", "value": "0x0004", "description": "Periodic telemetry report" },
+    { "name": "KONGOR_PACKET_SUBTICK_INPUT", "type": "uint16", "value": "0x0005", "description": "High-precision sub-tick input batch" },
+    { "name": "KONGOR_PACKET_STATE_SYNC", "type": "uint16", "value": "0x0006", "description": "Match state synchronization" },
+    { "name": "KONGOR_PACKET_LUA_MEMORY", "type": "uint16", "value": "0x0007", "description": "Lua memory inquiry / GC trigger" },
+    { "name": "KONGOR_PACKET_LUA_RESPONSE", "type": "uint16", "value": "0x0008", "description": "Lua memory metrics response" },
+    { "name": "KONGOR_PACKET_MATCH_READY_CHECK_PROMPT", "type": "uint16", "value": "0x0010", "description": "Match ready-check prompt broadcast" },
+    { "name": "KONGOR_PACKET_MATCH_READY_CHECK_RESPONSE", "type": "uint16", "value": "0x0011", "description": "Match ready-check player response" },
+    { "name": "KONGOR_PACKET_MATCH_READY_CHECK_STATUS", "type": "uint16", "value": "0x0012", "description": "Match ready-check status update" }
+  ],
+  "enums": [
+    {
+      "name": "NativeGuardOpCode",
+      "underlying_type": "uint16",
+      "description": "Named Pipe RPC opcodes for \\\\.\\pipe\\kongor-native-client (version.dll / NativeGuard). Distinct from NEXUS.Contracts.Ipc.IpcOpCode on willowmaker-ipc.",
+      "values": [
+        { "name": "Ping", "value": "0x0001", "description": "Health check ping request" },
+        { "name": "Pong", "value": "0x0002", "description": "Health check pong response" },
+        { "name": "ExecuteCommand", "value": "0x0003", "description": "Queue console command execution" },
+        { "name": "CommandResponse", "value": "0x0004", "description": "Console or UI command execution response" },
+        { "name": "GetEngineState", "value": "0x0005", "description": "Query engine state and telemetry snapshot" },
+        { "name": "EngineStateResponse", "value": "0x0006", "description": "Engine state and telemetry response" },
+        { "name": "GetLuaMemoryMetrics", "value": "0x0007", "description": "Query cached main-thread Lua memory usage" },
+        { "name": "LuaMemoryResponse", "value": "0x0008", "description": "Cached Lua memory metrics response" },
+        { "name": "DispatchUiEvent", "value": "0x0009", "description": "Dispatch K2 UI widget event" },
+        { "name": "DispatchBackgroundHumanClick", "value": "0x000A", "description": "Dispatch focus-free background client click" },
+        { "name": "EvalLuaSync", "value": "0x000E", "description": "Synchronous 1-frame main-thread Lua evaluation" },
+        { "name": "EvalLuaResponse", "value": "0x000F", "description": "Synchronous Lua evaluation response" },
+        { "name": "Authenticate", "value": "0x0010", "description": "IPC session authentication handshake" },
+        { "name": "AuthResponse", "value": "0x0011", "description": "IPC session authentication response" },
+        { "name": "InjectSubTickInput", "value": "0x0012", "description": "Inject high-precision sub-tick input event" },
+        { "name": "SubTickInputResponse", "value": "0x0013", "description": "Sub-tick input injection response" },
+        { "name": "UpdateTelemetryMetrics", "value": "0x0014", "description": "Push external telemetry metrics update" },
+        { "name": "TelemetryMetricsResponse", "value": "0x0015", "description": "Telemetry metrics update response" },
+        { "name": "DispatchVoiceUiTrigger", "value": "0x0021", "description": "Dispatch spatial voice UI trigger" },
+        { "name": "DispatchVoiceUiTriggerResponse", "value": "0x0022", "description": "Spatial voice UI trigger response" },
+        { "name": "GetVoicePttState", "value": "0x0023", "description": "Query voice Push-To-Talk bitmask state" },
+        { "name": "GetVoicePttStateResponse", "value": "0x0024", "description": "Voice Push-To-Talk state response" },
+        { "name": "GetRawInputState", "value": "0x0025", "description": "Query Win32 RawInput mouse diagnostics" },
+        { "name": "GetRawInputStateResponse", "value": "0x0026", "description": "Win32 RawInput mouse diagnostics response" },
+        { "name": "SetRawInputConfig", "value": "0x0027", "description": "Update Win32 RawInput configuration" },
+        { "name": "SetRawInputConfigResponse", "value": "0x0028", "description": "Win32 RawInput configuration response" },
+        { "name": "PrewarmHero", "value": "0x0030", "description": "Prewarm hero entity and model assets" },
+        { "name": "PrewarmCompetitivePool", "value": "0x0031", "description": "Prewarm competitive hero pool assets" },
+        { "name": "GetPrewarmStats", "value": "0x0032", "description": "Query asset prewarmer telemetry" },
+        { "name": "PrewarmHeroResponse", "value": "0x0033", "description": "Hero prewarm response" },
+        { "name": "PrewarmCompetitivePoolResponse", "value": "0x0034", "description": "Competitive pool prewarm response" },
+        { "name": "GetPrewarmStatsResponse", "value": "0x0035", "description": "Asset prewarmer telemetry response" },
+        { "name": "GetJobPoolStats", "value": "0x0040", "description": "Query background worker job pool stats" },
+        { "name": "SetJobPoolConfig", "value": "0x0041", "description": "Configure background worker job pool" },
+        { "name": "GetJobPoolStatsResponse", "value": "0x0042", "description": "Background worker job pool stats response" },
+        { "name": "SetJobPoolConfigResponse", "value": "0x0043", "description": "Background worker job pool config response" },
+        { "name": "GetPredictionStats", "value": "0x0050", "description": "Query client prediction diagnostics" },
+        { "name": "SetPredictionConfig", "value": "0x0051", "description": "Configure client prediction parameters" },
+        { "name": "GetPredictionStatsResponse", "value": "0x0052", "description": "Client prediction diagnostics response" },
+        { "name": "SetPredictionConfigResponse", "value": "0x0053", "description": "Client prediction configuration response" },
+        { "name": "HookToggleRequest", "value": "0x0060", "description": "Runtime patch controller hook toggle request" },
+        { "name": "HookToggleResponse", "value": "0x0061", "description": "Runtime patch controller hook toggle response" },
+        { "name": "PeekStructRequest", "value": "0x0062", "description": "Safe SEH memory struct peek request" },
+        { "name": "PeekStructResponse", "value": "0x0063", "description": "Safe SEH memory struct peek response" },
+        { "name": "DuplexLuaRpc", "value": "0x0080", "description": "Binary duplex main-thread Lua RPC with caller timeout and microsecond telemetry" },
+        { "name": "DuplexLuaRpcResponse", "value": "0x0081", "description": "Binary duplex Lua RPC response frame" }
+      ]
+    }
+  ],
+  "structs": [
+    {
+      "name": "FrameTelemetryRecord",
+      "expected_size": 64,
+      "description": "Blittable 64-byte frame telemetry record matching an exact CPU cache line",
+      "fields": [
+        { "name": "FrameIndex", "type": "uint64", "description": "Monotonic frame counter" },
+        { "name": "TimestampQpc", "type": "int64", "description": "High-resolution QPC timestamp" },
+        { "name": "CpuFrameTimeMs", "type": "float32", "description": "CPU frame delta in milliseconds" },
+        { "name": "GpuFrameTimeMs", "type": "float32", "description": "GPU frame render time in milliseconds" },
+        { "name": "InputLatencyMs", "type": "float32", "description": "Input sampling to display latency" },
+        { "name": "DrawCallCount", "type": "uint32", "description": "Renderer draw call count" },
+        { "name": "ActiveEntities", "type": "uint32", "description": "Active game entity count" },
+        { "name": "ParticlesAlive", "type": "uint32", "description": "Active visual particle count" },
+        { "name": "PingMicroseconds", "type": "uint32", "description": "Round-trip network latency in microseconds" },
+        { "name": "PacketLossPercent", "type": "float32", "description": "Network packet loss percentage" },
+        { "name": "MemoryWorkingSetMb", "type": "uint32", "description": "Process physical working set in megabytes" },
+        { "name": "AudioVoicesActive", "type": "uint32", "description": "Active 3D sound channels" },
+        { "name": "ServerTick", "type": "uint32", "description": "Authoritative game server tick" },
+        { "name": "ReservedFlags", "type": "uint32", "description": "Reserved engine telemetry bitflags" }
+      ]
+    },
+    {
+      "name": "TelemetryRingHeaderV2",
+      "expected_size": 192,
+      "description": "192-byte 3-Cache-Line Dedicated Header for Lock-Free Shared-Memory Fast Bus",
+      "fields": [
+        { "name": "Magic", "type": "uint32", "description": "ASCII 'KONG' (0x4B4F4E47)" },
+        { "name": "Version", "type": "uint32", "description": "Header version (2 for V2 Seqlock)" },
+        { "name": "Capacity", "type": "uint32", "description": "Ring capacity (power of 2, default 4096)" },
+        { "name": "RecordSizeBytes", "type": "uint32", "description": "Record size in bytes (64)" },
+        { "name": "Head", "type": "uint64", "description": "Monotonic producer write index" },
+        { "name": "Tail", "type": "uint64", "description": "Monotonic consumer read index" },
+        { "name": "ProducerProcessId", "type": "uint64", "description": "PID of engine process" },
+        { "name": "StartTimestampQpc", "type": "int64", "description": "QPC timestamp at buffer creation" },
+        { "name": "FrequencyQpc", "type": "int64", "description": "QPC ticks per second" },
+        { "name": "ReservedFlags", "type": "uint64", "description": "Global engine bitflags (voice PTT, etc.)" },
+        { "name": "LatestSequence", "type": "uint64", "description": "64-bit Seqlock sequence number (odd=write, even=committed)" },
+        { "name": "SnapshotTimestamp", "type": "int64", "description": "QPC timestamp of latest snapshot commit" },
+        { "name": "ProducerThreadId", "type": "uint32", "description": "TID of producer thread for re-entrancy deadlock avoidance" },
+        { "name": "ReservedPad0", "type": "uint32", "description": "Padding to 8-byte alignment" },
+        { "name": "ReservedPad1", "type": "array", "element_type": "uint8", "count": 40, "description": "Padding to exact 64-byte cache-line boundary" },
+        { "name": "LatestRecord", "type": "FrameTelemetryRecord", "description": "Cache Line 2 atomic snapshot (64 bytes)" }
+      ]
+    },
+    {
+      "name": "SubTickInputEvent",
+      "expected_size": 32,
+      "description": "Sub-millisecond input event sampled at high polling rate",
+      "fields": [
+        { "name": "TimestampOffsetUs", "type": "uint32", "description": "Microseconds offset from frame tick start" },
+        { "name": "InputType", "type": "uint16", "description": "Input event type (0=Key, 1=MouseMove, 2=MouseButton, 3=Wheel)" },
+        { "name": "KeyCode", "type": "uint16", "description": "Engine virtual key code or button ID" },
+        { "name": "MouseX", "type": "int32", "description": "Cursor X coordinate in virtual screen units" },
+        { "name": "MouseY", "type": "int32", "description": "Cursor Y coordinate in virtual screen units" },
+        { "name": "Modifiers", "type": "uint32", "description": "Active key modifier bitflags (Ctrl, Shift, Alt, etc.)" },
+        { "name": "AnalogValue", "type": "float32", "description": "Normalized analog axis value (-1.0 to 1.0)" },
+        { "name": "Reserved", "type": "uint64", "description": "Padding to exact 32 bytes" }
+      ]
+    },
+    {
+      "name": "SubTickHeader",
+      "expected_size": 24,
+      "description": "Sub-tick batch header bundling high-precision inputs within a frame",
+      "fields": [
+        { "name": "Sequence", "type": "uint64", "description": "Batch sequence number" },
+        { "name": "ClientTick", "type": "uint32", "description": "Client engine tick count" },
+        { "name": "SubTickMs", "type": "float32", "description": "Sub-tick execution slice interval" },
+        { "name": "EventCount", "type": "uint32", "description": "Number of input events following header" },
+        { "name": "Flags", "type": "uint32", "description": "Batch flags (resend, flush, etc.)" }
+      ]
+    },
+    {
+      "name": "GameServerPacketHeader",
+      "expected_size": 20,
+      "description": "Binary network packet header with CRC32 integrity",
+      "fields": [
+        { "name": "Magic", "type": "uint32", "description": "Protocol magic header (0x4B4F4E47)" },
+        { "name": "PacketId", "type": "uint16", "description": "Packet opcode identifier" },
+        { "name": "Flags", "type": "uint16", "description": "Routing and compression flags" },
+        { "name": "ServerTick", "type": "uint32", "description": "Server frame tick number" },
+        { "name": "PayloadSize", "type": "uint32", "description": "Length of payload in bytes" },
+        { "name": "Crc32", "type": "uint32", "description": "CRC32 checksum of payload" }
+      ]
+    },
+    {
+      "name": "MatchReadyCheckPrompt",
+      "expected_size": 32,
+      "description": "10-player match ready-check invitation prompt broadcast to matched players",
+      "fields": [
+        { "name": "ReadyCheckId", "type": "uint32", "description": "Unique ready check identifier" },
+        { "name": "TimeoutSeconds", "type": "float32", "description": "Countdown timeout in seconds (default 15.0s)" },
+        { "name": "TotalPlayers", "type": "uint32", "description": "Total players required for match (e.g. 10)" },
+        { "name": "MapId", "type": "uint32", "description": "Numeric catalog ID for target map" },
+        { "name": "GameModeId", "type": "uint32", "description": "Numeric catalog ID for target game mode" },
+        { "name": "Flags", "type": "uint32", "description": "Ready check bitflags (ranked, casual, etc.)" },
+        { "name": "Reserved", "type": "uint64", "description": "Reserved 64-bit padding" }
+      ]
+    },
+    {
+      "name": "MatchReadyCheckResponse",
+      "expected_size": 16,
+      "description": "Player ready-check accept or decline response packet",
+      "fields": [
+        { "name": "ReadyCheckId", "type": "uint32", "description": "Target ready check identifier" },
+        { "name": "AccountId", "type": "uint32", "description": "Responding player account identifier" },
+        { "name": "Accepted", "type": "uint8", "description": "1 = Accepted, 0 = Declined" },
+        { "name": "Reserved0", "type": "uint8", "description": "Reserved padding" },
+        { "name": "Reserved1", "type": "uint16", "description": "Reserved padding" },
+        { "name": "ResponseTimeMs", "type": "uint32", "description": "Client-measured response latency in milliseconds" }
+      ]
+    },
+    {
+      "name": "MatchReadyCheckStatus",
+      "expected_size": 24,
+      "description": "Real-time ready-check progress status broadcast update",
+      "fields": [
+        { "name": "ReadyCheckId", "type": "uint32", "description": "Target ready check identifier" },
+        { "name": "AcceptedCount", "type": "uint32", "description": "Number of players who have accepted" },
+        { "name": "TotalPlayers", "type": "uint32", "description": "Total players required (e.g. 10)" },
+        { "name": "State", "type": "uint32", "description": "Current status (0=Waiting, 1=Accepted, 2=Declined, 3=TimedOut)" },
+        { "name": "RemainingMs", "type": "uint32", "description": "Remaining countdown duration in milliseconds" },
+        { "name": "Reserved", "type": "uint32", "description": "Reserved 32-bit padding" }
+      ]
+    }
+  ]
+}

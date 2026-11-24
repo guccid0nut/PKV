@@ -1,0 +1,75 @@
+{
+  "$schema": "https://raw.githubusercontent.com/LuaLS/vscode-lua/master/setting/schema.json",
+  "runtime": {
+    "version": "Lua 5.1",
+    "path": [
+      "?.lua",
+      "?/init.lua",
+      "ui/scripts/?.lua",
+      "bots/?.lua"
+    ]
+  },
+  "workspace": {
+    "library": [
+      "games/shared/types",
+      "docs/types"
+    ],
+    "checkThirdParty": false,
+    "ignoreDir": [
+      "bin",
+      "obj",
+      "build",
+      ".git",
+      "logs",
+      "scratch"
+    ]
+  },
+  "diagnostics": {
+    "enable": true,
+    "globals": [
+      "_G",
+      "arg",
+      "object",
+      "UIManager",
+      "Game",
+      "Cvar",
+      "HoN_Store",
+      "HoN_Main",
+      "Main",
+      "Watch_System",
+      "Player_Stats",
+      "Player_Stats_V2",
+      "HoN_Matchmaking",
+      "PlayerHosted",
+      "Match_Stats",
+      "TestSuite",
+      "Cmd",
+      "Echo",
+      "println",
+      "HostTime",
+      "GetCvarString",
+      "GetCvarBool",
+      "GetCvarInt",
+      "Set",
+      "SetCvar",
+      "GetWidget",
+      "GetDBEntry",
+      "SetDBEntry",
+      "PlaySound",
+      "RegisterScript",
+      "RegisterScript2",
+      "IsPreseason",
+      "isNewUI"
+    ],
+    "severity": {
+      "syntax-error": "Error",
+      "undefined-global": "Warning",
+      "redundant-parameter": "Warning",
+      "type-check": "Warning"
+    },
+    "disable": [
+      "lowercase-global",
+      "trailing-space"
+    ]
+  }
+}

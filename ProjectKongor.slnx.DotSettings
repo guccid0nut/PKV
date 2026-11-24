@@ -1,0 +1,8 @@
+﻿<wpf:ResourceDictionary xml:space="preserve" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:s="clr-namespace:System;assembly=mscorlib" xmlns:ss="clr-namespace:System.Collections;assembly=mscorlib" xmlns:wpf="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
+	<s:Boolean x:Key="/Default/CodeStyle/EditorConfig/EnableEditorConfigSupport/@EntryValue">True</s:Boolean>
+	<s:Boolean x:Key="/Default/CodeStyle/EditorConfig/ExportToEditorConfig/@EntryValue">True</s:Boolean>
+	<s:Boolean x:Key="/Default/CodeStyle/CodeCleanup/Profiles/=Full_0020Cleanup/@KeyIndexDefined">True</s:Boolean>
+	<s:String x:Key="/Default/CodeStyle/CodeCleanup/Profiles/=Full_0020Cleanup/ProfileXml/@EntryValue">&lt;Profile name="Full Cleanup"&gt;&lt;CSOptimizeUsings&gt;True&lt;/CSOptimizeUsings&gt;&lt;CSFormatCode&gt;True&lt;/CSFormatCode&gt;&lt;CSMakeFieldReadonly&gt;True&lt;/CSMakeFieldReadonly&gt;&lt;CSUseVar&gt;False&lt;/CSUseVar&gt;&lt;CSReorderModifiers&gt;True&lt;/CSReorderModifiers&gt;&lt;CSArrangeThisExpr&gt;True&lt;/CSArrangeThisExpr&gt;&lt;CSShortenReferences&gt;True&lt;/CSShortenReferences&gt;&lt;CSApplyCsharpLanguageStyle&gt;True&lt;/CSApplyCsharpLanguageStyle&gt;&lt;/Profile&gt;</s:String>
+	<s:String x:Key="/Default/CodeStyle/CodeCleanup/SilentCleanupProfile/@EntryValue">Full Cleanup</s:String>
+	<s:Boolean x:Key="/Default/CodeStyle/CodeCleanup/RunCleanupOnSave/@EntryValue">True</s:Boolean>
+</wpf:ResourceDictionary>

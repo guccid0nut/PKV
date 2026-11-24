@@ -1,0 +1,241 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="clr-namespace:WILLOWMAKER.Core.ViewModels"
+             mc:Ignorable="d" d:DesignWidth="880" d:DesignHeight="580"
+             x:Class="WILLOWMAKER.Core.Views.DirectPlayView"
+             x:DataType="vm:DirectPlayViewModel">
+
+    <Border Background="#10141E" BorderBrush="#1E2638" BorderThickness="1" CornerRadius="12" Padding="20">
+        <Grid RowDefinitions="Auto, Auto, *, Auto">
+
+            <!-- Mode Selector Bar -->
+            <Border Grid.Row="0" Background="#161B26" BorderBrush="#252F45" BorderThickness="1" CornerRadius="8" Padding="6" Margin="0, 0, 0, 16">
+                <Grid ColumnDefinitions="*, *">
+                    <Button Grid.Column="0" Command="{Binding SelectHostModeCommand}"
+                            HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"
+                            Height="38" CornerRadius="6" Cursor="Hand" Margin="0,0,4,0">
+                        <Button.Styles>
+                            <Style Selector="Button">
+                                <Setter Property="Background" Value="#1A2234" />
+                            </Style>
+                        </Button.Styles>
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <TextBlock Text="👑" FontSize="14" VerticalAlignment="Center" />
+                            <TextBlock Text="Host Match (Server on this PC)" FontWeight="Bold" FontSize="12"
+                                       Foreground="#38BDF8" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </Button>
+
+                    <Button Grid.Column="1" Command="{Binding SelectJoinModeCommand}"
+                            HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"
+                            Height="38" CornerRadius="6" Cursor="Hand" Margin="4,0,0,0">
+                        <Button.Styles>
+                            <Style Selector="Button">
+                                <Setter Property="Background" Value="#1A2234" />
+                            </Style>
+                        </Button.Styles>
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <TextBlock Text="🎮" FontSize="14" VerticalAlignment="Center" />
+                            <TextBlock Text="Join Friend's Match" FontWeight="Bold" FontSize="12"
+                                       Foreground="#34D399" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </Button>
+                </Grid>
+            </Border>
+
+            <!-- HOST MODE PANEL -->
+            <StackPanel Grid.Row="2" Spacing="14" IsVisible="{Binding IsHostMode}">
+                
+                <!-- Player Name & Port -->
+                <Grid ColumnDefinitions="2*, 1*" Margin="0, 0, 0, 4">
+                    <StackPanel Grid.Column="0" Margin="0, 0, 8, 0" Spacing="4">
+                        <TextBlock Text="IN-GAME NICKNAME" FontSize="10" FontWeight="Bold" Foreground="#94A3B8" LetterSpacing="0.5" />
+                        <TextBox Text="{Binding PlayerNickname}" Height="34" CornerRadius="6"
+                                 Background="#141924" Foreground="#FFFFFF" BorderBrush="#252F45" />
+                    </StackPanel>
+                    <StackPanel Grid.Column="1" Margin="8, 0, 0, 0" Spacing="4">
+                        <TextBlock Text="UDP PORT" FontSize="10" FontWeight="Bold" Foreground="#94A3B8" LetterSpacing="0.5" />
+                        <TextBox Text="{Binding HostPort}" Height="34" CornerRadius="6"
+                                 Background="#141924" Foreground="#FFFFFF" BorderBrush="#252F45" />
+                    </StackPanel>
+                </Grid>
+
+                <!-- Network IP Display & Invite Code Card -->
+                <Border Background="#141924" BorderBrush="#252F45" BorderThickness="1" CornerRadius="8" Padding="14">
+                    <StackPanel Spacing="10">
+                        <Grid ColumnDefinitions="*, Auto">
+                            <TextBlock Grid.Column="0" Text="🌐 CONNECTION CODES (SHARE WITH FRIENDS)"
+                                       FontSize="11" FontWeight="Bold" Foreground="#38BDF8" VerticalAlignment="Center" />
+                            <Button Grid.Column="1" Command="{Binding RefreshIpCommand}" Background="#1E293B"
+                                    Foreground="#94A3B8" CornerRadius="6" Padding="10, 4" Cursor="Hand">
+                                <StackPanel Orientation="Horizontal" Spacing="4">
+                                    <TextBlock Text="🔄" FontSize="10" VerticalAlignment="Center" />
+                                    <TextBlock Text="Refresh IP" FontSize="10" FontWeight="SemiBold" VerticalAlignment="Center" />
+                                </StackPanel>
+                            </Button>
+                        </Grid>
+
+                        <!-- Public WAN Box -->
+                        <Border Background="#0C101A" BorderBrush="#1C273C" BorderThickness="1" CornerRadius="6" Padding="10">
+                            <Grid ColumnDefinitions="Auto, *, Auto">
+                                <StackPanel Grid.Column="0" VerticalAlignment="Center" Margin="0,0,12,0">
+                                    <TextBlock Text="INTERNET (WAN)" FontSize="9" FontWeight="Bold" Foreground="#64748B" />
+                                    <TextBlock Text="{Binding InviteCode}" FontSize="14" FontWeight="Bold" Foreground="#F8FAFC" />
+                                </StackPanel>
+                                <TextBlock Grid.Column="1" Text="(Requires Port 11235 forwarded on router)"
+                                           FontSize="10" Foreground="#64748B" VerticalAlignment="Center" />
+                                <Button Grid.Column="2" Command="{Binding CopyInviteCodeCommand}"
+                                        Background="#047857" BorderBrush="#10B981" BorderThickness="1" CornerRadius="6"
+                                        Padding="14, 6" Cursor="Hand">
+                                    <StackPanel Orientation="Horizontal" Spacing="6">
+                                        <TextBlock Text="📋" FontSize="11" VerticalAlignment="Center" />
+                                        <TextBlock Text="Copy Code" FontSize="11" FontWeight="Bold" Foreground="#FFFFFF" VerticalAlignment="Center" />
+                                    </StackPanel>
+                                </Button>
+                            </Grid>
+                        </Border>
+
+                        <!-- Local / VPN Box -->
+                        <Border Background="#0C101A" BorderBrush="#1C273C" BorderThickness="1" CornerRadius="6" Padding="10">
+                            <Grid ColumnDefinitions="Auto, *, Auto">
+                                <StackPanel Grid.Column="0" VerticalAlignment="Center" Margin="0,0,12,0">
+                                    <TextBlock Text="LOCAL LAN / VPN (Radmin, Tailscale, ZeroTier)" FontSize="9" FontWeight="Bold" Foreground="#64748B" />
+                                    <StackPanel Orientation="Horizontal" Spacing="4">
+                                        <TextBlock Text="{Binding DetectedLocalIp}" FontSize="13" FontWeight="Bold" Foreground="#E2E8F0" />
+                                        <TextBlock Text=":" FontSize="13" Foreground="#64748B" />
+                                        <TextBlock Text="{Binding HostPort}" FontSize="13" FontWeight="Bold" Foreground="#E2E8F0" />
+                                    </StackPanel>
+                                </StackPanel>
+                                <TextBlock Grid.Column="1" Text="(Works with 0 router setup)"
+                                           FontSize="10" Foreground="#34D399" VerticalAlignment="Center" />
+                                <Button Grid.Column="2" Command="{Binding CopyLocalInviteCodeCommand}"
+                                        Background="#1E293B" BorderBrush="#334155" BorderThickness="1" CornerRadius="6"
+                                        Padding="14, 6" Cursor="Hand">
+                                    <StackPanel Orientation="Horizontal" Spacing="6">
+                                        <TextBlock Text="📋" FontSize="11" VerticalAlignment="Center" />
+                                        <TextBlock Text="Copy LAN Code" FontSize="11" FontWeight="Bold" Foreground="#CBD5E1" VerticalAlignment="Center" />
+                                    </StackPanel>
+                                </Button>
+                            </Grid>
+                        </Border>
+                        <!-- UPnP IGD & Windows Firewall Reachability Diagnostics -->
+                        <Border Background="#0C101A" BorderBrush="#1C273C" BorderThickness="1" CornerRadius="6" Padding="10">
+                            <StackPanel Spacing="6">
+                                <Grid ColumnDefinitions="*, Auto">
+                                    <TextBlock Grid.Column="0" Text="🛡️ UPnP AUTO-PORT FORWARD &amp; WINDOWS FIREWALL AUDIT"
+                                               FontSize="9.5" FontWeight="Bold" Foreground="#38BDF8" VerticalAlignment="Center" />
+                                    <Button Grid.Column="1" x:Name="RunNetworkDiagnosticsButton"
+                                            Command="{Binding RunNetworkDiagnosticsCommand}"
+                                            IsEnabled="{Binding !IsRunningNetworkDiagnostics}"
+                                            Background="#1E293B" BorderBrush="#38BDF8" BorderThickness="1"
+                                            CornerRadius="5" Padding="10, 4" Cursor="Hand">
+                                        <TextBlock Text="Map UPnP &amp; Audit Firewall" FontSize="9.5" FontWeight="Bold" Foreground="#BAE6FD" />
+                                    </Button>
+                                </Grid>
+                                <TextBlock x:Name="UpnpStatusTextBlock" Text="{Binding UpnpStatusText}"
+                                           Foreground="{Binding UpnpStatusColor}" FontSize="10" TextWrapping="Wrap" />
+                                <Grid ColumnDefinitions="*, Auto">
+                                    <TextBlock Grid.Column="0" x:Name="FirewallAuditStatusTextBlock"
+                                               Text="{Binding FirewallAuditStatusText}"
+                                               Foreground="{Binding FirewallAuditStatusColor}" FontSize="10" TextWrapping="Wrap"
+                                               VerticalAlignment="Center" />
+                                    <Button Grid.Column="1" x:Name="CopyFirewallFixButton"
+                                            Command="{Binding CopyFirewallFixCommandCommand}"
+                                            IsVisible="{Binding HasFirewallWarning}"
+                                            Background="#78350F" BorderBrush="#F59E0B" BorderThickness="1"
+                                            CornerRadius="5" Padding="8, 4" Margin="8, 0, 0, 0" Cursor="Hand">
+                                        <TextBlock Text="📋 Copy Fix" FontSize="9.5" FontWeight="Bold" Foreground="#FEF3C7" />
+                                    </Button>
+                                </Grid>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </Border>
+
+                <!-- In-Game Notice Card -->
+                <Border Background="#0D2818" BorderBrush="#059669" BorderThickness="1" CornerRadius="8" Padding="12">
+                    <StackPanel Orientation="Horizontal" Spacing="10">
+                        <TextBlock Text="💡" FontSize="18" VerticalAlignment="Center" />
+                        <TextBlock Text="Clicking Launch will boot the game and automatically open the 'Create Match' screen. Select ANY map (Caldavar, Mid Wars, etc.), team size, hero pick modes, and game options!"
+                                   TextWrapping="Wrap" FontSize="11" Foreground="#A7F3D0" VerticalAlignment="Center" />
+                    </StackPanel>
+                </Border>
+
+                <!-- Standalone P2P Mode Toggle -->
+                <CheckBox IsChecked="{Binding BypassMasterServer}" Foreground="#E2E8F0" Cursor="Hand" Margin="0, 0, 0, 2">
+                    <StackPanel Orientation="Horizontal" Spacing="6">
+                        <TextBlock Text="🛡" FontSize="11" VerticalAlignment="Center" />
+                        <TextBlock Text="Standalone P2P Mode" FontWeight="SemiBold" FontSize="11" Foreground="#38BDF8" VerticalAlignment="Center" />
+                        <TextBlock Text="(Bypasses master server login completely)" FontSize="10" Foreground="#94A3B8" VerticalAlignment="Center" />
+                    </StackPanel>
+                </CheckBox>
+
+                <!-- Launch Host Button -->
+                <Button Command="{Binding LaunchHostGameCommand}" Height="48"
+                        Background="#047857" BorderBrush="#10B981" BorderThickness="2" CornerRadius="8"
+                        HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"
+                        Cursor="Hand">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <TextBlock Text="🚀" FontSize="14" VerticalAlignment="Center" />
+                        <TextBlock Text="Launch Game as Host" FontSize="14" FontWeight="Bold" Foreground="#FFFFFF" VerticalAlignment="Center" />
+                    </StackPanel>
+                </Button>
+            </StackPanel>
+
+            <!-- JOIN MODE PANEL -->
+            <StackPanel Grid.Row="2" Spacing="16" IsVisible="{Binding !IsHostMode}">
+                
+                <StackPanel Spacing="4">
+                    <TextBlock Text="IN-GAME NICKNAME" FontSize="10" FontWeight="Bold" Foreground="#94A3B8" LetterSpacing="0.5" />
+                    <TextBox Text="{Binding PlayerNickname}" Height="34" CornerRadius="6"
+                             Background="#141924" Foreground="#FFFFFF" BorderBrush="#252F45" />
+                </StackPanel>
+
+                <StackPanel Spacing="4">
+                    <TextBlock Text="HOST ADDRESS / INVITE CODE" FontSize="10" FontWeight="Bold" Foreground="#94A3B8" LetterSpacing="0.5" />
+                    <TextBox Text="{Binding JoinAddress}" Watermark="Paste host invite code or IP:Port (e.g. 98.142.65.12:11235)"
+                             Height="38" CornerRadius="6" Background="#141924" Foreground="#FFFFFF" BorderBrush="#252F45"
+                             FontSize="13" />
+                </StackPanel>
+
+                <Border Background="#131B2E" BorderBrush="#1D4ED8" BorderThickness="1" CornerRadius="8" Padding="12">
+                    <StackPanel Orientation="Horizontal" Spacing="10">
+                        <TextBlock Text="ℹ" FontSize="18" VerticalAlignment="Center" Foreground="#38BDF8" />
+                        <TextBlock Text="Enter the IP and Port provided by the host. WILLOWMAKER will launch your game and connect directly over UDP with 0 authentication friction."
+                                   TextWrapping="Wrap" FontSize="11" Foreground="#BAE6FD" VerticalAlignment="Center" />
+                    </StackPanel>
+                </Border>
+
+                <!-- Standalone P2P Mode Toggle -->
+                <CheckBox IsChecked="{Binding BypassMasterServer}" Foreground="#E2E8F0" Cursor="Hand" Margin="0, 0, 0, 2">
+                    <StackPanel Orientation="Horizontal" Spacing="6">
+                        <TextBlock Text="🛡" FontSize="11" VerticalAlignment="Center" />
+                        <TextBlock Text="Standalone P2P Mode" FontWeight="SemiBold" FontSize="11" Foreground="#38BDF8" VerticalAlignment="Center" />
+                        <TextBlock Text="(Bypasses master server login completely)" FontSize="10" Foreground="#94A3B8" VerticalAlignment="Center" />
+                    </StackPanel>
+                </CheckBox>
+
+                <!-- Connect Button -->
+                <Button Command="{Binding ConnectToHostCommand}" Height="48"
+                        Background="#1D4ED8" BorderBrush="#3B82F6" BorderThickness="2" CornerRadius="8"
+                        HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"
+                        Cursor="Hand">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <TextBlock Text="🚀" FontSize="14" VerticalAlignment="Center" />
+                        <TextBlock Text="Connect to Match" FontSize="14" FontWeight="Bold" Foreground="#FFFFFF" VerticalAlignment="Center" />
+                    </StackPanel>
+                </Button>
+            </StackPanel>
+
+            <!-- Status Banner -->
+            <Border Grid.Row="3" Background="#141924" BorderBrush="#1E2638" BorderThickness="1" CornerRadius="6"
+                    Padding="10, 6" Margin="0, 16, 0, 0">
+                <TextBlock Text="{Binding StatusMessage}" Foreground="{Binding StatusColor}"
+                           FontSize="11" FontWeight="SemiBold" TextAlignment="Center" TextWrapping="Wrap" />
+            </Border>
+
+        </Grid>
+    </Border>
+</UserControl>

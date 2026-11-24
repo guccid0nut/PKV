@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Security Vulnerability (Private Disclosure)
+    url: https://github.com/guccid0nut/PKV/security/advisories/new
+    about: Report security vulnerabilities privately via GitHub Private Vulnerability Reporting (do not open public issues).
+  - name: Developer Documentation Hub
+    url: https://github.com/guccid0nut/PKV/blob/main/docs/index.md
+    about: Browse setup guides, CLI reference, TAO MCP docs, ADRs, and troubleshooting runbooks.

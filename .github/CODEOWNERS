@@ -1,0 +1,38 @@
+# Project KONGOR V (PKV) Code Owners
+# Canonical repository: https://github.com/guccid0nut/PKV
+# Maintainer & Co-Maintainer Runbook: docs/operations/MAINTAINER_RUNBOOK.md
+
+# Global fallback & governance
+*                       @guccidonut
+/.github/               @guccidonut
+/LICENSE                @guccidonut
+/NOTICE                 @guccidonut
+/REUSE.toml             @guccidonut
+/SECURITY.md            @guccidonut
+/THIRD_PARTY_NOTICES.md @guccidonut
+/INTEROPERABILITY_AND_DMCA.md @guccidonut
+/NAMING_POLICY.md       @guccidonut
+/CHANGELOG.md           @guccidonut
+/README.md              @guccidonut
+/CONTRIBUTING.md        @guccidonut
+
+# Security, Moderation & Release Operations (require maintainer sign-off)
+/docs/operations/       @guccidonut
+/docs/security/         @guccidonut
+/scripts/ops/           @guccidonut
+/scripts/release/       @guccidonut
+/src/services/master-server/Configuration/Store/RestrictedEntitlements.json @guccidonut
+
+# Core subsystems
+/native/                @guccidonut
+/src/apps/              @guccidonut
+/src/services/          @guccidonut
+/src/libs/              @guccidonut
+/src/extensions/        @guccidonut
+/src/tools/             @guccidonut
+/tools/                 @guccidonut
+/docs/                  @guccidonut
+/infra/                 @guccidonut
+/scripts/               @guccidonut
+/tests/                 @guccidonut
+/config/                @guccidonut

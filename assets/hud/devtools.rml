@@ -1,0 +1,825 @@
+<rml>
+<head>
+    <title>ProjectKongor Dev Cockpit</title>
+    <link type="text/rcss" href="devtools.rcss"/>
+    <style>
+        body {
+            display: block;
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            pointer-events: none;
+            font-family: Arial, sans-serif;
+            font-size: 18px;
+            color: #e2e8f0;
+        }
+        #devtools-window {
+            pointer-events: auto;
+            position: absolute;
+            top: 2.5%;
+            left: 2.5%;
+            width: 95%;
+            height: 95%;
+            display: block;
+            box-sizing: border-box;
+            background-color: #070c18;
+            border-width: 2px;
+            border-color: #0284c7;
+            border-radius: 14px;
+            padding: 20px 28px;
+        }
+        .devtools-shell {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            width: 100%;
+            height: 100%;
+            box-sizing: border-box;
+        }
+        .clear-fix { clear: both; display: none; }
+        .header-slot { display: block; flex: 0 0 auto; width: 100%; box-sizing: border-box; }
+        .devtools-header {
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            border-bottom-width: 2px;
+            border-bottom-color: #1e293b;
+            padding-bottom: 14px;
+            margin-bottom: 14px;
+            box-sizing: border-box;
+        }
+        .header-left { float: none; display: block; }
+        .devtools-title {
+            font-size: 28px;
+            font-weight: bold;
+            color: #38bdf8;
+            display: inline-block;
+            vertical-align: middle;
+            margin-right: 16px;
+        }
+        .header-badge {
+            font-size: 15px;
+            background-color: #0369a1;
+            color: #e0f2fe;
+            padding: 6px 14px;
+            border-radius: 6px;
+            font-weight: bold;
+            display: inline-block;
+            vertical-align: middle;
+            margin-left: 0;
+            margin-right: 10px;
+        }
+        .header-badge-vk {
+            font-size: 15px;
+            background-color: #065f46;
+            color: #d1fae5;
+            padding: 6px 14px;
+            border-radius: 6px;
+            font-weight: bold;
+            display: inline-block;
+            vertical-align: middle;
+            margin-left: 0;
+        }
+        .devtools-close {
+            float: none;
+            display: block;
+            text-align: center;
+            font-size: 18px;
+            font-weight: bold;
+            color: #ffffff;
+            cursor: pointer;
+            padding: 10px 24px;
+            border-radius: 8px;
+            background-color: #dc2626;
+            border-width: 1px;
+            border-color: #f87171;
+        }
+        .devtools-close:hover { background-color: #b91c1c; border-color: #fca5a5; }
+        .tabs-slot { display: block; flex: 0 0 auto; width: 100%; box-sizing: border-box; }
+        .nav-tabs {
+            display: flex;
+            flex-direction: row;
+            align-items: stretch;
+            width: 100%;
+            border-bottom-width: 0;
+            margin-bottom: 16px;
+            box-sizing: border-box;
+        }
+        .tab-btn {
+            float: none;
+            display: block;
+            flex: 1;
+            padding: 14px 12px;
+            margin-right: 12px;
+            background-color: #0f172a;
+            border-width: 2px;
+            border-color: #1e293b;
+            border-radius: 10px;
+            font-size: 20px;
+            font-weight: bold;
+            color: #94a3b8;
+            text-align: center;
+            cursor: pointer;
+            box-sizing: border-box;
+        }
+        #devtab-btn-actions, .tab-btn-last { margin-right: 0; }
+        .tab-btn:hover { background-color: #162238; border-color: #0284c7; color: #f1f5f9; }
+        .tab-btn.active { background-color: #0284c7; border-color: #38bdf8; color: #ffffff; }
+        .tab-pane { display: none; }
+        .tab-pane.active { display: block; flex: 1; width: 100%; height: auto; overflow-y: auto; box-sizing: border-box; }
+        .pane-flex {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            width: 100%;
+            height: 100%;
+            box-sizing: border-box;
+        }
+        .row-slot { display: block; flex: 1; width: 100%; margin-bottom: 14px; box-sizing: border-box; }
+        .row-slot-hero { display: block; flex: 1.25; width: 100%; margin-bottom: 14px; box-sizing: border-box; }
+        .row-slot-actions { display: block; flex: 0.95; width: 100%; margin-bottom: 0; box-sizing: border-box; }
+        .row-slot-last { margin-bottom: 0; }
+        .deck-row { display: flex; flex-direction: row; align-items: stretch; width: 100%; height: 100%; box-sizing: border-box; }
+        .hero-metric-card {
+            display: block;
+            flex: 1;
+            background-color: #0f1b31;
+            border-width: 2px;
+            border-color: #1e3a5f;
+            border-radius: 12px;
+            padding: 20px 28px;
+            margin-right: 16px;
+            box-sizing: border-box;
+        }
+        .hero-metric-card-last { margin-right: 0; }
+        .hero-metric-title { display: block; font-size: 16px; font-weight: bold; color: #94a3b8; text-transform: uppercase; margin-bottom: 8px; }
+        .hero-metric-val-green { display: block; font-size: 52px; font-weight: bold; color: #4ade80; line-height: 1.1; margin-bottom: 8px; }
+        .hero-metric-val-cyan { display: block; font-size: 52px; font-weight: bold; color: #38bdf8; line-height: 1.1; margin-bottom: 8px; }
+        .hero-metric-sub { display: block; font-size: 15px; color: #64748b; }
+        .metric-card {
+            display: block;
+            flex: 1;
+            background-color: #0c1425;
+            border-width: 1px;
+            border-color: #1e293b;
+            border-radius: 10px;
+            padding: 16px 24px;
+            margin-right: 16px;
+            box-sizing: border-box;
+        }
+        .metric-card-last { margin-right: 0; }
+        .card-label { display: block; font-size: 15px; font-weight: bold; color: #94a3b8; text-transform: uppercase; margin-bottom: 8px; }
+        .card-val { display: block; font-size: 26px; font-weight: bold; color: #f8fafc; }
+        .card-val-green { display: block; font-size: 26px; font-weight: bold; color: #4ade80; }
+        .card-val-cyan { display: block; font-size: 26px; font-weight: bold; color: #38bdf8; }
+        .card-val-xl-cyan { display: inline-block; font-size: 32px; font-weight: bold; color: #38bdf8; }
+        .card-val-xl-green { display: inline-block; font-size: 32px; font-weight: bold; color: #4ade80; }
+        .font-mono { font-family: Courier, monospace; }
+        .vital-header { display: flex; flex-direction: row; justify-content: space-between; align-items: center; width: 100%; margin-bottom: 10px; }
+        .vital-label { display: inline-block; font-size: 16px; font-weight: bold; color: #94a3b8; text-transform: uppercase; }
+        .vital-val-green { display: inline-block; font-size: 26px; font-weight: bold; color: #4ade80; }
+        .vital-val-cyan { display: inline-block; font-size: 26px; font-weight: bold; color: #38bdf8; }
+        .meter-container {
+            display: block;
+            width: 100%;
+            background-color: #1e293b;
+            border-width: 1px;
+            border-color: #334155;
+            border-radius: 8px;
+            height: 26px;
+            margin: 6px 0;
+            overflow: hidden;
+        }
+        .meter-fill-audio { display: block; height: 26px; background-color: #0284c7; border-radius: 7px; width: 15%; }
+        .meter-fill-hp { display: block; height: 26px; background-color: #22c55e; border-radius: 7px; width: 85%; }
+        .meter-fill-mana { display: block; height: 26px; background-color: #3b82f6; border-radius: 7px; width: 70%; }
+        .deck-slot {
+            display: block;
+            flex: 1;
+            width: 100%;
+            background-color: #0b1324;
+            border-width: 1px;
+            border-color: #1e293b;
+            border-radius: 12px;
+            padding: 14px 20px;
+            margin-bottom: 12px;
+            box-sizing: border-box;
+        }
+        .deck-slot-last { margin-bottom: 0; }
+        .control-deck-flex { display: flex; flex-direction: column; justify-content: space-between; width: 100%; height: 100%; box-sizing: border-box; }
+        .deck-header-slot { display: block; flex: 0 0 auto; width: 100%; margin-bottom: 10px; }
+        .deck-header { display: flex; flex-direction: row; justify-content: space-between; align-items: center; width: 100%; }
+        .deck-title { display: inline-block; font-size: 18px; font-weight: bold; color: #38bdf8; text-transform: uppercase; }
+        .deck-hint { display: inline-block; font-size: 14px; color: #64748b; }
+        .deck-btns-slot { display: block; flex: 1; width: 100%; box-sizing: border-box; }
+        .deck-btn-row { display: flex; flex-direction: row; align-items: stretch; width: 100%; height: 100%; box-sizing: border-box; }
+        .btn {
+            display: block;
+            flex: 1;
+            background-color: #0284c7;
+            border-width: 2px;
+            border-color: #38bdf8;
+            color: #ffffff;
+            text-align: center;
+            padding: 16px 18px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 20px;
+            font-weight: bold;
+            margin-right: 14px;
+            margin-bottom: 0;
+            box-sizing: border-box;
+        }
+        .btn-last { margin-right: 0; }
+        .btn:hover { background-color: #0369a1; border-color: #7dd3fc; }
+        .btn-secondary { background-color: #1e293b; border-color: #475569; color: #f1f5f9; }
+        .btn-secondary:hover { background-color: #334155; border-color: #94a3b8; }
+        .btn-emerald { background-color: #059669; border-color: #34d399; color: #ecfdf5; }
+        .btn-emerald:hover { background-color: #047857; border-color: #6ee7b7; }
+        .btn-amber { background-color: #d97706; border-color: #fbbf24; color: #fffbeb; }
+        .btn-amber:hover { background-color: #b45309; border-color: #fcd34d; }
+        .btn-danger { background-color: #dc2626; border-color: #f87171; color: #fef2f2; }
+        .btn-danger:hover { background-color: #b91c1c; border-color: #fca5a5; }
+        .btn-label { display: block; font-size: 22px; font-weight: bold; color: #ffffff; pointer-events: none; margin-bottom: 4px; }
+        .btn-label-lg { display: block; font-size: 26px; font-weight: bold; color: #ffffff; pointer-events: none; margin-bottom: 6px; }
+        .btn-sub { display: block; font-size: 14px; font-weight: normal; color: #e2e8f0; pointer-events: none; }
+        .btn-cmd { display: block; font-size: 13px; font-weight: normal; font-family: Courier, monospace; color: #bae6fd; pointer-events: none; margin-top: 4px; }
+        .btn-secondary .btn-cmd { color: #94a3b8; }
+        .btn-emerald .btn-cmd { color: #a7f3d0; }
+        .btn-amber .btn-cmd { color: #fde68a; }
+        .footer-slot { display: block; flex: 0 0 auto; width: 100%; box-sizing: border-box; }
+        .devtools-footer {
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            border-top-width: 2px;
+            border-top-color: #1e293b;
+            padding-top: 12px;
+            margin-top: 14px;
+            box-sizing: border-box;
+        }
+        .footer-left { float: none; display: block; font-size: 16px; color: #94a3b8; padding-top: 0; }
+        .footer-right { float: none; display: block; }
+        .btn-footer { display: block; flex: 0 0 auto; padding: 10px 28px; font-size: 18px; margin-right: 0; }
+        @media (min-width: 2200px) {
+            #devtools-window { padding: 26px 36px; border-radius: 16px; }
+            .devtools-title { font-size: 34px; }
+            .header-badge, .header-badge-vk { font-size: 18px; padding: 8px 18px; }
+            .devtools-close { font-size: 22px; padding: 12px 28px; }
+            .tab-btn { font-size: 24px; padding: 18px 16px; }
+            .hero-metric-val-green, .hero-metric-val-cyan { font-size: 64px; }
+            .hero-metric-title, .card-label, .vital-label { font-size: 18px; }
+            .hero-metric-sub { font-size: 17px; }
+            .card-val, .card-val-green, .card-val-cyan, .vital-val-green, .vital-val-cyan { font-size: 32px; }
+            .card-val-xl-cyan, .card-val-xl-green { font-size: 40px; }
+            .meter-container, .meter-fill-audio, .meter-fill-hp, .meter-fill-mana { height: 34px; }
+            .deck-title { font-size: 22px; }
+            .deck-hint { font-size: 16px; }
+            .btn { padding: 20px 22px; }
+            .btn-label { font-size: 26px; }
+            .btn-label-lg { font-size: 32px; }
+            .btn-sub { font-size: 17px; }
+            .btn-cmd { font-size: 15px; }
+            .footer-left { font-size: 18px; }
+            .btn-footer { font-size: 22px; padding: 14px 34px; }
+        }
+        @media (min-width: 3200px) {
+            #devtools-window { padding: 36px 48px; border-radius: 20px; border-width: 3px; }
+            .devtools-title { font-size: 44px; }
+            .header-badge, .header-badge-vk { font-size: 22px; padding: 10px 22px; }
+            .devtools-close { font-size: 28px; padding: 16px 36px; }
+            .tab-btn { font-size: 30px; padding: 22px 20px; }
+            .hero-metric-val-green, .hero-metric-val-cyan { font-size: 72px; }
+            .hero-metric-title, .card-label, .vital-label { font-size: 22px; }
+            .hero-metric-sub { font-size: 20px; }
+            .card-val, .card-val-green, .card-val-cyan, .vital-val-green, .vital-val-cyan { font-size: 40px; }
+            .card-val-xl-cyan, .card-val-xl-green { font-size: 48px; }
+            .meter-container, .meter-fill-audio, .meter-fill-hp, .meter-fill-mana { height: 42px; }
+            .deck-title { font-size: 28px; }
+            .deck-hint { font-size: 20px; }
+            .btn { padding: 24px 26px; }
+            .btn-label { font-size: 32px; }
+            .btn-label-lg { font-size: 40px; }
+            .btn-sub { font-size: 20px; }
+            .btn-cmd { font-size: 18px; }
+            .footer-left { font-size: 22px; }
+            .btn-footer { font-size: 26px; padding: 18px 42px; }
+        }
+        @media (max-height: 860px) {
+            #devtools-window { padding: 12px 18px; }
+            .devtools-header { padding-bottom: 8px; margin-bottom: 8px; }
+            .devtools-title { font-size: 20px; }
+            .header-badge, .header-badge-vk { font-size: 12px; padding: 4px 10px; }
+            .devtools-close { font-size: 14px; padding: 6px 16px; }
+            .nav-tabs { margin-bottom: 10px; }
+            .tab-btn { font-size: 15px; padding: 8px 10px; }
+            .row-slot, .row-slot-hero, .deck-slot { margin-bottom: 8px; }
+            .metric-card, .hero-metric-card, .deck-slot { padding: 8px 14px; }
+            .hero-metric-val-green, .hero-metric-val-cyan { font-size: 34px; }
+            .hero-metric-title, .card-label, .vital-label { font-size: 12px; margin-bottom: 3px; }
+            .hero-metric-sub { font-size: 12px; }
+            .card-val, .card-val-green, .card-val-cyan, .vital-val-green, .vital-val-cyan { font-size: 18px; }
+            .card-val-xl-cyan, .card-val-xl-green { font-size: 22px; }
+            .meter-container, .meter-fill-audio, .meter-fill-hp, .meter-fill-mana { height: 18px; }
+            .deck-header-slot { margin-bottom: 6px; }
+            .deck-title { font-size: 14px; }
+            .deck-hint { font-size: 12px; }
+            .btn { padding: 8px 10px; }
+            .btn-label { font-size: 16px; margin-bottom: 2px; }
+            .btn-label-lg { font-size: 18px; margin-bottom: 2px; }
+            .btn-sub, .btn-cmd { font-size: 11px; }
+            .devtools-footer { padding-top: 8px; margin-top: 8px; }
+            .footer-left { font-size: 13px; }
+            .btn-footer { font-size: 14px; padding: 6px 18px; }
+        }
+    </style>
+</head>
+<body>
+    <div id="devtools-window">
+        <div class="devtools-shell">
+            <!-- Cockpit Header -->
+            <div class="header-slot">
+                <div class="devtools-header">
+                    <div class="header-left">
+                        <span class="devtools-title">PROJECT KONGOR // DEV COCKPIT</span>
+                        <span class="header-badge">Ctrl+Shift+D</span>
+                        <span class="header-badge-vk">Vulkan 1.3</span>
+                    </div>
+                    <div id="btn-close-devtools" class="devtools-close" onclick="Dismiss">X  CLOSE</div>
+                </div>
+            </div>
+
+            <!-- Full-Width Segmented Navigation Tabs Bar -->
+            <div class="tabs-slot">
+                <div class="nav-tabs">
+                    <div id="devtab-btn-perf" class="tab-btn active" onclick="SwitchTab:devtab-perf">Engine Perf</div>
+                    <div id="devtab-btn-audio" class="tab-btn" onclick="SwitchTab:devtab-audio">Spatial Audio</div>
+                    <div id="devtab-btn-inspect" class="tab-btn" onclick="SwitchTab:devtab-inspect">Entity Inspector</div>
+                    <div id="devtab-btn-spectator" class="tab-btn" onclick="SwitchTab:devtab-spectator">Spectator &amp; Cam</div>
+                    <div id="devtab-btn-actions" class="tab-btn tab-btn-last" onclick="SwitchTab:devtab-actions">Quick Tools</div>
+                </div>
+            </div>
+
+            <!-- TAB 1: Engine Performance & VFS -->
+            <div id="devtab-perf" class="tab-pane active">
+                <div class="pane-flex">
+                    <div class="row-slot-hero">
+                        <div class="deck-row">
+                            <div class="hero-metric-card">
+                                <div class="hero-metric-title">Frame Rate</div>
+                                <div id="metric-fps" class="hero-metric-val-green">144.0 FPS</div>
+                                <div class="hero-metric-sub">Smoothed Vulkan swapchain cadence (144+ Hz target)</div>
+                            </div>
+                            <div class="hero-metric-card hero-metric-card-last">
+                                <div class="hero-metric-title">Frame Latency</div>
+                                <div id="metric-ft" class="hero-metric-val-cyan">6.94 ms</div>
+                                <div class="hero-metric-sub">End-to-end frame time (6.94 ms budget @ 144 FPS)</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row-slot">
+                        <div class="deck-row">
+                            <div class="metric-card">
+                                <div class="card-label">Swapchain Resolution</div>
+                                <div id="metric-res" class="card-val-cyan">1920x1080 (B8G8R8A8)</div>
+                            </div>
+                            <div class="metric-card metric-card-last">
+                                <div class="card-label">Memory Working Set</div>
+                                <div id="metric-ram" class="card-val">&lt; 450 MB</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row-slot">
+                        <div class="deck-row">
+                            <div class="metric-card">
+                                <div class="card-label">VFS Decompression</div>
+                                <div class="card-val-green">libdeflate SIMD (4.2x speedup)</div>
+                            </div>
+                            <div class="metric-card metric-card-last">
+                                <div class="card-label">RmlUi Overlay Layer</div>
+                                <div class="card-val-green">Vulkan Native (&lt; 10 MB RAM)</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row-slot">
+                        <div class="deck-row">
+                            <div class="metric-card">
+                                <div class="card-label">CEF Chromium Sandbox</div>
+                                <div class="card-val-cyan">RETIRED (Zero Breakpoint Crashes)</div>
+                            </div>
+                            <div class="metric-card metric-card-last">
+                                <div class="card-label">Graphics Pipeline</div>
+                                <div class="card-val-green">DXVK v3.0.2 GPL + DirectFlip</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row-slot-actions">
+                        <div class="deck-row">
+                            <div class="btn btn-emerald" onclick="ExecCmd:cl_drawFPS 1">
+                                <span class="btn-label">Show FPS Overlay</span>
+                                <span class="btn-cmd">cl_drawFPS 1</span>
+                            </div>
+                            <div class="btn btn-secondary" onclick="ExecCmd:cl_drawFPS 0">
+                                <span class="btn-label">Hide FPS Overlay</span>
+                                <span class="btn-cmd">cl_drawFPS 0</span>
+                            </div>
+                            <div class="btn btn-last" onclick="ToggleConsole">
+                                <span class="btn-label">Open TAO Profiler</span>
+                                <span class="btn-sub">Live IPC &amp; Frame Telemetry</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 2: 256-Voice WASAPI & Spatial HRTF -->
+            <div id="devtab-audio" class="tab-pane">
+                <div class="pane-flex">
+                    <div class="row-slot-hero">
+                        <div class="deck-row">
+                            <div class="hero-metric-card hero-metric-card-last">
+                                <div class="vital-header">
+                                    <span class="vital-label">Active Voices (Unclamped 256-Channel Pool)</span>
+                                    <span id="audio-stat-voices" class="card-val-xl-green">-- / 256 Voices</span>
+                                </div>
+                                <div class="meter-container">
+                                    <div id="audio-meter-bar" class="meter-fill-audio"></div>
+                                </div>
+                                <div class="hero-metric-sub">Real-time FMOD Ex x64 channel utilization &amp; peak voice watermark</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row-slot">
+                        <div class="deck-row">
+                            <div class="metric-card">
+                                <div class="card-label">DSP Buffer Latency</div>
+                                <div id="audio-stat-lat" class="card-val-cyan">5.33 ms (256 smp x 4 buf)</div>
+                            </div>
+                            <div class="metric-card metric-card-last">
+                                <div class="card-label">Output Backend</div>
+                                <div class="card-val">WASAPI Shared (Low-Latency)</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row-slot">
+                        <div class="deck-row">
+                            <div class="metric-card">
+                                <div class="card-label">Spatial Convolution</div>
+                                <div id="audio-stat-hrtf" class="card-val-green">7.1 Windows Spatial Audio (HRTF)</div>
+                            </div>
+                            <div class="metric-card metric-card-last">
+                                <div class="card-label">3D Listener Vector</div>
+                                <div id="audio-stat-pos" class="card-val font-mono">X: 0.0, Y: 0.0, Z: 0.0</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row-slot-actions">
+                        <div class="deck-row">
+                            <div class="btn btn-emerald" onclick="ExecCmd:play /shared/sounds/ui/button_click.wav">
+                                <span class="btn-label-lg">Test Sound Cue</span>
+                                <span class="btn-sub">Play UI audio sample through active mixer</span>
+                                <span class="btn-cmd">play /shared/sounds/ui/button_click.wav</span>
+                            </div>
+                            <div class="btn" onclick="ExecCmd:sound_numChannels 256">
+                                <span class="btn-label-lg">Verify 256 CVar</span>
+                                <span class="btn-sub">Enforce unclamped 256-voice channel ceiling</span>
+                                <span class="btn-cmd">sound_numChannels 256</span>
+                            </div>
+                            <div class="btn btn-secondary btn-last" onclick="ToggleConsole">
+                                <span class="btn-label-lg">Audio Log Stream</span>
+                                <span class="btn-sub">Inspect live WASAPI &amp; FMOD diagnostics</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 3: Hero & Entity Inspector -->
+            <div id="devtab-inspect" class="tab-pane">
+                <div class="pane-flex">
+                    <div class="row-slot">
+                        <div class="deck-row">
+                            <div class="hero-metric-card hero-metric-card-last">
+                                <div class="card-label">Selected Target Entity</div>
+                                <div id="inspect-hero-name" class="card-val-xl-cyan">Devourer (Level 16) - Legion</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row-slot-hero">
+                        <div class="deck-row">
+                            <div class="metric-card">
+                                <div class="vital-header">
+                                    <span class="vital-label">Health Pool (HP)</span>
+                                    <span id="inspect-hp-val" class="vital-val-green">1,840 / 1,840</span>
+                                </div>
+                                <div class="meter-container">
+                                    <div id="inspect-hp-bar" class="meter-fill-hp"></div>
+                                </div>
+                            </div>
+                            <div class="metric-card metric-card-last">
+                                <div class="vital-header">
+                                    <span class="vital-label">Mana Pool (MP)</span>
+                                    <span id="inspect-mana-val" class="vital-val-cyan">620 / 750</span>
+                                </div>
+                                <div class="meter-container">
+                                    <div id="inspect-mana-bar" class="meter-fill-mana"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row-slot">
+                        <div class="deck-row">
+                            <div class="metric-card">
+                                <div class="card-label">Movement Speed</div>
+                                <div id="inspect-ms" class="card-val">350</div>
+                            </div>
+                            <div class="metric-card">
+                                <div class="card-label">Attack Range</div>
+                                <div id="inspect-range" class="card-val">128 (Melee)</div>
+                            </div>
+                            <div class="metric-card">
+                                <div class="card-label">Physical Armor</div>
+                                <div id="inspect-armor" class="card-val-green">8.4 (33.5%)</div>
+                            </div>
+                            <div class="metric-card metric-card-last">
+                                <div class="card-label">Magic Armor</div>
+                                <div id="inspect-marmor" class="card-val-cyan">5.5 (25.0%)</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row-slot-actions">
+                        <div class="deck-row">
+                            <div class="btn" onclick="ExecCmd:select_self">
+                                <span class="btn-label-lg">Select Self</span>
+                                <span class="btn-sub">Focus camera &amp; inspector on local hero unit</span>
+                                <span class="btn-cmd">select_self</span>
+                            </div>
+                            <div class="btn btn-secondary btn-last" onclick="ExecCmd:Script Echo('Inspecting Entity: ' .. tostring(GetSelectedUnit()))">
+                                <span class="btn-label-lg">Dump Unit State</span>
+                                <span class="btn-sub">Echo selected unit handle &amp; state to console</span>
+                                <span class="btn-cmd">GetSelectedUnit()</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 4: Spectator & Replay Director -->
+            <div id="devtab-spectator" class="tab-pane">
+                <div class="pane-flex">
+                    <div class="deck-slot">
+                        <div class="control-deck-flex">
+                            <div class="deck-header-slot">
+                                <div class="deck-header">
+                                    <span class="deck-title">Camera Mode</span>
+                                    <span class="deck-hint">Switch between unlocked director camera and hero lock</span>
+                                </div>
+                            </div>
+                            <div class="deck-btns-slot">
+                                <div class="deck-btn-row">
+                                    <div class="btn btn-emerald" onclick="ExecCmd:cam_mode 1">
+                                        <span class="btn-label">Enable Freecam</span>
+                                        <span class="btn-cmd">cam_mode 1</span>
+                                    </div>
+                                    <div class="btn btn-secondary" onclick="ExecCmd:cam_mode 0">
+                                        <span class="btn-label">Lock to Hero</span>
+                                        <span class="btn-cmd">cam_mode 0</span>
+                                    </div>
+                                    <div class="btn btn-last" onclick="ExecCmd:cam_smooth 1">
+                                        <span class="btn-label">Cinematic Smooth</span>
+                                        <span class="btn-cmd">cam_smooth 1</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="deck-slot">
+                        <div class="control-deck-flex">
+                            <div class="deck-header-slot">
+                                <div class="deck-header">
+                                    <span class="deck-title">Field of View (FoV)</span>
+                                    <span class="deck-hint">Perspective lens angle presets</span>
+                                </div>
+                            </div>
+                            <div class="deck-btns-slot">
+                                <div class="deck-btn-row">
+                                    <div class="btn" onclick="ExecCmd:cam_fov 75">
+                                        <span class="btn-label">Classic 75 deg</span>
+                                        <span class="btn-cmd">cam_fov 75</span>
+                                    </div>
+                                    <div class="btn btn-emerald" onclick="ExecCmd:cam_fov 85">
+                                        <span class="btn-label">Esports 85 deg</span>
+                                        <span class="btn-cmd">cam_fov 85</span>
+                                    </div>
+                                    <div class="btn" onclick="ExecCmd:cam_fov 95">
+                                        <span class="btn-label">Wide 95 deg</span>
+                                        <span class="btn-cmd">cam_fov 95</span>
+                                    </div>
+                                    <div class="btn btn-secondary btn-last" onclick="ExecCmd:cam_fov 105">
+                                        <span class="btn-label">Cinematic 105 deg</span>
+                                        <span class="btn-cmd">cam_fov 105</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="deck-slot">
+                        <div class="control-deck-flex">
+                            <div class="deck-header-slot">
+                                <div class="deck-header">
+                                    <span class="deck-title">Camera Distance</span>
+                                    <span class="deck-hint">Battlefield zoom elevation presets</span>
+                                </div>
+                            </div>
+                            <div class="deck-btns-slot">
+                                <div class="deck-btn-row">
+                                    <div class="btn" onclick="ExecCmd:cam_distance 1450">
+                                        <span class="btn-label">Close (1450)</span>
+                                        <span class="btn-cmd">cam_distance 1450</span>
+                                    </div>
+                                    <div class="btn btn-secondary" onclick="ExecCmd:cam_distance 1650">
+                                        <span class="btn-label">Default (1650)</span>
+                                        <span class="btn-cmd">cam_distance 1650</span>
+                                    </div>
+                                    <div class="btn" onclick="ExecCmd:cam_distance 1950">
+                                        <span class="btn-label">Tactical (1950)</span>
+                                        <span class="btn-cmd">cam_distance 1950</span>
+                                    </div>
+                                    <div class="btn btn-amber btn-last" onclick="ExecCmd:cam_distance 2400">
+                                        <span class="btn-label">Aerial (2400)</span>
+                                        <span class="btn-cmd">cam_distance 2400</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="deck-slot deck-slot-last">
+                        <div class="control-deck-flex">
+                            <div class="deck-header-slot">
+                                <div class="deck-header">
+                                    <span class="deck-title">Replay Playback Pacing</span>
+                                    <span class="deck-hint">Simulation timescale multiplier</span>
+                                </div>
+                            </div>
+                            <div class="deck-btns-slot">
+                                <div class="deck-btn-row">
+                                    <div class="btn" onclick="ExecCmd:host_timescale 0.5">
+                                        <span class="btn-label">0.5x Slow-Mo</span>
+                                        <span class="btn-cmd">host_timescale 0.5</span>
+                                    </div>
+                                    <div class="btn btn-secondary" onclick="ExecCmd:host_timescale 1.0">
+                                        <span class="btn-label">1.0x Normal</span>
+                                        <span class="btn-cmd">host_timescale 1.0</span>
+                                    </div>
+                                    <div class="btn" onclick="ExecCmd:host_timescale 2.0">
+                                        <span class="btn-label">2.0x Fast</span>
+                                        <span class="btn-cmd">host_timescale 2.0</span>
+                                    </div>
+                                    <div class="btn btn-amber btn-last" onclick="ExecCmd:host_timescale 4.0">
+                                        <span class="btn-label">4.0x Blitz</span>
+                                        <span class="btn-cmd">host_timescale 4.0</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 5: Quick Tools & Diagnostics -->
+            <div id="devtab-actions" class="tab-pane">
+                <div class="pane-flex">
+                    <div class="deck-slot">
+                        <div class="control-deck-flex">
+                            <div class="deck-header-slot">
+                                <div class="deck-header">
+                                    <span class="deck-title">1-Click Scenario Presets</span>
+                                    <span class="deck-hint">Deterministic gameplay states, teamfights &amp; HUD verification</span>
+                                </div>
+                            </div>
+                            <div class="deck-btns-slot">
+                                <div class="deck-btn-row">
+                                    <div id="btn-preset-teamfight" class="btn btn-emerald" onclick="ScenarioPreset:MidTeamfight5v5">
+                                        <span class="btn-label-lg">Mid Teamfight</span>
+                                        <span class="btn-sub">5v5 clash in mid river</span>
+                                        <span class="btn-cmd">ScenarioPreset:MidTeamfight5v5</span>
+                                    </div>
+                                    <div id="btn-preset-heartbeat" class="btn btn-danger" onclick="ScenarioPreset:LowHpHeartbeat">
+                                        <span class="btn-label-lg">Low HP Heartbeat</span>
+                                        <span class="btn-sub">15% HP audio-visual pulse</span>
+                                        <span class="btn-cmd">ScenarioPreset:LowHpHeartbeat</span>
+                                    </div>
+                                    <div id="btn-preset-maxgold" class="btn btn-amber" onclick="ScenarioPreset:MaxLevelGold">
+                                        <span class="btn-label-lg">Max Level &amp; Gold</span>
+                                        <span class="btn-sub">L25 + 99,999 gold</span>
+                                        <span class="btn-cmd">ScenarioPreset:MaxLevelGold</span>
+                                    </div>
+                                    <div id="btn-preset-kongor" class="btn" onclick="ScenarioPreset:KongorBossPit">
+                                        <span class="btn-label-lg">Kongor Boss Pit</span>
+                                        <span class="btn-sub">Pit clash choreography</span>
+                                        <span class="btn-cmd">ScenarioPreset:KongorBossPit</span>
+                                    </div>
+                                    <div id="btn-preset-reloadui" class="btn btn-secondary btn-last" onclick="ScenarioPreset:HotReloadAllUi">
+                                        <span class="btn-label-lg">Hot-Reload UI</span>
+                                        <span class="btn-sub">ReloadInterfaces + RmlUi</span>
+                                        <span class="btn-cmd">ScenarioPreset:HotReloadAllUi</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="deck-slot">
+                        <div class="control-deck-flex">
+                            <div class="deck-header-slot">
+                                <div class="deck-header">
+                                    <span class="deck-title">In-Game Engine Overlays</span>
+                                    <span class="deck-hint">Toggle native K2 telemetry counters and map visibility</span>
+                                </div>
+                            </div>
+                            <div class="deck-btns-slot">
+                                <div class="deck-btn-row">
+                                    <div class="btn" onclick="ExecCmd:cl_drawFPS 1">
+                                        <span class="btn-label-lg">Draw FPS</span>
+                                        <span class="btn-sub">Show real-time framerate HUD</span>
+                                        <span class="btn-cmd">cl_drawFPS 1</span>
+                                    </div>
+                                    <div class="btn" onclick="ExecCmd:net_drawPing 1">
+                                        <span class="btn-label-lg">Draw Ping</span>
+                                        <span class="btn-sub">Show network round-trip latency</span>
+                                        <span class="btn-cmd">net_drawPing 1</span>
+                                    </div>
+                                    <div class="btn" onclick="ExecCmd:scene_drawFogOfWar 0">
+                                        <span class="btn-label-lg">Toggle Fog (Debug)</span>
+                                        <span class="btn-sub">Disable fog of war in practice</span>
+                                        <span class="btn-cmd">scene_drawFogOfWar 0</span>
+                                    </div>
+                                    <div class="btn btn-secondary btn-last" onclick="ExecCmd:cl_drawFPS 0; net_drawPing 0">
+                                        <span class="btn-label-lg">Clear Overlays</span>
+                                        <span class="btn-sub">Hide FPS &amp; Ping counters</span>
+                                        <span class="btn-cmd">cl_drawFPS 0; net_drawPing 0</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="deck-slot deck-slot-last">
+                        <div class="control-deck-flex">
+                            <div class="deck-header-slot">
+                                <div class="deck-header">
+                                    <span class="deck-title">Subsystem Diagnostics &amp; UI Recovery</span>
+                                    <span class="deck-hint">Interactive command console, automated self-healing, and live RmlUi hot-reload</span>
+                                </div>
+                            </div>
+                            <div class="deck-btns-slot">
+                                <div class="deck-btn-row">
+                                    <div class="btn btn-emerald" onclick="ToggleConsole">
+                                        <span class="btn-label-lg">Deep TAO Console</span>
+                                        <span class="btn-sub">Interactive Lua evaluator, cluster health &amp; log stream</span>
+                                    </div>
+                                    <div class="btn btn-amber" onclick="SelfHealUi">
+                                        <span class="btn-label-lg">Self-Heal UI</span>
+                                        <span class="btn-sub">Remediate stuck widgets &amp; refresh main interface</span>
+                                    </div>
+                                    <div class="btn btn-secondary btn-last" onclick="ReloadDocuments">
+                                        <span class="btn-label-lg">Reload HUD</span>
+                                        <span class="btn-sub">Hot-reload RmlUi documents live from disk</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <div class="footer-slot">
+                <div class="devtools-footer">
+                    <div class="footer-left">Press [Esc] or [Ctrl+Shift+D] to toggle Dev Cockpit  |  Full-Viewport Responsive RmlUi</div>
+                    <div class="footer-right">
+                        <div id="btn-tao-console" class="btn btn-footer" onclick="ToggleConsole">Deep Diagnostics</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</rml>

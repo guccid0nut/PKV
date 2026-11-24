@@ -1,0 +1,9 @@
+﻿{
+    "schemaVersion":  1,
+    "verifyNetcodeOraclePs1Sha256":  "DDCA36AC56FBD0D3CA5DA4021BE228C0942FB606C34B9A842E6669D92F363E5B",
+    "testNetcodeMutantsPs1Sha256":  "D3318F61E0F4F32B6FE0A91976D3D0EECA85C0AF0567EDCE7489AC9A31148C13",
+    "goldenReplays":  {
+                          "tests/fixtures/replays/golden_M2060568725_slice.honreplay":  "8AF696F27C6EA758B85DAA132A99DE39F06FEB21ED12B8628E1A94030456F60B",
+                          "tests/fixtures/replays/golden_M70_slice.honreplay":  "081A0C229D4540061775835437C49A249D6C63F436205081738A349DCFEC8AB7"
+                      }
+}

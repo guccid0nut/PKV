@@ -1,0 +1,701 @@
+[
+    {
+        "id":  "FN-001",
+        "file":  "FN-001-obs-graphics-hook-thread29-wndproc-race.md",
+        "kind":  "crash-triage",
+        "title":  "OBS graphics-hook64.dll Thread 29 WndProc Race Against CLuaScriptManager::PushCallback",
+        "binary_or_subsystem":  "k2_x64.dll | version.dll (NativeGuard)",
+        "rvas":  [
+                     "0x92E9A6",
+                     "0x92BB66",
+                     "0xCC0A90"
+                 ],
+        "status":  "verified",
+        "supersedes":  [
+
+                       ],
+        "invalidated_by":  "",
+        "date":  "2026-10-15",
+        "tags":  [
+                     "k2",
+                     "wndproc",
+                     "obs",
+                     "threading",
+                     "lua",
+                     "native-guard",
+                     "crash"
+                 ]
+    },
+    {
+        "id":  "FN-002",
+        "file":  "FN-002-luav-concat-per-frame-loadfile-exhaustion.md",
+        "kind":  "engine-law",
+        "title":  "Lua 5.1 luaV_concat Allocator Exhaustion Under Per-Frame loadfile Polling",
+        "binary_or_subsystem":  "k2_x64.dll | override/ui/scripts",
+        "rvas":  [
+                     "0xCB6477"
+                 ],
+        "status":  "verified",
+        "supersedes":  [
+
+                       ],
+        "invalidated_by":  "",
+        "date":  "2026-10-15",
+        "tags":  [
+                     "k2",
+                     "lua",
+                     "luav-concat",
+                     "loadfile",
+                     "memory",
+                     "tao-req",
+                     "crash"
+                 ]
+    },
+    {
+        "id":  "FN-003",
+        "file":  "FN-003-textures-s2z-shadowing-and-modelpanel-anim-reset.md",
+        "kind":  "rendering",
+        "title":  "CResourceManager textures.s2z Legacy Shadowing and CModelPanel Static anim=idle Reset Freeze",
+        "binary_or_subsystem":  "k2_x64.dll | vid_vulkan_x64.dll | games/client/game/textures.s2z | override/ui",
+        "rvas":  [
+                     "0x94EB70",
+                     "0x951020"
+                 ],
+        "status":  "verified",
+        "supersedes":  [
+
+                       ],
+        "invalidated_by":  "",
+        "date":  "2026-11-02",
+        "tags":  [
+                     "k2",
+                     "textures-s2z",
+                     "modelpanel",
+                     "animation",
+                     "scenebuffer",
+                     "vfs",
+                     "ui"
+                 ]
+    },
+    {
+        "id":  "FN-004",
+        "file":  "FN-004-dxvk-3-0-binary-cache-and-spatial-fsr.md",
+        "kind":  "rendering",
+        "title":  "DXVK 3.0.2 Binary Pipeline Cache (dxvk.bin + dxvk.lut) and Spatial FSR 1.0 EASU+RCAS",
+        "binary_or_subsystem":  "d3d9.dll (DXVK 3.0.2) | dxvk.conf | vid_d9_x64.dll",
+        "rvas":  [
+                     "0x000000"
+                 ],
+        "status":  "verified",
+        "supersedes":  [
+
+                       ],
+        "invalidated_by":  "",
+        "date":  "2026-10-15",
+        "tags":  [
+                     "dxvk",
+                     "vulkan",
+                     "shader-cache",
+                     "fsr",
+                     "d3d9",
+                     "performance"
+                 ]
+    },
+    {
+        "id":  "FN-005",
+        "file":  "FN-005-s2z-32bit-signed-offset-limit-and-zip64-ban.md",
+        "kind":  "vfs",
+        "title":  "K2 CArchive Signed 32-Bit Offset Overflow Above 1.5 GB and Mandatory allowZip64=False",
+        "binary_or_subsystem":  "k2_x64.dll | games/client/game/*.s2z",
+        "rvas":  [
+                     "0x000000"
+                 ],
+        "status":  "verified",
+        "supersedes":  [
+
+                       ],
+        "invalidated_by":  "",
+        "date":  "2026-10-15",
+        "tags":  [
+                     "k2",
+                     "s2z",
+                     "vfs",
+                     "zip64",
+                     "archive",
+                     "crash",
+                     "32bit-limit"
+                 ]
+    },
+    {
+        "id":  "FN-006",
+        "file":  "FN-006-hardlinked-client-server-s2z-archives.md",
+        "kind":  "vfs",
+        "title":  "NTFS Hard-Link Sharing Across Client and Server .s2z Archives (resources0, resources5, resources98)",
+        "binary_or_subsystem":  "VFS | games/client/game/*.s2z | games/server/game/*.s2z",
+        "rvas":  [
+                     "0x000000"
+                 ],
+        "status":  "verified",
+        "supersedes":  [
+
+                       ],
+        "invalidated_by":  "",
+        "date":  "2026-10-15",
+        "tags":  [
+                     "vfs",
+                     "s2z",
+                     "hardlink",
+                     "ntfs",
+                     "client",
+                     "server",
+                     "parity"
+                 ]
+    },
+    {
+        "id":  "FN-007",
+        "file":  "FN-007-version-dll-dllmain-detached-threads-freelibrary-crash.md",
+        "kind":  "crash-triage",
+        "title":  "version.dll DllMain Spawns Detached Threads and Hooks kernelbase.dll (Never LoadLibrary/FreeLibrary in Test Runners)",
+        "binary_or_subsystem":  "games/client/version.dll (NativeGuard)",
+        "rvas":  [
+                     "0x01CEE0",
+                     "0x01DE60"
+                 ],
+        "status":  "verified",
+        "supersedes":  [
+
+                       ],
+        "invalidated_by":  "",
+        "date":  "2026-10-15",
+        "tags":  [
+                     "native-guard",
+                     "version-dll",
+                     "pe64",
+                     "netcode",
+                     "crash-triage"
+                 ]
+    },
+    {
+        "id":  "FN-008",
+        "file":  "FN-008-gpu-force-kill-single-thread-windowless-zombie-wedge.md",
+        "kind":  "crash-triage",
+        "title":  "Force-Killing Vulkan/DXVK/D3D9 Processes Mid-Frame Can Leave an Unkillable 1-Thread Windowless Kernel Zombie Holding .s2z Locks",
+        "binary_or_subsystem":  "hon_x64.exe | d3d9.dll (DXVK 3.0.2) | scripts/lib/Stop-KongorGameCleanly.ps1",
+        "rvas":  [
+                     "0x758FE0",
+                     "0x843880"
+                 ],
+        "status":  "verified",
+        "supersedes":  [
+
+                       ],
+        "invalidated_by":  "",
+        "date":  "2026-10-15",
+        "tags":  [
+                     "dxvk",
+                     "vulkan",
+                     "d3d9",
+                     "zombie-process",
+                     "wddm",
+                     "quit-before-kill",
+                     "crash-triage"
+                 ]
+    },
+    {
+        "id":  "FN-009",
+        "file":  "FN-009-post-world-pre-ui-render-pass-depth-occlusion.md",
+        "kind":  "rendering",
+        "title":  "Post-World / Pre-UI Render Pass Hooking, Offscreen RT Filtering, and Live CCamera Frustum Parity for Depth-Occluded 3D Overlays",
+        "binary_or_subsystem":  "k2_x64.dll | vid_d9_x64.dll | version.dll (NativeGuard)",
+        "rvas":  [
+                     "0x6F7E20",
+                     "0x91FA80",
+                     "0x951020"
+                 ],
+        "status":  "verified",
+        "supersedes":  [
+
+                       ],
+        "invalidated_by":  "",
+        "date":  "2026-10-15",
+        "tags":  [
+                     "k2",
+                     "rendering",
+                     "depth-buffer",
+                     "occlusion",
+                     "camera-frustum",
+                     "native-guard",
+                     "d3d9",
+                     "vulkan"
+                 ]
+    },
+    {
+        "id":  "FN-010",
+        "file":  "FN-010-dedicated-server-version-dll-missing-import-system32-basename-collision-and-per-port-boot-sentinel-isolation.md",
+        "kind":  "engine-law",
+        "title":  "Dedicated Server version.dll Missing Import, System32 Basename Collision, and Per-Port Boot Sentinel Isolation",
+        "binary_or_subsystem":  "hon_x64.exe (-dedicated) | version.dll (NativeGuard) | COMPEL",
+        "rvas":  [
+                     "0x01CEE0"
+                 ],
+        "status":  "verified",
+        "supersedes":  [
+
+                       ],
+        "invalidated_by":  "",
+        "date":  "2026-10-26",
+        "tags":  [
+                     "k2",
+                     "dedicated-server",
+                     "compel",
+                     "native-guard",
+                     "version-dll",
+                     "injection",
+                     "boot-sentinel",
+                     "named-pipe"
+                 ]
+    },
+    {
+        "id":  "FN-011",
+        "file":  "FN-011-k2-hidden-container-scrollbox-zero-height-trap-bidirectional-grow-1-and-latin-1-dyn-font-glyph-limits.md",
+        "kind":  "rendering",
+        "title":  "K2 Hidden-Container Scrollbox Zero-Height Trap, Bidirectional grow=1, and Latin-1 dyn Font Glyph Limits",
+        "binary_or_subsystem":  "k2_x64.dll | override/ui/fe2 | K2 XML UI",
+        "rvas":  [
+                     "0xC1F330"
+                 ],
+        "status":  "verified",
+        "supersedes":  [
+
+                       ],
+        "invalidated_by":  "",
+        "date":  "2026-10-26",
+        "tags":  [
+                     "k2",
+                     "ui",
+                     "xml",
+                     "scrollbox",
+                     "scrollbar",
+                     "font",
+                     "latin-1",
+                     "unicode",
+                     "layout"
+                 ]
+    },
+    {
+        "id":  "FN-012",
+        "file":  "FN-012-k2-entity-xml-leaf-processors-vfs-editfile-precedence-and-scoped-ui-script-telemetry.md",
+        "kind":  "engine-law",
+        "title":  "K2 Entity XML Leaf Processors, VFS Editfile Precedence, and Scoped UI Script Telemetry",
+        "binary_or_subsystem":  "k2_x64.dll | cgame_x64.dll | game_shared_x64.dll | Kongor.Modding",
+        "rvas":  [
+                     "0xf50740",
+                     "0xf65030",
+                     "0xf68360",
+                     "0x263eb8",
+                     "0x656408",
+                     "0x6656c8"
+                 ],
+        "status":  "verified",
+        "supersedes":  [
+
+                       ],
+        "invalidated_by":  "",
+        "date":  "2026-10-26",
+        "tags":  [
+                     "k2",
+                     "entity",
+                     "xml",
+                     "vfs",
+                     "modding",
+                     "hot-reload",
+                     "cvar",
+                     "telemetry"
+                 ]
+    },
+    {
+        "id":  "FN-013",
+        "file":  "FN-013-rmlui-layoutengine-flexbox-positioning-and-direct-nesting-prohibitions.md",
+        "kind":  "rendering",
+        "title":  "RmlUi LayoutEngine Flexbox Positioning and Direct-Nesting Prohibitions",
+        "binary_or_subsystem":  "VkLayer_hon_replay_capture.dll | RmlUi LayoutEngine | assets/hud/devtools.rml",
+        "rvas":  [
+                     "0x000000"
+                 ],
+        "status":  "verified",
+        "supersedes":  [
+
+                       ],
+        "invalidated_by":  "",
+        "date":  "2026-10-26",
+        "tags":  [
+                     "rmlui",
+                     "vulkan-layer",
+                     "flexbox",
+                     "devtools",
+                     "overlay",
+                     "hon-modern-hud"
+                 ]
+    },
+    {
+        "id":  "FN-014",
+        "file":  "FN-014-k2-modstack-reverse-precedence-and-dynamic-entity-avatar-metadata-snapshot-sync.md",
+        "kind":  "netcode",
+        "title":  "K2 ModStack Reverse Precedence and Dynamic Entity Avatar Metadata Snapshot Sync",
+        "binary_or_subsystem":  "k2_x64.dll | libk2-x86_64-server.so | game_shared_x64.dll | libgame_shared-x86_64-server.so | cgame_x64.dll",
+        "rvas":  [
+                     "0x56C620",
+                     "0x56DE90",
+                     "0x56BD00",
+                     "0x56BDE0",
+                     "0xFDF6D0",
+                     "0xFDF7C0",
+                     "0x0F4FBA"
+                 ],
+        "status":  "verified",
+        "supersedes":  [
+
+                       ],
+        "invalidated_by":  "",
+        "date":  "2026-10-27",
+        "tags":  [
+                     "k2",
+                     "vfs",
+                     "modstack",
+                     "snapshot",
+                     "unread_bits",
+                     "desync",
+                     "avatar",
+                     "compel"
+                 ]
+    },
+    {
+        "id":  "FN-015",
+        "file":  "FN-015-opengl-glsl-ao-loose-shader-precedence-and-native-guard-v020-detours.md",
+        "kind":  "rendering",
+        "title":  "OpenGL GLSL Loose-Shader Manifest Quarantine, AO Fallback Guards, and NativeGuard v0.2.0 Detours",
+        "binary_or_subsystem":  "libvid_gl2-x86_64.so | k2_x64.dll | vid_d3d9_x64.dll | version.dll",
+        "rvas":  [
+                     "0x9E7260",
+                     "0x8CD7C0",
+                     "0x029100"
+                 ],
+        "status":  "verified",
+        "supersedes":  [
+
+                       ],
+        "invalidated_by":  "",
+        "date":  "2026-11-01",
+        "tags":  [
+                     "opengl",
+                     "glsl",
+                     "ambient_occlusion",
+                     "manifest",
+                     "native_guard",
+                     "loadsample",
+                     "draw2d",
+                     "netcode"
+                 ]
+    },
+    {
+        "id":  "FN-016",
+        "file":  "FN-016-k2-agb-rxgb-normal-map-cpu-swizzle-and-textures-s2z-bottom-up-dds-orientation.md",
+        "kind":  "rendering",
+        "title":  "K2 .agb RxGB Normal-Map CPU Swizzle and textures.s2z Bottom-Up DDS Orientation",
+        "binary_or_subsystem":  "vid_d3d9_x64.dll | k2_x64.dll | textures.s2z | override",
+        "rvas":  [
+                     "0x09DA30",
+                     "0x0982D0",
+                     "0x096040",
+                     "0x0956C0",
+                     "0x04BB80",
+                     "0x685FD0"
+                 ],
+        "status":  "verified",
+        "supersedes":  [
+
+                       ],
+        "invalidated_by":  "",
+        "date":  "2026-11-02",
+        "tags":  [
+                     "rxgb",
+                     "normal_map",
+                     "textures_s2z",
+                     "ctexturearchive",
+                     "ctexturecache",
+                     "vflip",
+                     "dds",
+                     "tga",
+                     "shadowing"
+                 ]
+    },
+    {
+        "id":  "FN-017",
+        "file":  "FN-017-k2-idempotent-uitrigger-registry-and-procedural-texture-prefix.md",
+        "kind":  "engine-law",
+        "title":  "K2 Idempotent UITrigger.CreateTrigger Registry vs XML \u003ctrigger\u003e Ownership and Procedural $ Texture Prefix Rules",
+        "binary_or_subsystem":  "k2_x64.dll | override/ui | override/**/*.material",
+        "rvas":  [
+                     "0xBD7580",
+                     "0xA55BD0",
+                     "0xA56430",
+                     "0x896190"
+                 ],
+        "status":  "verified",
+        "supersedes":  [
+
+                       ],
+        "invalidated_by":  "",
+        "date":  "2026-11-05",
+        "tags":  [
+                     "uitrigger",
+                     "xml_trigger",
+                     "cinterface",
+                     "procedural_texture",
+                     "getsystempath",
+                     "material",
+                     "movf"
+                 ]
+    },
+    {
+        "id":  "FN-018",
+        "file":  "FN-018-k2-cstringtable-load-wildcard-extension-auto-merge.md",
+        "kind":  "engine-law",
+        "title":  "K2 CStringTable::Load Wildcard Extension Auto-Merge (\u003cstem\u003e*_\u003clang\u003e.str)",
+        "binary_or_subsystem":  "k2_x64.dll | override/stringtables",
+        "rvas":  [
+                     "0x9ED7B0",
+                     "0x9EE1C0"
+                 ],
+        "status":  "verified",
+        "supersedes":  [
+
+                       ],
+        "invalidated_by":  "",
+        "date":  "2026-11-05",
+        "tags":  [
+                     "cstringtable",
+                     "stringtables",
+                     "interface_reborn_en",
+                     "localization",
+                     "vfs"
+                 ]
+    },
+    {
+        "id":  "FN-019",
+        "file":  "FN-019-cgame-5-slot-ui-trigger-ceiling-cplayer-0x404-ally-gold-and-uint32-1-1000-instant-respawn-sentinel.md",
+        "kind":  "engine-law",
+        "title":  "CGame 5-Slot UI Trigger Ceiling, CPlayer+0x404 Ally Gold, and uint32(-1)/1000 Instant-Respawn Sentinel",
+        "binary_or_subsystem":  "cgame_x64.dll | native_guard | override/ui",
+        "rvas":  [
+                     "0x1a0cf0",
+                     "0x195bd0",
+                     "0x195f25",
+                     "0x197070",
+                     "0x19bd30"
+                 ],
+        "status":  "verified",
+        "supersedes":  [
+
+                       ],
+        "invalidated_by":  "",
+        "date":  "2026-11-06",
+        "tags":  [
+                     "k2",
+                     "cgame",
+                     "scoreboard",
+                     "lobby",
+                     "10v10",
+                     "native_guard",
+                     "respawn"
+                 ]
+    },
+    {
+        "id":  "FN-020",
+        "file":  "FN-020-endheroloading-cplayer-0x668-disconnect-rule-and-queue-arcade-drop-in-state.md",
+        "kind":  "engine-law",
+        "title":  "EndHeroLoading CPlayer 0x668 Disconnect Rule and Queue Arcade Drop-In State",
+        "binary_or_subsystem":  "game_shared_x64.dll | game_x64.dll | native_guard",
+        "rvas":  [
+                     "0x0007e530",
+                     "0x00592170"
+                 ],
+        "status":  "verified",
+        "supersedes":  [
+
+                       ],
+        "invalidated_by":  "",
+        "date":  "2026-11-09",
+        "tags":  [
+                     "k2",
+                     "cplayer",
+                     "queue-arcade",
+                     "disconnect",
+                     "clan-tag",
+                     "ping"
+                 ]
+    },
+    {
+        "id":  "FN-021",
+        "file":  "FN-021-waterdistortion-zero-height-rendertarget-poison-and-auto-resize-at-0x52a60.md",
+        "kind":  "rendering",
+        "title":  "WaterDistortion Zero-Height RenderTarget Poison and Auto-Resize at 0x52a60",
+        "binary_or_subsystem":  "vid_d3d9_x64.dll | vid_vulkan_x64.dll | DXVK",
+        "rvas":  [
+                     "0x00052320",
+                     "0x00052880",
+                     "0x00052a60"
+                 ],
+        "status":  "verified",
+        "supersedes":  [
+
+                       ],
+        "invalidated_by":  "",
+        "date":  "2026-11-09",
+        "tags":  [
+                     "k2",
+                     "vulkan",
+                     "dxvk",
+                     "waterdistortion",
+                     "rendertarget",
+                     "midwars"
+                 ]
+    },
+    {
+        "id":  "FN-022",
+        "file":  "FN-022-dynamic-modelpanel-setmodel-resets-clip-to-idle-requiring-post-setmodel-setanim.md",
+        "kind":  "engine-law",
+        "title":  "Dynamic ModelPanel SetModel Resets Clip to Idle Requiring Post-SetModel SetAnim",
+        "binary_or_subsystem":  "override/ui | k2_x64.dll",
+        "rvas":  [
+                     "0x000000"
+                 ],
+        "status":  "verified",
+        "supersedes":  [
+
+                       ],
+        "invalidated_by":  "",
+        "date":  "2026-11-09",
+        "tags":  [
+                     "k2",
+                     "ui",
+                     "modelpanel",
+                     "portrait",
+                     "setmodel",
+                     "setanim",
+                     "game_new"
+                 ]
+    },
+    {
+        "id":  "FN-023",
+        "file":  "FN-023-pre-phase-5-addbot-double-spawnhero-and-mode-1-cbotbrain-park-restore-lifecycle.md",
+        "kind":  "engine-law",
+        "title":  "Pre-Phase-5 AddBot Double SpawnHero and Mode-1 CBotBrain Park-Restore Lifecycle",
+        "binary_or_subsystem":  "game_x64.dll | game_shared_x64.dll | native_guard",
+        "rvas":  [
+                     "0x00069c10",
+                     "0x0007e530",
+                     "0x004f1b50",
+                     "0x001b9280"
+                 ],
+        "status":  "verified",
+        "supersedes":  [
+
+                       ],
+        "invalidated_by":  "",
+        "date":  "2026-11-10",
+        "tags":  [
+                     "k2",
+                     "cplayer",
+                     "spawnhero",
+                     "addbot",
+                     "cbotbrain",
+                     "queue-arcade"
+                 ]
+    },
+    {
+        "id":  "FN-024",
+        "file":  "FN-024-cvisibilitymap-fillbitmap-stale-static-dimensions-on-map-transitions.md",
+        "kind":  "crash-triage",
+        "title":  "CVisibilityMap::FillBitmap Stale Static Half-Dimensions \u0026 8-Bit Giant-Map Truncation",
+        "binary_or_subsystem":  "game_shared_x64.dll | version.dll (NativeGuard)",
+        "rvas":  [
+                     "0x53B1C0",
+                     "0x53BB50",
+                     "0x53BD40",
+                     "0x53C267",
+                     "0x77DEE8",
+                     "0x77DEF0",
+                     "0x77DEF4"
+                 ],
+        "status":  "verified",
+        "supersedes":  [
+
+                       ],
+        "invalidated_by":  "",
+        "date":  "2026-11-13",
+        "tags":  [
+                     "k2",
+                     "game-shared",
+                     "fog-of-war",
+                     "pebbles-duel",
+                     "crash",
+                     "native-guard",
+                     "map-transition"
+                 ]
+    },
+    {
+        "id":  "FN-025",
+        "file":  "FN-025-k2-terrain-texeldensity-0-white-alphamap-fallback-and-terrain-derepeat-chunk-local-uv-seams.md",
+        "kind":  "rendering",
+        "title":  "K2 Terrain texeldensity=0 White Alphamap Fallback and TERRAIN_DEREPEAT Chunk-Local UV Seams",
+        "binary_or_subsystem":  "vid_d3d9_x64.dll | vid_gl2_x64.dll | k2_x64.dll | games/client/override/ui/scripts/enfos_hud.lua",
+        "rvas":  [
+                     "0x89C90",
+                     "0x73590",
+                     "0xA1E950"
+                 ],
+        "status":  "verified",
+        "supersedes":  [
+
+                       ],
+        "invalidated_by":  "",
+        "date":  "2026-11-15",
+        "tags":  [
+                     "k2",
+                     "terrain",
+                     "texeldensity",
+                     "terrain-derepeat",
+                     "enfos",
+                     "custom-maps",
+                     "shader",
+                     "uv-seam"
+                 ]
+    },
+    {
+        "id":  "FN-026",
+        "file":  "FN-026-unindexed-mdf-spawnevent-starteffect-orphan-ceffectthread-handle-storm-on-modelpanel-context-teardown.md",
+        "kind":  "rendering",
+        "title":  "Unindexed MDF spawnevent StartEffect Orphan CEffectThread Handle Storm on ModelPanel Context Teardown",
+        "binary_or_subsystem":  "k2_x64.dll | games/client/override/ui/scripts/newui/lobby_v2.lua | games/client/override/ui/scripts/newui/hero_definitions_cache.lua",
+        "rvas":  [
+                     "0x951020",
+                     "0x94EB70"
+                 ],
+        "status":  "verified",
+        "supersedes":  [
+
+                       ],
+        "invalidated_by":  "",
+        "date":  "2026-11-20",
+        "tags":  [
+                     "k2",
+                     "modelpanel",
+                     "ceffectthread",
+                     "iresourcelibrary",
+                     "lobby-v2",
+                     "spawnevent",
+                     "effect-leak"
+                 ]
+    }
+]

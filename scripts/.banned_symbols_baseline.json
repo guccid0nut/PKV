@@ -1,0 +1,135 @@
+[
+  {
+    "file": "src/apps/compel/Services/Supervision/FleetDrainingService.cs",
+    "symbol": ".GetAwaiter().GetResult()",
+    "maxCount": 1,
+    "reason": "Pre-existing legacy sync-over-async call baselined under Phase 1 scope freeze",
+    "expiresOn": "2027-01-13"
+  },
+  {
+    "file": "src/apps/compel/Services/Telemetry/MatchParquetExportService.cs",
+    "symbol": ".GetAwaiter().GetResult()",
+    "maxCount": 1,
+    "reason": "Pre-existing legacy sync-over-async call baselined under Phase 1 scope freeze",
+    "expiresOn": "2027-01-13"
+  },
+  {
+    "file": "src/apps/willowmaker/Services/DiscordPresenceService.cs",
+    "symbol": ".GetAwaiter().GetResult()",
+    "maxCount": 1,
+    "reason": "Pre-existing legacy sync-over-async call baselined under Phase 1 scope freeze",
+    "expiresOn": "2027-01-13"
+  },
+  {
+    "file": "src/extensions/cdn-broker/Services/VersionChecker/VersionChecker.cs",
+    "symbol": ".GetAwaiter().GetResult()",
+    "maxCount": 1,
+    "reason": "Pre-existing legacy sync-over-async call baselined under Phase 1 scope freeze",
+    "expiresOn": "2027-01-13"
+  },
+  {
+    "file": "src/libs/protocol-core/Services/Voice/VoiceClientService.cs",
+    "symbol": ".GetAwaiter().GetResult()",
+    "maxCount": 1,
+    "reason": "Pre-existing legacy sync-over-async call baselined under Phase 1 scope freeze",
+    "expiresOn": "2027-01-13"
+  },
+  {
+    "file": "src/services/master-server/Configuration/JSONConfiguration.cs",
+    "symbol": ".GetAwaiter().GetResult()",
+    "maxCount": 1,
+    "reason": "Pre-existing legacy sync-over-async call baselined under Phase 1 scope freeze",
+    "expiresOn": "2027-01-13"
+  },
+  {
+    "file": "src/tools/headless-renderer/HeadlessUiRenderer.cs",
+    "symbol": ".Wait()",
+    "maxCount": 1,
+    "reason": "Pre-existing legacy sync-over-async call baselined under Phase 1 scope freeze",
+    "expiresOn": "2027-01-13"
+  },
+  {
+    "file": "src/tools/kongor-cli/Program.Helpers.cs",
+    "symbol": ".GetAwaiter().GetResult()",
+    "maxCount": 1,
+    "reason": "Pre-existing legacy sync-over-async call baselined under Phase 1 scope freeze",
+    "expiresOn": "2027-01-13"
+  },
+  {
+    "file": "src/tools/kongor-cli/Mcp/Services/AssetWatcherService.cs",
+    "symbol": ".GetAwaiter().GetResult()",
+    "maxCount": 3,
+    "reason": "Pre-existing legacy sync-over-async call baselined under Phase 1 scope freeze",
+    "expiresOn": "2027-01-13"
+  },
+  {
+    "file": "src/tools/kongor-cli/Mcp/Services/ClientCommandRemediationService.cs",
+    "symbol": ".GetAwaiter().GetResult()",
+    "maxCount": 1,
+    "reason": "Pre-existing legacy sync-over-async call baselined under Phase 1 scope freeze",
+    "expiresOn": "2027-01-13"
+  },
+  {
+    "file": "src/tools/kongor-cli/Mcp/Services/DeveloperIssueStore.cs",
+    "symbol": ".GetAwaiter().GetResult()",
+    "maxCount": 1,
+    "reason": "Pre-existing legacy sync-over-async call baselined under Phase 1 scope freeze",
+    "expiresOn": "2027-01-13"
+  },
+  {
+    "file": "src/tools/kongor-cli/Mcp/Services/McpIpcServer.cs",
+    "symbol": ".GetAwaiter().GetResult()",
+    "maxCount": 1,
+    "reason": "Pre-existing legacy sync-over-async call baselined under Phase 1 scope freeze",
+    "expiresOn": "2027-01-13"
+  },
+  {
+    "file": "src/tools/kongor-cli/Mcp/Services/WindowCapturer.cs",
+    "symbol": ".GetAwaiter().GetResult()",
+    "maxCount": 3,
+    "reason": "Pre-existing legacy sync-over-async call baselined under Phase 1 scope freeze",
+    "expiresOn": "2027-01-13"
+  },
+  {
+    "file": "src/tools/kongor-cli/Mcp/Handlers/ErrorsSinceHandler.cs",
+    "symbol": "Cleanroom.HardcodedUserPath",
+    "maxCount": 1,
+    "reason": "Pre-existing fallback repo root string baselined under Phase 5 scope freeze",
+    "expiresOn": "2027-01-13"
+  },
+  {
+    "file": "src/tools/kongor-cli/Mcp/Handlers/ReloadAndVerifyHandler.cs",
+    "symbol": "Cleanroom.HardcodedUserPath",
+    "maxCount": 1,
+    "reason": "Pre-existing fallback repo root string baselined under Phase 5 scope freeze",
+    "expiresOn": "2027-01-13"
+  },
+  {
+    "file": "tests/e2e/mcp/Client/McpProcessClient.cs",
+    "symbol": ".GetAwaiter().GetResult()",
+    "maxCount": 1,
+    "reason": "Pre-existing synchronous IDisposable test helper baselined under Stage D header stamp",
+    "expiresOn": "2027-01-13"
+  },
+  {
+    "file": "tests/integration/ASPIRE.Integration.Tests/InProcess/InProcessDistributedCacheStore.Multiplexer.cs",
+    "symbol": ".GetAwaiter().GetResult()",
+    "maxCount": 6,
+    "reason": "Pre-existing synchronous StackExchange.Redis IConnectionMultiplexer stub methods baselined under Stage D header stamp",
+    "expiresOn": "2027-01-13"
+  },
+  {
+    "file": "tests/integration/ASPIRE.Integration.Tests/InProcess/InProcessDistributedCacheStore.Stubs.StringStream.Async.cs",
+    "symbol": ".GetAwaiter().GetResult()",
+    "maxCount": 2,
+    "reason": "Pre-existing synchronous StackExchange.Redis IDatabase stub methods baselined under Stage D header stamp",
+    "expiresOn": "2027-01-13"
+  },
+  {
+    "file": "tests/integration/ASPIRE.Integration.Tests/Lua/LuaTestBase.cs",
+    "symbol": ".GetAwaiter().GetResult()",
+    "maxCount": 2,
+    "reason": "Pre-existing synchronous NLua test fixture setup baselined under Stage D header stamp",
+    "expiresOn": "2027-01-13"
+  }
+]

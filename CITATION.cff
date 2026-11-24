@@ -1,0 +1,33 @@
+cff-version: 1.2.0
+title: "Project KONGOR V (PKV) & TAO (Together As One) MCP Server"
+message: "If you use, reference, fork, or build upon Project KONGOR V or the TAO (Together As One) Model Context Protocol (MCP) Server in software, documentation, or research, please cite it using the metadata below."
+type: software
+authors:
+  - alias: "guccidonut"
+    name: "guccidonut"
+repository-code: "https://github.com/guccid0nut/PKV"
+url: "https://github.com/guccid0nut/PKV"
+license: AGPL-3.0-or-later
+version: "5.0.2"
+date-released: "2026-11-21"
+keywords:
+  - model-context-protocol
+  - mcp
+  - tao-mcp
+  - video-game-preservation
+  - heroes-of-newerth
+  - vulkan
+  - dotnet
+abstract: >-
+  Project KONGOR V (PKV) is an independent, cleanroom open-source platform,
+  Vulkan/audio/stability modernization runtime (MPL-2.0), and AI-assisted
+  engineering suite (AGPL-3.0-or-later), featuring the original TAO (Together As One)
+  Model Context Protocol (MCP) server created by guccidonut, while honoring
+  foundational [K]ONGOR AGPL-3.0 open-source lineage.
+references:
+  - type: software
+    title: "Project KONGOR Open Source (Foundational Upstream AGPL-3.0 Services)"
+    authors:
+      - name: "[K]ONGOR"
+    repository-code: "https://github.com/Project-KONGOR-Open-Source"
+    license: AGPL-3.0-only

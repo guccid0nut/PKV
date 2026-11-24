@@ -1,0 +1,72 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>COMPEL</RootNamespace>
+    <AssemblyName>COMPEL</AssemblyName>
+
+    <!-- Native AOT Compatibility: Bind Configuration And Generate Request Delegates Via Source Generators Rather Than Reflection. -->
+    <IsAotCompatible>true</IsAotCompatible>
+    <EnableTrimAnalyzer>true</EnableTrimAnalyzer>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <Features>$(Features);runtime-async=on</Features>
+    <!-- Suppress third-party NuGet assembly-level ILC summary warnings (Serilog, Parquet.Net, MemoryPack.Core, RecyclableMemoryStream) during PublishAot while keeping first-party IL2026/IL2091/IL3050/IL3056 strictly fatal. -->
+    <NoWarn Condition="'$(PublishAot)' == 'true'">$(NoWarn);IL2104;IL3053</NoWarn>
+    <EnableConfigurationBindingGenerator>true</EnableConfigurationBindingGenerator>
+    <EnableRequestDelegateGenerator>true</EnableRequestDelegateGenerator>
+
+    <!-- Reduces The Published Size And Avoids Loading Culture Data That Native AOT Cannot Trim Cleanly; The Code Uses Invariant String Operations Throughout. -->
+    <InvariantGlobalization>true</InvariantGlobalization>
+
+    <StaticWebAssetsEnabled>false</StaticWebAssetsEnabled>
+
+    <ApplicationIcon>Assets\compel.ico</ApplicationIcon>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Content Include="Assets\compel.ico"/>
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="COMPEL.Tests"/>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.SignalR.Client"/>
+    <PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol"/>
+    <PackageReference Include="OpenTelemetry.Extensions.Hosting"/>
+    <PackageReference Include="Parquet.Net"/>
+    <PackageReference Include="Polly.Core"/>
+    <PackageReference Include="Serilog.AspNetCore"/>
+    <PackageReference Include="Serilog.Sinks.Console"/>
+    <PackageReference Include="Serilog.Sinks.File"/>
+    <PackageReference Include="MemoryPack"/>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\libs\contracts\NEXUS.Contracts.csproj"/>
+    <ProjectReference Include="..\..\libs\protocol-core\Kongor.Core.csproj"/>
+  </ItemGroup>
+
+  <!-- Generates A Version String Constant From The Project's Version. -->
+  <Target Name="GenerateVersionSource" BeforeTargets="CoreCompile" DependsOnTargets="PrepareForBuild">
+    <PropertyGroup>
+      <_GeneratedVersionFile>$(IntermediateOutputPath)GeneratedVersionInformation.g.cs</_GeneratedVersionFile>
+    </PropertyGroup>
+    <WriteLinesToFile File="$(_GeneratedVersionFile)" Overwrite="true" WriteOnlyWhenDifferent="true"
+                      Lines="namespace COMPEL%3B internal static class GeneratedVersionInformation { internal const string VersionString = &quot;$(Version)&quot;%3B }"/>
+    <ItemGroup>
+      <Compile Include="$(_GeneratedVersionFile)"/>
+    </ItemGroup>
+  </Target>
+
+  <ItemGroup Condition="'$(OS)' == 'Windows_NT' And Exists('$(MSBuildThisFileDirectory)..\..\..\artifacts\native-binaries\windows-x64')">
+    <NativeModernizationBinaries Include="$(MSBuildThisFileDirectory)..\..\..\artifacts\native-binaries\windows-x64\*.*" />
+    <None Include="@(NativeModernizationBinaries)">
+      <Link>windows-x64\%(FileName)%(Extension)</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </None>
+  </ItemGroup>
+
+</Project>

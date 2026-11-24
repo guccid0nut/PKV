@@ -1,0 +1,36 @@
+# SPDX-License-Identifier: GPL-2.0-only OR BSD-2-Clause
+# SPDX-FileCopyrightText: 2026 guccidonut and Project KONGOR V Contributors
+#
+# Standalone Linux BPF kernel crate (excluded from the host offline Cargo workspace).
+# Build on Linux with `cargo +nightly` and `bpf-linker` — see ../README.md.
+
+[package]
+name = "kongor-xdp-aya-ebpf"
+version = "0.1.0"
+edition = "2021"
+license = "GPL-2.0-only OR BSD-2-Clause"
+publish = false
+
+[dependencies]
+aya-ebpf = "0.1"
+kongor_xdp_aya = { path = ".." }
+
+[[bin]]
+name = "kongor-xdp-aya"
+path = "src/main.rs"
+
+[profile.dev]
+opt-level = 3
+debug = false
+debug-assertions = false
+overflow-checks = false
+lto = true
+panic = "abort"
+incremental = false
+codegen-units = 1
+rpath = false
+
+[profile.release]
+lto = true
+panic = "abort"
+codegen-units = 1

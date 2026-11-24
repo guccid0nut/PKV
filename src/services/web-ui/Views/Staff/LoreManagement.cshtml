@@ -1,0 +1,147 @@
+﻿@model IReadOnlyList<LoreComicSummaryDto>
+@{
+    ViewData["Title"] = "Staff Lore Management - Project Kongor";
+    var arcs = ViewBag.Arcs as IReadOnlyList<LoreArcDto> ?? [];
+    var ratingMetrics = ViewBag.RatingMetrics as Dictionary<int, LoreRatingMetricDto> ?? new Dictionary<int, LoreRatingMetricDto>();
+}
+
+<div class="min-h-screen pb-20 text-slate-100">
+    @Html.AntiForgeryToken()
+
+    <div class="flex flex-wrap items-center justify-between gap-4 mb-8">
+        <div>
+            <div class="text-xs font-bold uppercase tracking-wider text-purple-400 mb-1">Staff Portal</div>
+            <h1 class="text-3xl font-black text-white flex items-center gap-2">
+                <span>📚</span> Lore & Graphic Novel Management
+            </h1>
+        </div>
+        <div class="flex items-center gap-3">
+            <a href="/lore"
+               class="px-4 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-700 text-xs font-bold transition-all">
+                <i class="fa-solid fa-eye"></i> View Public Hub
+            </a>
+            <button id="btn-create-arc" type="button"
+                    class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-purple-300 border border-purple-500/30 text-xs font-bold transition-all">
+                <i class="fa-solid fa-plus"></i> New Story Arc
+            </button>
+            <a asp-action="NewComic"
+               class="px-4 py-2 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-xs font-bold shadow-lg shadow-purple-900/40 transition-all">
+                <i class="fa-solid fa-file-circle-plus"></i> Create New Comic
+            </a>
+        </div>
+    </div>
+
+    <!-- Story Arcs Summary Section -->
+    <div class="rounded-2xl border border-slate-800 bg-slate-900/70 p-6 mb-8">
+        <h2 class="text-lg font-bold text-white mb-4 flex items-center gap-2">
+            <span>🌌</span> Story Arcs / Sagas (@arcs.Count)
+        </h2>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            @foreach (var arc in arcs)
+            {
+                <div class="p-4 rounded-xl bg-slate-950/60 border border-slate-800 flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-xs font-bold text-purple-400">Order #@arc.OrderIndex</span>
+                            <span
+                                class="px-2 py-0.5 rounded text-[10px] font-bold @(arc.IsPublished ? "bg-emerald-500/20 text-emerald-300" : "bg-amber-500/20 text-amber-300")">
+                                @(arc.IsPublished ? "Published" : "Draft")
+                            </span>
+                        </div>
+                        <h3 class="text-base font-bold text-white mb-1">@arc.Title</h3>
+                        <p class="text-slate-400 text-xs line-clamp-2 mb-3">@arc.Description</p>
+                    </div>
+                    <div
+                        class="pt-3 border-t border-slate-800/80 flex items-center justify-between text-xs text-slate-400">
+                        <span>@arc.ComicCount Issues</span>
+                        <a href="/lore?arc=@arc.Slug" class="text-purple-400 hover:text-purple-300 font-bold">View
+                            Issues</a>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+
+    <!-- Comics List Table with Internal Ratings -->
+    <div class="rounded-2xl border border-slate-800 bg-slate-900/70 overflow-hidden shadow-xl">
+        <div class="p-6 border-b border-slate-800">
+            <h2 class="text-lg font-bold text-white flex items-center gap-2">
+                <span>📖</span> Comic Issues & Private Rating Metrics (@Model.Count)
+            </h2>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs">
+                <thead class="bg-slate-950/80 text-slate-400 font-bold border-b border-slate-800">
+                <tr>
+                    <th class="p-4">Cover</th>
+                    <th class="p-4">Issue / Title</th>
+                    <th class="p-4">Arc</th>
+                    <th class="p-4">Pages</th>
+                    <th class="p-4">Views</th>
+                    <th class="p-4">Staff Rating Metrics</th>
+                    <th class="p-4">Status</th>
+                    <th class="p-4 text-right">Actions</th>
+                </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-800/60">
+                @foreach (var comic in Model)
+                {
+                    ratingMetrics.TryGetValue(comic.ID, out var metric);
+                    <tr class="hover:bg-slate-800/40 transition-colors">
+                        <td class="p-4 w-16">
+                            <img src="@comic.CoverImageUrl" alt="@comic.Title"
+                                 class="w-12 h-16 object-cover rounded-lg border border-slate-700 shadow-sm"/>
+                        </td>
+                        <td class="p-4">
+                            <div class="font-bold text-white text-sm">@comic.Title</div>
+                            <div class="text-[11px] text-slate-400">Issue #@comic.IssueNumber • slug: <span
+                                    class="font-mono text-purple-400">@comic.Slug</span></div>
+                        </td>
+                        <td class="p-4 font-semibold text-slate-300">@comic.ArcTitle</td>
+                        <td class="p-4 text-slate-300 font-semibold">@comic.PageCount</td>
+                        <td class="p-4 text-slate-300 font-semibold">@comic.ViewCount</td>
+                        <td class="p-4">
+                            @if (metric != null && metric.TotalRatings > 0)
+                            {
+                                <div class="flex flex-col gap-1">
+                                    <div class="font-bold text-amber-400 text-sm">@metric.AverageScore ★ <span
+                                            class="text-xs text-slate-400 font-normal">(@metric.TotalRatings votes)</span>
+                                    </div>
+                                    <div class="flex items-center gap-1 text-[10px] text-slate-500">
+                                        @foreach (var kvp in metric.ScoreDistribution.OrderByDescending(k => k.Key))
+                                        {
+                                            <span>@kvp.Key★: @kvp.Value</span>
+                                        }
+                                    </div>
+                                </div>
+                            }
+                            else
+                            {
+                                <span class="text-slate-500 italic">No ratings yet</span>
+                            }
+                        </td>
+                        <td class="p-4">
+                                <span
+                                    class="px-2.5 py-1 rounded-full text-[10px] font-bold @(comic.IsPublished ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/30" : "bg-amber-500/20 text-amber-300 border border-amber-500/30")">
+                                    @(comic.IsPublished ? "Published" : "Draft")
+                                </span>
+                        </td>
+                        <td class="p-4 text-right space-x-2">
+                            <a href="/lore/@comic.Slug"
+                               class="p-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 transition-all"
+                               title="View Reader">
+                                <i class="fa-solid fa-eye"></i>
+                            </a>
+                            <a asp-action="EditComic" asp-route-id="@comic.ID"
+                               class="p-2 rounded-lg bg-purple-600 hover:bg-purple-500 text-white transition-all"
+                               title="Edit Comic">
+                                <i class="fa-solid fa-pen"></i>
+                            </a>
+                        </td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

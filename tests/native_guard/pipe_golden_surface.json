@@ -1,0 +1,311 @@
+{
+    "schema_version":  "1.0.0",
+    "export_count":  64,
+    "exports":  [
+                    {
+                        "name":  "GetFileVersionInfoA",
+                        "ordinal":  1
+                    },
+                    {
+                        "name":  "GetFileVersionInfoByHandle",
+                        "ordinal":  2
+                    },
+                    {
+                        "name":  "GetFileVersionInfoExA",
+                        "ordinal":  3
+                    },
+                    {
+                        "name":  "GetFileVersionInfoExW",
+                        "ordinal":  4
+                    },
+                    {
+                        "name":  "GetFileVersionInfoSizeA",
+                        "ordinal":  5
+                    },
+                    {
+                        "name":  "GetFileVersionInfoSizeExA",
+                        "ordinal":  6
+                    },
+                    {
+                        "name":  "GetFileVersionInfoSizeExW",
+                        "ordinal":  7
+                    },
+                    {
+                        "name":  "GetFileVersionInfoSizeW",
+                        "ordinal":  8
+                    },
+                    {
+                        "name":  "GetFileVersionInfoW",
+                        "ordinal":  9
+                    },
+                    {
+                        "name":  "VerFindFileA",
+                        "ordinal":  10
+                    },
+                    {
+                        "name":  "VerFindFileW",
+                        "ordinal":  11
+                    },
+                    {
+                        "name":  "VerInstallFileA",
+                        "ordinal":  12
+                    },
+                    {
+                        "name":  "VerInstallFileW",
+                        "ordinal":  13
+                    },
+                    {
+                        "name":  "VerLanguageNameA",
+                        "ordinal":  14
+                    },
+                    {
+                        "name":  "VerLanguageNameW",
+                        "ordinal":  15
+                    },
+                    {
+                        "name":  "VerQueryValueA",
+                        "ordinal":  16
+                    },
+                    {
+                        "name":  "VerQueryValueW",
+                        "ordinal":  17
+                    },
+                    {
+                        "name":  "Kongor_NativeGuard_WriteFrameTelemetry",
+                        "ordinal":  18
+                    },
+                    {
+                        "name":  "Kongor_NativeGuard_GetTelemetryHead",
+                        "ordinal":  19
+                    },
+                    {
+                        "name":  "Kongor_NativeGuard_GetTelemetryCapacity",
+                        "ordinal":  20
+                    },
+                    {
+                        "name":  "Kongor_NativeGuard_GetStatus",
+                        "ordinal":  21
+                    },
+                    {
+                        "name":  "Kongor_NativeGuard_GetPipeStatus",
+                        "ordinal":  22
+                    },
+                    {
+                        "name":  "Kongor_NativeGuard_GetLuaMemoryUsed",
+                        "ordinal":  23
+                    },
+                    {
+                        "name":  "Kongor_NativeGuard_TriggerLuaGC",
+                        "ordinal":  24
+                    },
+                    {
+                        "name":  "Kongor_NativeGuard_UpdateDynamicTelemetry",
+                        "ordinal":  25
+                    },
+                    {
+                        "name":  "Kongor_NativeGuard_InjectSubTickInput",
+                        "ordinal":  26
+                    },
+                    {
+                        "name":  "Kongor_NativeGuard_IsMimallocActive",
+                        "ordinal":  27
+                    },
+                    {
+                        "name":  "Kongor_NativeGuard_GetMimallocVersion",
+                        "ordinal":  28
+                    },
+                    {
+                        "name":  "Kongor_NativeGuard_IsRawInputActive",
+                        "ordinal":  29
+                    },
+                    {
+                        "name":  "Kongor_NativeGuard_GetRawInputStats",
+                        "ordinal":  30
+                    },
+                    {
+                        "name":  "Kongor_NativeGuard_SetRawInputEnabled",
+                        "ordinal":  31
+                    },
+                    {
+                        "name":  "Kongor_NativeGuard_SetMouseSensitivity",
+                        "ordinal":  32
+                    },
+                    {
+                        "name":  "Kongor_NativeGuard_PrewarmHero",
+                        "ordinal":  33
+                    },
+                    {
+                        "name":  "Kongor_NativeGuard_PrewarmCompetitivePool",
+                        "ordinal":  34
+                    },
+                    {
+                        "name":  "Kongor_NativeGuard_GetPrewarmStats",
+                        "ordinal":  35
+                    },
+                    {
+                        "name":  "Kongor_NativeGuard_JobPool_Initialize",
+                        "ordinal":  36
+                    },
+                    {
+                        "name":  "Kongor_NativeGuard_JobPool_Shutdown",
+                        "ordinal":  37
+                    },
+                    {
+                        "name":  "Kongor_NativeGuard_JobPool_GetStats",
+                        "ordinal":  38
+                    },
+                    {
+                        "name":  "Kongor_NativeGuard_JobPool_ParallelFor",
+                        "ordinal":  39
+                    },
+                    {
+                        "name":  "Kongor_NativeGuard_PredictivePathing_Initialize",
+                        "ordinal":  40
+                    },
+                    {
+                        "name":  "Kongor_NativeGuard_PredictivePathing_Shutdown",
+                        "ordinal":  41
+                    },
+                    {
+                        "name":  "Kongor_NativeGuard_PredictivePathing_OnMoveOrder",
+                        "ordinal":  42
+                    },
+                    {
+                        "name":  "Kongor_NativeGuard_PredictivePathing_OnServerSnapshot",
+                        "ordinal":  43
+                    },
+                    {
+                        "name":  "Kongor_NativeGuard_PredictivePathing_Update",
+                        "ordinal":  44
+                    },
+                    {
+                        "name":  "Kongor_NativeGuard_PredictivePathing_GetStats",
+                        "ordinal":  45
+                    },
+                    {
+                        "name":  "Kongor_NativeGuard_PredictivePathing_SetConfig",
+                        "ordinal":  46
+                    },
+                    {
+                        "name":  "Kongor_NativeGuard_PurgeFrontEndTextures",
+                        "ordinal":  47
+                    },
+                    {
+                        "name":  "Kongor_NativeGuard_GetTextureSlotUsage",
+                        "ordinal":  48
+                    },
+                    {
+                        "name":  "Kongor_NativeGuard_AobScan",
+                        "ordinal":  49
+                    },
+                    {
+                        "name":  "Kongor_NativeGuard_ConfigureMxcsrFloatDeterminism",
+                        "ordinal":  50
+                    },
+                    {
+                        "name":  "Kongor_NativeGuard_GetMxcsr",
+                        "ordinal":  51
+                    },
+                    {
+                        "name":  "Kongor_NativeGuard_GetSubTickQueueDepth",
+                        "ordinal":  52
+                    },
+                    {
+                        "name":  "Kongor_NativeGuard_IsAvx2Supported",
+                        "ordinal":  53
+                    },
+                    {
+                        "name":  "Kongor_NativeGuard_SimdRayPacket8_IntersectAABB",
+                        "ordinal":  54
+                    },
+                    {
+                        "name":  "Kongor_NativeGuard_SimdRayPacket8_BatchTrace",
+                        "ordinal":  55
+                    },
+                    {
+                        "name":  "Kongor_NativeGuard_CaptureStackTrace",
+                        "ordinal":  56
+                    },
+                    {
+                        "name":  "Kongor_NativeGuard_HookToggle",
+                        "ordinal":  57
+                    },
+                    {
+                        "name":  "Kongor_NativeGuard_GetHookStatusJson",
+                        "ordinal":  58
+                    },
+                    {
+                        "name":  "Kongor_NativeGuard_RegisterTestPatchSite",
+                        "ordinal":  59
+                    },
+                    {
+                        "name":  "Kongor_NativeGuard_SetSimulatedThreadRip",
+                        "ordinal":  60
+                    },
+                    {
+                        "name":  "Kongor_NativeGuard_FmaRoundToOdd_f32",
+                        "ordinal":  61
+                    },
+                    {
+                        "name":  "Kongor_NativeGuard_VerifyFmaLockstepOracle",
+                        "ordinal":  62
+                    },
+                    {
+                        "name":  "Kongor_NativeGuard_PeekStructJson",
+                        "ordinal":  63
+                    },
+                    {
+                        "name":  "Kongor_NativeGuard_ValidateWidgetPointer",
+                        "ordinal":  64
+                    }
+                ],
+    "pipe_opcodes":  [
+                         "0X0001",
+                         "0X0002",
+                         "0X0003",
+                         "0X0005",
+                         "0X0007",
+                         "0X0009",
+                         "0X000A",
+                         "0X000E",
+                         "0X0010",
+                         "0X0012",
+                         "0X0014",
+                         "0X0021",
+                         "0X0023",
+                         "0X0025",
+                         "0X0027",
+                         "0X0030",
+                         "0X0031",
+                         "0X0032",
+                         "0X0040",
+                         "0X0041",
+                         "0X0050",
+                         "0X0051",
+                         "0X0060",
+                         "0X0062",
+                         "0X0070",
+                         "0X0071",
+                         "0X0072",
+                         "0X0080"
+                     ],
+    "hook_status_top_keys":  [
+                                 "bootSentinelTrips",
+                                 "groups",
+                                 "regionSnapshots",
+                                 "registeredSites",
+                                 "ripHazardAborts",
+                                 "safeMode",
+                                 "safePointSwaps",
+                                 "signatureMismatches",
+                                 "sites",
+                                 "success"
+                             ],
+    "hook_status_groups":  [
+                               "atob",
+                               "prewarm",
+                               "seh",
+                               "sleep",
+                               "vfs"
+                           ]
+}

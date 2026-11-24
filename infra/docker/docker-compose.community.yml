@@ -1,0 +1,38 @@
+services:
+  compel-dedicated:
+    build:
+      context: ../..
+      dockerfile: infra/docker/Dockerfile.dedicated
+    image: projectkongor/compel-dedicated:latest
+    container_name: compel-dedicated-server
+    restart: unless-stopped
+    network_mode: host
+    environment:
+      # Number of dedicated server worker instances (1-100)
+      - COMPEL_INSTANCES=2
+      # HostPriorityMode:
+      #   Background: BelowNormal / nice +10 / cpu.weight = 50 (leaves host completely untouched)
+      #   HighPriority: High / nice -10 / cpu.weight = 1000 (best for dedicated server boxes & tournaments)
+      #   Adaptive: Automatically shifts to Background when local player client is running
+      - COMPEL_PRIORITY_MODE=Background
+      - HOST_USERNAME=${HOST_USERNAME:-YOUR_HOST_USERNAME}
+      - HOST_PASSWORD=${HOST_PASSWORD:-YOUR_HOST_PASSWORD}
+      - COMPEL_LOCATION=${COMPEL_LOCATION:-USE}
+      - COMPEL_SERVER_NAME_PREFIX=${COMPEL_SERVER_NAME_PREFIX:-^c[DOCKER] ^oKONGOR ARENA ^r}
+      - COMPEL_PORT_RANGE_OFFSET=${COMPEL_PORT_RANGE_OFFSET:-100}
+      - COMPEL_CONTROL_PLANE_PORT=${COMPEL_CONTROL_PLANE_PORT:-11334}
+      - COMPEL_GATEWAY=${COMPEL_GATEWAY:-AUTO}
+      - MASTER_SERVER_ADDRESS=${MASTER_SERVER_ADDRESS:-http://host.docker.internal:55555}
+      - COMPEL_USE_PROXY=false
+      - COMPEL_AUTHENTICATION_TOKEN=${COMPEL_AUTHENTICATION_TOKEN:-YOUR_COMPEL_AUTH_TOKEN}
+    volumes:
+      # Mount host match server distribution directory containing hon_x64 game files
+      - /opt/hon/server:/app/server:ro
+      # Mount persistent runtime artefacts directory for match replays and logs
+      - "${REPO_ROOT_SLASH:-../..}/artifacts/runtime:/app/artefacts:rw"
+    cap_add:
+      - SYS_NICE
+    ulimits:
+      nofile:
+        soft: 65536
+        hard: 65536

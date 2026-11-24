@@ -1,0 +1,721 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="using:NEXUS.ControlPanel.GUI.ViewModels"
+             xmlns:controls="using:NEXUS.ControlPanel.GUI.Controls"
+             mc:Ignorable="d" d:DesignWidth="1050" d:DesignHeight="850"
+             x:Class="NEXUS.ControlPanel.GUI.Views.GameServersView"
+             x:DataType="vm:GameServersViewModel">
+
+    <Grid RowDefinitions="Auto,*" Margin="20">
+
+        <!-- Top Header: Mode Switcher & Server Branding Bar -->
+        <StackPanel Grid.Row="0" Spacing="10" Margin="0,0,0,14">
+            <!-- Top Navigation View Mode Switcher -->
+            <Border Background="#0F172A" BorderBrush="#1E293B" BorderThickness="1" CornerRadius="10"
+                    Padding="4">
+                <Grid ColumnDefinitions="*,*">
+                    <Button Grid.Column="0" AutomationProperties.AutomationId="TabFleetOverview"
+                            Command="{Binding SwitchToFleetModeCommand}"
+                            Background="{Binding FleetTabBackground}"
+                            BorderBrush="{Binding FleetTabBorderBrush}"
+                            BorderThickness="1" CornerRadius="8"
+                            HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"
+                            Padding="14,10" Margin="0,0,4,0">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <TextBlock Text="🌐" FontSize="14" />
+                            <TextBlock Text="Fleet Overview &amp; Grid" FontWeight="Bold" FontSize="13"
+                                       Foreground="{Binding FleetTabForeground}" />
+                        </StackPanel>
+                    </Button>
+
+                    <Button Grid.Column="1" AutomationProperties.AutomationId="TabChatManager"
+                            Command="{Binding SwitchToChatModeCommand}"
+                            Background="{Binding ChatTabBackground}"
+                            BorderBrush="{Binding ChatTabBorderBrush}"
+                            BorderThickness="1" CornerRadius="8"
+                            HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"
+                            Padding="14,10" Margin="4,0,0,0">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <TextBlock Text="💬" FontSize="14" />
+                            <TextBlock Text="Game Server Chat Manager" FontWeight="Bold" FontSize="13"
+                                       Foreground="{Binding ChatTabForeground}" />
+                            <Border Background="#064E3B" BorderBrush="#10B981" BorderThickness="1" CornerRadius="6"
+                                    Padding="6,2" Margin="4,0,0,0">
+                                <TextBlock Text="{Binding TotalActiveInstances, StringFormat='{}{0} Active'}" FontSize="10.5"
+                                           FontWeight="Bold" Foreground="#10B981" />
+                            </Border>
+                        </StackPanel>
+                    </Button>
+                </Grid>
+            </Border>
+
+            <!-- Server Identity & Branding Configuration Bar -->
+            <Border Background="#0B0F17" BorderBrush="#1E293B" BorderThickness="1" CornerRadius="8"
+                    Padding="12,8">
+                <Grid ColumnDefinitions="Auto,*,Auto,Auto">
+                    <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center" Margin="0,0,12,0">
+                        <TextBlock Text="🏷️" FontSize="13" VerticalAlignment="Center" />
+                        <TextBlock Text="SERVER NAME PREFIX:" FontSize="10.5" FontWeight="Bold" Foreground="#94A3B8" VerticalAlignment="Center" />
+                    </StackPanel>
+
+                    <TextBox Grid.Column="1" Text="{Binding CustomServerNamePrefix}"
+                             Watermark="e.g. ^pDONUT ^oARENA (Supports ^p, ^o, ^y, ^c, ^g, ^r, ^w caret colors)"
+                             FontSize="12" Padding="8,5" Margin="0,0,12,0" />
+
+                    <!-- Live Caret Color Preview Badge -->
+                    <Border Grid.Column="2" Background="#0F172A" BorderBrush="#334155" BorderThickness="1"
+                            CornerRadius="6" Padding="10,4" Margin="0,0,12,0" VerticalAlignment="Center">
+                        <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                            <TextBlock Text="Preview:" FontSize="9.5" FontWeight="Bold" Foreground="#64748B" VerticalAlignment="Center" />
+                            <TextBlock controls:K2CaretText.Text="{Binding CustomServerNamePrefix}"
+                                       FontSize="12" FontWeight="Black" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Apply Button & Status -->
+                    <StackPanel Grid.Column="3" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                        <Button Classes="primary" Command="{Binding ApplyServerNamePrefixCommand}" Padding="12,5">
+                            <TextBlock Text="Apply &amp; Save" FontWeight="Bold" FontSize="11" />
+                        </Button>
+                        <TextBlock Text="{Binding ServerNameApplyFeedback}" FontSize="10.5" Foreground="#10B981"
+                                   VerticalAlignment="Center" TextTrimming="CharacterEllipsis" MaxWidth="220" />
+                    </StackPanel>
+                </Grid>
+            </Border>
+        </StackPanel>
+
+        <!-- ========================================================================= -->
+        <!-- MODE 1: FLEET OVERVIEW & GRID VIEW                                        -->
+        <!-- ========================================================================= -->
+        <ScrollViewer Grid.Row="1" IsVisible="{Binding !IsChatModeActive}" VerticalScrollBarVisibility="Auto">
+            <StackPanel Spacing="16">
+
+                <!-- Fleet Overview & Broadcast Card -->
+                <Border Classes="card">
+                    <StackPanel Spacing="14">
+
+                        <!-- Title & Header -->
+                        <Grid ColumnDefinitions="*,Auto">
+                            <StackPanel Grid.Column="0" Spacing="4">
+                                <TextBlock Text="GAME SERVER FLEET CONTROL" FontSize="11" FontWeight="Bold"
+                                           Foreground="#00F0FF" LetterSpacing="1.5" />
+                                <TextBlock Text="Distributed COMPEL Server Manager" FontSize="20" FontWeight="Black"
+                                           Foreground="#F8FAFC" />
+                                <TextBlock Text="{Binding FleetStatusMessage}" FontSize="12" Foreground="#94A3B8" />
+                            </StackPanel>
+
+                            <!-- Refresh & Add Host Buttons -->
+                            <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8" VerticalAlignment="Top">
+                                <Button Classes="primary" Command="{Binding PopOutChatCommand}"
+                                        AutomationProperties.AutomationId="BtnFleetOpenCompelGui"
+                                        ToolTip.Tip="Pop out or focus the live multi-server Game Server Chat Manager window"
+                                        Padding="10,6">
+                                    <StackPanel Orientation="Horizontal" Spacing="6">
+                                        <TextBlock Text="↗" FontWeight="Bold" />
+                                        <TextBlock Text="{Binding PopOutChatButtonLabel}" FontWeight="SemiBold" />
+                                    </StackPanel>
+                                </Button>
+
+                                <Button Classes="secondary" Command="{Binding LoadAndRefreshFleetCommand}"
+                                        IsEnabled="{Binding !IsRefreshing}" Padding="10,6">
+                                    <StackPanel Orientation="Horizontal" Spacing="6">
+                                        <TextBlock Text="🔄" />
+                                        <TextBlock Text="Refresh Fleet" FontWeight="SemiBold" />
+                                    </StackPanel>
+                                </Button>
+
+                                <Button Classes="secondary" Command="{Binding ToggleContainerLauncherCommand}" Padding="10,6">
+                                    <StackPanel Orientation="Horizontal" Spacing="6">
+                                        <TextBlock Text="🐳" />
+                                        <TextBlock Text="Container Host" FontWeight="SemiBold" />
+                                    </StackPanel>
+                                </Button>
+
+                                <Button Classes="purple" Command="{Binding ToggleAddHostDialogCommand}" Padding="10,6">
+                                    <StackPanel Orientation="Horizontal" Spacing="6">
+                                        <TextBlock Text="➕" />
+                                        <TextBlock Text="Add Remote Host" FontWeight="SemiBold" />
+                                    </StackPanel>
+                                </Button>
+                            </StackPanel>
+                        </Grid>
+
+                        <!-- Fleet Metric Stats Cards -->
+                        <Grid ColumnDefinitions="*,*,*,*" Margin="0,4,0,4">
+                            <!-- Stat 1: Total Hosts -->
+                            <Border Grid.Column="0" Background="#0F172A" BorderBrush="#1E293B" BorderThickness="1"
+                                    CornerRadius="8" Padding="12,10" Margin="0,0,6,0">
+                                <StackPanel Spacing="2">
+                                    <TextBlock Text="TOTAL HOSTS" FontSize="9" FontWeight="Bold" Foreground="#94A3B8"
+                                               LetterSpacing="1" />
+                                    <TextBlock Text="{Binding TotalHosts}" FontSize="20" FontWeight="Black"
+                                               Foreground="#00F0FF" />
+                                </StackPanel>
+                            </Border>
+
+                            <!-- Stat 2: Online Nodes -->
+                            <Border Grid.Column="1" Background="#0F172A" BorderBrush="#1E293B" BorderThickness="1"
+                                    CornerRadius="8" Padding="12,10" Margin="3,0,3,0">
+                                <StackPanel Spacing="2">
+                                    <TextBlock Text="ONLINE NODES" FontSize="9" FontWeight="Bold" Foreground="#94A3B8"
+                                               LetterSpacing="1" />
+                                    <TextBlock Text="{Binding OnlineHosts}" FontSize="20" FontWeight="Black"
+                                               Foreground="#10B981" />
+                                </StackPanel>
+                            </Border>
+
+                            <!-- Stat 3: Active Instances -->
+                            <Border Grid.Column="2" Background="#0F172A" BorderBrush="#1E293B" BorderThickness="1"
+                                    CornerRadius="8" Padding="12,10" Margin="3,0,3,0">
+                                <StackPanel Spacing="2">
+                                    <TextBlock Text="ACTIVE INSTANCES" FontSize="9" FontWeight="Bold" Foreground="#94A3B8"
+                                               LetterSpacing="1" />
+                                    <TextBlock Text="{Binding TotalActiveInstances}" FontSize="20" FontWeight="Black"
+                                               Foreground="#F59E0B" />
+                                </StackPanel>
+                            </Border>
+
+                            <!-- Stat 4: Avg Ping -->
+                            <Border Grid.Column="3" Background="#0F172A" BorderBrush="#1E293B" BorderThickness="1"
+                                    CornerRadius="8" Padding="12,10" Margin="6,0,0,0">
+                                <StackPanel Spacing="2">
+                                    <TextBlock Text="AVG LATENCY" FontSize="9" FontWeight="Bold" Foreground="#94A3B8"
+                                               LetterSpacing="1" />
+                                    <TextBlock Text="{Binding AveragePingMs, StringFormat='{}{0} ms'}" FontSize="20"
+                                               FontWeight="Black" Foreground="#A855F7" />
+                                </StackPanel>
+                            </Border>
+                        </Grid>
+
+                        <!-- Fleet Broadcast Action Bar -->
+                        <Border Background="#0F172A" BorderBrush="#334155" BorderThickness="1" CornerRadius="10"
+                                Padding="12,10">
+                            <Grid ColumnDefinitions="Auto,*">
+                                <StackPanel Grid.Column="0" VerticalAlignment="Center" Margin="0,0,16,0">
+                                    <TextBlock Text="FLEET BROADCAST:" FontSize="10" FontWeight="Bold" Foreground="#94A3B8"
+                                               LetterSpacing="1" />
+                                </StackPanel>
+
+                                <WrapPanel Grid.Column="1" Orientation="Horizontal">
+                                    <Button Classes="success" Command="{Binding StartAllCommand}"
+                                            IsEnabled="{Binding !IsRefreshing}" Margin="0,0,8,0" Padding="10,6">
+                                        <TextBlock Text="⚡ Start All Instances" FontSize="11" FontWeight="Bold" />
+                                    </Button>
+
+                                    <Button Classes="danger" Command="{Binding StopAllCommand}"
+                                            IsEnabled="{Binding !IsRefreshing}" Margin="0,0,8,0" Padding="10,6">
+                                        <TextBlock Text="🛑 Stop All Instances" FontSize="11" FontWeight="Bold" />
+                                    </Button>
+
+                                    <Button Classes="secondary" Command="{Binding RestartAllCommand}"
+                                            IsEnabled="{Binding !IsRefreshing}" Margin="0,0,8,0" Padding="10,6">
+                                        <TextBlock Text="🔄 Restart All" FontSize="11" FontWeight="Bold" />
+                                    </Button>
+
+                                    <Button Classes="purple" Command="{Binding SyncAllCommand}"
+                                            IsEnabled="{Binding !IsRefreshing}" Padding="10,6">
+                                        <TextBlock Text="📥 Broadcast CDN Sync" FontSize="11" FontWeight="Bold" />
+                                    </Button>
+                                </WrapPanel>
+                            </Grid>
+                        </Border>
+
+                    </StackPanel>
+                </Border>
+
+                <!-- Cloud-Native Dedicated Server Container Launcher Hub Card (Collapsible) -->
+                <Border Classes="card" IsVisible="{Binding ShowContainerLauncherDialog}" BorderBrush="#00F0FF" BorderThickness="1.5">
+                    <StackPanel Spacing="14">
+                        <Grid ColumnDefinitions="*,Auto,Auto">
+                            <StackPanel Grid.Column="0" Spacing="2">
+                                <TextBlock Text="CLOUD-NATIVE CONTAINER HUB" FontSize="11" FontWeight="Bold"
+                                           Foreground="#00F0FF" LetterSpacing="1.2" />
+                                <TextBlock Text="{Binding ContainerLauncherModalTitle}" FontSize="16" FontWeight="Black"
+                                           Foreground="#F8FAFC" />
+                                <TextBlock Text="Launch dedicated servers directly or copy auto-filled commands for Docker, Minikube, and Kubernetes."
+                                           FontSize="11.5" Foreground="#94A3B8" />
+                            </StackPanel>
+
+                            <!-- Platform & Priority Selection ComboBoxes -->
+                            <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="10" VerticalAlignment="Center" Margin="0,0,12,0">
+                                <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                                    <TextBlock Text="Target:" FontSize="11" FontWeight="Bold" Foreground="#94A3B8" VerticalAlignment="Center" />
+                                    <ComboBox ItemsSource="{Binding ContainerPlatforms}"
+                                              SelectedItem="{Binding SelectedContainerPlatform}"
+                                              Width="130" />
+                                </StackPanel>
+
+                                <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                                    <TextBlock Text="Priority:" FontSize="11" FontWeight="Bold" Foreground="#00F0FF" VerticalAlignment="Center" />
+                                    <ComboBox ItemsSource="{Binding CompelPriorityModes}"
+                                              SelectedItem="{Binding CompelPriorityMode}"
+                                              Width="140" />
+                                </StackPanel>
+
+                                <CheckBox IsChecked="{Binding IsQueueArcadeContainerMode}"
+                                          Content="🕹️ Queue Arcade"
+                                          FontSize="11.5"
+                                          FontWeight="Bold"
+                                          Foreground="#FDE047"
+                                          VerticalAlignment="Center" />
+                            </StackPanel>
+
+                            <!-- Close / Collapse Button -->
+                            <Button Grid.Column="2" Classes="secondary" Command="{Binding ToggleContainerLauncherCommand}" Padding="8,4" VerticalAlignment="Center">
+                                <TextBlock Text="✕" FontWeight="Bold" FontSize="12" />
+                            </Button>
+                        </Grid>
+
+                        <!-- Generated Command Terminal Box -->
+                        <Border Background="#090D16" BorderBrush="#1E293B" BorderThickness="1" CornerRadius="8" Padding="12">
+                            <StackPanel Spacing="8">
+                                <Grid ColumnDefinitions="*,Auto">
+                                    <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                                        <TextBlock Text="TERMINAL COMMAND PREVIEW" FontSize="10" FontWeight="Bold" Foreground="#64748B" LetterSpacing="1" />
+                                        <Border Background="#064E3B" CornerRadius="4" Padding="6,1" VerticalAlignment="Center">
+                                            <TextBlock Text="{Binding CompelPriorityMode, StringFormat='{}Mode: {0}'}" FontSize="10" FontWeight="Bold" Foreground="#10B981" />
+                                        </Border>
+                                    </StackPanel>
+
+                                    <!-- Reveal Secrets in Command Checkbox -->
+                                    <CheckBox Grid.Column="1" Content="Reveal Secrets on Screen"
+                                              IsChecked="{Binding RevealContainerSecretsInCommand}"
+                                              FontSize="11" Foreground="#94A3B8" />
+                                </Grid>
+
+                                <TextBox Text="{Binding GeneratedContainerCommand}"
+                                         IsReadOnly="True"
+                                         AcceptsReturn="True"
+                                         FontFamily="Consolas, Cascadia Code, Courier New, monospace"
+                                         FontSize="12"
+                                         Background="#040711"
+                                         Foreground="#38BDF8"
+                                         BorderBrush="#1E293B"
+                                         MinHeight="130"
+                                         TextWrapping="Wrap" />
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Action Bar: Launch, Stop, Build, Secrets Vault, Copy -->
+                        <Grid ColumnDefinitions="Auto,*,Auto">
+                            <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="8">
+                                <Button Classes="primary" Command="{Binding LaunchContainerInDockerCommand}"
+                                        IsEnabled="{Binding !IsLaunchingContainer}" Padding="14,8"
+                                        ToolTip.Tip="Launch the dedicated game server in Docker Desktop with vault credentials">
+                                    <StackPanel Orientation="Horizontal" Spacing="6">
+                                        <TextBlock Text="🚀" FontSize="13" />
+                                        <TextBlock Text="Launch in Docker" FontWeight="Bold" FontSize="12" />
+                                    </StackPanel>
+                                </Button>
+
+                                <Button Classes="purple" Command="{Binding DeployK3sAgonesCommand}"
+                                        IsEnabled="{Binding !IsLaunchingContainer}" Padding="14,8"
+                                        ToolTip.Tip="Deploy or roll out dedicated game server fleet to K3s + Agones cluster">
+                                    <StackPanel Orientation="Horizontal" Spacing="6">
+                                        <TextBlock Text="☸️" FontSize="13" />
+                                        <TextBlock Text="Deploy to K3s" FontWeight="Bold" FontSize="12" />
+                                    </StackPanel>
+                                </Button>
+
+                                <Button Classes="secondary" Command="{Binding StopDockerContainerCommand}"
+                                        Padding="12,8" ToolTip.Tip="Stop and remove running test container">
+                                    <StackPanel Orientation="Horizontal" Spacing="6">
+                                        <TextBlock Text="🛑" FontSize="13" />
+                                        <TextBlock Text="Stop Container" FontSize="12" />
+                                    </StackPanel>
+                                </Button>
+
+                                <Button Classes="secondary" Command="{Binding BuildDockerImageCommand}"
+                                        IsEnabled="{Binding !IsLaunchingContainer}" Padding="12,8"
+                                        ToolTip.Tip="Build projectkongor/compel-dedicated:latest Docker image from source">
+                                    <StackPanel Orientation="Horizontal" Spacing="6">
+                                        <TextBlock Text="🔨" FontSize="13" />
+                                        <TextBlock Text="Build Image First" FontSize="12" />
+                                    </StackPanel>
+                                </Button>
+                            </StackPanel>
+
+                            <!-- Configure in Vault shortcut and Copy Command Button -->
+                            <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="8">
+                                <Button Classes="secondary" Command="{Binding NavigateToSecretsConfigCommand}"
+                                        Padding="12,8" ToolTip.Tip="Open Secrets &amp; Config to configure accounts, tokens, and advanced settings">
+                                    <StackPanel Orientation="Horizontal" Spacing="6">
+                                        <TextBlock Text="⚙️" FontSize="13" />
+                                        <TextBlock Text="Secrets Vault" FontWeight="SemiBold" FontSize="12" />
+                                    </StackPanel>
+                                </Button>
+
+                                <Button Classes="secondary" Command="{Binding CopyContainerCommandCommand}"
+                                        Padding="14,8" ToolTip.Tip="Copy executable command with real secrets to clipboard">
+                                    <StackPanel Orientation="Horizontal" Spacing="6">
+                                        <TextBlock Text="📋" FontSize="13" />
+                                        <TextBlock Text="Copy Command" FontWeight="Bold" FontSize="12" />
+                                    </StackPanel>
+                                </Button>
+                            </StackPanel>
+                        </Grid>
+
+                        <!-- Live Status / Feedback Text -->
+                        <TextBlock Text="{Binding ContainerLaunchFeedback}"
+                                   IsVisible="{Binding ContainerLaunchFeedback, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
+                                   FontSize="11.5" FontWeight="SemiBold" Foreground="#38BDF8" />
+                    </StackPanel>
+                </Border>
+
+                <!-- Add Custom Remote Host Dialog Card (Collapsible) -->
+                <Border Classes="card" IsVisible="{Binding ShowAddHostDialog}" BorderBrush="#A855F7" BorderThickness="1.5">
+                    <StackPanel Spacing="12">
+                        <TextBlock Text="CONNECT NEW REMOTE COMPEL HOST" FontSize="12" FontWeight="Bold"
+                                   Foreground="#A855F7" LetterSpacing="1" />
+
+                        <Grid ColumnDefinitions="*,*,Auto,Auto" RowDefinitions="Auto" Margin="0,4">
+                            <StackPanel Grid.Row="0" Grid.Column="0" Margin="0,0,8,0" Spacing="4">
+                                <TextBlock Text="Host Label" FontSize="10" Foreground="#94A3B8" FontWeight="Bold" />
+                                <TextBox Text="{Binding NewHostName}" Watermark="e.g. EU-Node-01" />
+                            </StackPanel>
+
+                            <StackPanel Grid.Row="0" Grid.Column="1" Margin="0,0,8,0" Spacing="4">
+                                <TextBlock Text="IP / Hostname" FontSize="10" Foreground="#94A3B8" FontWeight="Bold" />
+                                <TextBox Text="{Binding NewHostAddress}" Watermark="e.g. 192.168.1.50 or host.domain" />
+                            </StackPanel>
+
+                            <StackPanel Grid.Row="0" Grid.Column="2" Margin="0,0,8,0" Spacing="4" Width="90">
+                                <TextBlock Text="Control Port" FontSize="10" Foreground="#94A3B8" FontWeight="Bold" />
+                                <TextBox Text="{Binding NewHostPort}" />
+                            </StackPanel>
+
+                            <StackPanel Grid.Row="0" Grid.Column="3" Spacing="4" Width="90">
+                                <TextBlock Text="Region" FontSize="10" Foreground="#94A3B8" FontWeight="Bold" />
+                                <TextBox Text="{Binding NewHostLocation}" Watermark="USE / EU" />
+                            </StackPanel>
+                        </Grid>
+
+                        <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Right" Margin="0,4,0,0">
+                            <Button Classes="secondary" Command="{Binding ToggleAddHostDialogCommand}" Padding="12,6">
+                                <TextBlock Text="Cancel" />
+                            </Button>
+                            <Button Classes="purple" Command="{Binding SaveNewHostCommand}" Padding="16,6">
+                                <TextBlock Text="Connect Host" FontWeight="Bold" />
+                            </Button>
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
+
+                <!-- Search & Region Filters -->
+                <Grid ColumnDefinitions="*,Auto">
+                    <TextBox Grid.Column="0" Text="{Binding SearchQuery}"
+                             Watermark="🔍 Search hosts by name, IP, or location..."
+                             Margin="0,0,12,0" />
+
+                    <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                        <TextBlock Text="Region:" FontSize="11" Foreground="#94A3B8" VerticalAlignment="Center"
+                                   Margin="0,0,4,0" />
+                        <ComboBox ItemsSource="{Binding Locations}" SelectedValue="{Binding SelectedLocationFilter}"
+                                  Width="110">
+                            <ComboBox.ItemTemplate>
+                                <DataTemplate>
+                                    <TextBlock controls:K2CaretText.Text="{Binding}" FontSize="11" FontWeight="Bold" />
+                                </DataTemplate>
+                            </ComboBox.ItemTemplate>
+                        </ComboBox>
+                    </StackPanel>
+                </Grid>
+
+                <!-- Game Server Hosts Grid / Cards -->
+                <ItemsControl ItemsSource="{Binding Hosts}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate DataType="vm:GameServerHostItemViewModel">
+                            <Border Classes="card" Margin="0,0,0,12" Padding="14">
+                                <StackPanel Spacing="10">
+
+                                    <!-- Row 1: Header (Name, Region Pill, IP:Port, Ping Badge) -->
+                                    <Grid ColumnDefinitions="*,Auto">
+                                        <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="10"
+                                                    VerticalAlignment="Center">
+                                            <TextBlock Text="{Binding Name}" FontSize="15" FontWeight="Bold"
+                                                       Foreground="#F8FAFC" />
+
+                                            <!-- Hosting Environment Badge (💻 LOCAL / 🐳 DOCKER / ☸️ K3S / ☁️ HOSTED) -->
+                                            <Border Background="{Binding HostingBadgeBackground}" BorderBrush="{Binding HostingBadgeColor}" BorderThickness="1"
+                                                    CornerRadius="4" Padding="6,2">
+                                                <TextBlock Text="{Binding HostingBadgeText}" FontSize="10" FontWeight="Black"
+                                                           Foreground="{Binding HostingBadgeColor}" />
+                                            </Border>
+
+                                            <!-- Region Badge -->
+                                            <Border Background="#1E293B" BorderBrush="#334155" BorderThickness="1"
+                                                    CornerRadius="4" Padding="6,2">
+                                                <TextBlock Text="{Binding Location}" FontSize="10" FontWeight="Black"
+                                                           Foreground="#00F0FF" />
+                                            </Border>
+
+                                            <!-- Endpoint Address -->
+                                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                                <TextBlock Text="{Binding HostAddress}" FontSize="12" Foreground="#94A3B8" />
+                                                <TextBlock Text="{Binding Port, StringFormat=':{0}'}" FontSize="12" Foreground="#64748B" />
+                                            </StackPanel>
+                                        </StackPanel>
+
+                                        <!-- Right: Latency & State Badges -->
+                                        <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8">
+                                            <Border Background="#0F172A" BorderBrush="{Binding PingColor}"
+                                                    BorderThickness="1" CornerRadius="6" Padding="8,3" MinWidth="68" HorizontalAlignment="Center">
+                                                <StackPanel Orientation="Horizontal" Spacing="4" HorizontalAlignment="Center">
+                                                    <TextBlock Text="📶" FontSize="9" />
+                                                    <TextBlock Text="{Binding PingDisplay}" FontSize="10.5" FontFeatures="tnum" VerticalAlignment="Center"
+                                                               FontWeight="Bold" Foreground="{Binding PingColor}" />
+                                                </StackPanel>
+                                            </Border>
+
+                                            <Border Background="{Binding StatusBadgeBackground}"
+                                                    BorderBrush="{Binding StatusColor}" BorderThickness="1" MinWidth="84" HorizontalAlignment="Center"
+                                                    CornerRadius="6" Padding="8,3">
+                                                <TextBlock Text="{Binding StatusText}" FontSize="10.5" FontWeight="Bold" TextAlignment="Center" HorizontalAlignment="Center"
+                                                           Foreground="{Binding StatusColor}" />
+                                            </Border>
+                                        </StackPanel>
+                                    </Grid>
+
+                                    <!-- Row 2: Metrics Grid -->
+                                    <Border Background="#0F172A" BorderBrush="#1E293B" BorderThickness="1"
+                                            CornerRadius="8" Padding="12,8">
+                                        <Grid ColumnDefinitions="*,1.2*,*,*,*,*">
+                                            <StackPanel Grid.Column="0" Spacing="2">
+                                                <TextBlock Text="INSTANCES" FontSize="8.5" FontWeight="Bold" Foreground="#64748B" />
+                                                <TextBlock Text="{Binding Instances, StringFormat='{}{0} Slaves'}" FontSize="11.5" FontWeight="Bold" Foreground="#F8FAFC" />
+                                            </StackPanel>
+
+                                            <StackPanel Grid.Column="1" Spacing="2">
+                                                <TextBlock Text="SERVER STATE" FontSize="8.5" FontWeight="Bold" Foreground="#64748B" />
+                                                <TextBlock Text="{Binding ServerStateText}" FontSize="11.5" FontWeight="Bold" Foreground="{Binding ServerStateColor}" />
+                                            </StackPanel>
+
+                                            <StackPanel Grid.Column="2" Spacing="2">
+                                                <TextBlock Text="PORTS" FontSize="8.5" FontWeight="Bold" Foreground="#64748B" />
+                                                <TextBlock Text="{Binding PortRangeText}" FontSize="11.5" FontWeight="Bold" Foreground="#F8FAFC" />
+                                            </StackPanel>
+
+                                            <StackPanel Grid.Column="3" Spacing="2">
+                                                <TextBlock Text="DISTRIBUTION" FontSize="8.5" FontWeight="Bold" Foreground="#64748B" />
+                                                <TextBlock Text="{Binding DistributionVersion}" FontSize="11.5" FontWeight="Bold" Foreground="#00F0FF" />
+                                            </StackPanel>
+
+                                            <StackPanel Grid.Column="4" Spacing="2">
+                                                <TextBlock Text="CDN STATE" FontSize="8.5" FontWeight="Bold" Foreground="#64748B" />
+                                                <TextBlock Text="{Binding SyncState}" FontSize="11.5" FontWeight="Bold" Foreground="#10B981" />
+                                            </StackPanel>
+
+                                            <StackPanel Grid.Column="5" Spacing="2">
+                                                <TextBlock Text="UPTIME" FontSize="8.5" FontWeight="Bold" Foreground="#64748B" />
+                                                <TextBlock Text="{Binding UptimeText}" FontSize="11.5" FontWeight="Bold" Foreground="#A855F7" />
+                                            </StackPanel>
+                                        </Grid>
+                                    </Border>
+
+                                    <!-- Row 3: Action Toolbar -->
+                                    <Grid ColumnDefinitions="Auto,*">
+                                        <WrapPanel Grid.Column="0" Orientation="Horizontal">
+                                            <Button Classes="success" Command="{Binding StartCommand}"
+                                                    IsEnabled="{Binding !IsBusy}" Padding="10,5" Margin="0,0,8,4">
+                                                <TextBlock Text="▶ Start" FontSize="11" FontWeight="SemiBold" />
+                                            </Button>
+
+                                            <Button Classes="danger" Command="{Binding StopCommand}"
+                                                    IsEnabled="{Binding !IsBusy}" Padding="10,5" Margin="0,0,8,4">
+                                                <TextBlock Text="⏹ Stop" FontSize="11" FontWeight="SemiBold" />
+                                            </Button>
+
+                                            <Button Classes="secondary" Command="{Binding RestartCommand}"
+                                                    IsEnabled="{Binding !IsBusy}" Padding="10,5" Margin="0,0,8,4">
+                                                <TextBlock Text="🔄 Restart" FontSize="11" FontWeight="SemiBold" />
+                                            </Button>
+
+                                            <Button Classes="purple" Command="{Binding SyncCommand}"
+                                                    IsEnabled="{Binding !IsBusy}" Padding="10,5" Margin="0,0,8,4">
+                                                <TextBlock Text="📥 Sync CDN" FontSize="11" FontWeight="SemiBold" />
+                                            </Button>
+
+                                            <Button Classes="secondary" Command="{Binding RefreshCommand}"
+                                                    IsEnabled="{Binding !IsBusy}" Padding="10,5" Margin="0,0,8,4">
+                                                <TextBlock Text="🔄 Refresh" FontSize="11" FontWeight="SemiBold" />
+                                            </Button>
+
+                                            <Button Classes="secondary" Command="{Binding ToggleExpandCommand}"
+                                                    Padding="10,5" Margin="0,0,8,4">
+                                                <TextBlock Text="{Binding ExpandButtonText}" FontSize="11"
+                                                           FontWeight="SemiBold" Foreground="#38BDF8" />
+                                            </Button>
+                                        </WrapPanel>
+
+                                        <TextBlock Grid.Column="1" Text="{Binding LastActionResult}" FontSize="11"
+                                                   Foreground="#38BDF8" VerticalAlignment="Center"
+                                                   HorizontalAlignment="Right" Margin="8,0,0,4"
+                                                   TextTrimming="CharacterEllipsis" />
+                                    </Grid>
+
+                                    <!-- Row 4: Expanded Instance Details Drawer with 💬 Chat Link -->
+                                    <Border IsVisible="{Binding IsExpanded}" Background="#090D16" BorderBrush="#1E293B"
+                                            BorderThickness="1" CornerRadius="8" Padding="14,12" Margin="0,4,0,0">
+                                        <StackPanel Spacing="10">
+                                            <Grid ColumnDefinitions="*,Auto">
+                                                <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="10"
+                                                            VerticalAlignment="Center">
+                                                    <TextBlock Text="SLAVE INSTANCE MATRIX" FontSize="11" FontWeight="Bold"
+                                                               Foreground="#38BDF8" LetterSpacing="1" />
+                                                    <TextBlock Text="|" Foreground="#334155" />
+                                                    <TextBlock Text="{Binding ControlPlaneUrl, StringFormat='Control Plane: {0}'}"
+                                                               FontSize="10.5" Foreground="#64748B" />
+                                                </StackPanel>
+                                                <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8">
+                                                    <Border Background="#0F172A" BorderBrush="#334155" BorderThickness="1"
+                                                            CornerRadius="4" Padding="6,2">
+                                                        <TextBlock Text="{Binding PingResponderStatus, StringFormat='Ping: {0}'}"
+                                                                   FontSize="9.5" Foreground="#94A3B8" />
+                                                    </Border>
+                                                    <Border Background="#0F172A" BorderBrush="#334155" BorderThickness="1"
+                                                            CornerRadius="4" Padding="6,2">
+                                                        <TextBlock Text="{Binding ProxyStatus, StringFormat='Proxy: {0}'}"
+                                                                   FontSize="9.5" Foreground="#94A3B8" />
+                                                    </Border>
+                                                </StackPanel>
+                                            </Grid>
+
+                                            <!-- Table Header -->
+                                            <Border Background="#0F172A" BorderBrush="#1E293B" BorderThickness="1"
+                                                    CornerRadius="6" Padding="10,6">
+                                                <Grid ColumnDefinitions="50,1.2*,80,80,1.1*,1.1*,Auto">
+                                                    <TextBlock Grid.Column="0" Text="SLAVE" FontSize="9" FontWeight="Bold" Foreground="#64748B" />
+                                                    <TextBlock Grid.Column="1" Text="SERVER IDENTIFIER" FontSize="9" FontWeight="Bold" Foreground="#64748B" />
+                                                    <TextBlock Grid.Column="2" Text="GAME PORT" FontSize="9" FontWeight="Bold" Foreground="#64748B" />
+                                                    <TextBlock Grid.Column="3" Text="VOICE PORT" FontSize="9" FontWeight="Bold" Foreground="#64748B" />
+                                                    <TextBlock Grid.Column="4" Text="ENDPOINT (UDP)" FontSize="9" FontWeight="Bold" Foreground="#64748B" />
+                                                    <TextBlock Grid.Column="5" Text="RUNTIME STATUS" FontSize="9" FontWeight="Bold" Foreground="#64748B" />
+                                                    <TextBlock Grid.Column="6" Text="CONSOLE" FontSize="9" FontWeight="Bold" Foreground="#64748B" Width="75" TextAlignment="Center" />
+                                                </Grid>
+                                            </Border>
+
+                                            <!-- Instance Rows -->
+                                            <ItemsControl ItemsSource="{Binding InstancesList}">
+                                                <ItemsControl.ItemTemplate>
+                                                    <DataTemplate DataType="vm:GameServerInstanceDetailViewModel">
+                                                        <Border Background="#0B0F17" BorderBrush="#1E293B"
+                                                                BorderThickness="1" CornerRadius="6" Padding="10,8"
+                                                                Margin="0,2">
+                                                            <Grid ColumnDefinitions="50,1.2*,80,80,1.1*,1.1*,Auto">
+                                                                <TextBlock Grid.Column="0"
+                                                                           Text="{Binding InstanceTag}"
+                                                                           FontSize="11" FontWeight="Bold"
+                                                                           Foreground="#F8FAFC" VerticalAlignment="Center" />
+
+                                                                <TextBlock Grid.Column="1" Text="{Binding ServerName}"
+                                                                           FontSize="11" FontWeight="SemiBold"
+                                                                           Foreground="#00F0FF" VerticalAlignment="Center" />
+
+                                                                <Border Grid.Column="2" Background="#1E293B"
+                                                                        CornerRadius="4" Padding="6,2" MinWidth="84"
+                                                                        HorizontalAlignment="Left" VerticalAlignment="Center">
+                                                                    <TextBlock Text="{Binding GamePort}" FontSize="10.5"
+                                                                               FontWeight="Bold" Foreground="#F8FAFC" />
+                                                                </Border>
+
+                                                                <Border Grid.Column="3" Background="#1E293B"
+                                                                        CornerRadius="4" Padding="6,2" MinWidth="84"
+                                                                        HorizontalAlignment="Left" VerticalAlignment="Center">
+                                                                    <TextBlock Text="{Binding VoicePort}" FontSize="10.5"
+                                                                               FontWeight="Bold" Foreground="#94A3B8" />
+                                                                </Border>
+
+                                                                <TextBlock Grid.Column="4" Text="{Binding Endpoint}"
+                                                                           FontSize="10.5" Foreground="#94A3B8"
+                                                                           VerticalAlignment="Center" />
+
+                                                                <Border Grid.Column="5"
+                                                                        Background="{Binding StatusBadgeBackground}"
+                                                                        BorderBrush="{Binding StatusColor}"
+                                                                        BorderThickness="1"
+                                                                        CornerRadius="4" Padding="6,2" MinWidth="84"
+                                                                        HorizontalAlignment="Left" VerticalAlignment="Center">
+                                                                    <StackPanel Orientation="Horizontal" Spacing="4" HorizontalAlignment="Center">
+                                                                        <TextBlock Text="{Binding StatusIcon}" FontSize="9" />
+                                                                        <TextBlock Text="{Binding StatusText}" FontSize="10"
+                                                                                   FontWeight="Bold" Foreground="{Binding StatusColor}" />
+                                                                        <Border IsVisible="{Binding HasErrors}" Background="#450A0A" BorderBrush="#EF4444"
+                                                                                BorderThickness="1" CornerRadius="3" Padding="4,1" Margin="2,0,0,0">
+                                                                            <TextBlock Text="{Binding ErrorDisplay}" FontSize="8.5" FontWeight="Bold" Foreground="#FCA5A5" />
+                                                                        </Border>
+                                                                    </StackPanel>
+                                                                </Border>
+
+                                                                <!-- Open in IM Chat Manager Button -->
+                                                                <Button Grid.Column="6" Classes="purple"
+                                                                        Command="{Binding $parent[UserControl].((vm:GameServersViewModel)DataContext).OpenChatForInstanceCommand}"
+                                                                        CommandParameter="{Binding}"
+                                                                        Padding="8,3" VerticalAlignment="Center" Width="75">
+                                                                    <StackPanel Orientation="Horizontal" Spacing="4" HorizontalAlignment="Center">
+                                                                        <TextBlock Text="💬" FontSize="10" />
+                                                                        <TextBlock Text="Chat" FontSize="10.5" FontWeight="Bold" />
+                                                                    </StackPanel>
+                                                                </Button>
+                                                            </Grid>
+                                                        </Border>
+                                                    </DataTemplate>
+                                                </ItemsControl.ItemTemplate>
+                                            </ItemsControl>
+                                        </StackPanel>
+                                    </Border>
+
+                                </StackPanel>
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+
+            </StackPanel>
+        </ScrollViewer>
+
+        <!-- ========================================================================= -->
+        <!-- MODE 2: IM / CHAT-STYLE GAME SERVER MANAGER CONSOLE (DOCKED OR POPPED OUT) -->
+        <!-- ========================================================================= -->
+        <controls:GameServerChatConsoleControl Grid.Row="1"
+                                               IsVisible="{Binding IsDockedChatVisible}" />
+
+        <!-- Docked Placeholder when Chat Manager is Popped Out into its own Window (R9 single active control) -->
+        <Border Grid.Row="1" IsVisible="{Binding IsPopOutPlaceholderVisible}"
+                Classes="card" Background="#090D16" BorderBrush="#00F0FF" BorderThickness="1" Padding="32">
+            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="16" MaxWidth="520">
+                <Border Width="68" Height="68" CornerRadius="34" Background="#083344" BorderBrush="#00F0FF"
+                        BorderThickness="1.5" HorizontalAlignment="Center">
+                    <TextBlock Text="💬" FontSize="30" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                </Border>
+                <StackPanel Spacing="6" HorizontalAlignment="Center">
+                    <TextBlock Text="Game Server Chat Manager is Popped Out" FontSize="18" FontWeight="Black"
+                               Foreground="#F8FAFC" HorizontalAlignment="Center" />
+                    <TextBlock Text="All server channels, live SSE log streams, and quick commands are running in the dedicated pop-out window."
+                               FontSize="12" Foreground="#94A3B8" TextWrapping="Wrap" TextAlignment="Center" />
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" Spacing="10" HorizontalAlignment="Center">
+                    <Button Classes="primary"
+                            AutomationProperties.AutomationId="BtnFocusPopOutChat"
+                            Command="{Binding PopOutChatCommand}" Padding="16,9">
+                        <StackPanel Orientation="Horizontal" Spacing="6">
+                            <TextBlock Text="🔎" FontSize="12" />
+                            <TextBlock Text="Focus Pop-Out Window" FontWeight="Bold" FontSize="12" />
+                        </StackPanel>
+                    </Button>
+                    <Button Classes="secondary"
+                            AutomationProperties.AutomationId="BtnDockPopOutChat"
+                            Command="{Binding DockChatCommand}" Padding="16,9">
+                        <StackPanel Orientation="Horizontal" Spacing="6">
+                            <TextBlock Text="↙" FontSize="12" FontWeight="Bold" />
+                            <TextBlock Text="Dock Chat Back Here" FontWeight="SemiBold" FontSize="12" />
+                        </StackPanel>
+                    </Button>
+                </StackPanel>
+            </StackPanel>
+        </Border>
+
+    </Grid>
+
+</UserControl>

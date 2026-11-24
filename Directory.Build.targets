@@ -1,0 +1,43 @@
+<Project>
+  <!-- Build-Time Git Commit SHA & UTC Timestamp Injection (Deterministic for local incremental builds) -->
+  <Target Name="InjectBuildMetadata" BeforeTargets="BeforeCompile" Condition="'$(DesignTimeBuild)' != 'true'">
+    <Exec Command="git rev-parse --short HEAD" ConsoleToMSBuild="true" StandardOutputImportance="low" StandardErrorImportance="low" IgnoreExitCode="true" Condition="'$(GitCommitHash)' == '' and Exists('$(MSBuildThisFileDirectory).git')">
+      <Output TaskParameter="ConsoleOutput" PropertyName="GitCommitHash"/>
+    </Exec>
+    <PropertyGroup>
+      <GitCommitHash Condition="'$(GitCommitHash)' == ''">LOCALBUILD</GitCommitHash>
+      <SourceRevisionId>$(GitCommitHash)</SourceRevisionId>
+      <!-- Deterministic build timestamp: use fixed timestamp for local dev to preserve incremental builds; dynamic in CI -->
+      <BuildTimestampUtc Condition="'$(BuildTimestampUtc)' == '' and '$(ContinuousIntegrationBuild)' == 'true'">$([System.DateTime]::UtcNow.ToString("o"))</BuildTimestampUtc>
+      <BuildTimestampUtc Condition="'$(BuildTimestampUtc)' == ''">2026-09-04T00:00:00.0000000Z</BuildTimestampUtc>
+    </PropertyGroup>
+    <ItemGroup>
+      <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+        <_Parameter1>GitCommitHash</_Parameter1>
+        <_Parameter2>$(GitCommitHash)</_Parameter2>
+      </AssemblyAttribute>
+      <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+        <_Parameter1>BuildTimestampUtc</_Parameter1>
+        <_Parameter2>$(BuildTimestampUtc)</_Parameter2>
+      </AssemblyAttribute>
+    </ItemGroup>
+  </Target>
+
+  <!-- Milestone M3: Automated Game Asset Prebaking Target -->
+  <Target Name="PrebakeGameAssets" BeforeTargets="$(PrebakeBeforeTargets)" Condition="'$(PrebakeOnBuild)' == 'true'">
+    <PropertyGroup>
+      <PrebakeConfiguration Condition="'$(Configuration)' != ''">$(Configuration)</PrebakeConfiguration>
+      <PrebakeConfiguration Condition="'$(PrebakeConfiguration)' == ''">Debug</PrebakeConfiguration>
+      <PrebakeScriptPath Condition="'$(PrebakeScriptPath)' == ''">$(MSBuildThisFileDirectory)scripts\prebake-assets.ps1</PrebakeScriptPath>
+      <PrebakeToolProject Condition="'$(PrebakeToolProject)' == ''">$(MSBuildThisFileDirectory)src\tools\prebake-tool\prebake-tool.csproj</PrebakeToolProject>
+    </PropertyGroup>
+    <Message Importance="high" Text="[MSBuild] 🚀 Executing automated game asset prebaking pipeline..."/>
+    <Exec Command="pwsh -NoProfile -ExecutionPolicy Bypass -File &quot;$(PrebakeScriptPath)&quot; -Configuration $(PrebakeConfiguration)"
+          Condition="Exists('$(PrebakeScriptPath)') and '$(OS)' != 'Windows_NT'"
+          ContinueOnError="false"/>
+    <Exec Command="powershell.exe -NoProfile -ExecutionPolicy Bypass -File &quot;$(PrebakeScriptPath)&quot; -Configuration $(PrebakeConfiguration)"
+          Condition="Exists('$(PrebakeScriptPath)') and '$(OS)' == 'Windows_NT'"
+          ContinueOnError="false"/>
+    <Message Importance="high" Text="[MSBuild] ✔ Game asset prebaking pipeline completed."/>
+  </Target>
+</Project>

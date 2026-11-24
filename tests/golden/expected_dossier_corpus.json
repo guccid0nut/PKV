@@ -1,0 +1,30 @@
+{
+    "schema_version":  "1.0.0",
+    "total_dossiers":  3,
+    "dossiers":  [
+                     {
+                         "path":  "artifacts/evidence/native_guard/version_dll_fma_round_to_odd.json",
+                         "dossier_id":  "version_dll_fma_round_to_odd",
+                         "schema_version":  "2.0.0",
+                         "binary_name":  "version.dll",
+                         "rva":  "0x1000",
+                         "obligation_count":  4
+                     },
+                     {
+                         "path":  "artifacts/evidence/native_guard/version_dll_runtime_patch_controller.json",
+                         "dossier_id":  "version_dll_runtime_patch_controller",
+                         "schema_version":  "2.0.0",
+                         "binary_name":  "k2_x64.dll",
+                         "rva":  "0x67A620",
+                         "obligation_count":  5
+                     },
+                     {
+                         "path":  "artifacts/evidence/packets/game_x64_0x35d40_packet_parser.json",
+                         "dossier_id":  "game_x64_0x35d40_packet_parser",
+                         "schema_version":  "2.0.0",
+                         "binary_name":  "game_x64.dll",
+                         "rva":  "0x35d40",
+                         "obligation_count":  3
+                     }
+                 ]
+}

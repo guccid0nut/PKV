@@ -1,0 +1,27 @@
+{
+  "FeaturedItemIDs": [
+    874,
+    1218
+  ],
+  "Bundles": [
+    {
+      "StoreItemID": 874,
+      "IncludedProductIndices": [
+        0
+      ]
+    },
+    {
+      "StoreItemID": 1218,
+      "IncludedProductIndices": [
+        1
+      ]
+    },
+    {
+      "StoreItemID": 877,
+      "IncludedProductIndices": [
+        0,
+        1
+      ]
+    }
+  ]
+}

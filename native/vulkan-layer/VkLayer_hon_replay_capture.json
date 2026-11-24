@@ -1,0 +1,19 @@
+{
+  "$schema": "https://raw.githubusercontent.com/KhronosGroup/Vulkan-Headers/main/registry/vk_layer_schema.json",
+  "file_format_version": "1.0.0",
+  "layer": {
+    "name": "VK_LAYER_HON_replay_capture",
+    "type": "GLOBAL",
+    "library_path": ".\\VkLayer_hon_replay_capture.dll",
+    "api_version": "1.3.0",
+    "implementation_version": "1",
+    "description": "NEXUS HoN K2 Vulkan Swapchain Interception & Zero-Copy Frame Capture Layer",
+    "functions": {
+      "vkGetInstanceProcAddr": "HonCapture_GetInstanceProcAddr",
+      "vkGetDeviceProcAddr": "HonCapture_GetDeviceProcAddr"
+    },
+    "disable_environment": {
+      "HON_CAPTURE_DISABLE": "1"
+    }
+  }
+}

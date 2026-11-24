@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>net.kongor.Willowmaker</id>
+  <name>Project KONGOR V (WILLOWMAKER)</name>
+  <summary>Unofficial Community Game Client Launcher &amp; Modernization Runtime for Heroes of Newerth</summary>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>AGPL-3.0-or-later</project_license>
+  <developer_name>guccidonut (Project KONGOR V)</developer_name>
+  <url type="homepage">https://github.com/guccid0nut/PKV</url>
+  <url type="bugtracker">https://github.com/guccid0nut/PKV/issues</url>
+
+  <description>
+    <p>
+      WILLOWMAKER is an independent, unofficial open-source desktop game launcher and client modernization runtime for Heroes of Newerth on Windows, macOS, Linux, and Steam Deck (unaffiliated with Garena, S2 Games, Frostburn Studios, or Kongor Studios).
+    </p>
+    <p>Features include:</p>
+    <ul>
+      <li>Bring-Your-Own-Assets (BYOA) setup for Heroes of Newerth on modern Linux and Steam Deck (SteamOS)</li>
+      <li>Automatic compatibility layer for legacy K2 engine Linux dependencies (GTK2, GConf, libudev0)</li>
+      <li>Differential CDN delta patching with SHA-256 and CRC32 integrity verification</li>
+      <li>Wayland, XWayland, and high-refresh display support</li>
+      <li>Integration with self-hosted and community Project KONGOR V servers</li>
+    </ul>
+  </description>
+
+  <launchable type="desktop-id">net.kongor.Willowmaker.desktop</launchable>
+
+  <provides>
+    <binary>willowmaker</binary>
+  </provides>
+
+  <releases>
+    <release version="5.0.2" date="2026-11-20">
+      <description>
+        <p>Project KONGOR V v5.0.2 War Effort quests and 14-bag reward track, matchmaking fix, seamless Queue Arcade bot/player swaps, custom map stats, match history and scoreboards, custom mode item/rule fixes, Strikers 3-2-1 kickoff sync, RNNoise voice denoising, P2P relays, Linux Zink/Wayland compatibility, and Safe Mode polish.</p>
+      </description>
+    </release>
+    <release version="5.0.1" date="2026-11-09">
+      <description>
+        <p>Project KONGOR V cleanroom release with automated XWayland modesetting support, freedesktop 24.08 runtime, and AGPL-3.0-or-later alignment.</p>
+      </description>
+    </release>
+  </releases>
+
+  <content_rating type="oars-1.1">
+    <content_attribute id="violence-fantasy">moderate</content_attribute>
+    <content_attribute id="social-chat">intense</content_attribute>
+  </content_rating>
+</component>

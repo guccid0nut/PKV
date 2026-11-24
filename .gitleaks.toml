@@ -1,0 +1,144 @@
+title = "Project KONGOR V Gitleaks Configuration"
+
+[extend]
+useDefault = true
+
+[[rules]]
+id = "uri-connection-password"
+description = "Database or broker connection URI containing an embedded password"
+regex = '''(?i)\b(?:postgres(?:ql)?|mysql|mongodb(?:\+srv)?|rediss?|amqp|sqlserver)://[^:/\s"'@]+:([^@\s"']{4,})@'''
+secretGroup = 1
+keywords = [
+    "postgres://",
+    "postgresql://",
+    "mysql://",
+    "mongodb://",
+    "mongodb+srv://",
+    "redis://",
+    "rediss://",
+    "amqp://",
+    "sqlserver://",
+]
+  [rules.allowlist]
+  description = "Ignore documentation templates and local test container placeholders"
+  regexTarget = "line"
+  regexes = [
+      '''\[YOUR-PASSWORD\]''',
+      '''<password>''',
+      '''\$\{[A-Za-z0-9_]+\}''',
+      '''postgres:postgres@(?:localhost|127\.0\.0\.1|postgres)''',
+      '''postgres\.(?:xyzref|xyzcompany|example|\[ref\]):''',
+      '''postgres\.myuser:secret123@''',
+      '''://[^:/\s"'@]+:(?:password|password123|OriginalDbPass123!|pass|secret|test|testpass|changeme|\.{3}|\*{3,})@''',
+      '''@(?:db\.xyzcompany\.supabase\.co|example\.com|example\.local|localhost|127\.0\.0\.1)''',
+  ]
+
+[[rules]]
+id = "compel-control-token"
+description = "COMPEL Dedicated Server HTTP Control-Plane Token"
+regex = '''\b(compel_[A-Za-z0-9_-]{24,})\b'''
+secretGroup = 1
+keywords = ["compel_"]
+  [rules.allowlist]
+  regexTarget = "secret"
+  regexes = [
+      '''^compel_(?:test|dummy|example|placeholder|fake|canary|supervisor_|proxy_|worker_)[A-Za-z0-9_-]*$''',
+  ]
+
+[[rules]]
+id = "cloudflare-api-token"
+description = "Cloudflare API Token (cfat_*)"
+regex = '''\b(cfat_[A-Za-z0-9_-]{20,})\b'''
+secretGroup = 1
+keywords = ["cfat_"]
+  [rules.allowlist]
+  regexTarget = "secret"
+  regexes = [
+      '''^cfat_(?:test|dummy|example|placeholder)[A-Za-z0-9_-]*$''',
+  ]
+
+[[rules]]
+id = "supabase-secret-key"
+description = "Supabase Secret Key (sb_secret_*)"
+regex = '''\b(sb_secret_[A-Za-z0-9_-]{16,})\b'''
+secretGroup = 1
+keywords = ["sb_secret_"]
+  [rules.allowlist]
+  regexTarget = "secret"
+  regexes = [
+      '''^sb_secret_(?:test|dummy|example|placeholder)[A-Za-z0-9_-]*$''',
+  ]
+
+[[rules]]
+id = "azure-devops-org-url"
+description = "Private Azure DevOps organization git/web URL"
+regex = '''(?i)(https?://dev\.azure\.com/[A-Za-z0-9_.-]+)'''
+secretGroup = 1
+keywords = ["dev.azure.com"]
+  [rules.allowlist]
+  regexTarget = "secret"
+  regexes = [
+      '''(?i)^https?://dev\.azure\.com/exampleorg$''',
+  ]
+
+[[allowlists]]
+description = "Allowlist K2 Engine gameplay XML modifier keys, public dev seed hashes, and synthetic unit test fixtures"
+paths = [
+    '''(?i)\.(?:entity|effect|material|mdf|clip|anim|model|s2z|dds|tga|png|jpg|ogg|wav|mp3|pcapng)$''',
+    '''(?:^|[\\/])\.gitleaks\.toml$''',
+    '''(?:^|[\\/])src[\\/]services[\\/]web-ui[\\/]wwwroot[\\/]ability_metadata\.json$''',
+    '''(?:^|[\\/])src[\\/]services[\\/]web-ui[\\/]wwwroot[\\/]lib[\\/]''',
+    '''(?:^|[\\/])scripts[\\/]test_phase1_security_firewall\.ps1$''',
+    '''(?:^|[\\/])tests[\\/]unit[\\/]tools[\\/]Kongor\.Mcp\.Tests[\\/]RepoWiseAndAutoResearchWave4Tests\.cs$''',
+]
+regexes = [
+    '''kongor-security-ignore''',
+    # Public dev seed SRP/PBKDF2/MD5 hashes for default dev password "KONGOR" and guest@project.kongor
+    '''861c37ec6d049d92cc1c67d195b414f26b572a56358272af3e9c06fcd9bfa053''',
+    '''9fb9cf192701aba7aaa38e6f15457082c93cfbe060bdbdc5fa67a986b355700c''',
+    '''AQAAAAIAAYagAAAAEMUkpLAr01NjkKRPaXCyTa17nlOdPKJucn5QYur\+wQBTDKCpgsAcREenK\+pGJPBCRw==''',
+    '''81c278a3ed03cf4549e787feac5ffe1d051029e15159b1cf0b087b4f8a85cb69''',
+    '''bfad34f4dc65064dcae6e2064e12d63b299909b6c0cdb33306a91f26bb624e35''',
+    '''AQAAAAIAAYagAAAAECx4DCy3qYARlevpaVUJXy28QyvXDcQiJZ1KOSx547WDLBV0pdx2MX5m\+Pe3xhtQAg==''',
+    '''4d36fc3708f5a844b3be75b3f389db8d''',
+    # .NET UserSecretsId GUIDs ("Project KONGOR" in ASCII hex + web-ui csproj UserSecretsId)
+    '''00005072-6f6a-6563-7420-4b4f4e474f52''',
+    '''f1e1f81d-ed00-40b6-8d39-0b82a10a6338''',
+    # Win32 rolling XOR constant and public ElevenLabs voice ID
+    '''0x159876543210ABCDUL''',
+    '''N2lVS1w4EtoT3dr4eOWO''',
+    # Standard jwt.io RFC 7519 sample tokens, docs placeholders, and synthetic test tokens
+    '''eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9\.eyJzdWIiOiIxMjM0NTY3ODkw''',
+    '''eyJhbGciOiJub25lIiwidHlwIjoiSldUIn0\.eyJzdWIiOiIxMjM0NTY3ODkw''',
+    '''eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9\.anon''',
+    '''YOUR_[A-Z0-9_]+''',
+    '''c026d36e84d41bf6abcf0dfcfba7aeefdbbbadbf7ea5f6e3c0f4f9f4a9b6c41b''',
+    '''40qprzl8x6k8f7x1fitbmklcl''',
+    '''Ability_Pyromancer1''',
+    '''Enfos_AT_[A-Za-z0-9_]+''',
+    '''abcdef1234567890xyz''',
+    '''123456789012345678''',
+    '''987654321098765432''',
+    '''109876543210987654''',
+    '''10000000000000000[12]''',
+    '''0123456789abcdef0123456789abcdef''',
+    '''abcdef1234567890abcdef1234567890''',
+    '''A1B2C3D4-E5F6-7890-ABCD-1234567890EF''',
+    '''live_sec_1234567890abcdef''',
+    '''SecretKey123456789012345678901234567890''',
+    '''test-internal-key-secret-2026''',
+    '''test-internal-key-0001''',
+    '''AttackerForgedKey123''',
+]
+
+[[allowlists]]
+description = "Public non-secret standalone Direct Play loopback auth responder placeholder hash (commit 5ecb778819)"
+condition = "AND"
+targetRules = ["generic-api-key"]
+paths = [
+    '''(?:^|[\\/])src[\\/]apps[\\/]willowmaker[\\/]ViewModels[\\/]DirectPlayViewModel\.cs$''',
+    '''(?:^|[\\/])games[\\/]client[\\/](?:override|game|verify_lua)[\\/]ui[\\/]scripts[\\/]main_v2\.lua$''',
+]
+regexes = [
+    '''b83a886a5c437ccd9ac15473fd6f1788''',
+]

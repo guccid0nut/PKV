@@ -1,0 +1,354 @@
+@{
+    ViewData["Title"] = "Monkey King AR Checkers - Legion vs Hellbourne";
+    Layout = "_Layout";
+    string initialRoom = (string)(ViewData["InitialRoom"] ?? "MK42");
+}
+
+<div id="checkersGameRoot" data-initial-room="@initialRoom" class="relative w-full h-[calc(100vh-4rem)] overflow-hidden bg-slate-950 select-none">
+    
+    <!-- Camera Video Feed for Phone / Webcam AR Passthrough -->
+    <video id="checkersVideo" 
+           autoplay 
+           playsinline 
+           webkit-playsinline="true" 
+           muted 
+           class="absolute inset-0 w-full h-full object-cover z-0 hidden pointer-events-none"></video>
+
+    <!-- Three.js Interactive WebGL Render Canvas -->
+    <div id="checkersCanvasContainer" class="absolute inset-0 z-10 w-full h-full cursor-pointer touch-none">
+        <canvas id="checkersCanvas" class="w-full h-full block" role="region" aria-label="Monkey King Checkers 3D interactive board">Your browser does not support HTML5 Canvas.</canvas>
+    </div>
+
+    <!-- Top Sleek Glassmorphic Floating HUD -->
+    <div class="absolute top-3 left-3 right-3 z-20 flex flex-wrap items-center justify-between gap-2 pointer-events-none">
+        
+        <!-- Left: Turn Banner & Faction Identity -->
+        <div class="flex items-center gap-2 pointer-events-auto bg-slate-900/90 backdrop-blur-xl px-3 py-1.5 rounded-2xl border border-amber-500/30 shadow-2xl shadow-amber-950/40">
+            <span id="turnStatusDot" class="w-3 h-3 rounded-full bg-emerald-400 animate-pulse"></span>
+            <div class="flex flex-col">
+                <div class="flex items-center gap-1.5">
+                    <span id="turnTitle" class="text-xs font-black tracking-wider uppercase font-mono text-emerald-300">Legion's Turn</span>
+                    <span id="botThinkingIndicator" class="hidden text-[10px] text-amber-400 font-bold animate-bounce">
+                        <i class="fas fa-brain mr-1"></i>Thinking...
+                    </span>
+                </div>
+                <div class="flex items-center gap-2 text-[10px] text-slate-400 font-semibold">
+                    <span id="boardScoreLegion" class="text-emerald-400"><i class="fas fa-crown text-[9px] mr-0.5"></i>Legion: 12</span>
+                    <span>&bull;</span>
+                    <span id="boardScoreHellbourne" class="text-rose-400"><i class="fas fa-fire text-[9px] mr-0.5"></i>Hellbourne: 12</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Center: Game Mode Selector Dropdown & Online Status -->
+        <div class="pointer-events-auto flex items-center gap-1.5 bg-slate-900/90 backdrop-blur-xl border border-slate-700/70 rounded-xl px-2.5 py-1 shadow-lg">
+            <span class="text-[10px] font-black uppercase text-amber-400 font-mono hidden md:inline">Mode:</span>
+            <select id="selectGameMode" class="bg-slate-950 text-slate-200 text-xs font-bold rounded-lg px-2 py-1 border border-slate-700 focus:outline-none focus:border-amber-400 cursor-pointer">
+                <option value="vs_bot_novice" selected>Player vs Bot (Novice)</option>
+                <option value="vs_bot_challenger">Player vs Bot (Challenger)</option>
+                <option value="pass_and_play">Pass &amp; Play (2 Players)</option>
+                <option value="bot_vs_bot">Bot vs Bot (Spectator)</option>
+                <option value="online_1v1">🌐 1v1 Online Multiplayer</option>
+            </select>
+            <button id="btnOpenOnlineLobby" type="button" title="Join or Host 1v1 Online Match" class="px-2 py-1 bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/40 rounded-lg text-xs font-bold transition-all flex items-center gap-1 cursor-pointer">
+                <i class="fas fa-globe"></i>
+                <span class="hidden sm:inline">Online 1v1</span>
+            </button>
+            <div id="checkersOnlineBadge" class="hidden items-center gap-1.5 px-2 py-0.5 rounded-lg bg-sky-950/80 border border-sky-500/50 text-sky-300 font-mono text-[11px] font-bold">
+                <i class="fas fa-circle text-[7px] text-emerald-400 animate-pulse"></i>
+                <span id="checkersOnlineRoomLabel">ROOM: MK42</span>
+            </div>
+        </div>
+
+        <!-- Right: Camera, Audio & Match Controls -->
+        <div class="flex items-center flex-wrap gap-1.5 pointer-events-auto">
+            
+            <!-- Camera View Angle Presets Dropdown -->
+            <div class="flex items-center bg-slate-900/90 border border-slate-700/70 rounded-xl p-0.5 backdrop-blur-xl shadow-lg">
+                <button id="btnViewTabletop" type="button" title="3D Isometric Tabletop" class="px-2 py-1 text-[11px] font-bold rounded-lg bg-sky-600/40 text-sky-200 border border-sky-400/40 hover:bg-sky-600/60 transition-all cursor-pointer">
+                    <i class="fas fa-cube mr-1"></i>3D
+                </button>
+                <button id="btnViewTopDown" type="button" title="2D Top-Down Overhead" class="px-2 py-1 text-[11px] font-bold rounded-lg text-slate-300 hover:text-white hover:bg-slate-800 transition-all cursor-pointer">
+                    <i class="fas fa-border-all mr-1"></i>2D
+                </button>
+                <button id="btnViewLegion" type="button" title="Legion POV" class="px-2 py-1 text-[11px] font-bold rounded-lg text-emerald-400 hover:bg-slate-800 transition-all cursor-pointer hidden sm:inline-block">
+                    Legion
+                </button>
+                <button id="btnViewHellbourne" type="button" title="Hellbourne POV" class="px-2 py-1 text-[11px] font-bold rounded-lg text-rose-400 hover:bg-slate-800 transition-all cursor-pointer hidden sm:inline-block">
+                    Hellbourne
+                </button>
+            </div>
+
+            <!-- AR Camera Toggle -->
+            <button id="btnCheckersToggleCamera" 
+                    type="button"
+                    class="px-3 py-1.5 rounded-xl bg-slate-900/90 hover:bg-slate-800 text-slate-200 border border-slate-700/70 backdrop-blur-xl text-xs font-bold transition-all flex items-center gap-1.5 shadow-lg hover:border-sky-400 active:scale-95 cursor-pointer">
+                <i class="fas fa-camera text-sky-400"></i>
+                <span id="checkersCameraBtnText" class="hidden sm:inline">Enable Camera</span>
+            </button>
+
+            <!-- Undo Button -->
+            <button id="btnCheckersUndo" 
+                    type="button"
+                    title="Undo Previous Move"
+                    class="px-2.5 py-1.5 rounded-xl bg-slate-900/90 hover:bg-slate-800 text-slate-200 border border-slate-700/70 backdrop-blur-xl text-xs font-bold transition-all flex items-center gap-1 shadow-lg active:scale-95 cursor-pointer">
+                <i class="fas fa-undo text-amber-400"></i>
+                <span class="hidden md:inline">Undo</span>
+            </button>
+
+            <!-- Hint Button -->
+            <button id="btnCheckersHint" 
+                    type="button"
+                    title="Get Tactical Move Hint from AI"
+                    class="p-2 rounded-xl bg-slate-900/90 hover:bg-slate-800 text-slate-200 border border-slate-700/70 backdrop-blur-xl text-xs font-bold transition-all flex items-center shadow-lg active:scale-95 cursor-pointer">
+                <i class="fas fa-lightbulb text-yellow-300"></i>
+            </button>
+
+            <!-- Audio Toggle -->
+            <button id="btnCheckersToggleAudio" 
+                    type="button"
+                    title="Toggle Audio FX & Announcer"
+                    class="p-2 rounded-xl bg-slate-900/90 hover:bg-slate-800 text-slate-200 border border-slate-700/70 backdrop-blur-xl text-xs font-bold transition-all flex items-center shadow-lg active:scale-95 cursor-pointer">
+                <i id="checkersAudioIcon" class="fas fa-volume-up text-emerald-400"></i>
+            </button>
+
+            <!-- Reset / New Game Button -->
+            <button id="btnCheckersReset" 
+                    type="button"
+                    title="Restart Match"
+                    class="px-2.5 py-1.5 rounded-xl bg-rose-950/80 hover:bg-rose-900/90 text-rose-200 border border-rose-600/50 backdrop-blur-xl text-xs font-black transition-all flex items-center gap-1 shadow-lg active:scale-95 cursor-pointer">
+                <i class="fas fa-rotate-right"></i>
+                <span class="hidden sm:inline">New Game</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Dynamic Combo & Announcer Banner (Centered) -->
+    <div class="absolute top-20 left-1/2 -translate-x-1/2 z-20 pointer-events-none">
+        <div id="checkersAnnouncerBanner" 
+             class="hidden opacity-0 transform scale-90 transition-all duration-300 bg-gradient-to-r from-amber-600/90 via-amber-500/95 to-amber-600/90 text-slate-950 font-black px-6 py-2 rounded-2xl shadow-2xl border-2 border-yellow-300 tracking-wider text-sm font-mono flex items-center gap-2 uppercase">
+            <i class="fas fa-bolt text-yellow-200 animate-spin"></i>
+            <span id="checkersAnnouncerText">Double Vault!</span>
+        </div>
+    </div>
+
+    <!-- Bottom Interaction Guidance Hint Pill -->
+    <div class="absolute bottom-4 left-1/2 -translate-x-1/2 z-20 pointer-events-none max-w-[90vw]">
+        <div id="checkersInstructionPill" 
+             class="bg-slate-900/90 backdrop-blur-md px-4 py-2 rounded-full border border-amber-500/30 text-slate-200 text-xs font-medium shadow-2xl flex items-center gap-2 text-center">
+            <i class="fas fa-hand-pointer text-amber-400 text-xs flex-shrink-0"></i>
+            <span id="checkersInstructionText">Tap your Monkey King &bull; Slide diagonally or Vault over enemies &bull; Kings leap anywhere!</span>
+        </div>
+    </div>
+
+    <!-- Victory / Game Over Modal Overlay -->
+    <div id="checkersVictoryModal" class="hidden absolute inset-0 z-50 bg-slate-950/85 backdrop-blur-md flex flex-col items-center justify-center p-4">
+        <div class="max-w-md w-full bg-slate-900/95 border border-amber-500/50 rounded-3xl p-6 shadow-2xl shadow-amber-950/60 flex flex-col items-center text-center space-y-4">
+            <div id="victoryIconContainer" class="w-16 h-16 rounded-full bg-amber-500/20 border-2 border-amber-400 flex items-center justify-center text-2xl text-amber-400 animate-bounce shadow-lg shadow-amber-500/30">
+                <i class="fas fa-trophy"></i>
+            </div>
+            <div>
+                <h2 id="victoryTitle" class="text-2xl font-black uppercase tracking-wider text-white font-mono">Legion Victory!</h2>
+                <p id="victorySubtitle" class="text-xs text-slate-400 mt-1">All Hellbourne Monkey Kings have been vaulted off Caldavar.</p>
+            </div>
+            <div class="w-full bg-slate-950/60 border border-slate-800 rounded-2xl p-3 flex justify-around text-xs font-mono">
+                <div>
+                    <span class="text-slate-400 block text-[10px] uppercase">Moves Played</span>
+                    <span id="victoryMovesCount" class="font-bold text-white text-sm">24</span>
+                </div>
+                <div>
+                    <span class="text-slate-400 block text-[10px] uppercase">Captures</span>
+                    <span id="victoryCapturesCount" class="font-bold text-amber-400 text-sm">12</span>
+                </div>
+                <div>
+                    <span class="text-slate-400 block text-[10px] uppercase">Kings Ascended</span>
+                    <span id="victoryKingsCount" class="font-bold text-emerald-400 text-sm">2</span>
+                </div>
+            </div>
+            <div class="flex items-center gap-3 w-full pt-2">
+                <button id="btnVictoryRematch" type="button" class="flex-1 py-3 bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-400 hover:to-yellow-400 text-slate-950 font-black rounded-xl text-xs uppercase tracking-wider shadow-lg shadow-amber-500/30 transition-all active:scale-95 cursor-pointer">
+                    <i class="fas fa-rotate-right mr-1.5"></i>Play Again
+                </button>
+                <button id="btnVictoryClose" type="button" class="px-4 py-3 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold rounded-xl text-xs transition-all cursor-pointer">
+                    Inspect Board
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Spinner & 3D Streaming Overlay -->
+    <div id="checkersLoading" class="absolute inset-0 bg-slate-950/90 backdrop-blur-md z-40 flex flex-col items-center justify-center space-y-4">
+        <div class="relative w-14 h-14">
+            <div class="absolute inset-0 border-4 border-amber-500/20 rounded-full"></div>
+            <div class="absolute inset-0 border-4 border-amber-400 border-t-transparent rounded-full animate-spin"></div>
+        </div>
+        <div class="flex flex-col items-center text-center">
+            <span class="text-sm font-black text-white tracking-wide uppercase font-mono">Assembling Caldavar Checkerboard...</span>
+            <span id="checkersLoadingProgress" class="text-xs text-amber-400 font-mono mt-1">Summoning Monkey Kings &amp; Runes</span>
+        </div>
+    </div>
+
+    <!-- ONLINE MULTIPLAYER LOBBY MODAL -->
+    <div id="checkersLobbyModal" class="hidden absolute inset-0 z-50 bg-slate-950/90 backdrop-blur-xl flex items-center justify-center p-4 pointer-events-auto">
+        <div class="w-full max-w-sm bg-slate-900/95 border border-amber-500/50 rounded-3xl p-6 shadow-2xl flex flex-col space-y-4">
+            <div class="text-center space-y-1">
+                <div class="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-amber-500/15 border border-amber-500/30 text-amber-400 font-mono text-xs font-bold uppercase">
+                    <i class="fas fa-globe"></i> 1v1 Online Multiplayer
+                </div>
+                <h2 class="text-xl font-black uppercase tracking-wider text-white font-mono">Monkey Checkers</h2>
+                <p class="text-slate-400 text-xs">Duel another player online with real-time AR turns!</p>
+            </div>
+
+            <div class="space-y-3">
+                <div>
+                    <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1">Your Name</label>
+                    <input id="inputCheckersPlayerName" type="text" maxlength="16" value="MonkeyKing" class="w-full bg-slate-950 border border-slate-700 focus:border-amber-400 rounded-xl px-3.5 py-2 text-sm font-bold text-white outline-none transition-colors" placeholder="e.g. WuKong" />
+                </div>
+
+                <div>
+                    <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1">Room Code (2-8 chars)</label>
+                    <div class="flex items-center gap-2">
+                        <input id="inputCheckersRoomCode" type="text" maxlength="8" value="@initialRoom" class="w-full bg-slate-950 border border-slate-700 focus:border-amber-400 rounded-xl px-3.5 py-2 text-sm font-black tracking-widest uppercase font-mono text-white outline-none transition-colors" placeholder="MK42" />
+                        <button id="btnCheckersRandomRoom" type="button" title="Generate Random Code" class="px-3 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-xs font-bold transition-colors cursor-pointer">
+                            <i class="fas fa-dice"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="pt-2 flex flex-col gap-2">
+                <button id="btnCheckersEnterRoom" type="button" class="w-full py-3 rounded-2xl bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-400 hover:to-yellow-400 text-slate-950 font-black text-xs uppercase tracking-wider shadow-lg shadow-amber-950/40 active:scale-95 transition-all flex items-center justify-center gap-2 cursor-pointer">
+                    <i class="fas fa-play"></i> Join / Host 1v1 Room
+                </button>
+                <button id="btnCheckersPlaySolo" type="button" class="w-full py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs uppercase tracking-wider active:scale-95 transition-all cursor-pointer">
+                    Play Solo vs Bot
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- WAITING FOR OPPONENT OVERLAY -->
+    <div id="checkersWaitingOverlay" class="hidden absolute inset-0 z-45 bg-slate-950/90 backdrop-blur-xl flex flex-col items-center justify-center p-6 text-center pointer-events-auto" style="z-index: 45;">
+        <div class="w-16 h-16 mb-4 relative flex items-center justify-center">
+            <div class="absolute inset-0 border-4 border-amber-500/20 rounded-full"></div>
+            <div class="absolute inset-0 border-4 border-amber-400 border-t-transparent rounded-full animate-spin"></div>
+            <i class="fas fa-satellite-dish text-amber-400 text-lg"></i>
+        </div>
+        <h3 class="text-xl font-black text-white uppercase tracking-wider mb-1 font-mono">Waiting for Opponent</h3>
+        <div class="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-amber-500/15 border border-amber-500/30 text-amber-400 font-mono text-xs font-black mb-3">
+            ROOM: <span id="checkersWaitingRoomCodeText">@initialRoom</span>
+        </div>
+        <p class="text-slate-400 text-xs max-w-xs mb-4">Share this link with your opponent so they can join on their phone or desktop:</p>
+        
+        <div class="flex items-center gap-2 bg-slate-900 border border-slate-700 px-4 py-2.5 rounded-2xl text-xs font-mono text-amber-300 mb-4 shadow-xl">
+            <span id="checkersShareUrlText">https://localhost:5557/ar-mini-games/monkey-checkers?room=@initialRoom</span>
+            <button id="btnCheckersShareCopy" type="button" title="Copy Invite Link" class="p-1 text-slate-400 hover:text-white transition-colors cursor-pointer">
+                <i class="fas fa-copy"></i>
+            </button>
+        </div>
+
+        <button id="btnCheckersCancelWaiting" type="button" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white text-xs font-bold rounded-xl transition-colors cursor-pointer">
+            Cancel &amp; Return to Solo
+        </button>
+    </div>
+
+    <!-- PRE-MATCH AR PROMPT & READY CHECK MODAL -->
+    <div id="checkersArReadyModal" class="hidden absolute inset-0 z-50 bg-slate-950/90 backdrop-blur-xl flex items-center justify-center p-4 pointer-events-auto">
+        <div class="w-full max-w-sm bg-slate-900/95 border border-amber-500/50 rounded-3xl p-6 shadow-2xl flex flex-col space-y-4 text-center">
+            <div class="w-14 h-14 mx-auto rounded-2xl bg-gradient-to-br from-amber-500/20 to-emerald-500/20 border border-amber-500/40 flex items-center justify-center text-amber-400 text-2xl shadow-inner">
+                <i class="fas fa-vr-cardboard"></i>
+            </div>
+            <div>
+                <h3 class="text-xl font-black uppercase tracking-wider text-white font-mono">Play in Augmented Reality?</h3>
+                <p class="text-slate-400 text-xs mt-1">Enable phone camera to battle Monkey Kings on your desk, or play in 3D Studio mode!</p>
+            </div>
+
+            <!-- Choices -->
+            <div class="flex flex-col gap-2 pt-1">
+                <button id="btnCheckersArYes" type="button" class="w-full py-3 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-white font-black text-xs uppercase tracking-wider shadow-lg shadow-emerald-900/40 active:scale-95 transition-all flex items-center justify-center gap-2 cursor-pointer">
+                    <i class="fas fa-camera"></i> Yes - Turn On AR Camera
+                </button>
+                <button id="btnCheckersArNo" type="button" class="w-full py-2.5 rounded-2xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-black text-xs uppercase tracking-wider border border-slate-700 active:scale-95 transition-all flex items-center justify-center gap-2 cursor-pointer">
+                    <i class="fas fa-cube"></i> No - 3D Studio Mode
+                </button>
+            </div>
+
+            <!-- Multiplayer Ready Status Indicators -->
+            <div id="checkersReadyStatusContainer" class="pt-2 border-t border-slate-800 flex flex-col gap-2">
+                <div class="text-[11px] font-bold uppercase tracking-wider text-slate-400 flex items-center justify-between px-1">
+                    <span>Duel Readiness</span>
+                    <span id="checkersReadyCountText" class="text-amber-400 font-mono">0 / 2 Ready</span>
+                </div>
+                <div class="grid grid-cols-2 gap-2">
+                    <div id="checkersP1ReadyBadge" class="p-2 rounded-xl bg-slate-950 border border-slate-800 flex flex-col items-center justify-center gap-1 text-xs font-bold text-slate-500">
+                        <div class="flex items-center gap-1 text-emerald-400 text-[11px]">
+                            <i class="fas fa-crown text-[10px]"></i>
+                            <span id="checkersP1ReadyName">Legion (Host)</span>
+                        </div>
+                        <span id="checkersP1ReadyStatus" class="text-[10px] text-slate-500">Waiting...</span>
+                    </div>
+                    <div id="checkersP2ReadyBadge" class="p-2 rounded-xl bg-slate-950 border border-slate-800 flex flex-col items-center justify-center gap-1 text-xs font-bold text-slate-500">
+                        <div class="flex items-center gap-1 text-rose-400 text-[11px]">
+                            <i class="fas fa-fire text-[10px]"></i>
+                            <span id="checkersP2ReadyName">Hellbourne</span>
+                        </div>
+                        <span id="checkersP2ReadyStatus" class="text-[10px] text-slate-500">Waiting...</span>
+                    </div>
+                </div>
+                <div id="checkersWaitingForOpponentReadyText" class="text-[11px] text-amber-400/90 font-medium hidden">
+                    <i class="fas fa-spinner animate-spin mr-1"></i> Waiting for opponent to ready up...
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ROOM FULL REJECTION MODAL -->
+    <div id="checkersRoomFullModal" class="hidden absolute inset-0 z-50 bg-slate-950/95 backdrop-blur-2xl flex items-center justify-center p-4 pointer-events-auto">
+        <div class="w-full max-w-sm bg-slate-900 border border-rose-500/50 rounded-3xl p-6 shadow-2xl flex flex-col space-y-4 text-center">
+            <div class="w-14 h-14 mx-auto rounded-2xl bg-rose-500/20 border border-rose-500/50 flex items-center justify-center text-rose-400 text-2xl shadow-inner">
+                <i class="fas fa-users-slash"></i>
+            </div>
+            <div>
+                <h3 class="text-xl font-black uppercase tracking-wider text-white font-mono">Room Is Full (2/2)</h3>
+                <p id="checkersRoomFullDesc" class="text-slate-300 text-xs mt-2 leading-relaxed">
+                    Room <span id="checkersFullRoomCodeText" class="font-mono font-bold text-rose-400">MK42</span> already has 2 Monkey Kings dueling. More than 2 players are not allowed in the same room.
+                </p>
+            </div>
+
+            <!-- New Room Suggestion Card -->
+            <div class="p-3 rounded-2xl bg-slate-950 border border-slate-800 flex flex-col gap-1.5">
+                <div class="text-[10px] uppercase font-bold text-slate-400">Create New Room Instead</div>
+                <div class="flex items-center justify-center gap-2">
+                    <span class="text-xs text-slate-400 font-semibold">Suggested Code:</span>
+                    <span id="checkersSuggestedNewCode" class="font-mono font-black text-sm text-amber-400 px-2 py-0.5 rounded-lg bg-amber-950/60 border border-amber-500/40">MK88</span>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="flex flex-col gap-2 pt-1">
+                <button id="btnCheckersCreateNewFromFull" type="button" class="w-full py-3 rounded-2xl bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-400 hover:to-yellow-400 text-slate-950 font-black text-xs uppercase tracking-wider shadow-lg active:scale-95 transition-all flex items-center justify-center gap-2 cursor-pointer">
+                    <i class="fas fa-plus-circle"></i> Create Room &amp; Enter
+                </button>
+                <button id="btnCheckersCloseRoomFull" type="button" class="w-full py-2.5 rounded-2xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-black text-xs uppercase tracking-wider border border-slate-700 active:scale-95 transition-all flex items-center justify-center gap-2 cursor-pointer">
+                    <i class="fas fa-arrow-left"></i> Change Code in Lobby
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Floating Toast Notification -->
+    <div id="checkersToastNotification" class="opacity-0 pointer-events-none transition-opacity duration-300 fixed bottom-16 left-1/2 -translate-x-1/2 z-50 bg-slate-900/95 border border-slate-700 backdrop-blur-xl px-4 py-2 rounded-2xl shadow-2xl flex items-center gap-2 text-xs font-semibold text-white">
+        <i id="checkersToastIcon" class="fas fa-info-circle text-amber-400"></i>
+        <span id="checkersToastText">Notification message</span>
+    </div>
+
+</div>
+
+<!-- Three.js + Dependencies -->
+<script src="/lib/three/three.r16x.bundle.js" defer asp-append-version="true"></script>
+
+<!-- ASP.NET Core SignalR Client -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.7/signalr.min.js" defer></script>
+
+<!-- Project Kongor Monkey King Checkers Engine -->
+<script src="/js/monkey_checkers.js" defer asp-append-version="true"></script>

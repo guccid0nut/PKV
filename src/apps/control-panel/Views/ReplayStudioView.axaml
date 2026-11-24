@@ -1,0 +1,565 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="using:NEXUS.ControlPanel.GUI.ViewModels"
+             xmlns:contracts="using:NEXUS.Contracts.Replay"
+             mc:Ignorable="d" d:DesignWidth="1100" d:DesignHeight="950"
+             x:Class="NEXUS.ControlPanel.GUI.Views.ReplayStudioView"
+             x:DataType="vm:ReplayStudioViewModel"
+             DragDrop.AllowDrop="True">
+
+    <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+        <StackPanel Spacing="16" Margin="24">
+
+            <!-- Header Section -->
+            <Grid ColumnDefinitions="*,Auto">
+                <StackPanel Grid.Column="0" Spacing="4">
+                    <StackPanel Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
+                        <TextBlock Text="🎬" FontSize="24" />
+                        <TextBlock Text="Replay Studio &amp; POV Video Renderer" FontSize="20" FontWeight="Black"
+                                   Foreground="#F8FAFC" LetterSpacing="0.5" />
+                        <Border Background="#1E293B" CornerRadius="6" Padding="8,2" BorderBrush="#00F0FF"
+                                BorderThickness="1">
+                            <TextBlock Text="VULKAN / NVENC ENGINE" FontSize="10" FontWeight="Bold"
+                                       Foreground="#00F0FF" LetterSpacing="1" />
+                        </Border>
+                    </StackPanel>
+                    <TextBlock
+                        Text="Inspect match replays, select any player's camera POV, configure cinematic render options, and monitor live video rendering pipelines."
+                        FontSize="12" Foreground="#94A3B8" />
+                </StackPanel>
+            </Grid>
+
+            <!-- Drag & Drop Replay Ingestion Zone -->
+            <Border Background="#0F172A" CornerRadius="12" BorderBrush="#00F0FF" BorderThickness="1.5" Padding="20"
+                    BoxShadow="0 4 20 0 #2000F0FF">
+                <StackPanel Spacing="14">
+                    <Grid ColumnDefinitions="*,Auto">
+                        <StackPanel Grid.Column="0" Spacing="8" VerticalAlignment="Center">
+                            <StackPanel Orientation="Horizontal" Spacing="12">
+                                <Border Width="44" Height="44" CornerRadius="22" Background="#1E293B"
+                                        BorderBrush="#00F0FF" BorderThickness="1">
+                                    <TextBlock Text="📥" FontSize="20" HorizontalAlignment="Center"
+                                               VerticalAlignment="Center" />
+                                </Border>
+                                <StackPanel Spacing="2" VerticalAlignment="Center">
+                                    <TextBlock Text="Drag &amp; Drop Replay File (.honreplay / .zip / .log)"
+                                               FontSize="15" FontWeight="Bold" Foreground="#F8FAFC" />
+                                    <TextBlock
+                                        Text="Drop any match replay here, select from your userdata replays dropdown below, or click Browse to load"
+                                        FontSize="11.5" Foreground="#64748B" />
+                                </StackPanel>
+                            </StackPanel>
+                        </StackPanel>
+
+                        <Button Grid.Column="1" Click="OnBrowseReplayClicked" Classes="primary" Padding="16,10"
+                                VerticalAlignment="Center" Margin="16,0,0,0">
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <TextBlock Text="📂" FontSize="14" />
+                                <TextBlock Text="Browse Replay File..." FontWeight="Bold" FontSize="12.5" />
+                            </StackPanel>
+                        </Button>
+                    </Grid>
+
+                    <!-- Quick Select Replay Dropdown from Userdata -->
+                    <Border Background="#162032" CornerRadius="8" Padding="12,10" BorderBrush="#1E293B"
+                            BorderThickness="1">
+                        <Grid ColumnDefinitions="Auto,*,Auto">
+                            <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center"
+                                        Margin="0,0,12,0">
+                                <TextBlock Text="🎮" FontSize="13" />
+                                <TextBlock Text="Userdata Replays:" FontSize="11.5" FontWeight="Bold"
+                                           Foreground="#00F0FF" />
+                            </StackPanel>
+
+                            <ComboBox Grid.Column="1"
+                                      ItemsSource="{Binding DiscoveredReplays}"
+                                      SelectedItem="{Binding SelectedDiscoveredReplay}"
+                                      HorizontalAlignment="Stretch"
+                                      PlaceholderText="Select a discovered replay from userdata..." />
+
+                            <Button Grid.Column="2" Command="{Binding RefreshDiscoveredReplaysCommand}"
+                                    Classes="secondary" Padding="10,6" Margin="10,0,0,0"
+                                    ToolTip.Tip="Scan user folders for newly recorded replays">
+                                <StackPanel Orientation="Horizontal" Spacing="6">
+                                    <TextBlock Text="🔄" FontSize="12" />
+                                    <TextBlock Text="Refresh" FontSize="11" FontWeight="Bold" />
+                                </StackPanel>
+                            </Button>
+                        </Grid>
+                    </Border>
+
+                    <!-- Loaded File Info Badge -->
+                    <Border IsVisible="{Binding IsReplayLoaded}" Background="#1E293B" CornerRadius="8" Padding="12,8"
+                            BorderBrush="#334155" BorderThickness="1">
+                        <Grid ColumnDefinitions="Auto,*,Auto,Auto,Auto,Auto" VerticalAlignment="Center">
+                            <TextBlock Grid.Column="0" Text="📄" Margin="0,0,8,0" VerticalAlignment="Center" />
+                            <TextBlock Grid.Column="1" Text="{Binding LoadedFileName}" FontWeight="SemiBold"
+                                       Foreground="#38BDF8" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
+                            <Border Grid.Column="2" Background="#0F172A" CornerRadius="4" Padding="6,2" Margin="10,0"
+                                    VerticalAlignment="Center">
+                                <TextBlock Text="{Binding FileSizeDisplay}" FontSize="11" Foreground="#94A3B8" />
+                            </Border>
+                            <Border Grid.Column="3" Background="#0F172A" CornerRadius="4" Padding="6,2"
+                                    Margin="0,0,10,0" VerticalAlignment="Center">
+                                <TextBlock Text="{Binding GameMode}" FontSize="11" FontWeight="Bold"
+                                           Foreground="#E2E8F0" />
+                            </Border>
+                            <Border Grid.Column="4" Background="#0F172A" CornerRadius="4" Padding="6,2"
+                                    Margin="0,0,10,0" VerticalAlignment="Center">
+                                <TextBlock Text="{Binding DurationDisplay}" FontSize="11" FontWeight="Bold"
+                                           Foreground="#10B981" />
+                            </Border>
+                            <Border Grid.Column="5" Background="#0F172A" CornerRadius="4" Padding="8,2"
+                                    VerticalAlignment="Center" BorderBrush="{Binding WinnerColorHex}"
+                                    BorderThickness="1">
+                                <TextBlock Text="{Binding WinnerDisplay}" FontSize="11" FontWeight="Black"
+                                           Foreground="{Binding WinnerColorHex}" />
+                            </Border>
+                        </Grid>
+                    </Border>
+                </StackPanel>
+            </Border>
+
+            <!-- Main Content Area: Players (Left) & Render Settings (Right) -->
+            <Grid ColumnDefinitions="3*,2*" Margin="0,4">
+
+                <!-- Left: 10-Player Grid (Legion vs Hellbourne) -->
+                <Border Grid.Column="0" Background="#0F172A" CornerRadius="12" BorderBrush="#1E293B"
+                        BorderThickness="1" Padding="16" Margin="0,0,12,0">
+                    <StackPanel Spacing="14">
+                        <Grid ColumnDefinitions="*,Auto">
+                            <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="8">
+                                <TextBlock Text="👥" FontSize="16" />
+                                <TextBlock Text="Select Player Perspective (POV Lock)" FontSize="14" FontWeight="Bold"
+                                           Foreground="#F8FAFC" />
+                            </StackPanel>
+                            <TextBlock Grid.Column="1" Text="Click a player card to follow their camera" FontSize="11"
+                                       Foreground="#64748B" VerticalAlignment="Center" />
+                        </Grid>
+
+                        <!-- Legion Team Header -->
+                        <Border Background="#1E293B" CornerRadius="6" Padding="10,6" BorderBrush="#00F0FF"
+                                BorderThickness="1,0,0,0">
+                            <Grid ColumnDefinitions="*,Auto">
+                                <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="6">
+                                    <TextBlock Text="🛡️" FontSize="12" />
+                                    <TextBlock Text="LEGION ROSTER" FontSize="11" FontWeight="Black"
+                                               Foreground="#00F0FF" LetterSpacing="1" />
+                                </StackPanel>
+                                <TextBlock Grid.Column="1" Text="Team 1" FontSize="10" Foreground="#64748B"
+                                           FontWeight="Bold" />
+                            </Grid>
+                        </Border>
+
+                        <!-- Legion Player Cards -->
+                        <ItemsControl ItemsSource="{Binding LegionPlayers}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate x:DataType="vm:ReplayPlayerCardViewModel">
+                                    <Button
+                                        Command="{Binding $parent[UserControl].((vm:ReplayStudioViewModel)DataContext).SelectPlayerCommand}"
+                                        CommandParameter="{Binding}"
+                                        HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch"
+                                        Background="Transparent" Padding="0" Margin="0,0,0,6" BorderThickness="0">
+                                        <Border CornerRadius="8" Padding="10,8"
+                                                Background="{Binding IsSelected, Converter={x:Static ObjectConverters.IsNull}, FallbackValue='#1E293B'}"
+                                                BorderBrush="{Binding IsSelected, Converter={x:Static ObjectConverters.IsNull}, FallbackValue='#334155'}"
+                                                BorderThickness="1">
+                                            <Border.Styles>
+                                                <Style Selector="Border">
+                                                    <Setter Property="Background" Value="#162032" />
+                                                    <Setter Property="BorderBrush" Value="#1E293B" />
+                                                </Style>
+                                            </Border.Styles>
+                                            <Grid ColumnDefinitions="Auto,*,Auto,Auto,Auto">
+                                                <!-- Hero Avatar / Tag -->
+                                                <Border Grid.Column="0" Width="36" Height="36" CornerRadius="6"
+                                                        Background="#0F172A" BorderBrush="#00F0FF" BorderThickness="1"
+                                                        Margin="0,0,10,0">
+                                                    <TextBlock Text="⚔️" FontSize="16" HorizontalAlignment="Center"
+                                                               VerticalAlignment="Center" />
+                                                </Border>
+
+                                                <!-- Player & Hero Name -->
+                                                <StackPanel Grid.Column="1" Spacing="2" VerticalAlignment="Center">
+                                                    <TextBlock Text="{Binding Name}" FontWeight="Bold" FontSize="12.5"
+                                                               Foreground="#F8FAFC" />
+                                                    <TextBlock Text="{Binding HeroDisplayName}" FontSize="10.5"
+                                                               Foreground="#00F0FF" FontWeight="SemiBold" />
+                                                </StackPanel>
+
+                                                <!-- MMR -->
+                                                <StackPanel Grid.Column="2" VerticalAlignment="Center" Margin="12,0">
+                                                    <TextBlock Text="{Binding Mmr}" FontWeight="Bold" FontSize="11.5"
+                                                               Foreground="#F1F5F9" HorizontalAlignment="Right" />
+                                                    <TextBlock Text="MMR" FontSize="8.5" Foreground="#64748B"
+                                                               FontWeight="Bold" HorizontalAlignment="Right" />
+                                                </StackPanel>
+
+                                                <!-- KDA -->
+                                                <StackPanel Grid.Column="3" VerticalAlignment="Center" Margin="12,0">
+                                                    <TextBlock Text="{Binding KdaDisplay}" FontWeight="Bold"
+                                                               FontSize="11.5" Foreground="#10B981"
+                                                               HorizontalAlignment="Right" />
+                                                    <TextBlock Text="K / D / A" FontSize="8.5" Foreground="#64748B"
+                                                               FontWeight="Bold" HorizontalAlignment="Right" />
+                                                </StackPanel>
+
+                                                <!-- POV Badge -->
+                                                <Border Grid.Column="4" Background="#0F172A" CornerRadius="4"
+                                                        Padding="8,4" VerticalAlignment="Center"
+                                                        BorderBrush="#00F0FF" BorderThickness="1" Margin="8,0,0,0"
+                                                        IsVisible="{Binding IsSelected}">
+                                                    <TextBlock Text="LOCKED POV" FontSize="9" FontWeight="Black"
+                                                               Foreground="#00F0FF" />
+                                                </Border>
+                                            </Grid>
+                                        </Border>
+                                    </Button>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+
+                        <!-- Hellbourne Team Header -->
+                        <Border Background="#1E293B" CornerRadius="6" Padding="10,6" BorderBrush="#FF0055"
+                                BorderThickness="1,0,0,0" Margin="0,6,0,0">
+                            <Grid ColumnDefinitions="*,Auto">
+                                <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="6">
+                                    <TextBlock Text="🔥" FontSize="12" />
+                                    <TextBlock Text="HELLBOURNE ROSTER" FontSize="11" FontWeight="Black"
+                                               Foreground="#FF0055" LetterSpacing="1" />
+                                </StackPanel>
+                                <TextBlock Grid.Column="1" Text="Team 2" FontSize="10" Foreground="#64748B"
+                                           FontWeight="Bold" />
+                            </Grid>
+                        </Border>
+
+                        <!-- Hellbourne Player Cards -->
+                        <ItemsControl ItemsSource="{Binding HellbournePlayers}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate x:DataType="vm:ReplayPlayerCardViewModel">
+                                    <Button
+                                        Command="{Binding $parent[UserControl].((vm:ReplayStudioViewModel)DataContext).SelectPlayerCommand}"
+                                        CommandParameter="{Binding}"
+                                        HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch"
+                                        Background="Transparent" Padding="0" Margin="0,0,0,6" BorderThickness="0">
+                                        <Border CornerRadius="8" Padding="10,8"
+                                                Background="#162032"
+                                                BorderBrush="#1E293B"
+                                                BorderThickness="1">
+                                            <Grid ColumnDefinitions="Auto,*,Auto,Auto,Auto">
+                                                <!-- Hero Avatar / Tag -->
+                                                <Border Grid.Column="0" Width="36" Height="36" CornerRadius="6"
+                                                        Background="#0F172A" BorderBrush="#FF0055" BorderThickness="1"
+                                                        Margin="0,0,10,0">
+                                                    <TextBlock Text="💀" FontSize="16" HorizontalAlignment="Center"
+                                                               VerticalAlignment="Center" />
+                                                </Border>
+
+                                                <!-- Player & Hero Name -->
+                                                <StackPanel Grid.Column="1" Spacing="2" VerticalAlignment="Center">
+                                                    <TextBlock Text="{Binding Name}" FontWeight="Bold" FontSize="12.5"
+                                                               Foreground="#F8FAFC" />
+                                                    <TextBlock Text="{Binding HeroDisplayName}" FontSize="10.5"
+                                                               Foreground="#FF0055" FontWeight="SemiBold" />
+                                                </StackPanel>
+
+                                                <!-- MMR -->
+                                                <StackPanel Grid.Column="2" VerticalAlignment="Center" Margin="12,0">
+                                                    <TextBlock Text="{Binding Mmr}" FontWeight="Bold" FontSize="11.5"
+                                                               Foreground="#F1F5F9" HorizontalAlignment="Right" />
+                                                    <TextBlock Text="MMR" FontSize="8.5" Foreground="#64748B"
+                                                               FontWeight="Bold" HorizontalAlignment="Right" />
+                                                </StackPanel>
+
+                                                <!-- KDA -->
+                                                <StackPanel Grid.Column="3" VerticalAlignment="Center" Margin="12,0">
+                                                    <TextBlock Text="{Binding KdaDisplay}" FontWeight="Bold"
+                                                               FontSize="11.5" Foreground="#F43F5E"
+                                                               HorizontalAlignment="Right" />
+                                                    <TextBlock Text="K / D / A" FontSize="8.5" Foreground="#64748B"
+                                                               FontWeight="Bold" HorizontalAlignment="Right" />
+                                                </StackPanel>
+
+                                                <!-- POV Badge -->
+                                                <Border Grid.Column="4" Background="#0F172A" CornerRadius="4"
+                                                        Padding="8,4" VerticalAlignment="Center"
+                                                        BorderBrush="#FF0055" BorderThickness="1" Margin="8,0,0,0"
+                                                        IsVisible="{Binding IsSelected}">
+                                                    <TextBlock Text="LOCKED POV" FontSize="9" FontWeight="Black"
+                                                               Foreground="#FF0055" />
+                                                </Border>
+                                            </Grid>
+                                        </Border>
+                                    </Button>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+
+                    </StackPanel>
+                </Border>
+
+                <!-- Right: Render Settings & Action Button -->
+                <Border Grid.Column="1" Background="#0F172A" CornerRadius="12" BorderBrush="#1E293B"
+                        BorderThickness="1" Padding="16">
+                    <StackPanel Spacing="14">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <TextBlock Text="⚙️" FontSize="16" />
+                            <TextBlock Text="Video Render Settings" FontSize="14" FontWeight="Bold"
+                                       Foreground="#F8FAFC" />
+                        </StackPanel>
+
+                        <!-- Selected POV Summary Card -->
+                        <Border Background="#1E293B" CornerRadius="8" Padding="12" BorderBrush="#00F0FF"
+                                BorderThickness="1">
+                            <StackPanel Spacing="4">
+                                <TextBlock Text="ACTIVE TARGET PERSPECTIVE" FontSize="9.5" FontWeight="Bold"
+                                           Foreground="#94A3B8" LetterSpacing="1" />
+                                <Grid ColumnDefinitions="*,Auto">
+                                    <StackPanel Grid.Column="0" Spacing="2">
+                                        <TextBlock
+                                            Text="{Binding SelectedPlayer.Name, FallbackValue='Free Camera Overview'}"
+                                            FontSize="14" FontWeight="Black" Foreground="#00F0FF" />
+                                        <TextBlock
+                                            Text="{Binding SelectedPlayer.HeroDisplayName, FallbackValue='Full Map Overview'}"
+                                            FontSize="11" Foreground="#CBD5E1" />
+                                    </StackPanel>
+                                    <Border Grid.Column="1" Background="#0F172A" CornerRadius="6" Padding="8,4"
+                                            VerticalAlignment="Center" BorderBrush="#334155" BorderThickness="1">
+                                        <TextBlock
+                                            Text="{Binding SelectedPlayer.TeamNameDisplay, FallbackValue='Observer'}"
+                                            FontSize="10" FontWeight="Bold"
+                                            Foreground="{Binding SelectedPlayer.TeamColorHex, FallbackValue='#00F0FF'}" />
+                                    </Border>
+                                </Grid>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Camera Mode -->
+                        <StackPanel Spacing="4">
+                            <TextBlock Text="Camera Mode" FontSize="11" FontWeight="Bold" Foreground="#94A3B8" />
+                            <ComboBox ItemsSource="{Binding CameraModes}" SelectedItem="{Binding SelectedCameraMode}"
+                                      HorizontalAlignment="Stretch" />
+                        </StackPanel>
+
+                        <!-- Resolution & Framerate (2 Columns) -->
+                        <Grid ColumnDefinitions="*,*">
+                            <StackPanel Grid.Column="0" Spacing="4" Margin="0,0,6,0">
+                                <TextBlock Text="Resolution" FontSize="11" FontWeight="Bold" Foreground="#94A3B8" />
+                                <ComboBox ItemsSource="{Binding Resolutions}"
+                                          SelectedItem="{Binding SelectedResolution}" HorizontalAlignment="Stretch" />
+                            </StackPanel>
+                            <StackPanel Grid.Column="1" Spacing="4" Margin="6,0,0,0">
+                                <TextBlock Text="Framerate" FontSize="11" FontWeight="Bold" Foreground="#94A3B8" />
+                                <ComboBox ItemsSource="{Binding Framerates}" SelectedItem="{Binding SelectedFramerate}"
+                                          HorizontalAlignment="Stretch" />
+                            </StackPanel>
+                        </Grid>
+
+                        <!-- HUD Toggle -->
+                        <CheckBox IsChecked="{Binding ShowHud}" Content="Include In-Game Combat HUD &amp; Minimap"
+                                  Margin="0,4" />
+
+                        <!-- Output Directory -->
+                        <StackPanel Spacing="4">
+                            <TextBlock Text="Output Video Directory" FontSize="11" FontWeight="Bold"
+                                       Foreground="#94A3B8" />
+                            <TextBox Text="{Binding OutputDirectory}" FontSize="11" IsReadOnly="True" />
+                        </StackPanel>
+
+                        <!-- Action Button -->
+                        <Button Command="{Binding EnqueueRenderJobCommand}"
+                                Classes="primary"
+                                HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"
+                                Padding="16,12" Margin="0,8,0,0">
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <TextBlock Text="🚀" FontSize="15" />
+                                <TextBlock Text="Enqueue POV Video Render" FontWeight="Black" FontSize="13" />
+                            </StackPanel>
+                        </Button>
+                    </StackPanel>
+                </Border>
+            </Grid>
+
+            <!-- Bottom Section: Queue & Live Status Monitoring -->
+            <Border Background="#0F172A" CornerRadius="12" BorderBrush="#1E293B" BorderThickness="1" Padding="16">
+                <StackPanel Spacing="14">
+                    <Grid ColumnDefinitions="*,Auto">
+                        <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="8">
+                            <TextBlock Text="📊" FontSize="16" />
+                            <TextBlock Text="Live Rendering Status &amp; Queue Pipeline" FontSize="14"
+                                       FontWeight="Bold" Foreground="#F8FAFC" />
+                        </StackPanel>
+                        <TextBlock Grid.Column="1" Text="Automatic background worker queue" FontSize="11"
+                                   Foreground="#64748B" VerticalAlignment="Center" />
+                    </Grid>
+
+                    <!-- Active Processing Card -->
+                    <Border Background="#162032" CornerRadius="10" Padding="16" BorderBrush="#00F0FF"
+                            BorderThickness="1"
+                            IsVisible="{Binding IsProcessingActive}"
+                            BoxShadow="0 4 16 0 #2000F0FF">
+                        <StackPanel Spacing="10">
+                            <Grid ColumnDefinitions="Auto,*,Auto">
+                                <Border Grid.Column="0" Background="#0F172A" CornerRadius="6" Padding="8,3"
+                                        BorderBrush="#00F0FF" BorderThickness="1" Margin="0,0,10,0">
+                                    <StackPanel Orientation="Horizontal" Spacing="6">
+                                        <TextBlock Text="⚡" FontSize="11" Foreground="#00F0FF" />
+                                        <TextBlock Text="ACTIVE RENDERING" FontSize="9.5" FontWeight="Black"
+                                                   Foreground="#00F0FF" LetterSpacing="1" />
+                                    </StackPanel>
+                                </Border>
+
+                                <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8"
+                                            VerticalAlignment="Center">
+                                    <TextBlock Text="Match #" FontWeight="Bold" FontSize="13" Foreground="#94A3B8" />
+                                    <TextBlock Text="{Binding ActiveJob.MatchId}" FontWeight="Black" FontSize="13"
+                                               Foreground="#F8FAFC" />
+                                    <TextBlock Text="•" Foreground="#64748B" />
+                                    <TextBlock Text="{Binding ActiveJob.TargetPlayerName}" FontWeight="Bold"
+                                               FontSize="12.5" Foreground="#00F0FF" />
+                                    <TextBlock Text="•" Foreground="#64748B" />
+                                    <TextBlock Text="{Binding ActiveJob.Resolution}" FontSize="12" Foreground="#94A3B8" />
+                                    <TextBlock Text="@" FontSize="11" Foreground="#64748B" />
+                                    <TextBlock Text="{Binding ActiveFpsDisplay}" FontSize="12" FontWeight="Bold"
+                                               Foreground="#10B981" />
+                                </StackPanel>
+
+                                <Button Grid.Column="2" Command="{Binding CancelActiveJobCommand}" Classes="secondary"
+                                        Padding="10,4">
+                                    <TextBlock Text="Cancel Job" FontSize="11" Foreground="#FF0055" FontWeight="Bold" />
+                                </Button>
+                            </Grid>
+
+                            <!-- Progress Bar -->
+                            <ProgressBar Value="{Binding ActiveProgressPercent}" Minimum="0" Maximum="100" Height="10"
+                                         CornerRadius="5" Foreground="#00F0FF" Background="#0F172A" />
+
+                            <!-- Progress Details -->
+                            <Grid ColumnDefinitions="Auto,*,Auto">
+                                <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="6">
+                                    <TextBlock Text="Progress:" FontSize="11" Foreground="#94A3B8" />
+                                    <TextBlock Text="{Binding ActiveProgressPercent, StringFormat='{}{0:F0}%'}"
+                                               FontSize="11" FontWeight="Bold" Foreground="#00F0FF" />
+                                    <TextBlock Text="• Elapsed:" FontSize="11" Foreground="#64748B" Margin="6,0,0,0" />
+                                    <TextBlock Text="{Binding ActiveElapsedDisplay}" FontSize="11" Foreground="#F1F5F9" />
+                                </StackPanel>
+
+                                <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="6">
+                                    <TextBlock Text="Estimated Remaining:" FontSize="11" Foreground="#94A3B8" />
+                                    <TextBlock Text="{Binding ActiveRemainingDisplay}" FontSize="11" FontWeight="Bold"
+                                               Foreground="#38BDF8" />
+                                </StackPanel>
+                            </Grid>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Empty State when nothing is rendering and queue is empty -->
+                    <Border Background="#162032" CornerRadius="8" Padding="16" BorderBrush="#1E293B"
+                            BorderThickness="1"
+                            IsVisible="{Binding !IsProcessingActive}">
+                        <StackPanel Orientation="Horizontal" Spacing="10" HorizontalAlignment="Center">
+                            <TextBlock Text="💤" FontSize="16" VerticalAlignment="Center" />
+                            <TextBlock
+                                Text="Renderer Idle — Select a replay and player POV to enqueue a new video render"
+                                FontSize="12" Foreground="#64748B" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Upcoming Queue List -->
+                    <StackPanel Spacing="6" IsVisible="{Binding QueuedJobs.Count}">
+                        <TextBlock Text="UPCOMING QUEUE" FontSize="10.5" FontWeight="Bold" Foreground="#94A3B8"
+                                   LetterSpacing="1" />
+                        <ItemsControl ItemsSource="{Binding QueuedJobs}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate x:DataType="contracts:ReplayRenderJobItemDto">
+                                    <Border Background="#162032" CornerRadius="6" Padding="12,8" Margin="0,0,0,4"
+                                            BorderBrush="#1E293B" BorderThickness="1">
+                                        <Grid ColumnDefinitions="Auto,*,Auto,Auto">
+                                            <Border Grid.Column="0" Background="#0F172A" CornerRadius="4" Padding="6,2"
+                                                    Margin="0,0,10,0">
+                                                <TextBlock Text="QUEUED" FontSize="9.5" FontWeight="Bold"
+                                                           Foreground="#F59E0B" />
+                                            </Border>
+                                            <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8"
+                                                        VerticalAlignment="Center">
+                                                <TextBlock Text="Match #" FontSize="11.5" Foreground="#94A3B8" />
+                                                <TextBlock Text="{Binding MatchId}" FontWeight="Bold" FontSize="11.5"
+                                                           Foreground="#F8FAFC" />
+                                                <TextBlock Text="•" Foreground="#64748B" />
+                                                <TextBlock Text="{Binding TargetPlayerName}" FontWeight="Bold"
+                                                           FontSize="11.5" Foreground="#38BDF8" />
+                                                <TextBlock Text="•" Foreground="#64748B" />
+                                                <TextBlock Text="{Binding Resolution}" FontSize="11"
+                                                           Foreground="#94A3B8" />
+                                            </StackPanel>
+                                            <Button Grid.Column="3"
+                                                    Command="{Binding $parent[UserControl].((vm:ReplayStudioViewModel)DataContext).RemoveQueuedJobCommand}"
+                                                    CommandParameter="{Binding JobId}"
+                                                    Classes="secondary" Padding="6,2">
+                                                <TextBlock Text="✕" FontSize="10" Foreground="#FF0055" />
+                                            </Button>
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+
+                    <!-- Completed Renders History -->
+                    <StackPanel Spacing="6" IsVisible="{Binding CompletedJobs.Count}">
+                        <TextBlock Text="RECENTLY COMPLETED RENDERS" FontSize="10.5" FontWeight="Bold"
+                                   Foreground="#94A3B8" LetterSpacing="1" Margin="0,6,0,0" />
+                        <ItemsControl ItemsSource="{Binding CompletedJobs}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate x:DataType="contracts:ReplayRenderJobItemDto">
+                                    <Border Background="#162032" CornerRadius="6" Padding="12,8" Margin="0,0,0,4"
+                                            BorderBrush="#1E293B" BorderThickness="1">
+                                        <Grid ColumnDefinitions="Auto,*,Auto,Auto">
+                                            <Border Grid.Column="0" Background="#0F172A" CornerRadius="4" Padding="6,2"
+                                                    Margin="0,0,10,0" BorderBrush="#10B981" BorderThickness="1">
+                                                <TextBlock Text="READY" FontSize="9.5" FontWeight="Black"
+                                                           Foreground="#10B981" />
+                                            </Border>
+                                            <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8"
+                                                        VerticalAlignment="Center">
+                                                <TextBlock Text="Match #" FontSize="11.5" Foreground="#94A3B8" />
+                                                <TextBlock Text="{Binding MatchId}" FontWeight="Bold" FontSize="11.5"
+                                                           Foreground="#F8FAFC" />
+                                                <TextBlock Text="•" Foreground="#64748B" />
+                                                <TextBlock Text="{Binding TargetPlayerName}" FontWeight="Bold"
+                                                           FontSize="11.5" Foreground="#10B981" />
+                                                <TextBlock Text="•" Foreground="#64748B" />
+                                                <TextBlock Text="{Binding Resolution}" FontSize="11"
+                                                           Foreground="#94A3B8" />
+                                            </StackPanel>
+                                            <StackPanel Grid.Column="3" Orientation="Horizontal" Spacing="6">
+                                                <Button
+                                                    Command="{Binding $parent[UserControl].((vm:ReplayStudioViewModel)DataContext).OpenVideoFileCommand}"
+                                                    CommandParameter="{Binding OutputPath}"
+                                                    Classes="secondary" Padding="8,3">
+                                                    <TextBlock Text="▶ Play" FontSize="10.5" FontWeight="Bold"
+                                                               Foreground="#00F0FF" />
+                                                </Button>
+                                                <Button
+                                                    Command="{Binding $parent[UserControl].((vm:ReplayStudioViewModel)DataContext).OpenOutputFolderCommand}"
+                                                    CommandParameter="{Binding OutputPath}"
+                                                    Classes="secondary" Padding="8,3">
+                                                    <TextBlock Text="📁 Folder" FontSize="10.5" FontWeight="Bold"
+                                                               Foreground="#94A3B8" />
+                                                </Button>
+                                            </StackPanel>
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+
+                </StackPanel>
+            </Border>
+
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

@@ -1,0 +1,29 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net11.0</TargetFramework>
+    <RootNamespace>Kongor.HeadlessRenderer</RootNamespace>
+    <AssemblyName>kongor-render</AssemblyName>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <Description>Standalone Headless UI Offscreen Renderer for ProjectKongor</Description>
+    <NoWarn>$(NoWarn);MSB3277;AVLN5001</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Avalonia"/>
+    <PackageReference Include="Avalonia.Headless"/>
+    <PackageReference Include="Avalonia.Skia"/>
+    <PackageReference Include="Avalonia.Themes.Fluent"/>
+    <PackageReference Include="Avalonia.Fonts.Inter"/>
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions"/>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\apps\control-panel\NEXUS.ControlPanel.GUI.csproj"/>
+    <ProjectReference Include="..\..\apps\willowmaker\WILLOWMAKER.csproj"/>
+    <ProjectReference Include="..\..\libs\contracts\NEXUS.Contracts.csproj"/>
+  </ItemGroup>
+
+</Project>

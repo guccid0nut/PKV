@@ -1,0 +1,47 @@
+# Project KONGOR V (`llms.txt`)
+
+> Machine-readable index of **Project KONGOR V (`PKV`)** — an independent, cleanroom open-source platform, Vulkan/audio/stability runtime (`MPL-2.0`), and **TAO (Together As One) MCP Server** (`AGPL-3.0-or-later`), created and maintained by **`guccidonut`** (<https://github.com/guccid0nut/PKV>), honoring foundational `[K]ONGOR` `AGPL-3.0` open-source lineage.
+
+## Authorship, Licensing & Citation
+- **Creator & Maintainer (PKV & TAO MCP)**: `guccidonut` (<https://github.com/guccid0nut/PKV>)
+- **Foundational Upstream Lineage**: `[K]ONGOR` (<https://github.com/Project-KONGOR-Open-Source>, `AGPL-3.0`)
+- **Licenses**: Root & TAO MCP: `AGPL-3.0-or-later` (`LICENSE`, `NOTICE` §7(b) attribution preservation); `native/`: `MPL-2.0` (`native/LICENSE`); `docs/`: `CC BY-NC-SA 4.0` (`docs/LICENSE.md`)
+- **Citation**: Cite via `CITATION.cff` (`Project KONGOR V (PKV) & TAO (Together As One) MCP Server`, author: `guccidonut`)
+- **Cleanroom & Good-Faith Policy**: `INTEROPERABILITY_AND_DMCA.md`, `NAMING_POLICY.md`, `THIRD_PARTY_NOTICES.md`
+
+## TAO (Together As One) MCP Server (Created by `guccidonut`)
+- `src/tools/kongor-cli/Mcp/`: Canonical .NET 11 Model Context Protocol (MCP) server, Zero-Focus-Theft Mailbox IPC, `VfsIndexService`, and autonomous remediation (`kongor://about`).
+- `src/tools/tao_mcp.py`, `src/tools/MCP.py`, `src/tools/kongor/mcp_server.py`: Cross-IDE stdio launcher & CLI action runner shims.
+- `docs/tao-mcp/overview.md` & `docs/tao-mcp/README.md`: Architecture, setup, and complete tool reference catalog.
+
+## Core Quality Gates & Verification Scripts
+- `scripts/docker/launch_docker_stack.ps1` & `infra/docker/docker-compose.stack.yml`: Turnkey 1-command Docker Compose stack launcher (`kongor docker up|down|status|logs|check|init-secrets`, `--perf Eco|Balanced|High`, `--client`) for backend cluster + Dedicated Match Fleet (`:11334`) + Queue Arcade Fleet (`:11484`).
+- `scripts/Invoke-PublicGithubExport.ps1`: 8-gate default-deny cleanroom source export pipeline (`config/public_export_manifest.json`).
+- `scripts/release/Apply-CleanroomFileHeaders.ps1`: Automated SPDX (`AGPL-3.0-or-later`, `MPL-2.0`, `MIT`) cleanroom provenance verifier.
+- `scripts/gate_check.ps1`: Sub-5-second 6-tier inner-loop quality gate (`-TargetRoot`, `-Full`, `-JsonOutput`, `-RequireVerifier`, `-MinTrackedPairs`, `-UpdateGolden`, `-VerifyGolden`).
+- `scripts/test_gate_mutants.ps1`: Hermetic mutant verification suite for `scripts/gate_check.ps1` (`-UpdateIntegrityPin`).
+- `scripts/verify_evidence_obligations.ps1`: Evidence Dossier v2 schema, SHA-256 instruction hash, and `OBL-XX` obligation verifier (`-EvidenceDir`, `-Files`).
+- `scripts/qa/audit_debt.ps1`: Technical debt scanner for `shortcut:` and `ponytail:` markers (`-Path`, `-OutFile`, `-FailOnRot`).
+- `scripts/kongor_kb.ps1`: Field-Note Knowledge Base manager (`-Action`, `-Query`, `-Id`).
+- `scripts/kongor_mcp_issues.ps1`: MCP Issue Knowledge Base tracker (`-Action`, `-Server`, `-Tool`, `-Id`).
+- `scripts/kongor_worker_lock.ps1`: Singleton `kongor-game-worker` filesystem mutex manager (`-Action`, `-Owner`).
+- `scripts/prebake-assets.ps1`: Pre-baked entity and Lua asset pipeline (`-OutputDir`, `-DryRun`, `-PassThru`).
+
+## Cleanroom Binary & Protocol Verification Modules
+- `scripts/lib/pe_address_math.py`: Zero-dependency PE32+ RVA, VA, and file-offset translator (`PEHeaderInfo`).
+- `scripts/lib/capstone_analyzer.py`: Fast tier-1 x64 disassembly, Shannon entropy, S-box detector, and risk scorer (`disassemble_at_rva`, `compute_function_risk_score`).
+- `scripts/re/Assert-NoDevProfilerLeak.ps1`: Cleanroom profiler leak firewall for release builds and proxies.
+- `scripts/re/generate_protocol.ps1`: Deterministic C#/C++ protocol schema generator (`data/schemas/protocol.json`).
+- `scripts/re/test_metagen_parity.ps1`: Cleanroom C++/Goose metagen schema parity verifier.
+- `scripts/re/validate_native_hooks.py`: Declarative native hook schema and prologue validator.
+- `scripts/re/verify_native_abi_ownership.ps1`: Cleanroom native ABI ownership and symbol boundary gate.
+
+## Curated Agent Skills
+- `.agents/skills/kongor-gate/SKILL.md`: Pre-completion verification gate and cross-tree parity check.
+- `.agents/skills/kongor-review/SKILL.md`: Crash safety, frame budget, VFS precedence, and telemetry code review.
+- `.agents/skills/kongor-crash-triage/SKILL.md`: Deterministic 4-step minidump crash-to-fix pipeline.
+- `.agents/skills/kongor-debt/SKILL.md`: Technical debt audit across `shortcut:` markers.
+- `.agents/skills/kongor-subagent-orchestration/SKILL.md`: Singleton `kongor-game-worker` vs. parallel `kongor-offline-worker` orchestration.
+- `.agents/skills/idapython/SKILL.md`: Headless IDA Pro 9.0 (`idalib`) and Dual-Oracle Disagreement Protocol.
+- `.agents/skills/kongor-asset-pipeline/SKILL.md`: K2 texture formats, RxGB normal maps, and textures.s2z shadowing audit.
+- `.agents/skills/kongor-ui-ux/SKILL.md`: K2 UI XML/package architecture, Lua frame budget, hot-reload, and visual diffing.

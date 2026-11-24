@@ -1,0 +1,74 @@
+{
+  "pupil_l": {
+    "x": 431,
+    "y": 334.5,
+    "name": "Left Pupil",
+    "color": "#00ff88"
+  },
+  "pupil_r": {
+    "x": 594,
+    "y": 333.5,
+    "name": "Right Pupil",
+    "color": "#00ff88"
+  },
+  "nose_tip": {
+    "x": 508,
+    "y": 419.5,
+    "name": "Nose Tip",
+    "color": "#00d4ff"
+  },
+  "cupids_bow_l": {
+    "x": 493.57959137322797,
+    "y": 481.98966065216325,
+    "name": "Cupid's Bow Left",
+    "color": "#ffd700"
+  },
+  "cupids_bow_c": {
+    "x": 512.1795913732279,
+    "y": 486.3896606521633,
+    "name": "Cupid's Bow Center",
+    "color": "#ffd700"
+  },
+  "cupids_bow_r": {
+    "x": 527.5795913732279,
+    "y": 480.1896606521633,
+    "name": "Cupid's Bow Right",
+    "color": "#ffd700"
+  },
+  "mouth_corner_l": {
+    "x": 450.77959137322796,
+    "y": 500.1896606521633,
+    "name": "Left Mouth Corner",
+    "color": "#ff007f"
+  },
+  "mouth_corner_r": {
+    "x": 572.5795913732279,
+    "y": 498.5896606521633,
+    "name": "Right Mouth Corner",
+    "color": "#ff007f"
+  },
+  "upper_lip_bottom": {
+    "x": 511.97959137322795,
+    "y": 496.78966065216326,
+    "name": "Upper Lip Bottom",
+    "color": "#ff3333"
+  },
+  "lower_lip_top": {
+    "x": 513.5795913732279,
+    "y": 511.78966065216326,
+    "name": "Lower Lip Top",
+    "color": "#ff9900"
+  },
+  "lower_lip_bottom": {
+    "x": 514.779591373228,
+    "y": 541.5896606521633,
+    "name": "Lower Lip Bottom",
+    "color": "#ff00ff"
+  },
+  "chin_center": {
+    "x": 496,
+    "y": 665,
+    "name": "Chin Center",
+    "color": "#00ffff"
+  }
+}

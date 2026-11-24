@@ -1,0 +1,20 @@
+apiVersion: "autoscaling.agones.dev/v1"
+kind: FleetAutoscaler
+metadata:
+  name: kongor-dedicated-autoscaler
+  namespace: default
+spec:
+  fleetName: kongor-dedicated-fleet
+  policy:
+    type: Buffer
+    buffer:
+      # Number of ready game servers always kept in standby buffer for instant matchmaking
+      bufferSize: 1
+      # Minimum total pods across the fleet (at least 1 idle ready instance for local dev)
+      minReplicas: 1
+      # Maximum total pods on a local test environment
+      maxReplicas: 2
+  sync:
+    type: FixedInterval
+    fixedInterval:
+      seconds: 5

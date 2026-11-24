@@ -1,0 +1,149 @@
+{
+  "schema_version": "1.0.0",
+  "description": "Wave 5 (#258) Tier 6 Duplicate-Type & Reachability Ratchet Baseline. Any non-partial public type duplicated across >= 2 production .cs files outside baselined_duplicate_public_type_names fails Tier 6 (bit 128).",
+  "max_baselined_duplicate_public_types": 69,
+  "max_unreferenced_probe_symbols": 0,
+  "baselined_duplicate_public_type_names": [
+    "AccountExtensions",
+    "CefModernizationService",
+    "CleanCommand",
+    "ClientAudioModernizationService",
+    "ClientAuthenticationResult",
+    "ClientLivenessStatus",
+    "CombatEventType",
+    "ContentBroker",
+    "DeploymentManifest",
+    "FastVfsModernizationService",
+    "FrameTelemetryRecord",
+    "HeadlessAudioStubService",
+    "HeadlessUiRenderer",
+    "HeadlessVidService",
+    "HeroAbilityRule",
+    "Heroes",
+    "HeroGuideDto",
+    "IpcConnectionState",
+    "IpcOpCode",
+    "IssueResolutionStatus",
+    "IssueSeverity",
+    "IssueSubsystem",
+    "LeaderboardEntryDto",
+    "LinkTwitchRequestDto",
+    "LuaCommand",
+    "MapDefinition",
+    "MatchIdResult",
+    "MemoryModernizationService",
+    "NativeProcessInjectionService",
+    "NativeSecurityUpgradeService",
+    "OperationalConfiguration",
+    "PackageCommand",
+    "PdataRuntimeFunctionEntry",
+    "PeImportAddressTableService",
+    "PlayerMatchConfidence",
+    "PlayerResolutionResult",
+    "POINT",
+    "Program",
+    "RateLimiterPolicies",
+    "RawInputModernizationService",
+    "RECT",
+    "RegisterCompleteViewModel",
+    "RegisterDirectViewModel",
+    "RegisterEmailViewModel",
+    "RegisterViewModel",
+    "RegistrationResult",
+    "ReplayMetadata",
+    "ReplayPlayerMetadata",
+    "RollbackResult",
+    "SecurityMasking",
+    "ServerLivenessStatus",
+    "ServerStatus",
+    "SRPAuthenticationHandlers",
+    "StaffStoreItemDto",
+    "StatSubmissionResult",
+    "StoreController",
+    "StoreItem",
+    "SubTickHeader",
+    "SubTickInputEvent",
+    "TelemetryRingHeaderV2",
+    "UiRenderResult",
+    "UserRoles",
+    "UserSecretsConstants",
+    "VersionCheckResult",
+    "VideoModernizationService",
+    "VulkanMemoryMappedReceiver",
+    "WillowmakerIpcClient",
+    "WillowmakerIpcClientOptions",
+    "WillowmakerIpcMessage"
+  ],
+  "required_production_wired_symbols": [
+    {
+      "symbol": "DirectedMatrixPacketSimulator",
+      "declaration_file": "src/libs/protocol-core/Services/Networking/DeterministicNetSimPrimitives.cs",
+      "required_caller_files": [
+        "src/tools/kongor-cli/Mcp/Handlers/NetworkChaosHandler.cs"
+      ]
+    },
+    {
+      "symbol": "ReplySequenceReassembler",
+      "declaration_file": "src/libs/protocol-core/Services/Networking/DeterministicNetSimPrimitives.cs",
+      "required_caller_files": [
+        "src/apps/compel/Services/Voice/CompelVoiceRelayService.cs"
+      ]
+    },
+    {
+      "symbol": "TigerBeetleTimeSim",
+      "declaration_file": "src/libs/protocol-core/Services/Networking/DeterministicNetSimPrimitives.cs",
+      "required_caller_files": [
+        "src/tools/kongor-cli/Mcp/Handlers/NetworkChaosHandler.cs"
+      ]
+    },
+    {
+      "symbol": "BuildProcessIsolatedLoopbackParams",
+      "declaration_file": "src/tools/kongor-cli/Mcp/Services/AudioStudioService.cs",
+      "required_caller_files": [
+        "src/tools/kongor-cli/Mcp/Handlers/AudioStudioHandler.cs"
+      ]
+    },
+    {
+      "symbol": "PlanOrExecuteWhGetMessageInjection",
+      "declaration_file": "src/libs/protocol-core/Services/Native/NativeProcessInjectionService.cs",
+      "required_caller_files": [
+        "src/tools/kongor-cli/Mcp/Handlers/NativeManageHandler.Guard.cs"
+      ]
+    },
+    {
+      "symbol": "AnalyzeAmd64GpfAndPoison",
+      "declaration_file": "src/libs/protocol-core/Services/Native/CrashTriageOrchestrator.cs",
+      "required_caller_files": [
+        "src/tools/kongor-cli/Mcp/Handlers/CrashTriageHandler.cs"
+      ]
+    },
+    {
+      "symbol": "ParseMinidumpStackwalkJson",
+      "declaration_file": "src/libs/protocol-core/Services/Native/CrashTriageOrchestrator.cs",
+      "required_caller_files": [
+        "src/tools/kongor-cli/Mcp/Handlers/CrashTriageHandler.cs"
+      ]
+    },
+    {
+      "symbol": "ComputeMeshOrphanVerticesAndAcmr",
+      "declaration_file": "src/libs/protocol-core/Diagnostics/K2ModelMeshIntegrityAuditor.cs",
+      "required_caller_files": [
+        "src/tools/kongor-cli/Mcp/Handlers/InspectModelMdfHandler.cs"
+      ]
+    },
+    {
+      "symbol": "ScanArchiveModelsEmpiricalSample",
+      "declaration_file": "src/libs/protocol-core/Diagnostics/K2ModelMeshIntegrityAuditor.cs",
+      "required_caller_files": [
+        "src/tools/kongor-cli/Mcp/Handlers/InspectModelMdfHandler.cs"
+      ]
+    },
+    {
+      "symbol": "FileLockDetector",
+      "declaration_file": "src/libs/protocol-core/Utilities/FileLockDetector.cs",
+      "required_caller_files": [
+        "src/extensions/modding/Core/Packaging/S2zArchiveWriter.cs"
+      ]
+    }
+  ]
+}

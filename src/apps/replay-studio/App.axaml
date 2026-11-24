@@ -1,0 +1,149 @@
+<Application xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="ReplayStudio.GUI.App"
+             RequestedThemeVariant="Dark">
+    <Application.Styles>
+        <FluentTheme />
+
+        <!-- Base Window & Container Styles -->
+        <Style Selector="Window">
+            <Setter Property="Background" Value="#0B0F17" />
+            <Setter Property="Foreground" Value="#F8FAFC" />
+            <Setter Property="FontFamily" Value="Segoe UI, Inter, Cascadia Mono, Consolas, sans-serif" />
+        </Style>
+
+        <!-- Glass Card Style -->
+        <Style Selector="Border.glass-card">
+            <Setter Property="Background" Value="#101726CC" />
+            <Setter Property="BorderBrush" Value="#1E293B" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="8" />
+            <Setter Property="BoxShadow" Value="0 4 24 0 #40000000" />
+            <Setter Property="Padding" Value="12" />
+        </Style>
+
+        <!-- Inset Card Style -->
+        <Style Selector="Border.inset-card">
+            <Setter Property="Background" Value="#0B0F17AA" />
+            <Setter Property="BorderBrush" Value="#1E293B" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="6" />
+            <Setter Property="Padding" Value="8" />
+        </Style>
+
+        <!-- Team Themed Borders -->
+        <Style Selector="Border.legion-card">
+            <Setter Property="Background" Value="#0D1F33" />
+            <Setter Property="BorderBrush" Value="#0284C7" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="6" />
+            <Setter Property="Padding" Value="8" />
+        </Style>
+
+        <Style Selector="Border.hellbourne-card">
+            <Setter Property="Background" Value="#290E17" />
+            <Setter Property="BorderBrush" Value="#B91C1C" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="6" />
+            <Setter Property="Padding" Value="8" />
+        </Style>
+
+        <!-- Action Button Styles -->
+        <Style Selector="Button.action-btn">
+            <Setter Property="Background" Value="#1E293B" />
+            <Setter Property="Foreground" Value="#F8FAFC" />
+            <Setter Property="BorderBrush" Value="#334155" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="6" />
+            <Setter Property="Padding" Value="10, 6" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="Cursor" Value="Hand" />
+        </Style>
+
+        <Style Selector="Button.action-btn:pointerover">
+            <Setter Property="Background" Value="#334155" />
+            <Setter Property="BorderBrush" Value="#38BDF8" />
+        </Style>
+
+        <!-- Cyan Accent Button -->
+        <Style Selector="Button.btn-cyan">
+            <Setter Property="Background" Value="#0284C7" />
+            <Setter Property="Foreground" Value="#FFFFFF" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="CornerRadius" Value="6" />
+            <Setter Property="Padding" Value="12, 6" />
+            <Setter Property="FontWeight" Value="Bold" />
+            <Setter Property="Cursor" Value="Hand" />
+        </Style>
+        <Style Selector="Button.btn-cyan:pointerover">
+            <Setter Property="Background" Value="#0369A1" />
+        </Style>
+
+        <!-- Emerald Accent Button -->
+        <Style Selector="Button.btn-emerald">
+            <Setter Property="Background" Value="#059669" />
+            <Setter Property="Foreground" Value="#FFFFFF" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="CornerRadius" Value="6" />
+            <Setter Property="Padding" Value="12, 6" />
+            <Setter Property="FontWeight" Value="Bold" />
+            <Setter Property="Cursor" Value="Hand" />
+        </Style>
+        <Style Selector="Button.btn-emerald:pointerover">
+            <Setter Property="Background" Value="#047857" />
+        </Style>
+
+        <!-- Crimson Accent Button -->
+        <Style Selector="Button.btn-crimson">
+            <Setter Property="Background" Value="#DC2626" />
+            <Setter Property="Foreground" Value="#FFFFFF" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="CornerRadius" Value="6" />
+            <Setter Property="Padding" Value="12, 6" />
+            <Setter Property="FontWeight" Value="Bold" />
+            <Setter Property="Cursor" Value="Hand" />
+        </Style>
+        <Style Selector="Button.btn-crimson:pointerover">
+            <Setter Property="Background" Value="#B91C1C" />
+        </Style>
+
+        <!-- POV Lock Toggle Button Style -->
+        <Style Selector="ToggleButton.pov-lock-btn">
+            <Setter Property="Background" Value="#1E293B" />
+            <Setter Property="Foreground" Value="#94A3B8" />
+            <Setter Property="BorderBrush" Value="#334155" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="4" />
+            <Setter Property="Padding" Value="6, 3" />
+            <Setter Property="FontSize" Value="11" />
+            <Setter Property="FontWeight" Value="Bold" />
+            <Setter Property="Cursor" Value="Hand" />
+        </Style>
+
+        <Style Selector="ToggleButton.pov-lock-btn:checked">
+            <Setter Property="Background" Value="#0284C7" />
+            <Setter Property="Foreground" Value="#FFFFFF" />
+            <Setter Property="BorderBrush" Value="#38BDF8" />
+        </Style>
+
+        <!-- Typography -->
+        <Style Selector="TextBlock.muted">
+            <Setter Property="Foreground" Value="#94A3B8" />
+        </Style>
+        <Style Selector="TextBlock.subdued">
+            <Setter Property="Foreground" Value="#64748B" />
+        </Style>
+        <Style Selector="TextBlock.accent-cyan">
+            <Setter Property="Foreground" Value="#38BDF8" />
+        </Style>
+        <Style Selector="TextBlock.accent-emerald">
+            <Setter Property="Foreground" Value="#34D399" />
+        </Style>
+        <Style Selector="TextBlock.accent-crimson">
+            <Setter Property="Foreground" Value="#F87171" />
+        </Style>
+        <Style Selector="TextBlock.accent-gold">
+            <Setter Property="Foreground" Value="#FBBF24" />
+        </Style>
+    </Application.Styles>
+</Application>

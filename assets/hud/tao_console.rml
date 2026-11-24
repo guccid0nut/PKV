@@ -1,0 +1,777 @@
+<rml>
+<head>
+    <title>TAO Developer Console</title>
+    <link type="text/rcss" href="tao_console.rcss"/>
+    <style>
+        body {
+            display: block;
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            pointer-events: none;
+            font-family: Arial, sans-serif;
+            font-size: 18px;
+            color: #e2e8f0;
+        }
+        #tao-console-window {
+            pointer-events: auto;
+            position: absolute;
+            top: 2.5%;
+            left: 2.5%;
+            width: 95%;
+            height: 95%;
+            display: block;
+            box-sizing: border-box;
+            background-color: #070c18;
+            border-width: 2px;
+            border-color: #0284c7;
+            border-radius: 14px;
+            padding: 20px 28px;
+        }
+        .tao-shell {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            width: 100%;
+            height: 100%;
+            box-sizing: border-box;
+        }
+        .clear-fix { clear: both; display: none; }
+        .header-slot { display: block; flex: 0 0 auto; width: 100%; box-sizing: border-box; }
+        .console-header {
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            border-bottom-width: 2px;
+            border-bottom-color: #1e293b;
+            padding-bottom: 12px;
+            margin-bottom: 12px;
+            box-sizing: border-box;
+        }
+        .header-left { float: none; display: block; flex: 0 0 auto; }
+        .btn-header-back {
+            display: inline-block;
+            vertical-align: middle;
+            background-color: #0f172a;
+            border-width: 2px;
+            border-color: #38bdf8;
+            color: #38bdf8;
+            font-size: 18px;
+            font-weight: bold;
+            padding: 9px 20px;
+            border-radius: 8px;
+            margin-right: 18px;
+            cursor: pointer;
+        }
+        .btn-header-back:hover { background-color: #0284c7; border-color: #7dd3fc; color: #ffffff; }
+        .console-title {
+            font-size: 26px;
+            font-weight: bold;
+            color: #38bdf8;
+            display: inline-block;
+            vertical-align: middle;
+            margin-right: 14px;
+        }
+        .header-pill {
+            font-size: 14px;
+            background-color: #0369a1;
+            color: #e0f2fe;
+            padding: 6px 14px;
+            border-radius: 6px;
+            font-weight: bold;
+            display: inline-block;
+            vertical-align: middle;
+        }
+        .console-close {
+            float: none;
+            display: block;
+            flex: 0 0 auto;
+            text-align: center;
+            font-size: 18px;
+            font-weight: bold;
+            color: #ffffff;
+            cursor: pointer;
+            padding: 10px 24px;
+            border-radius: 8px;
+            background-color: #dc2626;
+            border-width: 1px;
+            border-color: #f87171;
+        }
+        .console-close:hover { background-color: #b91c1c; border-color: #fca5a5; }
+        .badges-slot { display: block; flex: 0 0 auto; width: 100%; margin-bottom: 12px; box-sizing: border-box; }
+        .service-badges { display: flex; flex-direction: row; align-items: stretch; width: 100%; box-sizing: border-box; }
+        .badge {
+            display: block;
+            flex: 1;
+            background-color: #0f172a;
+            border-width: 2px;
+            border-color: #1e293b;
+            border-radius: 10px;
+            padding: 11px 14px;
+            margin-right: 12px;
+            text-align: center;
+            box-sizing: border-box;
+        }
+        #badge-engine { margin-right: 0; }
+        .badge-dot { display: inline-block; width: 14px; height: 14px; border-radius: 7px; vertical-align: middle; margin-right: 10px; }
+        .dot-green { background-color: #4ade80; }
+        .dot-amber { background-color: #fbbf24; }
+        .dot-red { background-color: #f87171; }
+        .badge-text { display: inline-block; color: #f8fafc; font-weight: bold; font-size: 16px; vertical-align: middle; }
+        .tabs-slot { display: block; flex: 0 0 auto; width: 100%; margin-bottom: 14px; box-sizing: border-box; }
+        .nav-tabs { display: flex; flex-direction: row; align-items: stretch; width: 100%; box-sizing: border-box; }
+        .tab-btn {
+            float: none;
+            display: block;
+            flex: 1;
+            padding: 14px 12px;
+            margin-right: 12px;
+            background-color: #0f172a;
+            border-width: 2px;
+            border-color: #1e293b;
+            border-radius: 10px;
+            color: #94a3b8;
+            font-size: 19px;
+            font-weight: bold;
+            text-align: center;
+            cursor: pointer;
+            box-sizing: border-box;
+        }
+        #tab-btn-console { margin-right: 0; }
+        .tab-btn:hover { background-color: #1e293b; border-color: #38bdf8; color: #f8fafc; }
+        .tab-btn.active { background-color: #0284c7; border-color: #7dd3fc; color: #ffffff; }
+        .tab-content { display: block; flex: 1; width: 100%; box-sizing: border-box; }
+        .tab-pane { display: none; width: 100%; height: 100%; box-sizing: border-box; }
+        .tab-pane.active { display: block; width: 100%; height: 100%; }
+        .pane-flex { display: flex; flex-direction: column; justify-content: space-between; width: 100%; height: 100%; box-sizing: border-box; }
+        .row-slot-fill { display: block; flex: 1; width: 100%; box-sizing: border-box; }
+        .row-slot-top { display: block; flex: 3; width: 100%; margin-bottom: 14px; box-sizing: border-box; }
+        .row-slot-bottom { display: block; flex: 2; width: 100%; box-sizing: border-box; }
+        .split-row { display: flex; flex-direction: row; align-items: stretch; width: 100%; height: 100%; box-sizing: border-box; }
+        .col-card { display: block; background-color: #0c1425; border-width: 2px; border-color: #1e293b; border-radius: 12px; padding: 18px 22px; box-sizing: border-box; }
+        .col-left-overview { flex: 5; margin-right: 16px; }
+        .col-right-overview { flex: 6; margin-right: 0; background-color: #070d1b; }
+        .col-half-left { flex: 1; margin-right: 16px; }
+        .col-half-right { flex: 1; margin-right: 0; }
+        .action-deck-card { display: block; width: 100%; height: 100%; background-color: #0c1425; border-width: 2px; border-color: #1e293b; border-radius: 12px; padding: 16px 22px; box-sizing: border-box; }
+        .card-flex-col { display: flex; flex-direction: column; justify-content: space-between; width: 100%; height: 100%; box-sizing: border-box; }
+        .section-header-slot { display: block; flex: 0 0 auto; width: 100%; margin-bottom: 10px; box-sizing: border-box; }
+        .panel-section-title { display: block; font-size: 19px; font-weight: bold; color: #38bdf8; text-transform: uppercase; border-bottom-width: 2px; border-bottom-color: #1e293b; padding-bottom: 8px; }
+        .stat-row-slot { display: block; flex: 1; width: 100%; border-bottom-width: 1px; border-bottom-color: #162238; box-sizing: border-box; }
+        .stat-row-last { border-bottom-width: 0; }
+        .stat-row-flex { display: flex; flex-direction: row; justify-content: space-between; align-items: center; width: 100%; height: 100%; padding: 4px 0; box-sizing: border-box; }
+        .stat-label { float: none; display: block; color: #94a3b8; font-size: 18px; font-weight: bold; }
+        .stat-val { float: none; display: block; color: #f8fafc; font-weight: bold; font-size: 19px; text-align: right; }
+        .font-accent { color: #4ade80; }
+        .font-blue { color: #38bdf8; }
+        .font-warn { color: #fbbf24; }
+        .font-danger { color: #f87171; }
+        .font-mono { font-family: Courier, monospace; }
+        .deck-tiles-slot { display: block; flex: 1; width: 100%; box-sizing: border-box; }
+        .deck-tiles-row { display: flex; flex-direction: row; align-items: stretch; width: 100%; height: 100%; box-sizing: border-box; }
+        .tile-btn { display: block; flex: 1; margin-right: 14px; padding: 16px 20px; border-radius: 10px; border-width: 2px; background-color: #0f1f38; border-color: #0284c7; cursor: pointer; box-sizing: border-box; }
+        .tile-btn:hover { background-color: #0369a1; border-color: #7dd3fc; }
+        .tile-amber { background-color: #271a07; border-color: #d97706; }
+        .tile-amber:hover { background-color: #b45309; border-color: #fcd34d; }
+        .tile-emerald { background-color: #07261d; border-color: #10b981; }
+        .tile-emerald:hover { background-color: #047857; border-color: #6ee7b7; }
+        .tile-last { margin-right: 0; }
+        .tile-title { display: block; font-size: 21px; font-weight: bold; color: #ffffff; margin-bottom: 6px; }
+        .tile-sub { display: block; font-size: 15px; color: #cbd5e1; }
+        .terminal-fill-slot { display: block; flex: 1; width: 100%; box-sizing: border-box; }
+        .terminal-console-slot { display: block; flex: 1; width: 100%; margin-bottom: 14px; box-sizing: border-box; }
+        .log-terminal { display: block; width: 100%; height: 100%; box-sizing: border-box; background-color: #030712; border-width: 1px; border-color: #1e293b; border-radius: 10px; padding: 14px 18px; font-family: Courier, monospace; font-size: 16px; line-height: 25px; overflow-y: auto; }
+        .console-terminal-large { display: block; width: 100%; height: 100%; box-sizing: border-box; background-color: #030712; border-width: 2px; border-color: #1e293b; border-radius: 12px; padding: 18px 22px; font-family: Courier, monospace; font-size: 17px; line-height: 26px; overflow-y: auto; }
+        .log-line { display: block; margin-bottom: 6px; line-height: 24px; }
+        .log-info { color: #cbd5e1; }
+        .log-ok { color: #4ade80; }
+        .log-warn { color: #fbbf24; }
+        .log-error { color: #f87171; }
+        .log-heal { color: #38bdf8; font-weight: bold; }
+        .input-bar-slot { display: block; flex: 0 0 auto; width: 100%; margin-bottom: 12px; box-sizing: border-box; }
+        .console-input-bar { display: flex; flex-direction: row; align-items: center; width: 100%; background-color: #0c1425; border-width: 2px; border-color: #38bdf8; border-radius: 10px; padding: 10px 16px; box-sizing: border-box; }
+        .console-prompt { float: none; display: block; flex: 0 0 auto; color: #38bdf8; font-weight: bold; font-size: 24px; margin-right: 14px; font-family: Courier, monospace; }
+        .input-field-slot { display: block; flex: 1; margin-right: 14px; box-sizing: border-box; }
+        .console-input { float: none; display: block; width: 100%; height: 46px; box-sizing: border-box; background-color: #050a14; border-width: 1px; border-color: #334155; border-radius: 8px; color: #38bdf8; font-size: 18px; font-weight: bold; font-family: Courier, monospace; padding: 8px 14px; }
+        .btn-exec { float: none; display: block; flex: 0 0 auto; background-color: #16a34a; border-width: 1px; border-color: #4ade80; border-radius: 8px; color: #ffffff; font-size: 18px; font-weight: bold; padding: 12px 28px; cursor: pointer; text-align: center; }
+        .btn-exec:hover { background-color: #15803d; }
+        .chips-slot { display: block; flex: 0 0 auto; width: 100%; box-sizing: border-box; }
+        .chips-row { display: flex; flex-direction: row; align-items: stretch; width: 100%; box-sizing: border-box; }
+        .chip-btn { float: none; display: block; flex: 1; background-color: #131f35; color: #38bdf8; border-width: 1px; border-color: #334155; border-radius: 8px; padding: 12px 10px; margin-right: 10px; font-size: 15px; font-weight: bold; font-family: Courier, monospace; text-align: center; cursor: pointer; box-sizing: border-box; }
+        .chip-btn:hover { background-color: #0284c7; border-color: #7dd3fc; color: #ffffff; }
+        .chip-clear { background-color: #2a1215; color: #fca5a5; border-color: #b91c1c; margin-right: 0; }
+        .chip-clear:hover { background-color: #dc2626; border-color: #fca5a5; color: #ffffff; }
+        .footer-slot { display: block; flex: 0 0 auto; width: 100%; margin-top: 14px; box-sizing: border-box; }
+        .console-footer { position: static; display: flex; flex-direction: row; justify-content: space-between; align-items: center; width: 100%; border-top-width: 2px; border-top-color: #1e293b; padding-top: 14px; box-sizing: border-box; }
+        .footer-actions { float: none; display: block; flex: 0 0 auto; }
+        .footer-right { float: none; display: block; flex: 0 0 auto; }
+        .btn { display: inline-block; padding: 12px 26px; border-radius: 10px; font-size: 18px; font-weight: bold; cursor: pointer; text-align: center; margin-right: 14px; vertical-align: middle; border-width: 2px; border-color: #38bdf8; background-color: #0284c7; color: #ffffff; }
+        .btn-back { background-color: #0f172a; border-color: #38bdf8; color: #38bdf8; }
+        .btn-back:hover { background-color: #0284c7; border-color: #7dd3fc; color: #ffffff; }
+        .btn-action { background-color: #0284c7; border-color: #38bdf8; color: #ffffff; }
+        .btn-action:hover { background-color: #0369a1; border-color: #7dd3fc; }
+        .btn-warn { background-color: #d97706; border-color: #fbbf24; color: #ffffff; }
+        .btn-warn:hover { background-color: #b45309; }
+        .btn-danger { background-color: #dc2626; border-color: #f87171; color: #ffffff; }
+        .btn-danger:hover { background-color: #b91c1c; }
+        .btn-secondary { float: none; background-color: #1e293b; border-color: #475569; color: #f8fafc; margin-right: 0; }
+        .btn-secondary:hover { background-color: #334155; border-color: #94a3b8; }
+
+        @media (min-width: 2200px) {
+            #tao-console-window { padding: 26px 36px; }
+            .btn-header-back { font-size: 21px; padding: 11px 24px; }
+            .console-title { font-size: 32px; }
+            .header-pill { font-size: 16px; padding: 7px 16px; }
+            .console-close { font-size: 21px; padding: 12px 28px; }
+            .badge { padding: 14px 18px; }
+            .badge-text { font-size: 19px; }
+            .tab-btn { font-size: 23px; padding: 18px 16px; }
+            .panel-section-title { font-size: 23px; }
+            .stat-label { font-size: 21px; }
+            .stat-val { font-size: 23px; }
+            .tile-title { font-size: 25px; }
+            .tile-sub { font-size: 18px; }
+            .log-terminal { font-size: 19px; line-height: 29px; }
+            .console-terminal-large { font-size: 20px; line-height: 30px; }
+            .console-input { height: 54px; font-size: 21px; }
+            .btn-exec { font-size: 21px; padding: 15px 34px; }
+            .chip-btn { font-size: 18px; padding: 14px 12px; }
+            .btn { font-size: 21px; padding: 15px 32px; }
+        }
+
+        @media (min-width: 3200px) {
+            #tao-console-window { padding: 34px 48px; border-width: 3px; }
+            .btn-header-back { font-size: 26px; padding: 14px 32px; }
+            .console-title { font-size: 40px; }
+            .header-pill { font-size: 20px; padding: 9px 22px; }
+            .console-close { font-size: 26px; padding: 16px 36px; }
+            .badge { padding: 18px 22px; }
+            .badge-dot { width: 18px; height: 18px; border-radius: 9px; }
+            .badge-text { font-size: 24px; }
+            .tab-btn { font-size: 28px; padding: 22px 20px; }
+            .panel-section-title { font-size: 28px; }
+            .stat-label { font-size: 26px; }
+            .stat-val { font-size: 28px; }
+            .tile-title { font-size: 32px; }
+            .tile-sub { font-size: 22px; }
+            .log-terminal { font-size: 24px; line-height: 36px; }
+            .console-terminal-large { font-size: 25px; line-height: 38px; }
+            .console-input { height: 68px; font-size: 26px; }
+            .btn-exec { font-size: 26px; padding: 18px 42px; }
+            .chip-btn { font-size: 22px; padding: 18px 14px; }
+            .btn { font-size: 26px; padding: 18px 40px; }
+        }
+
+        @media (max-height: 860px) {
+            #tao-console-window { padding: 12px 18px; }
+            .console-header { padding-bottom: 8px; margin-bottom: 8px; }
+            .btn-header-back { font-size: 14px; padding: 6px 14px; margin-right: 12px; }
+            .console-title { font-size: 20px; }
+            .header-pill { font-size: 11px; padding: 4px 10px; }
+            .console-close { font-size: 14px; padding: 6px 16px; }
+            .badges-slot { margin-bottom: 8px; }
+            .badge { padding: 6px 10px; }
+            .badge-text { font-size: 13px; }
+            .tabs-slot { margin-bottom: 8px; }
+            .tab-btn { font-size: 15px; padding: 8px 10px; }
+            .col-card, .action-deck-card { padding: 10px 14px; }
+            .panel-section-title { font-size: 14px; padding-bottom: 4px; }
+            .stat-label { font-size: 14px; }
+            .stat-val { font-size: 15px; }
+            .tile-btn { padding: 8px 12px; }
+            .tile-title { font-size: 16px; margin-bottom: 2px; }
+            .tile-sub { font-size: 12px; }
+            .log-terminal, .console-terminal-large { font-size: 13px; line-height: 19px; padding: 10px 12px; }
+            .console-input { height: 34px; font-size: 14px; }
+            .btn-exec { font-size: 14px; padding: 8px 18px; }
+            .chip-btn { font-size: 12px; padding: 7px 6px; }
+            .footer-slot { margin-top: 8px; }
+            .console-footer { padding-top: 8px; }
+            .btn { font-size: 14px; padding: 7px 16px; }
+        }
+    </style>
+</head>
+<body>
+    <div id="tao-console-window">
+        <div class="tao-shell">
+            <!-- Header Bar with Prominent Back to Cockpit Button -->
+            <div class="header-slot">
+                <div class="console-header">
+                    <div class="header-left">
+                        <span id="btn-back-devtools" class="btn-header-back" onclick="BackToDevTools">&lt; DEV COCKPIT</span>
+                        <span class="console-title">[TAO] DEVELOPER CONSOLE &amp; DIAGNOSTICS</span>
+                        <span class="header-pill">TOGETHER AS ONE</span>
+                    </div>
+                    <div id="btn-close-console" class="console-close" onclick="CloseConsole">CLOSE [ESC]</div>
+                </div>
+            </div>
+
+            <!-- Full-Width 5-Card Service Health Strip -->
+            <div class="badges-slot">
+                <div class="service-badges">
+                    <div id="badge-master" class="badge">
+                        <span id="dot-master" class="badge-dot dot-green"></span>
+                        <span id="text-master" class="badge-text">Master: 55555 (OK)</span>
+                    </div>
+                    <div id="badge-chat" class="badge">
+                        <span id="dot-chat" class="badge-dot dot-green"></span>
+                        <span id="text-chat" class="badge-text">Chat: 11236 (OK)</span>
+                    </div>
+                    <div id="badge-gameserver" class="badge">
+                        <span id="dot-gameserver" class="badge-dot dot-green"></span>
+                        <span id="text-gameserver" class="badge-text">Game Server: 11235 (20Hz)</span>
+                    </div>
+                    <div id="badge-network" class="badge">
+                        <span id="dot-network" class="badge-dot dot-green"></span>
+                        <span id="text-network" class="badge-text">Network: 12ms / 0% Loss</span>
+                    </div>
+                    <div id="badge-engine" class="badge">
+                        <span id="dot-engine" class="badge-dot dot-green"></span>
+                        <span id="text-engine" class="badge-text">Engine: Vulkan 1.3</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Full-Width 5-Button Navigation Tabs Bar -->
+            <div class="tabs-slot">
+                <div class="nav-tabs">
+                    <div id="tab-btn-overview" class="tab-btn active" onclick="SwitchTab:tab-overview">1. Overview &amp; Diagnostics</div>
+                    <div id="tab-btn-fleet" class="tab-btn" onclick="SwitchTab:tab-fleet">2. Cluster Fleet</div>
+                    <div id="tab-btn-vulkan" class="tab-btn" onclick="SwitchTab:tab-vulkan">3. Vulkan &amp; Memory</div>
+                    <div id="tab-btn-vfs" class="tab-btn" onclick="SwitchTab:tab-vfs">4. VFS Mounts</div>
+                    <div id="tab-btn-console" class="tab-btn" onclick="SwitchTab:tab-console">5. Interactive Console</div>
+                </div>
+            </div>
+
+            <!-- Main Tab Content Stage -->
+            <div class="tab-content">
+                <!-- TAB 1: Overview & Diagnostics -->
+                <div id="tab-overview" class="tab-pane active">
+                    <div class="pane-flex">
+                        <div class="row-slot-fill">
+                            <div class="split-row">
+                                <div class="col-card col-left-overview">
+                                    <div class="card-flex-col">
+                                        <div class="section-header-slot">
+                                            <div class="panel-section-title">Live System Telemetry</div>
+                                        </div>
+                                        <div class="stat-row-slot">
+                                            <div class="stat-row-flex">
+                                                <span class="stat-label">IPC Channel</span>
+                                                <span id="tao-stat-ipc" class="stat-val font-mono">\\.\pipe\willowmaker-ipc (ACTIVE)</span>
+                                            </div>
+                                        </div>
+                                        <div class="stat-row-slot">
+                                            <div class="stat-row-flex">
+                                                <span class="stat-label">Swapchain Extent</span>
+                                                <span id="tao-stat-res" class="stat-val">1920x1080 (B8G8R8A8)</span>
+                                            </div>
+                                        </div>
+                                        <div class="stat-row-slot">
+                                            <div class="stat-row-flex">
+                                                <span class="stat-label">Framerate / Frame Time</span>
+                                                <span id="tao-stat-fps" class="stat-val font-accent">144.0 FPS (6.94 ms)</span>
+                                            </div>
+                                        </div>
+                                        <div class="stat-row-slot">
+                                            <div class="stat-row-flex">
+                                                <span class="stat-label">Net QoS / Ping</span>
+                                                <span id="tao-stat-net" class="stat-val font-accent">12 ms (0.0% loss)</span>
+                                            </div>
+                                        </div>
+                                        <div class="stat-row-slot">
+                                            <div class="stat-row-flex">
+                                                <span class="stat-label">Server Tick &amp; Draw Calls</span>
+                                                <span id="tao-stat-tick" class="stat-val font-mono font-blue">Tick: 0 | Draw: 180</span>
+                                            </div>
+                                        </div>
+                                        <div class="stat-row-slot">
+                                            <div class="stat-row-flex">
+                                                <span class="stat-label">VFS Archives</span>
+                                                <span id="tao-stat-vfs" class="stat-val">14 Mounted (0 Loose)</span>
+                                            </div>
+                                        </div>
+                                        <div class="stat-row-slot">
+                                            <div class="stat-row-flex">
+                                                <span class="stat-label">Spatial Audio / HRTF</span>
+                                                <span id="tao-stat-audio" class="stat-val">WASAPI (64 Voices)</span>
+                                            </div>
+                                        </div>
+                                        <div class="stat-row-slot stat-row-last">
+                                            <div class="stat-row-flex">
+                                                <span class="stat-label">Fault Attribution</span>
+                                                <span id="tao-stat-fault" class="stat-val font-accent">NOMINAL (All Systems OK)</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-card col-right-overview">
+                                    <div class="card-flex-col">
+                                        <div class="section-header-slot">
+                                            <div class="panel-section-title">Recent Engine &amp; Layer Log Stream</div>
+                                        </div>
+                                        <div class="terminal-fill-slot">
+                                            <div id="tao-log-terminal" class="log-terminal">
+                                                <div class="log-line log-info">[INFO][TAO] Together as One (TAO) MCP session initialized.</div>
+                                                <div class="log-line log-info">[INFO][VULKAN] Vulkan Swapchain Layer active (VkLayer_hon_replay_capture).</div>
+                                                <div class="log-line log-ok">[OK][CEF] Sandbox safely deactivated (0 int 3 crashes).</div>
+                                                <div class="log-line log-ok">[OK][QUEUE] Triple-buffered presentation queue synchronized.</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TAB 2: Cluster Fleet -->
+                <div id="tab-fleet" class="tab-pane">
+                    <div class="pane-flex">
+                        <div class="row-slot-top">
+                            <div class="split-row">
+                                <div class="col-card col-half-left">
+                                    <div class="card-flex-col">
+                                        <div class="section-header-slot">
+                                            <div class="panel-section-title">Microservice Fleet Status</div>
+                                        </div>
+                                        <div class="stat-row-slot">
+                                            <div class="stat-row-flex">
+                                                <span class="stat-label">Master Server</span>
+                                                <span id="fleet-master-val" class="stat-val font-accent">127.0.0.1:55555 (ONLINE)</span>
+                                            </div>
+                                        </div>
+                                        <div class="stat-row-slot">
+                                            <div class="stat-row-flex">
+                                                <span class="stat-label">Chat Server</span>
+                                                <span id="fleet-chat-val" class="stat-val font-accent">127.0.0.1:11031 (ONLINE)</span>
+                                            </div>
+                                        </div>
+                                        <div class="stat-row-slot">
+                                            <div class="stat-row-flex">
+                                                <span class="stat-label">COMPEL Supervisor</span>
+                                                <span id="fleet-compel-val" class="stat-val font-accent">127.0.0.1:11234 (SUPERVISING)</span>
+                                            </div>
+                                        </div>
+                                        <div class="stat-row-slot">
+                                            <div class="stat-row-flex">
+                                                <span class="stat-label">Dedicated Server</span>
+                                                <span id="fleet-server-val" class="stat-val font-blue">Port 11235 (20 Hz | 0 Bots)</span>
+                                            </div>
+                                        </div>
+                                        <div class="stat-row-slot stat-row-last">
+                                            <div class="stat-row-flex">
+                                                <span class="stat-label">Redis Telemetry Cache</span>
+                                                <span id="fleet-redis-val" class="stat-val font-accent">127.0.0.1:28298 (CONNECTED)</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-card col-half-right">
+                                    <div class="card-flex-col">
+                                        <div class="section-header-slot">
+                                            <div class="panel-section-title">Dedicated Server Live Workers</div>
+                                        </div>
+                                        <div class="stat-row-slot">
+                                            <div class="stat-row-flex">
+                                                <span class="stat-label">Worker Process</span>
+                                                <span id="fleet-worker-pid" class="stat-val font-mono">hon_x64.exe -dedicated</span>
+                                            </div>
+                                        </div>
+                                        <div class="stat-row-slot">
+                                            <div class="stat-row-flex">
+                                                <span class="stat-label">Worker IPC Pipe</span>
+                                                <span id="fleet-worker-pipe" class="stat-val font-mono">\\.\pipe\hon-server-11235</span>
+                                            </div>
+                                        </div>
+                                        <div class="stat-row-slot">
+                                            <div class="stat-row-flex">
+                                                <span class="stat-label">Active Map / Mode</span>
+                                                <span id="fleet-worker-map" class="stat-val">caldavar (Normal Mode)</span>
+                                            </div>
+                                        </div>
+                                        <div class="stat-row-slot">
+                                            <div class="stat-row-flex">
+                                                <span class="stat-label">P-Core Affinity</span>
+                                                <span class="stat-val font-accent">Mask 0xFF (High Priority)</span>
+                                            </div>
+                                        </div>
+                                        <div class="stat-row-slot stat-row-last">
+                                            <div class="stat-row-flex">
+                                                <span class="stat-label">Timer Precision</span>
+                                                <span class="stat-val font-accent">timeBeginPeriod(1) [1.0 ms]</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row-slot-bottom">
+                            <div class="action-deck-card">
+                                <div class="card-flex-col">
+                                    <div class="section-header-slot">
+                                        <div class="panel-section-title">Fleet Actions &amp; Bot Choreography</div>
+                                    </div>
+                                    <div class="deck-tiles-slot">
+                                        <div class="deck-tiles-row">
+                                            <div class="tile-btn" onclick="ExecCmd:AddFakePlayer 1">
+                                                <span class="tile-title">Add Legion Bot</span>
+                                                <span class="tile-sub">Spawn AI hero on Team 1 (AddFakePlayer 1)</span>
+                                            </div>
+                                            <div class="tile-btn" onclick="ExecCmd:AddFakePlayer 2">
+                                                <span class="tile-title">Add Hellbourne Bot</span>
+                                                <span class="tile-sub">Spawn AI hero on Team 2 (AddFakePlayer 2)</span>
+                                            </div>
+                                            <div class="tile-btn tile-amber tile-last" onclick="RefreshTrace">
+                                                <span class="tile-title">Probe All Endpoints</span>
+                                                <span class="tile-sub">Wake TCP &amp; Named Pipe subsystem health probes</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TAB 3: Vulkan & Memory -->
+                <div id="tab-vulkan" class="tab-pane">
+                    <div class="pane-flex">
+                        <div class="row-slot-top">
+                            <div class="split-row">
+                                <div class="col-card col-half-left">
+                                    <div class="card-flex-col">
+                                        <div class="section-header-slot">
+                                            <div class="panel-section-title">Vulkan Swapchain Pipeline</div>
+                                        </div>
+                                        <div class="stat-row-slot">
+                                            <div class="stat-row-flex">
+                                                <span class="stat-label">Physical Device</span>
+                                                <span id="vk-stat-device" class="stat-val">DirectX / Vulkan GPU (Vulkan 1.3)</span>
+                                            </div>
+                                        </div>
+                                        <div class="stat-row-slot">
+                                            <div class="stat-row-flex">
+                                                <span class="stat-label">Swapchain Extent</span>
+                                                <span id="vk-stat-extent" class="stat-val font-mono">1920x1080 (B8G8R8A8_UNORM)</span>
+                                            </div>
+                                        </div>
+                                        <div class="stat-row-slot">
+                                            <div class="stat-row-flex">
+                                                <span class="stat-label">Present Mode</span>
+                                                <span class="stat-val font-mono">VK_PRESENT_MODE_FIFO_KHR</span>
+                                            </div>
+                                        </div>
+                                        <div class="stat-row-slot">
+                                            <div class="stat-row-flex">
+                                                <span class="stat-label">Swapchain Layer</span>
+                                                <span class="stat-val font-accent">VkLayer_hon_replay_capture (Active)</span>
+                                            </div>
+                                        </div>
+                                        <div class="stat-row-slot stat-row-last">
+                                            <div class="stat-row-flex">
+                                                <span class="stat-label">DMA Ring Buffer</span>
+                                                <span class="stat-val font-mono">Local\HonReplayFrameBuffer_{pid} (3 Slots)</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-card col-half-right">
+                                    <div class="card-flex-col">
+                                        <div class="section-header-slot">
+                                            <div class="panel-section-title">Hardware &amp; Memory Allocation</div>
+                                        </div>
+                                        <div class="stat-row-slot">
+                                            <div class="stat-row-flex">
+                                                <span class="stat-label">Process Working Set</span>
+                                                <span id="vk-stat-ram" class="stat-val font-accent">412 MB (WorkingSet64)</span>
+                                            </div>
+                                        </div>
+                                        <div class="stat-row-slot">
+                                            <div class="stat-row-flex">
+                                                <span class="stat-label">Frame Time Budget</span>
+                                                <span id="vk-stat-ft" class="stat-val font-accent">6.94 ms (Target &lt;= 6.9 ms)</span>
+                                            </div>
+                                        </div>
+                                        <div class="stat-row-slot">
+                                            <div class="stat-row-flex">
+                                                <span class="stat-label">DXVK Pipeline Cache</span>
+                                                <span class="stat-val font-accent">v3.0.2 GPL Active (Spatial FSR)</span>
+                                            </div>
+                                        </div>
+                                        <div class="stat-row-slot">
+                                            <div class="stat-row-flex">
+                                                <span class="stat-label">CEF Chromium Sandbox</span>
+                                                <span class="stat-val font-accent">Disabled (--no-sandbox Safe Mode)</span>
+                                            </div>
+                                        </div>
+                                        <div class="stat-row-slot stat-row-last">
+                                            <div class="stat-row-flex">
+                                                <span class="stat-label">Audio Studio Voices</span>
+                                                <span class="stat-val">WASAPI Low-Latency Spatial Mix</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row-slot-bottom">
+                            <div class="action-deck-card">
+                                <div class="card-flex-col">
+                                    <div class="section-header-slot">
+                                        <div class="panel-section-title">Vulkan &amp; Overlay Runtime Controls</div>
+                                    </div>
+                                    <div class="deck-tiles-slot">
+                                        <div class="deck-tiles-row">
+                                            <div class="tile-btn tile-emerald" onclick="ReloadDocuments">
+                                                <span class="tile-title">Hot-Reload RmlUi HUD</span>
+                                                <span class="tile-sub">Reload devtools, tao_console &amp; motd templates from disk</span>
+                                            </div>
+                                            <div class="tile-btn" onclick="RefreshTrace">
+                                                <span class="tile-title">Refresh GPU &amp; Net Trace</span>
+                                                <span class="tile-sub">Sample live swapchain, IPC &amp; endpoint latency metrics</span>
+                                            </div>
+                                            <div class="tile-btn tile-amber tile-last" onclick="BackToDevTools">
+                                                <span class="tile-title">Return to Dev Cockpit</span>
+                                                <span class="tile-sub">Switch back to Engine Perf, Audio, Inspector &amp; Spectator tabs</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TAB 4: VFS Mounts -->
+                <div id="tab-vfs" class="tab-pane">
+                    <div class="pane-flex">
+                        <div class="row-slot-top">
+                            <div class="action-deck-card">
+                                <div class="card-flex-col">
+                                    <div class="section-header-slot">
+                                        <div class="panel-section-title">Virtual File System (VFS) Mount Precedence</div>
+                                    </div>
+                                    <div class="stat-row-slot">
+                                        <div class="stat-row-flex">
+                                            <span class="stat-label">Priority 1 (Active Workspace Override)</span>
+                                            <span class="stat-val font-mono font-accent">games/client/override/</span>
+                                        </div>
+                                    </div>
+                                    <div class="stat-row-slot">
+                                        <div class="stat-row-flex">
+                                            <span class="stat-label">Priority 2 (Base Engine Shaders &amp; Core)</span>
+                                            <span class="stat-val font-mono">game/base.s2z</span>
+                                        </div>
+                                    </div>
+                                    <div class="stat-row-slot">
+                                        <div class="stat-row-flex">
+                                            <span class="stat-label">Priority 3 (Game Rules, Heroes &amp; Items)</span>
+                                            <span class="stat-val font-mono">game/resources0.s2z .. resources99.s2z</span>
+                                        </div>
+                                    </div>
+                                    <div class="stat-row-slot">
+                                        <div class="stat-row-flex">
+                                            <span class="stat-label">Priority 4 (Client UI Package Workspace)</span>
+                                            <span class="stat-val font-mono">ClientPackageFiles/ui/</span>
+                                        </div>
+                                    </div>
+                                    <div class="stat-row-slot stat-row-last">
+                                        <div class="stat-row-flex">
+                                            <span class="stat-label">Priority 5 (Legacy Texture Archive)</span>
+                                            <span class="stat-val font-mono font-warn">game/textures.s2z (Use versioned basenames to override)</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row-slot-bottom">
+                            <div class="action-deck-card">
+                                <div class="card-flex-col">
+                                    <div class="section-header-slot">
+                                        <div class="panel-section-title">VFS Cache &amp; Hot-Reload Management (14 Archives Mounted)</div>
+                                    </div>
+                                    <div class="deck-tiles-slot">
+                                        <div class="deck-tiles-row">
+                                            <div class="tile-btn" onclick="ExecCmd:Set ui_reloadInterfaces true">
+                                                <span class="tile-title">Reload K2 UI Interfaces</span>
+                                                <span class="tile-sub">Safely defer CUIManager interface reload to frame boundary</span>
+                                            </div>
+                                            <div class="tile-btn tile-emerald" onclick="ExecCmd:Script collectgarbage()">
+                                                <span class="tile-title">Lua 5.1 GC Sweep</span>
+                                                <span class="tile-sub">Run full Lua garbage collection cycle across UI state</span>
+                                            </div>
+                                            <div class="tile-btn tile-amber tile-last" onclick="ReloadDocuments">
+                                                <span class="tile-title">Reload RmlUi Documents</span>
+                                                <span class="tile-sub">Re-parse HUD .rml &amp; inline stylesheets from disk</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TAB 5: Interactive Console & Lua Evaluator -->
+                <div id="tab-console" class="tab-pane">
+                    <div class="pane-flex">
+                        <div class="terminal-console-slot">
+                            <div id="tao-console-terminal" class="console-terminal-large">
+                                <div class="log-line log-info">[TAO EVAL] Interactive In-Engine Developer Console Ready.</div>
+                                <div class="log-line log-info">[TAO EVAL] Anti-Chat Spill active: Win32 SubclassWndProc consumes keystrokes.</div>
+                                <div class="log-line log-ok">[TAO EVAL] Enter engine command or 'lua: &lt;script&gt;' below and press Enter to execute.</div>
+                            </div>
+                        </div>
+
+                        <div class="input-bar-slot">
+                            <div class="console-input-bar">
+                                <span class="console-prompt">&gt;</span>
+                                <div class="input-field-slot">
+                                    <input type="text" id="tao-input-cmd" class="console-input" value="echo [TAO] Hello Developer" />
+                                </div>
+                                <div id="btn-exec-cmd" class="btn-exec" onclick="ExecCmd">EXECUTE [ENTER]</div>
+                            </div>
+                        </div>
+
+                        <div class="chips-slot">
+                            <div class="chips-row">
+                                <div class="chip-btn" onclick="ChipCmd:echo Hello TAO">echo Hello TAO</div>
+                                <div class="chip-btn" onclick="ChipCmd:lua:if SysBar_LaunchPractice then SysBar_LaunchPractice('caldavar', false) else Cmd('Set svr_login false; Set svr_broadcastLocal false; Set ui_quickStart true; Set sv_precacheEntities false; StartGame practice GameName map:caldavar allheroes:true') end">Practice Match</div>
+                                <div class="chip-btn" onclick="ChipCmd:AddFakePlayer 1">AddFakePlayer 1</div>
+                                <div class="chip-btn" onclick="ChipCmd:AddFakePlayer 2">AddFakePlayer 2</div>
+                                <div class="chip-btn" onclick="ChipCmd:lua:UIManager.GetInterface('main')">Lua: UIManager</div>
+                                <div class="chip-btn" onclick="ChipCmd:Script collectgarbage()">Lua GC Sweep</div>
+                                <div class="chip-btn chip-clear" onclick="ClearConsoleTerminal">Clear Log</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer Bar -->
+            <div class="footer-slot">
+                <div class="console-footer">
+                    <div class="footer-actions">
+                        <div id="btn-back-devtools-footer" class="btn btn-back" onclick="BackToDevTools">&lt; Back to Cockpit</div>
+                        <div id="btn-refresh-trace" class="btn btn-action" onclick="RefreshTrace">Refresh Trace</div>
+                        <div id="btn-self-heal" class="btn btn-action" onclick="SelfHealUi">Self-Heal HUD</div>
+                    </div>
+                    <div class="footer-right">
+                        <div id="btn-close-console-footer" class="btn btn-secondary" onclick="CloseConsole">Close [Esc]</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</rml>

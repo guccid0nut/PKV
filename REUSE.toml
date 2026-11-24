@@ -1,0 +1,201 @@
+# SPDX-License-Identifier: CC0-1.0
+# SPDX-FileCopyrightText: 2026 guccidonut and Project KONGOR V Contributors
+# REUSE 3.2 Machine-Readable Copyright & License Declaration for Project KONGOR V (https://github.com/guccid0nut/PKV)
+
+version = 1
+SPDX-PackageName = "Project KONGOR V (PKV)"
+SPDX-PackageSupplier = "guccid0nut <guccid0nut@users.noreply.github.com>"
+SPDX-PackageDownloadLocation = "https://github.com/guccid0nut/PKV"
+
+# 1. Default Repository Metadata, Configs, Project Files, Razor/Avalonia Views & Assets (AGPL-3.0-or-later)
+[[annotations]]
+path = [
+    ".agents/**",
+    ".config/**",
+    ".dockerignore",
+    ".editorconfig",
+    ".githooks/**",
+    ".github/**",
+    ".gitleaks.toml",
+    ".luarc.json",
+    ".psscriptanalyzer.psd1",
+    ".vscode/**",
+    "AGENTS.md",
+    "BannedSymbols.txt",
+    "CHANGELOG.md",
+    "CITATION.cff",
+    "CONTRIBUTING.md",
+    "Directory.Build.props",
+    "Directory.Build.targets",
+    "Directory.Packages.props",
+    "INTEROPERABILITY_AND_DMCA.md",
+    "LICENSE",
+    "NAMING_POLICY.md",
+    "NOTICE",
+    "ProjectKongor.slnx",
+    "ProjectKongor.slnx.DotSettings",
+    "README.md",
+    "SECURITY.md",
+    "THIRD_PARTY_NOTICES.md",
+    "docfx.json",
+    "global.json",
+    "kongor.cmd",
+    "kongor.ps1",
+    "llms.txt",
+    "pyproject.toml",
+    "stryker-config.json",
+    "artifacts/evidence/**",
+    "assets/hud/**",
+    "config/**",
+    "data/**",
+    "infra/**",
+    "scripts/**",
+    "sln-filters/**",
+    "src/**",
+    "tests/**",
+    "tools/**"
+]
+precedence = "under"
+SPDX-FileCopyrightText = "2026 guccidonut and Project KONGOR V Contributors"
+SPDX-License-Identifier = "AGPL-3.0-or-later"
+
+# 2. Documentation & Architecture Guides (CC-BY-NC-SA-4.0)
+[[annotations]]
+path = ["docs/**"]
+precedence = "override"
+SPDX-FileCopyrightText = "2026 guccidonut and Project KONGOR V Contributors"
+SPDX-License-Identifier = "CC-BY-NC-SA-4.0"
+
+# 3. Native C/C++ Modernization Layer Non-Source/Build Files (MPL-2.0)
+[[annotations]]
+path = [
+    "native/CMakeLists.txt",
+    "native/LICENSE",
+    "native/README.md",
+    "native/cmake/**",
+    "native/drivers/**",
+    "native/goose/**",
+    "native/include/**",
+    "native/proxies/**",
+    "native/rust/**",
+    "native/server/**",
+    "native/shared/**",
+    "native/tests/**",
+    "native/tools/kongor-cas/**",
+    "native/tools/kongor-metagen/**",
+    "native/tools/kongor-model-viewer/**",
+    "native/tools/kongor-physics-sandbox/**",
+    "native/tools/luac51/CMakeLists.txt",
+    "native/vulkan-layer/CMakeLists.txt",
+    "native/vulkan-layer/CMakePresets.json",
+    "native/vulkan-layer/VkLayer_hon_replay_capture.json",
+    "native/vulkan-layer/shaders/**",
+    "native/vulkan-layer/src/**"
+]
+precedence = "under"
+SPDX-FileCopyrightText = "2026 guccidonut and Project KONGOR V Contributors"
+SPDX-License-Identifier = "MPL-2.0"
+
+# 4. Blender 4.2+ Extension Non-Python Manifest/Docs (GPL-3.0-or-later + Anton Romanov MIT Notice)
+[[annotations]]
+path = ["src/tools/blender/io_scene_hon/**"]
+precedence = "under"
+SPDX-FileCopyrightText = [
+    "2024-2026 Anton Romanov, K2-Blender Contributors",
+    "2026 guccidonut and Project KONGOR V Contributors"
+]
+SPDX-License-Identifier = "GPL-3.0-or-later"
+
+# 5. Linux Kernel eBPF XDP Filters (Dual BSD-2-Clause / GPL-2.0-only)
+[[annotations]]
+path = [
+    "infra/ebpf/**",
+    "native/ebpf/**",
+    "native/rust/kongor_xdp_aya/ebpf/**"
+]
+precedence = "override"
+SPDX-FileCopyrightText = "2026 guccidonut and Project KONGOR V Contributors"
+SPDX-License-Identifier = "GPL-2.0-only OR BSD-2-Clause"
+
+# 6. Third-Party Submodules & Vendored Dependencies (Exact Upstream Licenses)
+[[annotations]]
+path = ["native/deps/rmlui/**"]
+precedence = "override"
+SPDX-FileCopyrightText = [
+    "2008-2014 CodePoint Ltd, Shift Technology Ltd",
+    "2019-2026 The RmlUi Team"
+]
+SPDX-License-Identifier = "MIT"
+
+[[annotations]]
+path = ["native/deps/libdeflate/**"]
+precedence = "override"
+SPDX-FileCopyrightText = "2016 Eric Biggers"
+SPDX-License-Identifier = "MIT"
+
+[[annotations]]
+path = ["native/deps/mimalloc/**"]
+precedence = "override"
+SPDX-FileCopyrightText = "2018-2024 Microsoft Corporation, Daan Leijen"
+SPDX-License-Identifier = "MIT"
+
+[[annotations]]
+path = ["native/deps/miniz/**"]
+precedence = "override"
+SPDX-FileCopyrightText = [
+    "2013-2014 RAD Game Tools and Valve Software",
+    "2010-2014 Rich Geldreich and Tenacious Software LLC"
+]
+SPDX-License-Identifier = "MIT"
+
+[[annotations]]
+path = ["native/deps/stb_truetype.h"]
+precedence = "override"
+SPDX-FileCopyrightText = "2009-2021 Sean Barrett"
+SPDX-License-Identifier = "MIT OR Unlicense"
+
+[[annotations]]
+path = ["native/vulkan-layer/deps/qrcodegen/**"]
+precedence = "override"
+SPDX-FileCopyrightText = "Project Nayuki"
+SPDX-License-Identifier = "MIT"
+
+[[annotations]]
+path = [
+    "native/vulkan-layer/include/vulkan/**",
+    "native/vulkan-layer/include/vk_video/**"
+]
+precedence = "override"
+SPDX-FileCopyrightText = "2015-2026 The Khronos Group Inc."
+SPDX-License-Identifier = "Apache-2.0 OR MIT"
+
+[[annotations]]
+path = ["native/tools/luac51/lua-5.1.5/**"]
+precedence = "override"
+SPDX-FileCopyrightText = "1994-2012 Lua.org, PUC-Rio"
+SPDX-License-Identifier = "MIT"
+
+[[annotations]]
+path = ["src/services/web-ui/wwwroot/lib/**"]
+precedence = "override"
+SPDX-FileCopyrightText = "Three.js Authors, Google Draco Contributors, Arseny Kapoulkine"
+SPDX-License-Identifier = "MIT AND Apache-2.0"
+
+[[annotations]]
+path = ["native/include/concurrentqueue.h"]
+precedence = "override"
+SPDX-FileCopyrightText = [
+    "2010-2011 Dmitry Vyukov",
+    "2013-2024 Cameron Desrochers",
+    "2026 guccidonut and Project KONGOR V Contributors"
+]
+SPDX-License-Identifier = "BSD-2-Clause"
+
+[[annotations]]
+path = ["src/libs/database-context/Persistence/Migrations/**"]
+precedence = "override"
+SPDX-FileCopyrightText = [
+    "2022-2026 [K]ONGOR and Contributors",
+    "2026 guccidonut and Project KONGOR V Contributors"
+]
+SPDX-License-Identifier = "AGPL-3.0-or-later"

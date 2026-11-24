@@ -1,0 +1,86 @@
+{
+  "schema_version": "2.0.0",
+  "dossier_id": "DOSSIER-WAVE3-XASH3D-INFRASTRUCTURE",
+  "created_utc": "2026-10-18T15:30:00Z",
+  "target": {
+    "binary_name": "k2_x64.dll",
+    "rva": "0x00090E90",
+    "symbol_name": "CArchive::Open / CArchive::ReadFile / CConsole::Execute / NativeGuardUnhandledExceptionFilter",
+    "calling_convention": "__fastcall (Win64 ABI)"
+  },
+  "triangulation": {
+    "static_source": "Ghidra ProjectKongor.rep + Xash3D-FWGS filesystem/console/crash reference analysis",
+    "dynamic_source": "NativeGuard runtime hooks + xUnit cross-tree vector parity verification"
+  },
+  "obligations": [
+    {
+      "id": "OBL-W3-01",
+      "category": "security_and_concurrency_guard",
+      "description": "Reject directory traversal ('..'), drive-letter colons, UNC paths, and Win32 reserved DOS device names before loose-file VFS lookup, and acquire std::shared_lock<std::shared_mutex> on g_archiveMapMutex during Kongor_NativeGuard_VfsFindFile.",
+      "status": "satisfied",
+      "satisfied_in": "native/proxies/native_guard/modern_archive_hook.cpp",
+      "verified_by_test": "tests/unit/tools/Kongor.Mcp.Tests/Xash3dWave3InfrastructureTests.cs"
+    },
+    {
+      "id": "OBL-W3-02",
+      "category": "algorithmic_invariant",
+      "description": "Replace linear console command prefix scans with a 128-bucket case-insensitive hash table whose collision chains are sorted alphabetically with early break when stricmp(entry.name, query) > 0.",
+      "status": "satisfied",
+      "satisfied_in": "native/proxies/native_guard/kongor_base_cmd.h",
+      "verified_by_test": "tests/unit/tools/Kongor.Mcp.Tests/Xash3dWave3InfrastructureTests.cs"
+    },
+    {
+      "id": "OBL-W3-03",
+      "category": "security_boundary",
+      "description": "Split multi-command console buffers on ';' and '\\n' only when outside double quotes, cap command buffers at 16384 characters, and block privileged/unsafe commands when dispatched from untrusted IPC sources.",
+      "status": "satisfied",
+      "satisfied_in": "native/proxies/native_guard/vfs_and_hooks.cpp",
+      "verified_by_test": "tests/unit/tools/Kongor.Mcp.Tests/Xash3dWave3InfrastructureTests.cs"
+    },
+    {
+      "id": "OBL-W3-04",
+      "category": "memory_safety",
+      "description": "Allocate uncompSize + 2 bytes for VFS decompression buffers, write a guaranteed trailing null byte (0x00) at [uncompSize] and a tail canary byte (0xDF) at [uncompSize + 1], and verify both bytes immediately after extraction.",
+      "status": "satisfied",
+      "satisfied_in": "native/proxies/native_guard/modern_archive_hook.cpp",
+      "verified_by_test": "tests/unit/tools/Kongor.Mcp.Tests/Xash3dWave3InfrastructureTests.cs"
+    },
+    {
+      "id": "OBL-W3-05",
+      "category": "crash_resilience",
+      "description": "Write and flush the Tier-1 minimal minidump (MiniDumpNormal | MiniDumpWithThreadInfo) FIRST before attempting the Tier-2 rich dump, and emit a 16-frame zero-allocation SEH-guarded Module+RVA stack walk into the stack-allocated crash banner.",
+      "status": "satisfied",
+      "satisfied_in": "native/proxies/native_guard/veh_crash_shield.cpp",
+      "verified_by_test": "tests/unit/tools/Kongor.Mcp.Tests/Xash3dWave3InfrastructureTests.cs"
+    },
+    {
+      "id": "OBL-W3-06",
+      "category": "crash_resilience",
+      "description": "Wrap native diagnostic format-string evaluation in an SEH __try / __except guard (SehSafeVsnprintf) that recovers with a deterministic '[SEH-FORMAT-FAULT]' fallback message on bad pointer dereferences.",
+      "status": "satisfied",
+      "satisfied_in": "native/proxies/native_guard/modern_archive_hook.h",
+      "verified_by_test": "tests/unit/tools/Kongor.Mcp.Tests/Xash3dWave3InfrastructureTests.cs"
+    },
+    {
+      "id": "OBL-HOOK-NO-OVERLAP",
+      "category": "hook_safety_invariant",
+      "description": "Enforce non-overlapping half-open patch intervals [target_rva, target_rva + patch_len) in RuntimePatchController::RegisterPatchSite and BinaryOverlayAndIpsPatchService::ValidateNonOverlappingPatchIntervals, rejecting colliding detour/NOP windows with '[RE2X64-OVERLAP]' before writing code bytes.",
+      "status": "satisfied",
+      "satisfied_in": "native/proxies/native_guard/runtime_patch_controller.cpp",
+      "verified_by_test": "tests/unit/tools/Kongor.Mcp.Tests/Wave4Phase14CrashAndHookSafetyTests.cs"
+    }
+  ],
+  "limitations_and_unknowns": {
+    "triangulation_status": "dynamically_confirmed",
+    "triangulation_notes": "Dynamically confirmed in live version.dll NativeGuard runtime hooks, native_guard_unit_tests.exe SEH/minidump/trampoline harness, Xash3dWave3InfrastructureTests, and Wave4Phase14CrashAndHookSafetyTests.",
+    "unknown_offsets": [
+      {
+        "offset": "CConsole internal vtable indices beyond Execute (+0x00)",
+        "description": "Unused CConsole virtual slots beyond Execute",
+        "status": "waived",
+        "rationale": "BaseCmdTable intercepts commands at the Hooked_CConsole_Execute detour boundary before forwarding non-custom commands to original CConsole::Execute."
+      }
+    ],
+    "indirect_calls": []
+  }
+}

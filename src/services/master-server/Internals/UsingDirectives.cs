@@ -1,0 +1,66 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// SPDX-FileCopyrightText: 2022-2026 [K]ONGOR and Contributors
+// SPDX-FileCopyrightText: 2026 guccidonut and Project KONGOR V Contributors
+// Project KONGOR V (https://github.com/guccidonut/PKV) -- Upstream lineage: https://github.com/Project-KONGOR-Open-Source
+
+global using System.Linq.Expressions;
+global using System.Net;
+global using System.Net.Sockets;
+global using System.Reflection;
+global using System.Runtime.CompilerServices;
+global using System.Security.Cryptography;
+global using System.Text;
+global using System.Text.Json;
+global using System.Text.RegularExpressions;
+global using System.Threading.RateLimiting;
+global using ASPIRE.Common.Communication;
+global using ASPIRE.Common.Constants;
+global using ASPIRE.Common.Enumerations;
+global using ASPIRE.Common.Enumerations.Statistics;
+global using ASPIRE.Common.Extensions.Cryptography;
+global using ASPIRE.Common.ServiceDefaults;
+global using KONGOR.MasterServer.Configuration.Economy;
+global using KONGOR.MasterServer.Configuration.Mastery;
+global using KONGOR.MasterServer.Configuration;
+global using KONGOR.MasterServer.Configuration.Plinko;
+global using KONGOR.MasterServer.Configuration.Store;
+global using KONGOR.MasterServer.Constants;
+global using KONGOR.MasterServer.Extensions.Cache;
+global using KONGOR.MasterServer.Handlers.CDN;
+global using KONGOR.MasterServer.Handlers.ClientRequester;
+global using KONGOR.MasterServer.Handlers.Patch;
+global using KONGOR.MasterServer.Handlers.SRP;
+global using KONGOR.MasterServer.Services;
+global using KONGOR.MasterServer.Services.Requester;
+global using KONGOR.MasterServer.Helpers.Serialisation;
+global using KONGOR.MasterServer.Models.Configuration;
+global using KONGOR.MasterServer.Models.RequestResponse.GameData;
+global using KONGOR.MasterServer.Models.RequestResponse.Patch;
+global using KONGOR.MasterServer.Models.RequestResponse.ServerManagement;
+global using KONGOR.MasterServer.Models.RequestResponse.SRP;
+global using KONGOR.MasterServer.Models.RequestResponse.Stats;
+global using KONGOR.MasterServer.Models.RequestResponse.Store;
+global using MERRICK.DatabaseContext.Entities.Core;
+global using MERRICK.DatabaseContext.Entities.Game;
+global using MERRICK.DatabaseContext.Entities.Relational;
+global using MERRICK.DatabaseContext.Entities.Statistics;
+global using NEXUS.Contracts.Data;
+global using NEXUS.Contracts.Domain;
+global using NEXUS.Contracts.Replay;
+global using NEXUS.Contracts.Telemetry;
+global using MERRICK.DatabaseContext.Persistence;
+global using MERRICK.DatabaseContext.Extensions;
+global using Role = MERRICK.DatabaseContext.Entities.Utility.Role;
+global using Microsoft.AspNetCore.HttpLogging;
+global using Microsoft.AspNetCore.Mvc;
+global using Microsoft.AspNetCore.RateLimiting;
+global using Microsoft.EntityFrameworkCore;
+global using Microsoft.Extensions.Caching.Memory;
+global using Microsoft.Extensions.FileProviders;
+global using Microsoft.Extensions.Options;
+global using Microsoft.OpenApi;
+global using OneOf;
+global using ASPIRE.Common.Serialization.PHP;
+global using ASPIRE.Common.Services.Mastery;
+global using SecureRemotePassword;
+global using StackExchange.Redis;

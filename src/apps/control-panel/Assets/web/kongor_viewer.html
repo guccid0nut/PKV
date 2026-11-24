@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <title>3D Avatar Viewport</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            user-select: none;
+            overflow: hidden;
+        }
+
+        body, html {
+            width: 100%;
+            height: 100%;
+            background: #0F172A !important;
+        }
+
+        #container {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #0F172A !important;
+        }
+
+        canvas {
+            width: 100% !important;
+            height: 100% !important;
+            display: block;
+            outline: none;
+            cursor: grab;
+            background: #0F172A !important;
+        }
+
+        canvas:active {
+            cursor: grabbing;
+        }
+    </style>
+    <!-- Three.js r16x Local Vendored ESM + Kongor Viewer Core (#120, #86) -->
+    <script type="importmap">
+    {
+      "imports": {
+        "three": "/lib/three/three.module.min.js"
+      }
+    }
+    </script>
+    <script src="/lib/three/three.r16x.bundle.js"></script>
+    <script src="/js/kongor-viewer-core.js"></script>
+</head>
+<body>
+<div id="container">
+    <canvas id="avatar-canvas"></canvas>
+</div>
+
+<script>
+    (function () {
+        'use strict';
+
+        const container = document.getElementById('container');
+        const canvas = document.getElementById('avatar-canvas');
+
+        const avatarState = {
+            initialized: false,
+            modelLoaded: false,
+            meshCount: 0,
+            clipNames: [],
+            activeAnimation: null,
+            frameCount: 0,
+            lastError: null
+        };
+        window.__kongorAvatarState = avatarState;
+
+        function postHostLog(level, message, details) {
+            const formatted = details ? `[Avatar3D][${level}] ${message} | ${details}` : `[Avatar3D][${level}] ${message}`;
+            if (level === 'ERROR') {
+                avatarState.lastError = formatted;
+                console.error(formatted);
+            } else if (level === 'WARN') {
+                console.warn(formatted);
+            } else {
+                console.info(formatted);
+            }
+            try {
+                if (window.chrome && window.chrome.webview && typeof window.chrome.webview.postMessage === 'function') {
+                    window.chrome.webview.postMessage(JSON.stringify({
+                        source: 'kongor_viewer',
+                        level: level,
+                        message: message,
+                        details: details || ''
+                    }));
+                }
+            } catch (_) {
+            }
+        }
+
+        function renderFallbackBanner(text) {
+            if (typeof KongorViewerCore !== 'undefined' && KongorViewerCore && KongorViewerCore.renderZeroBlankErrorBanner) {
+                KongorViewerCore.renderZeroBlankErrorBanner(container, text);
+                return;
+            }
+            if (!container) return;
+            const banner = document.createElement('div');
+            banner.style.cssText = 'position:absolute;inset:8px;padding:10px;border-radius:8px;background:rgba(127,29,29,0.92);border:1px solid #f87171;color:#fecaca;font:11px/1.4 Segoe UI,sans-serif;overflow:auto;z-index:20;';
+            banner.textContent = text;
+            container.appendChild(banner);
+        }
+
+        window.addEventListener('error', (ev) => {
+            postHostLog('ERROR', 'Unhandled window error', ev && ev.message ? `${ev.message} (${ev.filename || 'inline'}:${ev.lineno || 0})` : String(ev));
+        });
+
+        window.addEventListener('unhandledrejection', (ev) => {
+            const reason = ev && ev.reason ? (ev.reason.stack || ev.reason.message || String(ev.reason)) : 'unknown';
+            postHostLog('ERROR', 'Unhandled promise rejection', reason);
+        });
+
+        let scene, camera, renderer, mixer, clock;
+        let idleAction = null;
+        let walkAction = null;
+        let currentModel = null;
+
+        let targetRotationY = 0;
+        let currentRotationY = 0;
+        let targetRotationX = 0;
+        let currentRotationX = 0;
+
+        let isDragging = false;
+        let prevMouseX = 0;
+        let prevMouseY = 0;
+        let totalDragDistance = 0;
+        let dragRotationOffset = 0;
+
+        let isWalkingState = false;
+        let cycleInterval = null;
+
+        // Empath official Heroes of Newerth voice interaction voicelines
+        const empathVoiceLines = [
+            '../sounds/empath/select_1.ogg',
+            '../sounds/empath/select_2.ogg',
+            '../sounds/empath/select_3.ogg',
+            '../sounds/empath/select_4.ogg',
+            '../sounds/empath/select_5.ogg',
+            '../sounds/empath/select_flavour_1.ogg',
+            '../sounds/empath/select_flavour_2.ogg',
+            '../sounds/empath/select_flavour_3.ogg',
+            '../sounds/empath/select_flavour_4.ogg',
+            '../sounds/empath/select_flavour_5.ogg',
+            '../sounds/empath/hero_select.ogg',
+            '../sounds/empath/taunt_prior.ogg',
+            '../sounds/empath/taunt_after.ogg',
+            '../sounds/empath/move_1.ogg',
+            '../sounds/empath/move_2.ogg',
+            '../sounds/empath/move_3.ogg',
+            '../sounds/empath/move_4.ogg',
+            '../sounds/empath/move_5.ogg',
+            '../sounds/empath/attack_1.ogg',
+            '../sounds/empath/attack_2.ogg',
+            '../sounds/empath/attack_3.ogg',
+            '../sounds/empath/attack_4.ogg'
+        ];
+
+        let currentVoiceAudio = null;
+        let lastVoiceIndex = -1;
+
+        function playRandomVoiceLine() {
+            try {
+                if (currentVoiceAudio) {
+                    currentVoiceAudio.pause();
+                    currentVoiceAudio.currentTime = 0;
+                }
+
+                let randomIndex;
+                do {
+                    randomIndex = Math.floor(Math.random() * empathVoiceLines.length);
+                } while (randomIndex === lastVoiceIndex && empathVoiceLines.length > 1);
+
+                lastVoiceIndex = randomIndex;
+                const voiceUrl = empathVoiceLines[randomIndex];
+
+                currentVoiceAudio = new Audio(voiceUrl);
+                currentVoiceAudio.volume = 0.9;
+                currentVoiceAudio.play().catch((err) => {
+                    postHostLog('WARN', 'Voice playback warning', err && err.message ? err.message : String(err));
+                });
+            } catch (e) {
+                postHostLog('WARN', 'Could not play voice line', e && e.message ? e.message : String(e));
+            }
+        }
+
+        function initThree() {
+            if (typeof THREE === 'undefined' || typeof KongorViewerCore === 'undefined') {
+                const missingMsg = `[Avatar3D] Required 3D runtime bundle missing (THREE=${typeof THREE}, KongorViewerCore=${typeof KongorViewerCore}). Rebuild NEXUS.ControlPanel.GUI to stage Assets/lib/three and Assets/js/kongor-viewer-core.js.`;
+                postHostLog('ERROR', 'Missing Three.js or KongorViewerCore script', missingMsg);
+                renderFallbackBanner(missingMsg);
+                return;
+            }
+
+            scene = new THREE.Scene();
+            clock = new THREE.Clock();
+
+            const width = Math.max(200, container.clientWidth || 240);
+            const height = Math.max(200, container.clientHeight || 300);
+
+            camera = new THREE.PerspectiveCamera(34, width / height, 0.1, 1000);
+            camera.position.set(0, 22, 85);
+            camera.lookAt(0, 18, 0);
+
+            // Enable WebGL2 for GPU DataTexture morph target acceleration
+            let glContext = null;
+            try {
+                glContext = canvas.getContext('webgl2', {
+                    alpha: false,
+                    antialias: true,
+                    powerPreference: 'high-performance'
+                });
+            } catch (e) {
+                postHostLog('WARN', 'WebGL2 context probe warning', e && e.message ? e.message : String(e));
+            }
+
+            renderer = new THREE.WebGLRenderer({
+                canvas: canvas,
+                context: glContext || undefined,
+                alpha: false,
+                antialias: true,
+                powerPreference: 'high-performance'
+            });
+            renderer.setClearColor(0x0F172A, 1.0);
+            renderer.setSize(width, height);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+            KongorViewerCore.configureRendererColorSpace(renderer);
+            renderer.toneMapping = THREE.AgXToneMapping !== undefined ? THREE.AgXToneMapping : THREE.ACESFilmicToneMapping;
+            renderer.toneMappingExposure = 1.30;
+
+            // Lighting (Vulkan/WebGPU-Grade Cinematic Studio Rig)
+            const ambientLight = new THREE.AmbientLight(0xffffff, KongorViewerCore.calibrateLightIntensity(1.4));
+            scene.add(ambientLight);
+
+            const keyLight = new THREE.DirectionalLight(0x38bdf8, KongorViewerCore.calibrateLightIntensity(2.7)); // Radiant Neon Cyan Key
+            keyLight.position.set(45, 75, 65);
+            scene.add(keyLight);
+
+            const rimLight = new THREE.DirectionalLight(0xc084fc, KongorViewerCore.calibrateLightIntensity(2.9)); // Electric Violet Rim
+            rimLight.position.set(-50, 60, -50);
+            scene.add(rimLight);
+
+            const fillLight = new THREE.DirectionalLight(0xfbbf24, KongorViewerCore.calibrateLightIntensity(1.5)); // Golden accent fill
+            fillLight.position.set(0, -20, 50);
+            scene.add(fillLight);
+
+            // Ground Contact Shadow Projection
+            const shadowCanvas = document.createElement('canvas');
+            shadowCanvas.width = 128;
+            shadowCanvas.height = 128;
+            const shadowCtx = shadowCanvas.getContext('2d');
+            if (shadowCtx) {
+                const gradient = shadowCtx.createRadialGradient(64, 64, 0, 64, 64, 64);
+                gradient.addColorStop(0, 'rgba(0, 0, 0, 0.7)');
+                gradient.addColorStop(0.45, 'rgba(0, 0, 0, 0.25)');
+                gradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
+                shadowCtx.fillStyle = gradient;
+                shadowCtx.fillRect(0, 0, 128, 128);
+
+                const shadowTexture = new THREE.CanvasTexture(shadowCanvas);
+                const shadowGeo = new THREE.PlaneGeometry(42, 42);
+                const shadowMat = new THREE.MeshBasicMaterial({
+                    map: shadowTexture,
+                    transparent: true,
+                    opacity: 0.82,
+                    depthWrite: false
+                });
+                const shadowMesh = new THREE.Mesh(shadowGeo, shadowMat);
+                shadowMesh.rotation.x = -Math.PI / 2;
+                shadowMesh.position.y = -3.4;
+                scene.add(shadowMesh);
+            }
+
+            avatarState.initialized = true;
+            postHostLog('INFO', 'Three.js viewport initialized', `rev=${THREE.REVISION}, size=${width}x${height}, webgl2=${Boolean(renderer.capabilities && renderer.capabilities.isWebGL2)}`);
+
+            loadAvatarModel();
+            setupInteraction();
+
+            renderer.setAnimationLoop(renderLoop);
+
+            window.addEventListener('resize', onResize);
+
+            if (KongorViewerCore.observeDevicePixelCanvasResize) {
+                KongorViewerCore.observeDevicePixelCanvasResize(container, canvas, renderer, camera);
+            } else if (window.ResizeObserver) {
+                const ro = new ResizeObserver(() => {
+                    onResize();
+                });
+                ro.observe(container);
+                ro.observe(document.body);
+            }
+        }
+
+        function onResize() {
+            const width = Math.max(200, container.clientWidth || window.innerWidth || 240);
+            const height = Math.max(200, container.clientHeight || window.innerHeight || 300);
+            if (camera && renderer) {
+                camera.aspect = width / height;
+                camera.updateProjectionMatrix();
+                renderer.setSize(width, height);
+                renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+            }
+        }
+
+        let avatarFetchAbortController = null;
+        let avatarWatchEnabled = false;
+        let avatarWatchTimer = null;
+
+        async function fetchAvatarBufferWithFallback(primaryUrl, signal) {
+            const candidates = primaryUrl === '../models/empath_cn.glb'
+                ? [primaryUrl, './empath_cn.glb']
+                : [primaryUrl];
+            let lastStatusError = null;
+            for (let i = 0; i < candidates.length; i++) {
+                const candidateUrl = candidates[i];
+                try {
+                    const resp = await fetch(candidateUrl, signal ? { signal: signal } : {});
+                    if (resp.ok) {
+                        const buf = await resp.arrayBuffer();
+                        if (buf && buf.byteLength > 0) {
+                            return { buffer: buf, resolvedUrl: candidateUrl };
+                        }
+                    } else {
+                        lastStatusError = new Error(`HTTP ${resp.status} loading ${candidateUrl}`);
+                    }
+                } catch (err) {
+                    if (err && err.name === 'AbortError') throw err;
+                    lastStatusError = err;
+                }
+            }
+            throw lastStatusError || new Error(`Failed to fetch avatar model from ${primaryUrl}`);
+        }
+
+        async function loadAvatarModel(options) {
+            const opts = options || {};
+            const keepCamera = Boolean(opts.keepCamera);
+            const savedCamPos = (keepCamera && camera) ? camera.position.clone() : null;
+            const savedRotY = keepCamera ? currentRotationY : 0;
+            const savedRotX = keepCamera ? currentRotationX : 0;
+
+            if (avatarFetchAbortController) {
+                try { avatarFetchAbortController.abort(); } catch (_) {}
+            }
+            avatarFetchAbortController = typeof AbortController !== 'undefined' ? new AbortController() : null;
+
+            const loader = KongorViewerCore.createKongorGLTFLoader();
+            const modelUrl = opts.url || '../models/empath_cn.glb';
+
+            try {
+                const fetched = await fetchAvatarBufferWithFallback(
+                    modelUrl,
+                    avatarFetchAbortController ? avatarFetchAbortController.signal : null
+                );
+
+                loader.parse(fetched.buffer, '', (gltf) => {
+                    if (currentModel && scene) {
+                        KongorViewerCore.disposeObject3DResources(currentModel, renderer, mixer);
+                        scene.remove(currentModel);
+                    }
+
+                    currentModel = gltf.scene;
+                    currentModel.position.set(0, -3.5, 0);
+                    // Significantly enlarged for crisp feature visibility
+                    currentModel.scale.set(0.38, 0.38, 0.38);
+
+                    let meshCount = 0;
+                    currentModel.traverse((child) => {
+                        if (child.isMesh) {
+                            meshCount++;
+                            if (child.material) {
+                                child.material.side = THREE.DoubleSide;
+                                child.material.metalness = 0.22;
+                                child.material.roughness = 0.52;
+                                child.material.envMapIntensity = 1.35;
+                                if (child.material.map) {
+                                    KongorViewerCore.configureTextureColorSpace(child.material.map);
+                                }
+                                if (child.material.emissiveMap) {
+                                    KongorViewerCore.configureTextureColorSpace(child.material.emissiveMap);
+                                }
+                                child.material.needsUpdate = true;
+                            }
+                        }
+                    });
+
+                    if (KongorViewerCore.applyFilamentPbrShaderUpgrades) {
+                        KongorViewerCore.applyFilamentPbrShaderUpgrades(currentModel, renderer);
+                    }
+
+                    scene.add(currentModel);
+
+                    if (keepCamera && savedCamPos && camera) {
+                        camera.position.copy(savedCamPos);
+                        currentRotationY = savedRotY;
+                        currentRotationX = savedRotX;
+                    }
+
+                    mixer = new THREE.AnimationMixer(currentModel);
+                    const clips = gltf.animations || [];
+
+                    const idleClip = clips.find(c => /idle/i.test(c.name)) ||
+                        clips.find(c => /default/i.test(c.name)) ||
+                        clips[0];
+
+                    const walkClip = clips.find(c => /walk/i.test(c.name)) ||
+                        clips.find(c => /run/i.test(c.name)) ||
+                        (clips.length > 1 ? clips[1] : idleClip);
+
+                    const knockClip = clips.find(c => /knock/i.test(c.name)) ||
+                        clips.find(c => /death/i.test(c.name));
+
+                    if (idleClip) {
+                        idleAction = mixer.clipAction(idleClip, currentModel);
+                        idleAction.setEffectiveWeight(1.0);
+                        idleAction.setEffectiveTimeScale(1.0);
+                    }
+
+                    if (walkClip && walkClip !== idleClip) {
+                        walkAction = mixer.clipAction(walkClip, currentModel);
+                        walkAction.setEffectiveWeight(1.0);
+                        walkAction.setEffectiveTimeScale(1.0);
+                    }
+
+                    if (knockClip) {
+                        knockAction = mixer.clipAction(knockClip, currentModel);
+                        knockAction.setLoop(THREE.LoopOnce);
+                        knockAction.clampWhenFinished = true;
+                    }
+
+                    avatarState.modelLoaded = true;
+                    avatarState.meshCount = meshCount;
+                    avatarState.clipNames = clips.map(c => c.name);
+                    avatarState.activeAnimation = idleClip ? idleClip.name : null;
+
+                    postHostLog('INFO', 'Empath 3D model loaded', `url=${fetched.resolvedUrl}, bytes=${fetched.buffer.byteLength}, meshes=${meshCount}, clips=${clips.length}`);
+
+                    startAnimationCycle();
+                }, (err) => {
+                    const errText = err && err.message ? err.message : String(err);
+                    postHostLog('ERROR', 'Error parsing Empath GLB model', errText);
+                    if (KongorViewerCore.renderZeroBlankErrorBanner) {
+                        KongorViewerCore.renderZeroBlankErrorBanner(container, `[Avatar3D] Parse error: ${errText}`);
+                    }
+                });
+            } catch (err) {
+                if (err && err.name === 'AbortError') return;
+                const errText = err && err.message ? err.message : String(err);
+                postHostLog('ERROR', 'Error loading Empath GLB model', errText);
+                if (KongorViewerCore.renderZeroBlankErrorBanner) {
+                    KongorViewerCore.renderZeroBlankErrorBanner(container, `[Avatar3D] Load error: ${errText}`);
+                }
+            }
+        }
+
+        let knockAction = null;
+        let lastKnockTime = 0;
+        let isKnockedState = false;
+
+        window.triggerKnockout = function () {
+            const now = Date.now();
+            if (now - lastKnockTime < 10000) {
+                return; // Max once every 10 seconds
+            }
+            lastKnockTime = now;
+            if (!knockAction || !mixer) return;
+
+            isKnockedState = true;
+            avatarState.activeAnimation = 'knock';
+            const currentAction = isWalkingState ? walkAction : idleAction;
+            knockAction.reset();
+            knockAction.setEffectiveWeight(1.0);
+            knockAction.setEffectiveTimeScale(1.0);
+            if (currentAction) {
+                knockAction.crossFadeFrom(currentAction, 0.15, true);
+            }
+            knockAction.play();
+
+            setTimeout(() => {
+                if (isKnockedState) {
+                    isKnockedState = false;
+                    if (idleAction) {
+                        avatarState.activeAnimation = 'idle';
+                        idleAction.reset();
+                        idleAction.setEffectiveWeight(1.0);
+                        idleAction.crossFadeFrom(knockAction, 0.4, true);
+                        idleAction.play();
+                    }
+                }
+            }, 2800);
+        };
+
+        function startAnimationCycle() {
+            if (!idleAction) return;
+
+            // Start with IDLE (7s)
+            isWalkingState = false;
+            avatarState.activeAnimation = 'idle';
+            idleAction.reset().play();
+
+            if (cycleInterval) clearInterval(cycleInterval);
+
+            cycleInterval = setInterval(() => {
+                if (isKnockedState) return;
+
+                if (isWalkingState) {
+                    isWalkingState = false;
+                    if (walkAction && idleAction && walkAction !== idleAction) {
+                        avatarState.activeAnimation = 'idle';
+                        idleAction.reset();
+                        idleAction.setEffectiveWeight(1.0);
+                        idleAction.crossFadeFrom(walkAction, 0.5, true);
+                        idleAction.play();
+                    }
+                } else {
+                    isWalkingState = true;
+                    if (walkAction && idleAction && walkAction !== idleAction) {
+                        avatarState.activeAnimation = 'walk';
+                        walkAction.reset();
+                        walkAction.setEffectiveWeight(1.0);
+                        walkAction.crossFadeFrom(idleAction, 0.5, true);
+                        walkAction.play();
+                    }
+                }
+            }, 7000);
+        }
+
+        function setupInteraction() {
+            canvas.addEventListener('mousedown', (e) => {
+                isDragging = true;
+                prevMouseX = e.clientX;
+                prevMouseY = e.clientY;
+                totalDragDistance = 0;
+            });
+
+            window.addEventListener('mouseup', () => {
+                isDragging = false;
+            });
+
+            window.addEventListener('mousemove', (e) => {
+                if (isDragging) {
+                    const deltaX = e.clientX - prevMouseX;
+                    const deltaY = e.clientY - prevMouseY;
+                    totalDragDistance += Math.abs(deltaX) + Math.abs(deltaY);
+                    dragRotationOffset += deltaX * 0.015;
+                    prevMouseX = e.clientX;
+                    prevMouseY = e.clientY;
+                } else {
+                    const rect = canvas.getBoundingClientRect();
+                    const centerX = rect.left + rect.width / 2;
+                    const centerY = rect.top + rect.height / 2;
+
+                    const diffX = (e.clientX - centerX) / (window.innerWidth || 1);
+                    const diffY = (e.clientY - centerY) / (window.innerHeight || 1);
+
+                    targetRotationY = Math.max(-0.65, Math.min(0.65, diffX * 1.6));
+                    targetRotationX = Math.max(-0.2, Math.min(0.2, diffY * 0.7));
+                }
+            });
+
+            canvas.addEventListener('click', () => {
+                // Only trigger voiceline if it was a direct click and not a drag rotation
+                if (totalDragDistance < 8) {
+                    playRandomVoiceLine();
+                }
+            });
+
+            window.addEventListener('keydown', (e) => {
+                if (e.key === 'w' || e.key === 'W') {
+                    avatarWatchEnabled = !avatarWatchEnabled;
+                    if (avatarWatchTimer) {
+                        clearInterval(avatarWatchTimer);
+                        avatarWatchTimer = null;
+                    }
+                    if (avatarWatchEnabled) {
+                        avatarWatchTimer = setInterval(() => loadAvatarModel({ keepCamera: true }), 2000);
+                    }
+                    if (KongorViewerCore.showViewerToast) {
+                        KongorViewerCore.showViewerToast(container, `--watch Live Reload: ${avatarWatchEnabled ? 'ON' : 'OFF'}`);
+                    }
+                } else if (e.ctrlKey && (e.key === 'ArrowUp' || e.key === 'ArrowDown')) {
+                    e.preventDefault();
+                    loadAvatarModel({ keepCamera: true });
+                }
+            });
+        }
+
+        function renderLoop() {
+            const delta = Math.min(clock.getDelta(), 0.1);
+            if (mixer) {
+                mixer.update(delta);
+            }
+
+            if (currentModel) {
+                currentRotationY += (targetRotationY + dragRotationOffset - currentRotationY) * 0.08;
+                currentRotationX += (targetRotationX - currentRotationX) * 0.08;
+
+                currentModel.rotation.y = currentRotationY;
+                currentModel.rotation.x = currentRotationX;
+            }
+
+            renderer.render(scene, camera);
+            avatarState.frameCount++;
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initThree);
+        } else {
+            initThree();
+        }
+    })();
+</script>
+</body>
+</html>

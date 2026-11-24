@@ -1,0 +1,129 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="using:NEXUS.ControlPanel.GUI.ViewModels"
+             xmlns:models="using:NEXUS.ControlPanel.GUI.Services.Models"
+             mc:Ignorable="d" d:DesignWidth="950" d:DesignHeight="700"
+             x:Class="NEXUS.ControlPanel.GUI.Views.LiveLogsView"
+             x:DataType="vm:LiveLogsViewModel">
+
+    <Grid RowDefinitions="Auto,Auto,Auto,*" Margin="20">
+
+        <!-- Controls & Filters Top Bar (Responsive Wrap Layout) -->
+        <Border Grid.Row="0" Classes="card" Margin="0,0,0,10" Padding="12">
+            <StackPanel Spacing="8">
+                <!-- Search Box (Full Width) -->
+                <TextBox Text="{Binding SearchText}" Watermark="🔍 Search log messages or service..." Margin="0,0,0,4" />
+
+                <!-- Filters & Action Buttons Toolbar -->
+                <WrapPanel Orientation="Horizontal">
+                    <!-- Service Filter Dropdown -->
+                    <ComboBox ItemsSource="{Binding AvailableServiceFilters}"
+                              SelectedItem="{Binding SelectedServiceFilter}" Margin="0,0,8,8" Width="140" />
+
+                    <!-- Level Filter Dropdown -->
+                    <ComboBox ItemsSource="{Binding AvailableLevelFilters}"
+                              SelectedItem="{Binding SelectedLevelFilter}" Margin="0,0,8,8" Width="120" />
+
+                    <!-- Mask / Reveal Paths Button -->
+                    <Button Classes="secondary" Command="{Binding ToggleGlobalPathMaskingCommand}" Margin="0,0,8,8"
+                            ToolTip.Tip="Toggle censoring of hardcoded filesystem user paths in view">
+                        <TextBlock Text="{Binding MaskPathsButtonText}" FontSize="12" />
+                    </Button>
+
+                    <!-- Copy Logs Button -->
+                    <Button Classes="primary" Command="{Binding CopyLogsCommand}" Margin="0,0,8,8"
+                            ToolTip.Tip="Copy raw full logs (with all exact paths) to clipboard">
+                        <TextBlock Text="📋 Copy Logs" FontSize="12" />
+                    </Button>
+
+                    <!-- Clear Logs Button -->
+                    <Button Classes="secondary" Command="{Binding ClearLogsCommand}" Margin="0,0,8,8">
+                        <TextBlock Text="🗑 Clear" FontSize="12" />
+                    </Button>
+
+                    <!-- Auto-Scroll Toggle Button -->
+                    <Button Classes="secondary" Command="{Binding ToggleAutoScrollCommand}" Margin="0,0,8,8"
+                            ToolTip.Tip="Toggle automatic scrolling to latest log entries">
+                        <TextBlock Text="{Binding AutoScrollButtonText}" FontSize="12" />
+                    </Button>
+
+                    <!-- Log Counter Badge -->
+                    <Border Background="#1E293B" BorderBrush="#334155" BorderThickness="1" CornerRadius="8"
+                            Padding="10,6" Margin="0,0,8,8" VerticalAlignment="Center">
+                        <TextBlock Text="{Binding LogCount, StringFormat='{}{0} lines'}" FontSize="12"
+                                   Foreground="#00F0FF" FontWeight="Bold" />
+                    </Border>
+                </WrapPanel>
+            </StackPanel>
+        </Border>
+
+        <!-- Copied Notification Toast -->
+        <Border Grid.Row="1" IsVisible="{Binding IsCopyNotificationVisible}" Background="#064E3B" BorderBrush="#10B981"
+                BorderThickness="1" CornerRadius="8" Padding="10,6" Margin="0,0,0,10">
+            <TextBlock Text="{Binding CopyNotificationText}" Foreground="#34D399" FontWeight="Bold" FontSize="12"
+                       HorizontalAlignment="Center" />
+        </Border>
+
+        <!-- Status / Error Banner (Green "100% ERROR FREE" / Red "EACH ERROR IS ONE STEP CLOSER") -->
+        <Border Grid.Row="2"
+                Background="{Binding ErrorBannerBackground}"
+                BorderBrush="{Binding ErrorBannerBorder}"
+                BorderThickness="1.5"
+                CornerRadius="8"
+                Padding="14,8"
+                Margin="0,0,0,10">
+            <Grid ColumnDefinitions="*,Auto">
+                <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                    <TextBlock Text="{Binding ErrorBannerText}"
+                               Foreground="{Binding ErrorBannerForeground}"
+                               FontFamily="Cascadia Mono, Consolas, Courier New, monospace"
+                               FontWeight="Bold"
+                               FontSize="13"
+                               LetterSpacing="0.5" />
+                </StackPanel>
+                <Border Grid.Column="1"
+                        Background="#0A1120"
+                        BorderBrush="{Binding ErrorBannerBorder}"
+                        BorderThickness="1"
+                        CornerRadius="6"
+                        Padding="8,3"
+                        VerticalAlignment="Center">
+                    <TextBlock Text="{Binding ErrorCount, StringFormat='{}{0} Errors'}"
+                               Foreground="{Binding ErrorBannerForeground}"
+                               FontFamily="Cascadia Mono, Consolas, Courier New, monospace"
+                               FontSize="11"
+                               FontWeight="Bold" />
+                </Border>
+            </Grid>
+        </Border>
+
+        <!-- Live Terminal Output Area (Website Dark Slate Terminal) -->
+        <Border Grid.Row="3" Background="#06090E" CornerRadius="10" BorderBrush="#1E293B" BorderThickness="1"
+                Padding="14">
+            <ListBox x:Name="LogListBox" ItemsSource="{Binding FilteredLogs}" Background="Transparent" BorderThickness="0"
+                     ScrollViewer.VerticalScrollBarVisibility="Auto">
+                <ListBox.ItemTemplate>
+                    <DataTemplate x:DataType="models:LogMessage">
+                        <Border Background="Transparent" Padding="4,2">
+                            <SelectableTextBlock Text="{Binding MaskedDisplayText}"
+                                                 FontFamily="Cascadia Mono, Consolas, Courier New, monospace"
+                                                 FontSize="12"
+                                                 LineHeight="18"
+                                                 Foreground="#E2E8F0"
+                                                 TextWrapping="Wrap" />
+                        </Border>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+                <ListBox.Styles>
+                    <Style Selector="ListBoxItem">
+                        <Setter Property="Padding" Value="2,1" />
+                        <Setter Property="MinHeight" Value="20" />
+                    </Style>
+                </ListBox.Styles>
+            </ListBox>
+        </Border>
+
+    </Grid>
+</UserControl>

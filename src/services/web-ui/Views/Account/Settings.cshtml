@@ -1,0 +1,1326 @@
+@* ReSharper disable All *@
+@model AccountSettingsViewModel
+@{
+    ViewData["Title"] = "Account Settings";
+}
+
+<div class="max-w-6xl mx-auto px-4 py-8 space-y-8 animate-fade-in">
+    <!-- Breadcrumb & Top Status Badges -->
+    <div class="flex flex-wrap items-center justify-between gap-4">
+        <div class="flex items-center gap-3">
+            <a asp-controller="Home" asp-action="Index"
+               class="text-slate-400 hover:text-white text-sm font-medium transition-colors">
+                <span>🏠 Home</span>
+            </a>
+            <span class="text-slate-600">/</span>
+            <span class="text-purple-400 text-sm font-bold">Account Settings</span>
+        </div>
+        <div class="flex flex-wrap items-center gap-2.5">
+            @if (Model.IsStreamer)
+            {
+                <button type="button" onclick="openStreamerModal()"
+                        class="px-3 py-1 rounded-full text-xs font-bold bg-[#9146FF]/20 text-[#C499FF] border border-[#9146FF]/40 shadow-sm flex items-center gap-1.5 hover:bg-[#9146FF]/30 transition-all cursor-pointer">
+                    <i class="fab fa-twitch text-[#9146FF]"></i> VERIFIED STREAMER
+                </button>
+            }
+            else if (Model.HasPendingStreamerApplication)
+            {
+                <button type="button" onclick="openStreamerModal()"
+                        class="px-3 py-1 rounded-full text-xs font-bold bg-amber-500/20 text-amber-300 border border-amber-500/40 shadow-sm flex items-center gap-1.5 hover:bg-amber-500/30 transition-all cursor-pointer">
+                    <span>⏳</span> STREAMER PENDING
+                </button>
+            }
+
+            @if (Model.HasApprovedHostAccount)
+            {
+                <button type="button" onclick="openHostModal()"
+                        class="px-3 py-1 rounded-full text-xs font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 shadow-sm flex items-center gap-1.5 hover:bg-emerald-500/30 transition-all cursor-pointer">
+                    <span>🖥️</span> COMMUNITY HOST @(Model.ApprovedHostCount > 1 ? $"({Model.ApprovedHostCount})" : "")
+                </button>
+            }
+            else if (Model.HasPendingHostApplication)
+            {
+                <button type="button" onclick="openHostModal()"
+                        class="px-3 py-1 rounded-full text-xs font-bold bg-amber-500/20 text-amber-300 border border-amber-500/40 shadow-sm flex items-center gap-1.5 hover:bg-amber-500/30 transition-all cursor-pointer">
+                    <span>⏳</span> HOST PENDING
+                </button>
+            }
+
+            <span
+                class="px-3 py-1 rounded-full text-xs font-bold border @(Model.RoleName == "Administrator" ? "bg-amber-500/10 text-amber-300 border-amber-500/30" : "bg-purple-500/10 text-purple-300 border-purple-500/30")">
+                🛡️ @Model.RoleName
+            </span>
+            <span
+                class="px-3 py-1 rounded-full text-xs font-mono font-bold bg-slate-800 text-slate-300 border border-slate-700">
+                Type: @Model.AccountTypeName
+            </span>
+        </div>
+    </div>
+
+    <!-- Feedback Alerts -->
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div
+            class="p-4 rounded-2xl bg-emerald-950/80 border border-emerald-500/40 text-emerald-200 flex items-start gap-3 shadow-lg shadow-emerald-950/40 animate-slide-down">
+            <span class="text-emerald-400 text-xl">✅</span>
+            <div class="flex-1">
+                <h4 class="font-bold text-sm">Success</h4>
+                <p class="text-xs text-emerald-300/90 mt-0.5">@TempData["SuccessMessage"]</p>
+            </div>
+        </div>
+    }
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div
+            class="p-4 rounded-2xl bg-rose-950/80 border border-rose-500/40 text-rose-200 flex items-start gap-3 shadow-lg shadow-rose-950/40 animate-slide-down">
+            <span class="text-rose-400 text-xl">⚠️</span>
+            <div class="flex-1">
+                <h4 class="font-bold text-sm">Notice</h4>
+                <p class="text-xs text-rose-300/90 mt-0.5">@TempData["ErrorMessage"]</p>
+            </div>
+        </div>
+    }
+
+    <!-- Profile Overview Card with Top Action Banner -->
+    <div class="glass-panel p-6 sm:p-8 rounded-3xl relative overflow-hidden">
+        <div
+            class="absolute -right-20 -top-20 w-80 h-80 bg-purple-600/10 rounded-full blur-3xl pointer-events-none"></div>
+        <div class="flex flex-col lg:flex-row items-center lg:items-start gap-6 relative z-10">
+            <!-- Avatar with gradient ring -->
+            <div class="relative group flex-shrink-0">
+                <div
+                    class="w-24 h-24 sm:w-28 sm:h-28 rounded-3xl bg-gradient-to-tr from-purple-600 via-pink-500 to-amber-400 p-1 shadow-xl glow-purple flex-shrink-0">
+                    <img src="@Url.Action("GetMyAvatar", "Account")"
+                         onError="this.onerror=null;this.src='/images/default-avatar.png';" alt="Avatar"
+                         class="w-full h-full object-cover rounded-[22px] bg-slate-950"/>
+                </div>
+            </div>
+
+            <!-- User Info & Currencies -->
+            <div class="flex-1 text-center lg:text-left space-y-4">
+                <div>
+                    <h1 class="text-2xl sm:text-3xl font-black text-white tracking-tight flex flex-wrap items-center justify-center lg:justify-start gap-3">
+                        <span>@Model.MainAccountName</span>
+                        <span
+                            class="text-xs px-2.5 py-0.5 rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/40 font-mono font-normal">#@Model.UserId</span>
+                        @if (Model.IsStreamer)
+                        {
+                            <span
+                                class="text-xs px-2.5 py-0.5 rounded-full bg-[#9146FF]/30 text-[#C499FF] border border-[#9146FF]/60 font-bold flex items-center gap-1">
+                                <i class="fab fa-twitch"></i> STREAMER
+                            </span>
+                        }
+                    </h1>
+                    <div
+                        class="text-slate-400 text-xs sm:text-sm mt-1.5 flex flex-wrap items-center justify-center lg:justify-start gap-3">
+                        <span>📧 @Model.EmailAddress</span>
+                        @if (!string.IsNullOrEmpty(Model.DiscordUsername))
+                        {
+                            <span class="text-slate-600">•</span>
+                            <span class="text-[#5865F2] font-semibold flex items-center gap-1">
+                                <i class="fab fa-discord"></i> @Model.DiscordUsername
+                            </span>
+                            <form asp-controller="Account" asp-action="SyncDiscordAvatar" method="post" class="inline">
+                                @Html.AntiForgeryToken()
+                                <button type="submit" title="Sync Discord Avatar with in-game custom icon"
+                                        class="px-2 py-0.5 rounded-lg bg-[#5865F2]/20 hover:bg-[#5865F2]/30 text-[#7289da] hover:text-white border border-[#5865F2]/40 text-[10px] font-bold flex items-center gap-1 transition-all cursor-pointer">
+                                    <span>🔄</span> Sync Icon
+                                </button>
+                            </form>
+                        }
+                        @if (!string.IsNullOrEmpty(Model.TwitchUsername))
+                        {
+                            <span class="text-slate-600">•</span>
+                            <a href="https://twitch.tv/@Model.TwitchUsername" target="_blank" rel="noopener noreferrer"
+                               class="text-[#9146FF] hover:text-[#A970FF] font-semibold flex items-center gap-1 transition-colors">
+                                <i class="fab fa-twitch"></i> @Model.TwitchUsername
+                            </a>
+                        }
+                    </div>
+                </div>
+
+                <!-- Currency Counters -->
+                <div class="flex flex-wrap items-center justify-center lg:justify-start gap-3 pt-1">
+                    <div
+                        class="flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-300 text-xs font-bold shadow-sm">
+                        <span>🪙</span>
+                        <span>@Model.GoldCoins.ToString("N0") Gold</span>
+                    </div>
+                    <div
+                        class="flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-slate-400/10 border border-slate-400/30 text-slate-300 text-xs font-bold shadow-sm">
+                        <span>🥈</span>
+                        <span>@Model.SilverCoins.ToString("N0") Silver</span>
+                    </div>
+                    <div
+                        class="flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-pink-500/10 border border-pink-500/30 text-pink-300 text-xs font-bold shadow-sm">
+                        <span>🎟️</span>
+                        <span>@Model.PlinkoTickets.ToString("N0") Tickets</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Banner Action Buttons -->
+            <div class="flex flex-col sm:flex-row lg:flex-col gap-2.5 w-full lg:w-auto flex-shrink-0">
+                @if (!Model.HasTwitchLinked)
+                {
+                    <!-- 1. Connect Twitch Button (Brighter & High Visibility) -->
+                    <a asp-controller="Account" asp-action="ConnectTwitch"
+                       class="w-full px-5 py-2.5 rounded-2xl bg-gradient-to-r from-[#9146FF] via-[#A970FF] to-[#9146FF] hover:from-[#7C2DF0] hover:to-[#9146FF] text-white font-black text-xs shadow-xl shadow-purple-950/60 flex items-center justify-center gap-2 transition-all hover:scale-[1.02] cursor-pointer">
+                        <i class="fab fa-twitch text-white text-sm"></i>
+                        <span>Connect with Twitch</span>
+                    </a>
+                }
+                else if (Model.IsStreamer)
+                {
+                    <!-- 1. Twitch Linked & Streamer Approved (Unpair Option) -->
+                    <div class="flex items-center gap-1.5 w-full">
+                        <a href="https://twitch.tv/@Model.TwitchUsername" target="_blank" rel="noopener noreferrer"
+                           class="flex-1 px-3 py-2 rounded-2xl bg-[#9146FF]/15 hover:bg-[#9146FF]/25 text-[#C499FF] border border-[#9146FF]/30 text-xs font-bold flex items-center justify-center gap-1.5 truncate transition-all"
+                           title="Twitch Channel">
+                            <i class="fab fa-twitch text-[#9146FF]"></i>
+                            <span class="truncate">@@@Model.TwitchUsername</span>
+                        </a>
+                        <form asp-controller="Account" asp-action="DisconnectTwitch" method="post" class="inline"
+                              onsubmit="return confirm('⚠️ Notice: Disconnecting your Twitch account will pause your verified streamer badge and homepage live broadcast until reconnected. Are you sure you want to disconnect?');">
+                            @Html.AntiForgeryToken()
+                            <button type="submit" title="Disconnect Twitch"
+                                    class="px-2.5 py-2 rounded-2xl bg-slate-800 hover:bg-rose-950/60 hover:text-rose-400 text-slate-400 border border-slate-700 hover:border-rose-500/40 text-xs font-bold flex items-center gap-1 transition-all cursor-pointer">
+                                <span>✕</span>
+                                <span class="hidden sm:inline text-[10px]">Unpair</span>
+                            </button>
+                        </form>
+                    </div>
+                }
+                else
+                {
+                    <!-- 1. Apply to be a Streamer Button (Only shown when Twitch is connected and not yet approved) -->
+                    <button type="button" onclick="openStreamerModal()"
+                            class="w-full px-4 py-2.5 rounded-2xl bg-gradient-to-r from-[#9146FF] to-purple-600 hover:from-[#7C2DF0] hover:to-purple-500 text-white font-bold text-xs shadow-lg shadow-purple-950/40 flex items-center justify-center gap-2 transition-all hover:scale-[1.02] cursor-pointer">
+                        <i class="fab fa-twitch text-white"></i>
+                        <span>@(Model.HasPendingStreamerApplication ? "Streamer Application (Pending)" : "Apply to be a Streamer")</span>
+                    </button>
+
+                    <!-- 2. Disconnect Twitch Button (Unpair) -->
+                    <div class="flex items-center gap-1.5 w-full">
+                        <a href="https://twitch.tv/@Model.TwitchUsername" target="_blank" rel="noopener noreferrer"
+                           class="flex-1 px-3 py-2 rounded-2xl bg-[#9146FF]/15 hover:bg-[#9146FF]/25 text-[#C499FF] border border-[#9146FF]/30 text-xs font-bold flex items-center justify-center gap-1.5 truncate transition-all"
+                           title="Twitch Channel">
+                            <i class="fab fa-twitch text-[#9146FF]"></i>
+                            <span class="truncate">@@@Model.TwitchUsername</span>
+                        </a>
+                        <form asp-controller="Account" asp-action="DisconnectTwitch" method="post" class="inline"
+                              onsubmit="return confirm('Are you sure you want to disconnect your Twitch account?');">
+                            @Html.AntiForgeryToken()
+                            <button type="submit" title="Disconnect Twitch"
+                                    class="px-2.5 py-2 rounded-2xl bg-slate-800 hover:bg-rose-950/60 hover:text-rose-400 text-slate-400 border border-slate-700 hover:border-rose-500/40 text-xs font-bold flex items-center gap-1 transition-all cursor-pointer">
+                                <span>✕</span>
+                                <span class="hidden sm:inline text-[10px]">Unpair</span>
+                            </button>
+                        </form>
+                    </div>
+                }
+
+                <!-- Apply to be a Host Button -->
+                <button type="button" onclick="openHostModal()"
+                        class="w-full px-4 py-2.5 rounded-2xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-xs shadow-lg shadow-emerald-950/40 flex items-center justify-center gap-2 transition-all hover:scale-[1.02] cursor-pointer">
+                    <span>🖥️</span>
+                    <span>@(Model.HasApprovedHostAccount ? "Request Additional Host Account" : Model.HasPendingHostApplication ? "Host Application (Pending)" : "Apply to be a Host")</span>
+                </button>
+
+                <!-- Public Stats Link -->
+                <a href="/stats?accountName=@Uri.EscapeDataString(Model.MainAccountName)"
+                   class="w-full px-3.5 py-2 rounded-2xl bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white border border-slate-700 text-xs font-bold flex items-center justify-center gap-1.5 transition-all shadow-md">
+                    <span>📊</span>
+                    <span>View Public Stats</span>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    @if (Model.HasLinkedHostAccount)
+    {
+        <!-- Owner-Only Host Configuration & COMPEL Download Panel -->
+        <div
+            class="glass-panel p-5 sm:p-6 rounded-3xl border border-purple-500/40 bg-gradient-to-r from-purple-950/60 via-slate-900/90 to-slate-950 space-y-4 shadow-xl">
+            <div
+                class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-purple-500/20 pb-4">
+                <div class="space-y-1">
+                    <div class="flex items-center gap-2">
+                        <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                        <h4 class="text-sm font-black uppercase tracking-wider text-purple-300">Your Private Host
+                            Credentials &amp; COMPEL Configuration</h4>
+                    </div>
+                    <p class="text-xs text-slate-400">These credentials are confidential and only visible to you. Use
+                        them to configure COMPEL or download your pre-configured JSON file.</p>
+                </div>
+
+                <a href="@Url.Action("DownloadCompelConfig", "Account")"
+                   class="px-5 py-2.5 rounded-2xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-black text-xs shadow-lg shadow-emerald-950/60 flex items-center justify-center gap-2 hover:scale-[1.02] transition-all flex-shrink-0">
+                    <span>📥</span>
+                    <span>Download COMPEL.JSON</span>
+                </a>
+            </div>
+
+            <div class="space-y-3 pt-2 text-xs">
+                <!-- 1. Host Login Row -->
+                <div
+                    class="p-4 rounded-2xl bg-slate-950/90 border border-slate-800 flex flex-col md:flex-row md:items-center justify-between gap-3 shadow-sm">
+                    <div class="flex items-center gap-3">
+                        <span
+                            class="px-3 py-1 rounded-xl bg-emerald-500/10 text-emerald-400 font-black text-[10px] uppercase tracking-wider border border-emerald-500/20 shrink-0">Host Login</span>
+                        <span class="font-mono text-emerald-300 font-black text-sm"
+                              id="displayHostUser">@Model.HostUsername</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <button type="button" id="copyHostUserBtn"
+                                onclick="navigator.clipboard.writeText('@Model.HostUsername'); this.innerText='✓ Copied!'; setTimeout(() => this.innerText='📋 Copy Login', 2000);"
+                                class="text-slate-200 hover:text-white text-xs px-3.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 transition-all font-semibold cursor-pointer flex items-center gap-1.5">
+                            📋 Copy Login
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 2. Host Password Row -->
+                <div
+                    class="p-4 rounded-2xl bg-slate-950/90 border border-slate-800 flex flex-col md:flex-row md:items-center justify-between gap-3 shadow-sm">
+                    <div class="flex items-center gap-3 min-w-0">
+                        <span
+                            class="px-3 py-1 rounded-xl bg-purple-500/10 text-purple-400 font-black text-[10px] uppercase tracking-wider border border-purple-500/20 shrink-0">Host Password</span>
+                        <span class="font-mono text-purple-300 font-bold text-sm tracking-wider truncate"
+                              id="displayHostPass">••••••••••••••••</span>
+                    </div>
+                    <div class="flex items-center gap-2 shrink-0">
+                        <button type="button" id="togglePassBtn" onclick="toggleHostPassword()"
+                                class="text-purple-300 hover:text-purple-200 text-xs px-3 py-1.5 rounded-xl bg-purple-500/20 hover:bg-purple-500/30 border border-purple-500/40 transition-all font-semibold cursor-pointer flex items-center gap-1">
+                            👁️ Reveal
+                        </button>
+                        <button type="button" id="copyPassBtn" onclick="copyHostPassword()"
+                                class="text-slate-200 hover:text-white text-xs px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 transition-all font-semibold cursor-pointer flex items-center gap-1.5">
+                            📋 Copy Password
+                        </button>
+                        <button type="button" id="resetPassBtn" onclick="regenerateHostPassword()"
+                                title="Generate a new secure host password"
+                                class="text-amber-300 hover:text-amber-200 text-xs px-3 py-1.5 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/40 transition-all font-semibold cursor-pointer flex items-center gap-1">
+                            🔄 Reset
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 3. COMPEL Auth Token Row -->
+                <div
+                    class="p-4 rounded-2xl bg-slate-950/90 border border-slate-800 flex flex-col md:flex-row md:items-center justify-between gap-3 shadow-sm">
+                    <div class="flex items-center gap-3 min-w-0">
+                        <span
+                            class="px-3 py-1 rounded-xl bg-cyan-500/10 text-cyan-400 font-black text-[10px] uppercase tracking-wider border border-cyan-500/20 shrink-0">Auth Token</span>
+                        <span class="font-mono text-cyan-300 font-bold text-xs truncate" id="displayHostAuthToken">••••••••••••••••••••••••••••••••</span>
+                    </div>
+                    <div class="flex items-center gap-2 shrink-0">
+                        <button type="button" id="toggleTokenBtn" onclick="toggleHostAuthToken()"
+                                class="text-cyan-300 hover:text-cyan-200 text-xs px-3 py-1.5 rounded-xl bg-cyan-500/20 hover:bg-cyan-500/30 border border-cyan-500/40 transition-all font-semibold cursor-pointer flex items-center gap-1">
+                            👁️ Reveal
+                        </button>
+                        <button type="button" id="copyTokenBtn" onclick="copyHostAuthToken()"
+                                class="text-slate-200 hover:text-white text-xs px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 transition-all font-semibold cursor-pointer flex items-center gap-1.5">
+                            📋 Copy Token
+                        </button>
+                        <button type="button" id="resetTokenBtn" onclick="regenerateHostAuthToken()"
+                                title="Rotate COMPEL Remote Authentication Token"
+                                class="text-cyan-300 hover:text-cyan-200 text-xs px-3 py-1.5 rounded-xl bg-cyan-500/20 hover:bg-cyan-500/30 border border-cyan-500/40 transition-all font-semibold cursor-pointer flex items-center gap-1">
+                            🔄 Rotate
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 4. Region & Node Setup Row -->
+                <div
+                    class="p-4 rounded-2xl bg-slate-950/90 border border-slate-800 flex flex-col md:flex-row md:items-center justify-between gap-3 shadow-sm">
+                    <div class="flex items-center gap-3">
+                        <span
+                            class="px-3 py-1 rounded-xl bg-indigo-500/10 text-indigo-400 font-black text-[10px] uppercase tracking-wider border border-indigo-500/20 shrink-0">Node Setup</span>
+                        <div class="font-medium text-slate-300 text-xs">
+                            Region: <strong class="text-white font-bold">@(Model.HostApp?.Location ?? "USE")</strong> •
+                            Instances: <strong
+                                class="text-white font-bold">@(Model.HostApp?.Instances ?? 2) Slaves</strong> • Control
+                            Port: <strong class="text-white font-bold">8080</strong>
+                        </div>
+                    </div>
+                    <div class="text-[11px] text-slate-400 font-mono">
+                        Port Allocation: 11255–@(11255 + (Model.HostApp?.Instances ?? 2) - 1)
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+
+    <!-- 2-Card Main Grid (Password & Accounts) -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <!-- 1. Change In-Game & Portal Password Card -->
+        <div class="glass-panel p-6 sm:p-8 rounded-3xl border border-slate-800 space-y-6">
+            <div class="border-b border-slate-800 pb-4">
+                <h3 class="text-lg font-bold text-white flex items-center gap-2.5">
+                    <span
+                        class="w-8 h-8 rounded-xl bg-purple-500/20 border border-purple-500/40 text-purple-300 flex items-center justify-center text-sm">🔑</span>
+                    <span>Change In-Game / Portal Password</span>
+                </h3>
+                <p class="text-xs text-slate-400 mt-1.5 leading-relaxed">
+                    Set a new password for your account. This password is used to authenticate inside the <strong>Heroes
+                        of Newerth client</strong> via Secure Remote Password (SRP) and on the Web Portal.
+                </p>
+            </div>
+
+            <form asp-controller="Account" asp-action="ChangePassword" method="post" class="space-y-5">
+                @Html.AntiForgeryToken()
+
+                @if (Model.HasInGamePasswordSet)
+                {
+                    <div class="space-y-1.5">
+                        <label class="text-xs font-bold text-slate-300 uppercase tracking-wider">Current Password</label>
+                        <div class="relative">
+                            <input type="password" name="CurrentPassword" id="current-password" required
+                                   placeholder="Enter current password"
+                                   class="w-full bg-slate-950 border border-slate-800 focus:border-purple-500 focus:ring-1 focus:ring-purple-500 rounded-xl px-4 py-3 text-sm text-white placeholder-slate-600 transition-all outline-none"/>
+                            <button type="button" onclick="togglePassVisibility('current-password', this)"
+                                    class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300 text-sm p-1">
+                                👁️
+                            </button>
+                        </div>
+                    </div>
+                }
+
+                <div class="space-y-1.5">
+                    <label class="text-xs font-bold text-slate-300 uppercase tracking-wider">New Password</label>
+                    <div class="relative">
+                        <input type="password" name="NewPassword" id="new-password" required minlength="4"
+                               placeholder="Enter new password (min 4 chars)"
+                               class="w-full bg-slate-950 border border-slate-800 focus:border-purple-500 focus:ring-1 focus:ring-purple-500 rounded-xl px-4 py-3 text-sm text-white placeholder-slate-600 transition-all outline-none"/>
+                        <button type="button" onclick="togglePassVisibility('new-password', this)"
+                                class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300 text-sm p-1">
+                            👁️
+                        </button>
+                    </div>
+                </div>
+
+                <div class="space-y-1.5">
+                    <label class="text-xs font-bold text-slate-300 uppercase tracking-wider">Confirm New
+                        Password</label>
+                    <div class="relative">
+                        <input type="password" name="ConfirmPassword" id="confirm-password" required minlength="4"
+                               placeholder="Confirm your new password"
+                               class="w-full bg-slate-950 border border-slate-800 focus:border-purple-500 focus:ring-1 focus:ring-purple-500 rounded-xl px-4 py-3 text-sm text-white placeholder-slate-600 transition-all outline-none"/>
+                        <button type="button" onclick="togglePassVisibility('confirm-password', this)"
+                                class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300 text-sm p-1">
+                            👁️
+                        </button>
+                    </div>
+                </div>
+
+                <div class="p-3.5 rounded-xl bg-slate-950/60 border border-slate-800 text-xs text-slate-400 space-y-1">
+                    <div class="font-bold text-slate-300 flex items-center gap-1.5">
+                        <span>💡</span>
+                        <span>Game Client Login Credentials:</span>
+                    </div>
+                    <ul class="list-disc list-inside text-[11px] text-slate-400 space-y-0.5 ml-1">
+                        <li><strong>Username:</strong> <code
+                                class="text-purple-300 bg-purple-950/40 px-1 py-0.5 rounded font-mono">@Model.MainAccountName</code>
+                        </li>
+                        <li><strong>Password:</strong> Your newly chosen password</li>
+                    </ul>
+                </div>
+
+                <button type="submit"
+                        class="w-full py-3.5 px-6 rounded-2xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-bold text-sm shadow-lg shadow-purple-600/30 glow-purple flex items-center justify-center gap-2 transition-all">
+                    <span>🔒</span>
+                    <span>Update Password Now</span>
+                </button>
+            </form>
+        </div>
+
+        <!-- 2. Linked In-Game Accounts Card -->
+        <div class="glass-panel p-6 sm:p-8 rounded-3xl border border-slate-800 space-y-6 flex flex-col justify-between">
+            <div class="space-y-4">
+                <div class="border-b border-slate-800 pb-4">
+                    <h3 class="text-lg font-bold text-white flex items-center gap-2.5">
+                        <span
+                            class="w-8 h-8 rounded-xl bg-indigo-500/20 border border-indigo-500/40 text-indigo-300 flex items-center justify-center text-sm">🎮</span>
+                        <span>Linked In-Game Accounts</span>
+                    </h3>
+                    <p class="text-xs text-slate-400 mt-1">
+                        Accounts associated with your profile in the master server.
+                    </p>
+                </div>
+
+                <div class="space-y-2.5">
+                    @foreach (var acc in Model.LinkedAccounts)
+                    {
+                        <div
+                            class="flex items-center justify-between p-3.5 rounded-2xl bg-slate-950/80 border border-slate-800/80 hover:border-slate-700 transition-all">
+                            <div class="flex items-center gap-3">
+                                <div
+                                    class="w-8 h-8 rounded-xl bg-slate-900 border border-slate-700 flex items-center justify-center text-xs font-black @(acc.IsMain ? "text-amber-400" : "text-slate-400")">
+                                    @(acc.IsMain ? "★" : "✦")
+                                </div>
+                                <div>
+                                    <div class="text-xs font-bold text-white flex items-center gap-2">
+                                        <span>@acc.Name</span>
+                                        @if (acc.IsMain)
+                                        {
+                                            <span
+                                                class="text-[9px] px-1.5 py-0.2 rounded bg-amber-500/20 text-amber-300 font-normal">MAIN</span>
+                                        }
+                                        @if (acc.Type == "Streamer")
+                                        {
+                                            <span
+                                                class="text-[9px] px-1.5 py-0.2 rounded bg-[#9146FF]/30 text-[#C499FF] font-bold flex items-center gap-1">
+                                                <i class="fab fa-twitch"></i> STREAMER
+                                            </span>
+                                        }
+                                        else if (acc.Type == "ServerHost")
+                                        {
+                                            <span
+                                                class="text-[9px] px-1.5 py-0.2 rounded bg-emerald-500/20 text-emerald-300 font-bold flex items-center gap-1">
+                                                <span>🖥️</span> HOST
+                                            </span>
+                                        }
+                                    </div>
+                                    <span class="text-[10px] text-slate-500 font-mono">ID: @acc.Id • @acc.Type</span>
+                                </div>
+                            </div>
+                            <span class="text-[10px] text-slate-500">@acc.TimestampCreated.ToString("yyyy-MM-dd")</span>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <div class="p-4 rounded-2xl bg-purple-950/20 border border-purple-500/20 text-xs text-purple-300 space-y-1">
+                <span class="font-bold flex items-center gap-1.5">ℹ️ Single Password For All Subaccounts</span>
+                <p class="text-[11px] text-purple-200/80">Updating your password above automatically secures and updates
+                    access for your main account and all linked subaccounts.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- Invite Friends & Community Lineage Card    -->
+    <!-- ========================================== -->
+    <div class="glass-panel p-6 sm:p-8 rounded-3xl border border-purple-500/30 space-y-6" id="inviteFriendsPanel">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-purple-500/20 pb-5">
+            <div class="space-y-1">
+                <div class="flex items-center gap-2.5">
+                    <span class="w-8 h-8 rounded-xl bg-purple-500/20 border border-purple-500/40 text-purple-300 flex items-center justify-center text-sm">🎟️</span>
+                    <h3 class="text-xl font-black text-white tracking-tight">Invite Friends &amp; Guild Lineage</h3>
+                    @if (Model.IsInviteOnlyModeActive)
+                    {
+                        <span class="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider bg-rose-500/20 text-rose-300 border border-rose-500/40">
+                            🔒 Closed Beta (Invite-Only)
+                        </span>
+                    }
+                    else
+                    {
+                        <span class="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">
+                            🌐 Open Beta
+                        </span>
+                    }
+                </div>
+                <p class="text-xs text-slate-400">Generate single-use invite codes for friends. Every 100 matchmaking games earns 1 invite code (up to 5 active unredeemed codes at once). Staff accounts hold 5 permanent codes with instant replenishment.</p>
+            </div>
+        </div>
+
+        <!-- Quota KPI Stat Cards -->
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
+            <div class="p-4 rounded-2xl bg-slate-950/80 border border-slate-800">
+                <div class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Completed Games</div>
+                <div class="text-xl sm:text-2xl font-black text-white mt-1">@Model.TotalCompletedGames</div>
+                <div class="text-[10px] text-slate-500 mt-0.5">Matchmaking &amp; MidWars</div>
+            </div>
+            <div class="p-4 rounded-2xl bg-slate-950/80 border border-slate-800">
+                <div class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Holding Capacity</div>
+                <div class="text-xl sm:text-2xl font-black text-purple-400 mt-1">@Model.MaxAllowedActiveCodes <span class="text-xs text-slate-500 font-normal">/ 5 max</span></div>
+                <div class="text-[10px] text-slate-500 mt-0.5">Based on match tier</div>
+            </div>
+            <div class="p-4 rounded-2xl bg-slate-950/80 border border-slate-800">
+                <div class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Active Unused</div>
+                <div class="text-xl sm:text-2xl font-black text-amber-300 mt-1" id="activeUnusedCount">@Model.ActiveUnusedCodes</div>
+                <div class="text-[10px] text-slate-500 mt-0.5">Currently unredeemed</div>
+            </div>
+            <div class="p-4 rounded-2xl bg-slate-950/80 border border-slate-800">
+                <div class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Can Generate</div>
+                <div class="text-xl sm:text-2xl font-black @(Model.RemainingInviteQuota > 0 ? "text-emerald-400" : "text-rose-400") mt-1" id="remainingQuotaCount">
+                    @Model.RemainingInviteQuota
+                </div>
+                <div class="text-[10px] text-slate-500 mt-0.5">Slots available</div>
+            </div>
+        </div>
+
+        <!-- Action / Quota Explanation -->
+        <div class="flex flex-col sm:flex-row items-center justify-between gap-4 p-4 rounded-2xl bg-purple-950/20 border border-purple-500/20">
+            <div class="text-xs text-purple-200">
+                @if (Model.CanGenerateInvite)
+                {
+                    <span>You have <strong>@Model.RemainingInviteQuota</strong> available invite slot@(Model.RemainingInviteQuota == 1 ? "" : "s"). Generated codes remain active until redeemed.</span>
+                }
+                else if (Model.TotalCompletedGames < 100 && Model.RoleName != "Administrator" && Model.AccountTypeName != "Staff")
+                {
+                    <span class="text-amber-300">⚠️ You need at least <strong>100 completed matchmaking games</strong> to earn invite codes (@Model.TotalCompletedGames/100 completed).</span>
+                }
+                else
+                {
+                    <span class="text-amber-300">⚠️ You have reached your current active holding capacity (@Model.ActiveUnusedCodes/@Model.MaxAllowedActiveCodes codes). Wait for an invitee to redeem a code to free up a slot.</span>
+                }
+            </div>
+            <button type="button"
+                    id="btnGenerateInvite"
+                    onclick="generateInviteCode()"
+                    @(Model.CanGenerateInvite ? "" : "disabled")
+                    class="px-5 py-2.5 rounded-xl font-bold text-xs sm:text-sm text-white flex items-center gap-2 transition-all shadow-lg shrink-0 @(Model.CanGenerateInvite ? "bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 shadow-purple-900/40 cursor-pointer hover:scale-[1.02]" : "bg-slate-800 text-slate-500 cursor-not-allowed border border-slate-700")">
+                <span>✨</span>
+                <span id="btnGenerateText">Generate Invite Code</span>
+            </button>
+        </div>
+
+        <!-- Invites List -->
+        <div class="space-y-4">
+            <h4 class="text-sm font-bold text-white flex items-center gap-2">
+                <span>📜 Your Invites History</span>
+            </h4>
+
+            @if (Model.MyInvites == null || Model.MyInvites.Count == 0)
+            {
+                <div id="noInvitesNotice" class="text-center py-8 px-4 rounded-2xl bg-slate-950/50 border border-slate-800 text-slate-500 text-xs">
+                    <span>No invite codes generated yet. Click &quot;Generate Invite Code&quot; above to invite your friends.</span>
+                </div>
+            }
+
+            <div id="invitesListContainer" class="space-y-2.5 @(Model.MyInvites != null && Model.MyInvites.Count > 0 ? "" : "hidden")">
+                @if (Model.MyInvites != null)
+                {
+                    foreach (var invite in Model.MyInvites)
+                    {
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between p-3.5 rounded-2xl bg-slate-950/80 border border-slate-800 hover:border-slate-700 transition-all gap-3">
+                            <div class="flex items-center gap-3">
+                                <span class="w-8 h-8 rounded-xl bg-purple-500/10 border border-purple-500/30 text-purple-400 flex items-center justify-center text-xs font-mono font-bold">
+                                    @(invite.IsRedeemed ? "✓" : "🎟️")
+                                </span>
+                                <div>
+                                    <div class="flex items-center gap-2">
+                                        <span class="font-mono font-bold text-white text-xs sm:text-sm tracking-wider">@invite.Code</span>
+                                        @if (invite.IsRedeemed)
+                                        {
+                                            <span class="text-[9px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 font-bold uppercase">
+                                                Redeemed by @(invite.RedeemedAccountName ?? "Player")
+                                            </span>
+                                        }
+                                        else if (invite.IsRevoked)
+                                        {
+                                            <span class="text-[9px] px-2 py-0.5 rounded-full bg-rose-500/20 text-rose-300 border border-rose-500/40 font-bold uppercase">Revoked</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-[9px] px-2 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 font-bold uppercase">Active</span>
+                                        }
+                                    </div>
+                                    <span class="text-[10px] text-slate-500">Created @invite.CreatedAt.ToString("yyyy-MM-dd HH:mm") @(invite.RedeemedAt.HasValue ? $" • Redeemed {invite.RedeemedAt.Value.ToString("yyyy-MM-dd HH:mm")}" : "")</span>
+                                </div>
+                            </div>
+                            @if (!invite.IsRedeemed && !invite.IsRevoked)
+                            {
+                                <div class="flex items-center gap-2 self-end sm:self-auto">
+                                    <button type="button"
+                                            onclick="copyInviteCode('@invite.Code', this)"
+                                            class="text-xs px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition-all font-semibold cursor-pointer flex items-center gap-1">
+                                        📋 Copy Code
+                                    </button>
+                                    <button type="button"
+                                            onclick="copyInviteLink('@invite.Code', this)"
+                                            class="text-xs px-3 py-1.5 rounded-xl bg-purple-900/30 hover:bg-purple-800/40 text-purple-300 border border-purple-700/40 transition-all font-semibold cursor-pointer flex items-center gap-1">
+                                        🔗 Copy Link
+                                    </button>
+                                </div>
+                            }
+                        </div>
+                    }
+                }
+            </div>
+        </div>
+    </div>
+
+    <!-- Privacy & Self-Service Account Data Controls (Discord-Only Friendly, Zero Email Required) -->
+    <div class="rounded-3xl bg-slate-900/70 border border-slate-800/80 p-6 shadow-xl space-y-5">
+        <div class="flex flex-wrap items-center justify-between gap-4">
+            <div>
+                <h3 class="text-lg font-black text-white flex items-center gap-2">
+                    <span>🔐</span> Privacy &amp; Account Data
+                </h3>
+                <p class="text-xs text-slate-400 mt-1">
+                    Export a sanitized JSON archive of your account profile, linked Discord metadata, inventory, and filed reports, or permanently delete &amp; anonymize your account.
+                </p>
+            </div>
+            <a href="/account/export-data"
+               class="px-4 py-2.5 rounded-xl bg-cyan-600/20 hover:bg-cyan-600/30 text-cyan-300 border border-cyan-500/40 text-xs font-bold transition-all">
+                ⬇️ Download My Data (JSON)
+            </a>
+        </div>
+
+        <form action="/account/delete-account" method="post" class="p-4 rounded-2xl bg-rose-950/20 border border-rose-500/30 space-y-3"
+              onsubmit="return confirm('Permanently delete and anonymize your Project Kongor account? This cannot be undone.');">
+            @Html.AntiForgeryToken()
+            <div class="text-xs text-rose-200 font-bold">Danger Zone — Self-Service Account Deletion</div>
+            <p class="text-[11px] text-rose-300/80">
+                Type <code class="text-rose-200 font-bold">DELETE MY ACCOUNT</code> below to unlink Discord, revoke all active sessions, anonymize PII, and disable all linked game accounts.
+            </p>
+            <div class="flex flex-wrap items-center gap-3">
+                <input type="text" name="confirmationPhrase" placeholder="Type DELETE MY ACCOUNT"
+                       class="flex-1 min-w-[220px] bg-slate-950 border border-rose-500/40 rounded-xl px-3.5 py-2 text-xs text-white placeholder-slate-500 outline-none" />
+                <button type="submit"
+                        class="px-4 py-2 rounded-xl bg-rose-700 hover:bg-rose-600 text-white text-xs font-bold transition-all cursor-pointer">
+                    🗑️ Delete My Account
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- ========================================== -->
+<!-- 1. POPUP MODAL: STREAMER APPLICATION CARD   -->
+<!-- ========================================== -->
+<div id="streamerModal"
+     class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md hidden transition-all animate-fade-in">
+    <div
+        class="glass-panel w-full max-w-xl rounded-3xl border border-purple-500/30 p-6 sm:p-8 space-y-6 shadow-2xl relative max-h-[90vh] overflow-y-auto">
+        <button type="button" onclick="closeStreamerModal()"
+                class="absolute right-5 top-5 text-slate-400 hover:text-white text-lg p-2 rounded-xl bg-slate-900/60 border border-slate-800 transition-colors cursor-pointer">
+            ✕
+        </button>
+
+        <div class="space-y-2">
+            <div
+                class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#9146FF]/20 border border-[#9146FF]/40 text-[#C499FF] text-xs font-bold">
+                <i class="fab fa-twitch"></i>
+                <span>Creator &amp; Streamer Program</span>
+            </div>
+            <h2 class="text-2xl font-black text-white tracking-tight">Apply to be a Streamer</h2>
+        </div>
+
+        <!-- Explanatory Prompt Card -->
+        <div
+            class="p-4 rounded-2xl bg-gradient-to-r from-[#9146FF]/20 via-purple-900/30 to-[#9146FF]/20 border border-[#9146FF]/40 text-slate-200 text-xs sm:text-sm leading-relaxed shadow-inner">
+            <div class="font-bold text-white flex items-center gap-2 mb-1.5 text-sm">
+                <span>✨</span>
+                <span>Community Spotlight Feature</span>
+            </div>
+            <p class="text-purple-100/90 leading-relaxed">
+                Thanks for applying to be a streamer! If approved, when you go live we will try to stream your content
+                directly on to the homepage to help gain more exposure across the community.
+            </p>
+        </div>
+
+        @if (Model.IsStreamer)
+        {
+            <!-- Active Streamer Status Card -->
+            <div
+                class="p-5 rounded-2xl bg-gradient-to-r from-emerald-950/60 via-purple-950/40 to-emerald-950/60 border border-emerald-500/50 space-y-3 shadow-lg shadow-emerald-950/40">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-2 text-sm font-black text-emerald-300">
+                        <i class="fab fa-twitch text-[#9146FF] text-base"></i>
+                        <span>STREAMER STATUS APPROVED & ACTIVE</span>
+                    </div>
+                    <span
+                        class="text-xs px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-300 font-black border border-emerald-500/50 flex items-center gap-1">
+                        <span>✓</span> APPROVED
+                    </span>
+                </div>
+                <p class="text-xs text-slate-300 leading-relaxed">
+                    Your account has verified streamer privileges with Twitch handle <a
+                        href="https://twitch.tv/@Model.TwitchUsername" target="_blank" rel="noopener noreferrer"
+                        class="text-[#C499FF] font-bold underline">@@@Model.TwitchUsername</a>. When you go live
+                    broadcasting <strong>Heroes of Newerth</strong>, your stream will automatically be featured on the
+                    community homepage spotlight and your player stats page!
+                </p>
+            </div>
+
+            <!-- Connected Twitch Account Info -->
+            <div
+                class="p-4 rounded-2xl bg-[#9146FF]/15 border border-[#9146FF]/40 flex items-center justify-between gap-3">
+                <div class="flex items-center gap-3">
+                    <div
+                        class="w-10 h-10 rounded-xl bg-[#9146FF] text-white flex items-center justify-center text-lg font-bold flex-shrink-0">
+                        <i class="fab fa-twitch"></i>
+                    </div>
+                    <div>
+                        <div class="text-xs font-bold text-white flex items-center gap-1.5">
+                            <span>Connected Twitch Account:</span>
+                            <span class="text-[#C499FF]">@@@Model.TwitchUsername</span>
+                        </div>
+                        <a href="https://twitch.tv/@Model.TwitchUsername" target="_blank" rel="noopener noreferrer"
+                           class="text-[11px] text-[#A970FF] hover:underline font-mono">
+                            twitch.tv/@Model.TwitchUsername
+                        </a>
+                    </div>
+                </div>
+                <span
+                    class="text-xs px-2.5 py-1 rounded-full bg-emerald-500/20 text-emerald-300 font-bold border border-emerald-500/40 flex items-center gap-1 flex-shrink-0">
+                    <span>✓</span> Verified Streamer
+                </span>
+            </div>
+
+            <div class="flex items-center justify-end gap-3 pt-2">
+                <button type="button" onclick="closeStreamerModal()"
+                        class="px-6 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white text-xs font-bold transition-all cursor-pointer">
+                    Close Window
+                </button>
+            </div>
+        }
+        else if (Model.HasTwitchLinked)
+        {
+            <!-- Current Application Status Banner (if any) -->
+            @if (Model.HasPendingStreamerApplication)
+            {
+                <div class="p-4 rounded-2xl bg-amber-950/40 border border-amber-500/40 space-y-1.5">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-bold text-amber-300 flex items-center gap-1.5">
+                            <span>⏳</span> APPLICATION UNDER REVIEW
+                        </span>
+                        <span
+                            class="text-[10px] text-amber-400/80 font-mono">@Model.StreamerApp?.TimestampApplied.ToString("yyyy-MM-dd HH:mm") UTC</span>
+                    </div>
+                    <p class="text-xs text-slate-300 leading-relaxed">
+                        Your streamer application for <strong>@@@Model.StreamerApp?.TwitchUsername</strong> is currently
+                        being reviewed by our staff team.
+                    </p>
+                </div>
+            }
+            else if (Model.StreamerApp?.Status == StreamerApplicationStatus.Rejected)
+            {
+                <div class="p-4 rounded-2xl bg-rose-950/40 border border-rose-500/40 space-y-1.5">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-bold text-rose-300 flex items-center gap-1.5">
+                            <span>❌</span> PREVIOUS APPLICATION REJECTED
+                        </span>
+                        <span class="text-[10px] text-rose-400/80">You may update your details and submit again</span>
+                    </div>
+                    @if (!string.IsNullOrEmpty(Model.StreamerApp.StaffNotes))
+                    {
+                        <p class="text-xs text-slate-300">Staff Feedback: @Model.StreamerApp.StaffNotes</p>
+                    }
+                </div>
+            }
+
+            <!-- Twitch Connection Status / Action Card -->
+            <div
+                class="p-4 rounded-2xl bg-[#9146FF]/15 border border-[#9146FF]/40 flex items-center justify-between gap-3">
+                <div class="flex items-center gap-3">
+                    <div
+                        class="w-10 h-10 rounded-xl bg-[#9146FF] text-white flex items-center justify-center text-lg font-bold flex-shrink-0">
+                        <i class="fab fa-twitch"></i>
+                    </div>
+                    <div>
+                        <div class="text-xs font-bold text-white flex items-center gap-1.5">
+                            <span>Connected Twitch Account:</span>
+                            <span class="text-[#C499FF]">@@@Model.TwitchUsername</span>
+                        </div>
+                        <a href="https://twitch.tv/@Model.TwitchUsername" target="_blank" rel="noopener noreferrer"
+                           class="text-[11px] text-[#A970FF] hover:underline font-mono">
+                            twitch.tv/@Model.TwitchUsername
+                        </a>
+                    </div>
+                </div>
+                <span
+                    class="text-xs px-2.5 py-1 rounded-full bg-emerald-500/20 text-emerald-300 font-bold border border-emerald-500/40 flex items-center gap-1 flex-shrink-0">
+                    <span>✓</span> Linked to Profile
+                </span>
+            </div>
+
+            <!-- Profile-Only Info Notice -->
+            <div class="p-3.5 rounded-2xl bg-slate-900/80 border border-slate-800 text-xs text-slate-300 space-y-1">
+                <div class="font-bold text-white flex items-center gap-1.5 text-xs">
+                    <span>🔗</span>
+                    <span>Your Twitch Channel is Linked to Your Public Stats Page</span>
+                </div>
+                <p class="text-[11px] text-slate-400 leading-relaxed">
+                    Your Twitch handle is now displayed on your player profile for other players to visit. You only need
+                    to submit the application below if you want the verified <strong>STREAMER</strong> badge and live
+                    homepage spotlight when broadcasting <strong>Heroes of Newerth</strong>.
+                </p>
+            </div>
+
+            <!-- Streamer Application Form (Notes Only) -->
+            <form asp-controller="Account" asp-action="ApplyStreamer" method="post" class="space-y-4">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="TwitchUsername" value="@Model.TwitchUsername"/>
+                <input type="hidden" name="TwitchId" value="@Model.TwitchId"/>
+
+                <div class="space-y-1.5">
+                    <div class="flex items-center justify-between">
+                        <label class="text-xs font-bold text-slate-300 uppercase tracking-wider">Streaming Schedule /
+                            Content Notes (Optional)</label>
+                        <span class="text-[10px] text-slate-500">For Streamer Badge Application</span>
+                    </div>
+                    <textarea name="ApplicationNotes" rows="3"
+                              placeholder="Tell staff about your streaming schedule, community, or goals..."
+                              class="w-full bg-slate-950 border border-slate-800 focus:border-[#9146FF] rounded-xl p-3 text-xs text-white placeholder-slate-600 outline-none resize-none">@Model.ApplyStreamerModel.ApplicationNotes</textarea>
+                </div>
+
+                <div class="flex flex-col sm:flex-row items-center justify-between gap-3 pt-2">
+                    <button type="button" onclick="closeStreamerModal()"
+                            class="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5">
+                        <span>✕</span>
+                        <span>Not at this Time (Profile Link Only)</span>
+                    </button>
+                    <button type="submit"
+                            class="w-full sm:w-auto px-6 py-2.5 rounded-xl bg-gradient-to-r from-[#9146FF] to-purple-600 hover:from-[#7C2DF0] hover:to-purple-500 text-white font-bold text-xs shadow-lg shadow-purple-900/30 flex items-center justify-center gap-2 transition-all cursor-pointer">
+                        <i class="fab fa-twitch"></i>
+                        <span>@(Model.HasPendingStreamerApplication ? "Update Streamer Application" : "Submit Streamer Application")</span>
+                    </button>
+                </div>
+            </form>
+        }
+        else
+        {
+            <!-- Not Connected Prompt -->
+            <div class="p-6 rounded-2xl bg-slate-900/90 border border-slate-800 text-center space-y-4">
+                <div
+                    class="w-12 h-12 rounded-2xl bg-[#9146FF]/20 text-[#9146FF] border border-[#9146FF]/40 flex items-center justify-center text-xl mx-auto">
+                    <i class="fab fa-twitch"></i>
+                </div>
+                <div class="space-y-1">
+                    <h4 class="text-sm font-bold text-white">Connect Your Twitch Account First</h4>
+                    <p class="text-xs text-slate-400 max-w-md mx-auto leading-relaxed">
+                        To apply for verified streamer status, connect your Twitch account with one click. Your channel
+                        info will automatically link to your profile!
+                    </p>
+                </div>
+                <div>
+                    <a asp-controller="Account" asp-action="ConnectTwitch"
+                       class="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-[#9146FF] hover:bg-[#7C2DF0] text-white text-xs font-bold transition-all shadow-lg shadow-purple-950/40 cursor-pointer">
+                        <i class="fab fa-twitch"></i>
+                        <span>Connect Twitch Account</span>
+                    </a>
+                </div>
+            </div>
+
+            <div class="flex justify-end">
+                <button type="button" onclick="closeStreamerModal()"
+                        class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold transition-all cursor-pointer">
+                    Close
+                </button>
+            </div>
+        }
+    </div>
+</div>
+
+<!-- ========================================== -->
+<!-- 2. POPUP MODAL: VOLUNTEER HOST APPLICATION -->
+<!-- ========================================== -->
+<div id="hostModal"
+     class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md hidden transition-all animate-fade-in">
+    <div
+        class="glass-panel w-full max-w-xl rounded-3xl border border-emerald-500/30 p-6 sm:p-8 space-y-6 shadow-2xl relative max-h-[90vh] overflow-y-auto">
+        <button type="button" onclick="closeHostModal()"
+                class="absolute right-5 top-5 text-slate-400 hover:text-white text-lg p-2 rounded-xl bg-slate-900/60 border border-slate-800 transition-colors cursor-pointer">
+            ✕
+        </button>
+
+        <div class="space-y-2">
+            <div
+                class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 text-xs font-bold">
+                <span>🖥️</span>
+                <span>Community Infrastructure Program</span>
+            </div>
+            <h2 class="text-2xl font-black text-white tracking-tight">Apply to be a Volunteer Host</h2>
+        </div>
+
+        <div
+            class="p-4 rounded-2xl bg-gradient-to-r from-emerald-950/40 via-teal-950/40 to-emerald-950/40 border border-emerald-500/40 text-slate-200 text-xs sm:text-sm leading-relaxed shadow-inner">
+            <p class="text-emerald-100/90 leading-relaxed">
+                Host dedicated match instances on your hardware to expand matchmaking capacity! You can request one host
+                account at a time. Once approved, you may apply for additional host nodes.
+            </p>
+        </div>
+
+        <!-- Current Host Standing Info -->
+        @if (Model.HasApprovedHostAccount)
+        {
+            <div class="p-4 rounded-2xl bg-emerald-950/40 border border-emerald-500/40 space-y-1.5">
+                <div class="flex items-center justify-between">
+                    <span class="text-xs font-bold text-emerald-300 flex items-center gap-1.5">
+                        <span>✅</span> ACTIVE VOLUNTEER HOST NODES: @Model.ApprovedHostCount
+                    </span>
+                    <span class="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 font-bold">APPROVED</span>
+                </div>
+                <p class="text-xs text-slate-300">
+                    Applying below will request an <strong>additional linked host account</strong>.
+                </p>
+            </div>
+        }
+        else if (Model.HasPendingHostApplication)
+        {
+            <div class="p-4 rounded-2xl bg-amber-950/40 border border-amber-500/40 space-y-1.5">
+                <div class="flex items-center justify-between">
+                    <span class="text-xs font-bold text-amber-300 flex items-center gap-1.5">
+                        <span>⏳</span> HOST APPLICATION UNDER REVIEW
+                    </span>
+                    <span
+                        class="text-[10px] text-amber-400/80 font-mono">@Model.HostApp?.TimestampApplied.ToString("yyyy-MM-dd HH:mm") UTC</span>
+                </div>
+                <p class="text-xs text-slate-300 leading-relaxed">
+                    Your host application for <strong>@Model.HostApp?.Instances instances</strong> in
+                    <strong>@Model.HostApp?.Location</strong> is being reviewed by staff.
+                </p>
+            </div>
+        }
+
+        <!-- Host Form -->
+        <form asp-controller="Account" asp-action="ApplyHost" method="post" class="space-y-4">
+            @Html.AntiForgeryToken()
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div class="space-y-1">
+                    <label class="text-[11px] font-bold text-slate-300 uppercase tracking-wider">Region /
+                        Location</label>
+                    <input type="text" name="Location" value="@Model.ApplyHostModel.Location"
+                           placeholder="USE, USW, EU, SEA..."
+                           class="w-full bg-slate-950 border border-slate-800 focus:border-emerald-500 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-slate-600 outline-none"/>
+                </div>
+                <div class="space-y-1">
+                    <label class="text-[11px] font-bold text-slate-300 uppercase tracking-wider">Max Instances
+                        (1-32)</label>
+                    <input type="number" name="Instances" min="1" max="32" value="@Model.ApplyHostModel.Instances"
+                           class="w-full bg-slate-950 border border-slate-800 focus:border-emerald-500 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-slate-600 outline-none"/>
+                </div>
+            </div>
+
+            <div class="space-y-1">
+                <label class="text-[11px] font-bold text-slate-300 uppercase tracking-wider">Server Name Prefix</label>
+                <input type="text" name="ServerNamePrefix" value="@Model.ApplyHostModel.ServerNamePrefix"
+                       placeholder="e.g. MyServer Arena"
+                       class="w-full bg-slate-950 border border-slate-800 focus:border-emerald-500 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-slate-600 outline-none"/>
+            </div>
+
+            <div class="space-y-1">
+                <label class="text-[11px] font-bold text-slate-300 uppercase tracking-wider">Node Specs / Notes
+                    (Optional)</label>
+                <textarea name="ApplicationNotes" rows="2" placeholder="CPU specs, bandwidth, uptime reliability..."
+                          class="w-full bg-slate-950 border border-slate-800 focus:border-emerald-500 rounded-xl p-3 text-xs text-white placeholder-slate-600 outline-none resize-none">@Model.ApplyHostModel.ApplicationNotes</textarea>
+            </div>
+
+            <div
+                class="p-3.5 rounded-2xl bg-emerald-950/20 border border-emerald-500/20 text-[11px] text-emerald-300/90 space-y-1">
+                <span class="font-bold flex items-center gap-1.5">🛡️ Host Isolation Security</span>
+                <p>Approved volunteer servers authenticate via an isolated, dedicated <code class="text-emerald-200">_host</code>
+                    account. Your personal player account credentials remain private.</p>
+            </div>
+
+            <div class="flex items-center justify-end gap-3 pt-2">
+                <button type="button" onclick="closeHostModal()"
+                        class="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold transition-all cursor-pointer">
+                    Cancel
+                </button>
+                <button type="submit"
+                        class="px-6 py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-xs shadow-lg shadow-emerald-900/30 flex items-center gap-2 transition-all cursor-pointer">
+                    <span>🖥️</span>
+                    <span>@(Model.HasPendingHostApplication ? "Update Host Application" : Model.HasApprovedHostAccount ? "Request Additional Host Account" : "Submit Volunteer Host Application")</span>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    function togglePassVisibility(inputId, btn) {
+        const input = document.getElementById(inputId);
+        if (!input) return;
+        if (input.type === 'password') {
+            input.type = 'text';
+            btn.innerText = '🙈';
+        } else {
+            input.type = 'password';
+            btn.innerText = '👁️';
+        }
+    }
+
+    function openStreamerModal() {
+        const modal = document.getElementById('streamerModal');
+        if (modal) modal.classList.remove('hidden');
+    }
+
+    function closeStreamerModal() {
+        const modal = document.getElementById('streamerModal');
+        if (modal) modal.classList.add('hidden');
+    }
+
+    function openHostModal() {
+        const modal = document.getElementById('hostModal');
+        if (modal) modal.classList.remove('hidden');
+    }
+
+    function closeHostModal() {
+        const modal = document.getElementById('hostModal');
+        if (modal) modal.classList.add('hidden');
+    }
+
+    // Close on Escape or click outside
+    document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape') {
+            closeStreamerModal();
+            closeHostModal();
+        }
+    });
+
+    document.getElementById('streamerModal')?.addEventListener('click', function (e) {
+        if (e.target === this) closeStreamerModal();
+    });
+
+    document.getElementById('hostModal')?.addEventListener('click', function (e) {
+        if (e.target === this) closeHostModal();
+    });
+
+    // Auto-open modal if specified in URL query params (e.g. returning from Twitch OAuth)
+    document.addEventListener('DOMContentLoaded', function () {
+        const urlParams = new URLSearchParams(window.location.search);
+        const isAlreadyStreamer = @Model.IsStreamer.ToString().ToLowerInvariant();
+        if (!isAlreadyStreamer && (urlParams.get('openStreamerModal') === 'true' || urlParams.get('openModal') === 'streamer')) {
+            openStreamerModal();
+        } else if (urlParams.get('openHostModal') === 'true' || urlParams.get('openModal') === 'host') {
+            openHostModal();
+        }
+    });
+
+    let cachedHostPassword = null;
+    let cachedHostAuthToken = null;
+    let isPasswordRevealed = false;
+    let isTokenRevealed = false;
+
+    async function fetchCredentialsIfNeeded() {
+        if (!cachedHostPassword || !cachedHostAuthToken) {
+            const response = await fetch('/host-credentials');
+            const data = await response.json();
+            if (data.success) {
+                cachedHostPassword = data.hostPassword;
+                cachedHostAuthToken = data.authToken;
+                return true;
+            } else {
+                alert('Could not retrieve credentials: ' + (data.message || 'Error'));
+                return false;
+            }
+        }
+        return true;
+    }
+
+    async function toggleHostPassword() {
+        const passDisplay = document.getElementById('displayHostPass');
+        const toggleBtn = document.getElementById('togglePassBtn');
+
+        if (!isPasswordRevealed) {
+            try {
+                if (toggleBtn) toggleBtn.textContent = '⏳';
+                const ok = await fetchCredentialsIfNeeded();
+                if (!ok) {
+                    if (toggleBtn) toggleBtn.textContent = '👁️ Reveal';
+                    return;
+                }
+            } catch (e) {
+                alert('Network error: ' + e.message);
+                if (toggleBtn) toggleBtn.textContent = '👁️ Reveal';
+                return;
+            }
+
+            if (passDisplay) passDisplay.textContent = cachedHostPassword;
+            if (toggleBtn) toggleBtn.textContent = '🙈 Hide';
+            isPasswordRevealed = true;
+        } else {
+            if (passDisplay) passDisplay.textContent = '••••••••••••••••';
+            if (toggleBtn) toggleBtn.textContent = '👁️ Reveal';
+            isPasswordRevealed = false;
+        }
+    }
+
+    async function copyHostPassword() {
+        const copyBtn = document.getElementById('copyPassBtn');
+        try {
+            const ok = await fetchCredentialsIfNeeded();
+            if (ok && cachedHostPassword) {
+                navigator.clipboard.writeText(cachedHostPassword);
+                if (copyBtn) {
+                    const originalText = copyBtn.innerText;
+                    copyBtn.innerText = '✓ Copied!';
+                    setTimeout(() => {
+                        copyBtn.innerText = originalText;
+                    }, 2000);
+                } else {
+                    alert('Host password copied to clipboard!');
+                }
+            }
+        } catch (e) {
+            alert('Could not copy password: ' + e.message);
+        }
+    }
+
+    async function toggleHostAuthToken() {
+        const tokenDisplay = document.getElementById('displayHostAuthToken');
+        const toggleBtn = document.getElementById('toggleTokenBtn');
+
+        if (!isTokenRevealed) {
+            try {
+                if (toggleBtn) toggleBtn.textContent = '⏳';
+                const ok = await fetchCredentialsIfNeeded();
+                if (!ok) {
+                    if (toggleBtn) toggleBtn.textContent = '👁️ Reveal';
+                    return;
+                }
+            } catch (e) {
+                alert('Network error: ' + e.message);
+                if (toggleBtn) toggleBtn.textContent = '👁️ Reveal';
+                return;
+            }
+
+            if (tokenDisplay) tokenDisplay.textContent = cachedHostAuthToken;
+            if (toggleBtn) toggleBtn.textContent = '🙈 Hide';
+            isTokenRevealed = true;
+        } else {
+            if (tokenDisplay) tokenDisplay.textContent = '••••••••••••••••';
+            if (toggleBtn) toggleBtn.textContent = '👁️ Reveal';
+            isTokenRevealed = false;
+        }
+    }
+
+    async function copyHostAuthToken() {
+        const copyBtn = document.getElementById('copyTokenBtn');
+        try {
+            const ok = await fetchCredentialsIfNeeded();
+            if (ok && cachedHostAuthToken) {
+                navigator.clipboard.writeText(cachedHostAuthToken);
+                if (copyBtn) {
+                    const originalText = copyBtn.innerText;
+                    copyBtn.innerText = '✓ Copied!';
+                    setTimeout(() => {
+                        copyBtn.innerText = originalText;
+                    }, 2000);
+                } else {
+                    alert('COMPEL Authentication Token copied to clipboard!');
+                }
+            }
+        } catch (e) {
+            alert('Could not copy token: ' + e.message);
+        }
+    }
+
+    async function regenerateHostPassword() {
+        const confirmed = window.confirm("Are you sure you want to generate a new host password?\n\nYour existing COMPEL / server manager password will be invalidated and you will need to update COMPEL or re-download your compel.json file.");
+        if (!confirmed) return;
+
+        const passDisplay = document.getElementById('displayHostPass');
+        const toggleBtn = document.getElementById('togglePassBtn');
+        const resetBtn = document.getElementById('resetPassBtn');
+
+        try {
+            if (resetBtn) resetBtn.textContent = '⏳ Resetting...';
+            const response = await fetch('/regenerate-host-password', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value || ''
+                }
+            });
+            const data = await response.json();
+            if (data.success) {
+                cachedHostPassword = data.hostPassword;
+                if (data.authToken) cachedHostAuthToken = data.authToken;
+                if (passDisplay) passDisplay.textContent = cachedHostPassword;
+                if (toggleBtn) toggleBtn.textContent = '🙈 Hide';
+                isPasswordRevealed = true;
+                navigator.clipboard.writeText(cachedHostPassword);
+                alert('Success! New host password generated and copied to clipboard.\n\nPlease remember to update COMPEL or re-download your compel.json file.');
+            } else {
+                alert('Could not regenerate password: ' + (data.message || 'Error'));
+            }
+        } catch (e) {
+            alert('Network error: ' + e.message);
+        } finally {
+            if (resetBtn) resetBtn.textContent = '🔄 Reset';
+        }
+    }
+
+    async function regenerateHostAuthToken() {
+        const confirmed = window.confirm("Are you sure you want to rotate your COMPEL Remote Authentication Token?\n\nYour existing management bearer token will be invalidated and you will need to update AuthenticationToken in COMPEL.JSON.");
+        if (!confirmed) return;
+
+        const tokenDisplay = document.getElementById('displayHostAuthToken');
+        const toggleBtn = document.getElementById('toggleTokenBtn');
+        const resetBtn = document.getElementById('resetTokenBtn');
+
+        try {
+            if (resetBtn) resetBtn.textContent = '⏳ Rotating...';
+            const response = await fetch('/regenerate-host-auth-token', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value || ''
+                }
+            });
+            const data = await response.json();
+            if (data.success) {
+                cachedHostAuthToken = data.authToken;
+                if (data.hostPassword) cachedHostPassword = data.hostPassword;
+                if (tokenDisplay) tokenDisplay.textContent = cachedHostAuthToken;
+                if (toggleBtn) toggleBtn.textContent = '🙈 Hide';
+                isTokenRevealed = true;
+                navigator.clipboard.writeText(cachedHostAuthToken);
+                alert('Success! New COMPEL Authentication Token generated and copied to clipboard.\n\nPlease update AuthenticationToken in COMPEL.JSON.');
+            } else {
+                alert('Could not rotate token: ' + (data.message || 'Error'));
+            }
+        } catch (e) {
+            alert('Network error: ' + e.message);
+        } finally {
+            if (resetBtn) resetBtn.textContent = '🔄 Rotate';
+        }
+    }
+
+    function copyInviteCode(code, btn) {
+        navigator.clipboard.writeText(code);
+        const originalText = btn.innerHTML;
+        btn.innerHTML = '✓ Copied!';
+        setTimeout(() => btn.innerHTML = originalText, 2000);
+    }
+
+    function copyInviteLink(code, btn) {
+        const url = window.location.origin + '/Account/Login?invite=' + encodeURIComponent(code);
+        navigator.clipboard.writeText(url);
+        const originalText = btn.innerHTML;
+        btn.innerHTML = '✓ Link Copied!';
+        setTimeout(() => btn.innerHTML = originalText, 2000);
+    }
+
+    async function generateInviteCode() {
+        const btn = document.getElementById('btnGenerateInvite');
+        const btnText = document.getElementById('btnGenerateText');
+        if (!btn || btn.disabled) return;
+
+        btn.disabled = true;
+        btnText.textContent = 'Generating...';
+
+        const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value || '';
+
+        try {
+            const response = await fetch('/account/generate-invite', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'RequestVerificationToken': token
+                }
+            });
+            const data = await response.json();
+            if (data.success) {
+                window.location.reload();
+            } else {
+                alert(data.message || 'Could not generate invite code.');
+                btn.disabled = false;
+                btnText.textContent = 'Generate Invite Code';
+            }
+        } catch (e) {
+            alert('Network error: ' + e.message);
+            btn.disabled = false;
+            btnText.textContent = 'Generate Invite Code';
+        }
+    }
+</script>

@@ -1,0 +1,1369 @@
+@{
+    ViewData["Title"] = "Item Compendium & Codex";
+}
+
+<div class="w-full max-w-7xl mx-auto py-4 sm:py-8 px-3 sm:px-4 space-y-6 sm:space-y-8 animate-fade-in-up">
+    <!-- Header Card -->
+    <div
+        class="glass-panel p-5 sm:p-8 rounded-3xl relative overflow-hidden border border-slate-700/60 shadow-2xl backdrop-blur-xl bg-gradient-to-r from-slate-900/90 via-slate-900/80 to-purple-950/40">
+        <div
+            class="absolute -right-20 -top-20 w-80 h-80 bg-amber-500/10 rounded-full blur-3xl pointer-events-none"></div>
+
+        <div class="flex flex-col md:flex-row items-center justify-between gap-6 relative z-10">
+            <div class="space-y-3 text-center md:text-left">
+                <div class="flex items-center justify-center md:justify-start gap-2">
+                    <span
+                        class="px-3 py-1 rounded-full text-xs font-bold bg-amber-500/10 border border-amber-500/30 text-amber-400">
+                        NEWERTH ARMORY CODEX
+                    </span>
+                    <span id="item-count-badge"
+                          class="px-3 py-1 rounded-full text-xs font-mono bg-purple-500/10 border border-purple-500/30 text-purple-300">
+                        Loading catalog...
+                    </span>
+                </div>
+                <h1 class="text-2xl sm:text-4xl md:text-5xl font-black text-white tracking-tight">Item Compendium</h1>
+                <p class="text-slate-300 text-xs sm:text-sm max-w-2xl leading-relaxed">
+                    Explore all Heroes of Newerth items, active status, recipe components, gold costs, shop lore, and
+                    active spell effects in one central database.
+                </p>
+            </div>
+
+            <!-- Global Search & Active Filter -->
+            <div class="w-full md:w-80 space-y-3">
+                <div class="relative">
+                    <input type="text"
+                           id="item-search"
+                           oninput="filterItems()"
+                           placeholder="Search items by name, cost, or stats..."
+                           class="w-full bg-slate-950/80 text-white placeholder-slate-500 text-sm rounded-2xl px-4 py-2.5 sm:py-3 pl-10 border border-slate-700 focus:outline-none focus:border-amber-400 shadow-inner transition-all"/>
+                    <span class="absolute left-3.5 top-3.5 text-slate-400 text-sm">🔍</span>
+                </div>
+            </div>
+        </div>
+    </div>    <!-- Category Filter Bar -->
+    <div class="glass-panel p-4 rounded-2xl border border-slate-800 space-y-3">
+        <!-- Main Filter Header & Counter -->
+        <div class="flex items-center justify-between gap-3 border-b border-slate-800/80 pb-3">
+            <div class="flex items-center gap-2">
+                <button onclick="setCategory('all')" data-cat="all"
+                        class="cat-btn px-4 py-2 rounded-xl text-xs font-bold transition-all bg-amber-500/20 text-amber-300 border border-amber-500/40 shadow-sm">
+                    All Items
+                </button>
+            </div>
+            <div class="text-xs text-slate-400 font-mono px-2">
+                Showing <span id="visible-count" class="text-white font-bold">0</span> items
+            </div>
+        </div>
+
+        <!-- Components Section -->
+        <div class="space-y-1.5">
+            <div class="text-[10px] font-bold tracking-widest text-amber-400 uppercase">Components</div>
+            <div class="flex flex-wrap items-center gap-2">
+                <button onclick="setCategory('supplies')" data-cat="supplies"
+                        class="cat-btn px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all bg-slate-900/80 text-slate-400 hover:text-white border border-slate-800">
+                    🧪 Supplies
+                </button>
+                <button onclick="setCategory('accessories')" data-cat="accessories"
+                        class="cat-btn px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all bg-slate-900/80 text-slate-400 hover:text-white border border-slate-800">
+                    💍 Accessories
+                </button>
+                <button onclick="setCategory('weapons')" data-cat="weapons"
+                        class="cat-btn px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all bg-slate-900/80 text-slate-400 hover:text-white border border-slate-800">
+                    ⚔️ Weapons
+                </button>
+                <button onclick="setCategory('relics')" data-cat="relics"
+                        class="cat-btn px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all bg-slate-900/80 text-slate-400 hover:text-white border border-slate-800">
+                    🔮 Relics
+                </button>
+                <button onclick="setCategory('secret')" data-cat="secret"
+                        class="cat-btn px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all bg-slate-900/80 text-slate-400 hover:text-white border border-slate-800">
+                    🗝️ Secret
+                </button>
+            </div>
+        </div>
+
+        <!-- Recipes Section -->
+        <div class="space-y-1.5 pt-1">
+            <div class="text-[10px] font-bold tracking-widest text-purple-400 uppercase">Recipes</div>
+            <div class="flex flex-wrap items-center gap-2">
+                <button onclick="setCategory('initiation')" data-cat="initiation"
+                        class="cat-btn px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all bg-slate-900/80 text-slate-400 hover:text-white border border-slate-800">
+                    ⚡ Initiation
+                </button>
+                <button onclick="setCategory('supportive')" data-cat="supportive"
+                        class="cat-btn px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all bg-slate-900/80 text-slate-400 hover:text-white border border-slate-800">
+                    🛡️ Supportive
+                </button>
+                <button onclick="setCategory('protective')" data-cat="protective"
+                        class="cat-btn px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all bg-slate-900/80 text-slate-400 hover:text-white border border-slate-800">
+                    🔰 Protective
+                </button>
+                <button onclick="setCategory('combative')" data-cat="combative"
+                        class="cat-btn px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all bg-slate-900/80 text-slate-400 hover:text-white border border-slate-800">
+                    ⚔️ Combative
+                </button>
+                <button onclick="setCategory('morph attack')" data-cat="morph attack"
+                        class="cat-btn px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all bg-slate-900/80 text-slate-400 hover:text-white border border-slate-800">
+                    ❄️ Morph Attack
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Items Grid -->
+    <div id="items-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+        <!-- Item Cards Rendered Dynamically -->
+        <div class="col-span-full py-16 text-center text-slate-400 animate-pulse">
+            Loading Newerth Armory Item Catalog...
+        </div>
+    </div>
+</div>
+
+<style>
+    .moba-modal-tree-down, .moba-modal-tree-up {
+        display: flex;
+        justify-content: center;
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        position: relative;
+    }
+    .moba-modal-tree-down { padding-top: 16px; }
+    .moba-modal-tree-down::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 2px;
+        height: 16px;
+        background: rgba(251, 191, 36, 0.65);
+    }
+    .moba-modal-tree-down > li {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        position: relative;
+        padding: 16px 6px 0 6px;
+    }
+    .moba-modal-tree-down > li::before,
+    .moba-modal-tree-down > li::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        right: 50%;
+        width: 50%;
+        height: 16px;
+        border-top: 2px solid rgba(251, 191, 36, 0.55);
+    }
+    .moba-modal-tree-down > li::after {
+        right: auto;
+        left: 50%;
+        border-left: 2px solid rgba(251, 191, 36, 0.55);
+    }
+    .moba-modal-tree-down > li:first-child::before { border: 0 none; }
+    .moba-modal-tree-down > li:first-child::after { border-top-left-radius: 8px; }
+    .moba-modal-tree-down > li:last-child::after { border: 0 none; }
+    .moba-modal-tree-down > li:last-child::before {
+        border-right: 2px solid rgba(251, 191, 36, 0.55);
+        border-top-right-radius: 8px;
+    }
+    .moba-modal-tree-down > li:only-child { padding-top: 0; }
+    .moba-modal-tree-down > li:only-child::before,
+    .moba-modal-tree-down > li:only-child::after { display: none; }
+
+    .moba-modal-tree-up { padding-bottom: 16px; }
+    .moba-modal-tree-up::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 2px;
+        height: 16px;
+        background: rgba(34, 211, 238, 0.65);
+    }
+    .moba-modal-tree-up > li {
+        display: flex;
+        flex-direction: column-reverse;
+        align-items: center;
+        position: relative;
+        padding: 0 6px 16px 6px;
+    }
+    .moba-modal-tree-up > li::before,
+    .moba-modal-tree-up > li::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        right: 50%;
+        width: 50%;
+        height: 16px;
+        border-bottom: 2px solid rgba(34, 211, 238, 0.55);
+    }
+    .moba-modal-tree-up > li::after {
+        right: auto;
+        left: 50%;
+        border-left: 2px solid rgba(34, 211, 238, 0.55);
+    }
+    .moba-modal-tree-up > li:first-child::before { border: 0 none; }
+    .moba-modal-tree-up > li:first-child::after { border-bottom-left-radius: 8px; }
+    .moba-modal-tree-up > li:last-child::after { border: 0 none; }
+    .moba-modal-tree-up > li:last-child::before {
+        border-right: 2px solid rgba(34, 211, 238, 0.55);
+        border-bottom-right-radius: 8px;
+    }
+    .moba-modal-tree-up > li:only-child { padding-bottom: 0; }
+    .moba-modal-tree-up > li:only-child::before,
+    .moba-modal-tree-up > li:only-child::after { display: none; }
+</style>
+<!-- Glassmorphic Item Details Modal Synchronized with Item Detail Page -->
+<div id="item-detail-modal"
+     class="fixed inset-0 z-50 hidden bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4 animate-fade-in">
+    <div
+        class="glass-panel max-w-3xl w-full p-6 sm:p-7 rounded-3xl border border-slate-700/80 shadow-2xl space-y-5 relative overflow-hidden bg-slate-900/95 max-h-[90vh] overflow-y-auto">
+        <button onclick="closeItemModal()" type="button"
+                class="absolute top-4 right-4 text-slate-400 hover:text-white text-lg font-bold p-1 transition-colors z-10">
+            ✕
+        </button>
+
+        <!-- Modal Header Card -->
+        <div class="flex flex-col sm:flex-row items-start sm:items-center gap-5 relative z-10 pr-6">
+            <div class="relative w-20 h-20 sm:w-24 sm:h-24 rounded-2xl p-1 bg-gradient-to-b from-amber-400/40 via-slate-800 to-amber-600/30 border-2 border-amber-400/50 shadow-2xl overflow-hidden flex-shrink-0">
+                <div class="relative w-full h-full rounded-xl overflow-hidden bg-slate-950 ring-1 ring-white/15 ring-inset flex items-center justify-center">
+                    <img id="modal-item-icon" src="" class="w-full h-full object-cover rounded-xl" alt="Item Icon"/>
+                    <div class="pointer-events-none absolute inset-0 bg-gradient-to-tr from-transparent via-white/15 to-transparent"></div>
+                </div>
+            </div>
+            <div class="space-y-2 flex-1 min-w-0">
+                <div class="flex items-center justify-between gap-2 flex-wrap">
+                    <h3 id="modal-item-name"
+                        class="text-2xl sm:text-3xl font-extrabold text-white tracking-tight truncate">Item Name</h3>
+                    <span id="modal-status-badge"
+                          class="px-3 py-1 rounded-full text-xs font-bold tracking-wider uppercase bg-emerald-500/10 border border-emerald-500/30 text-emerald-400">
+                        ACTIVE
+                    </span>
+                </div>
+                <p id="modal-item-code" class="text-xs font-mono text-amber-400/80">Item Code: <span
+                        id="modal-item-code-val" class="font-bold text-white">code</span></p>
+
+                <div class="flex flex-wrap items-center gap-2 text-xs" id="modal-item-cost-container">
+                    <!-- Dynamic pills for Category, Total Cost, Recipe Scroll Cost -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Disabled Warning Banner if applicable -->
+        <div id="modal-disabled-warning"
+             class="hidden p-3.5 rounded-2xl bg-red-950/40 border border-red-500/40 text-red-300 text-xs flex items-center gap-2.5">
+            <span class="text-lg">⚠️</span>
+            <span>This item is currently disabled in active competitive matchmaking modes.</span>
+        </div>
+
+        <!-- Embedded Item Description / Effects & Stats -->
+        <div class="p-4 sm:p-5 rounded-2xl bg-slate-950/70 border border-slate-800/80 space-y-1.5">
+            <div class="text-[11px] font-bold text-amber-400 uppercase tracking-widest flex items-center gap-1.5">
+                <span>✨</span> ITEM EFFECTS & STATS
+            </div>
+            <p id="modal-item-desc" class="text-xs sm:text-sm text-slate-200 leading-relaxed">
+                Item description details...
+            </p>
+        </div>
+
+        <!-- Build Components (Full Tree) Section -->
+        <div id="modal-item-tree-container"
+             class="hidden p-4 sm:p-5 rounded-2xl bg-slate-950/60 border border-slate-800 space-y-3">
+            <div class="text-xs font-bold text-slate-300 uppercase tracking-widest flex items-center justify-between">
+                <span class="flex items-center gap-2">
+                    <span>🌳</span> INTERACTIVE CRAFTING TREE (FORWARD &amp; BACKWARD)
+                </span>
+                <span id="modal-item-tree-summary" class="text-[10px] font-mono text-slate-400">
+                    Recipe Hierarchy
+                </span>
+            </div>
+            <div id="modal-item-tree-content" class="pt-1">
+                <!-- Recursive Tree HTML Rendered via JS -->
+            </div>
+        </div>
+
+        <!-- Builds Into Section -->
+        <div id="modal-item-builds-into-container"
+             class="hidden p-4 sm:p-5 rounded-2xl bg-slate-950/60 border border-slate-800 space-y-3">
+            <h3 class="text-xs font-bold text-cyan-400 uppercase tracking-widest flex items-center gap-2">
+                <span>⚡</span> BUILDS INTO
+            </h3>
+            <div id="modal-item-builds-into-list" class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                <!-- Builds Into Cards Rendered via JS -->
+            </div>
+        </div>
+
+        <!-- Upgrade Path Note -->
+        <div id="modal-item-upgrade-container"
+             class="p-4 rounded-2xl bg-cyan-950/40 border border-cyan-500/40 text-cyan-300 text-xs sm:text-sm flex items-center gap-3 hidden">
+            <span class="text-xl">🛡️</span>
+            <div>
+                <strong class="font-bold">Upgrade Path:</strong> <span id="modal-item-upgrade-text">Upgrade Note</span>
+            </div>
+        </div>
+
+        <!-- Level Upgrade Tier Pricing Section -->
+        <div id="modal-item-levels-container"
+             class="hidden p-4 sm:p-5 rounded-2xl bg-slate-950/60 border border-amber-500/30 space-y-3">
+            <div class="flex items-center justify-between">
+                <h3 class="text-xs font-bold text-amber-400 uppercase tracking-widest flex items-center gap-2">
+                    <span>📈</span> LEVEL UPGRADE & PRICING BREAKDOWN
+                </h3>
+                <span id="modal-item-levels-count" class="text-[11px] font-medium text-slate-400 font-mono">Upgradable Tiers</span>
+            </div>
+            <div id="modal-item-levels-list" class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                <!-- Level Tiers Cards dynamically populated -->
+            </div>
+        </div>
+
+        <!-- Shop Lore / Flavor -->
+        <div id="modal-item-flavor-container"
+             class="p-4 rounded-2xl bg-slate-950/40 border border-slate-800/80 space-y-1.5">
+            <h3 class="text-xs font-bold text-purple-400 uppercase tracking-widest flex items-center gap-2">
+                <span>📜</span> SHOP LORE
+            </h3>
+            <p id="modal-item-flavor" class="text-xs sm:text-sm italic text-slate-400 leading-relaxed font-serif">
+                "Shop flavor text..."
+            </p>
+        </div>
+
+        <div class="pt-2 flex items-center justify-between gap-3 flex-wrap">
+            <a id="modal-full-page-link" href="/items"
+               class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 border border-amber-400/40 text-xs font-bold text-amber-300 hover:text-white transition-all shadow-md no-underline">
+                <span>Open Full Item Page</span>
+                <span>➔</span>
+            </a>
+            <button onclick="closeItemModal()" type="button"
+                    class="px-5 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-bold text-white transition-all shadow-md">
+                Close
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+    let currentCategory = 'all';
+
+    const LEGACY_ITEM_ALIASES = {
+        morph: 'kuldrassheepstick',
+        sheepstick: 'kuldrassheepstick',
+        pierce: 'shieldbreaker',
+        manaburn1: 'nullfireblade',
+        manaburn2: 'geometersbane',
+        spiked_bola: 'spikedbola',
+        immunity: 'shrunkenhead',
+        silence: 'hellflower',
+        protect: 'nullstone',
+        pushstaff: 'tabletofcommand',
+        intelligence5: 'tomeofelements',
+        intelligence6: 'grimoireofpower',
+        intelligence7: 'staffofthemaster',
+        critical1: 'riftshards',
+        critical2: 'riftshards',
+        freeze: 'frostwolfsskull',
+        posthaste: 'steamboots',
+        state_posthaste: 'steamboots',
+        damage9: 'doombringer',
+        damage10: 'mockofbrilliance',
+        lifesteal4: 'symbolofrage',
+        lifesteal5: 'abyssalskull',
+        nuke: 'codex',
+        evasion: 'wingbow',
+        weapon1: 'steamstaff',
+        weapon3: 'savagemace',
+        gloves3: 'alchemistsbones',
+        glovesofswiftness: 'glovesoftheswift',
+        healthmana2: 'iconofthegoddess',
+        healthmana3: 'iconofthegoddess',
+        magicarmor2: 'shamansheaddress',
+        manaring: 'ringofsorcery',
+        manaregen3: 'ringoftheteacher',
+        replenish: 'ringofsorcery',
+        arcaneboots: 'sorceryboots',
+        shield2: 'helmoftheblacklegion',
+        splash: 'runedcleaver',
+        stealth: 'assassinsshroud',
+        summon: 'puzzlebox',
+        excruciator: 'barbedarmor',
+        runesoftheblight: 'blightstones',
+        somazssynchronizer: 'orbofzamos',
+        madfreds_brassknuckles: 'madfredsbrassknuckles',
+        sasuke: 'genjuro',
+        voulge: 'slayer',
+        enhancedmarchers: 'ghostmarchers',
+        strengthagility: 'frostburn',
+        lightning1: 'thunderclaw',
+        lightning2: 'chargedhammer',
+        groundfamiliar: 'boundeye',
+        bottle: 'bottle33',
+        flamingeye: 'wardofsight',
+        gadget_flamingeye: 'wardofsight',
+        gadgetflamingeye: 'wardofsight',
+        healthtube: 'lifetube',
+        regen: 'sustainer',
+        refresh: 'restorationstone'
+    };
+
+    function extractItemRefCode(entry) {
+        if (!entry) return '';
+        if (typeof entry === 'string') return entry.toLowerCase().trim();
+        return String(entry.code || entry.Code || entry.icon || entry.Icon || entry.name || entry.Name || '').toLowerCase().trim();
+    }
+
+    function isRecipeRef(entry) {
+        if (!entry) return false;
+        if (typeof entry === 'string') {
+            const norm = entry.toLowerCase().trim();
+            return norm === 'recipe' || norm.includes('recipe');
+        }
+        if (entry.isRecipe || entry.IsRecipe) return true;
+        const rawCode = extractItemRefCode(entry);
+        const rawName = String(entry.name || entry.Name || '').toLowerCase().trim();
+        return rawCode === 'recipe' || rawCode.includes('recipe') || rawName === 'recipe' || rawName.includes('recipe');
+    }
+
+    function getItemByCode(rawCode) {
+        if (!rawCode) return null;
+        const codeStr = typeof rawCode === 'string' ? rawCode : extractItemRefCode(rawCode);
+        if (!codeStr) return null;
+
+        const key = codeStr.toLowerCase().trim();
+        const withoutPrefix = key.replace(/^item_/i, '');
+        const strippedKey = withoutPrefix.replace(/[^a-z0-9]/g, '');
+        const aliasTarget = LEGACY_ITEM_ALIASES[key] || LEGACY_ITEM_ALIASES[withoutPrefix] || LEGACY_ITEM_ALIASES[strippedKey];
+
+        if (window.itemCatalog) {
+            if (window.itemCatalog[key]) return window.itemCatalog[key];
+            if (window.itemCatalog['item_' + key]) return window.itemCatalog['item_' + key];
+            if (window.itemCatalog[withoutPrefix]) return window.itemCatalog[withoutPrefix];
+            if (window.itemCatalog[strippedKey]) return window.itemCatalog[strippedKey];
+            if (window.itemCatalog['item_' + strippedKey]) return window.itemCatalog['item_' + strippedKey];
+            if (aliasTarget && window.itemCatalog[aliasTarget]) return window.itemCatalog[aliasTarget];
+        }
+
+        if (window.uniqueItemList) {
+            return window.uniqueItemList.find(it => {
+                const k = (it.key || it.code || '').toLowerCase();
+                const ident = (it.itemIdentifier || '').toLowerCase();
+                const n = (it.name || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+                return k === key
+                    || ident === key
+                    || k.replace(/^item_/i, '').replace(/[^a-z0-9]/g, '') === strippedKey
+                    || ident.replace(/^item_/i, '').replace(/[^a-z0-9]/g, '') === strippedKey
+                    || n === strippedKey
+                    || (aliasTarget && (k === aliasTarget || n === aliasTarget));
+            }) || null;
+        }
+        return null;
+    }
+
+    function getMultiLevelCostsForItem(itemObj) {
+        if (!itemObj) return null;
+        const strippedKey = (itemObj.key || itemObj.code || '').toLowerCase().replace(/^item_/i, '').replace(/[^a-z0-9]/g, '');
+        const itemCodeLower = (itemObj.name || '').toLowerCase().replace(/\s+/g, '');
+        const baseCost = Number(itemObj.cost || 0);
+        const dynamicRecipeCost = Number(itemObj.recipeCost || 1000);
+
+        if (strippedKey === 'nullfireblade' || strippedKey === 'manaburn1' || itemCodeLower === 'nullfireblade') {
+            return [
+                {level: 1, cost: baseCost},
+                {level: 2, cost: baseCost + dynamicRecipeCost * 1},
+                {level: 3, cost: baseCost + dynamicRecipeCost * 2}
+            ];
+        } else if (strippedKey === 'shieldbreaker' || strippedKey === 'pierce' || itemCodeLower === 'shieldbreaker') {
+            return [
+                {level: 1, cost: baseCost},
+                {level: 2, cost: baseCost + dynamicRecipeCost * 1},
+                {level: 3, cost: baseCost + dynamicRecipeCost * 2}
+            ];
+        } else if (strippedKey === 'riftshards' || itemCodeLower === 'riftshards') {
+            return [
+                {level: 1, cost: baseCost},
+                {level: 2, cost: baseCost + dynamicRecipeCost * 1},
+                {level: 3, cost: baseCost + dynamicRecipeCost * 2},
+                {level: 4, cost: baseCost + dynamicRecipeCost * 3}
+            ];
+        } else if (strippedKey === 'spellshards' || itemCodeLower === 'spellshards') {
+            const scrollCost = 1000;
+            return [
+                {level: 1, cost: baseCost},
+                {level: 2, cost: baseCost + scrollCost * 1},
+                {level: 3, cost: baseCost + scrollCost * 2}
+            ];
+        } else if (strippedKey === 'puzzlebox' || itemCodeLower === 'puzzlebox') {
+            const scrollCost = 1200;
+            return [
+                {level: 1, cost: baseCost},
+                {level: 2, cost: baseCost + scrollCost * 1},
+                {level: 3, cost: baseCost + scrollCost * 2}
+            ];
+        }
+        return null;
+    }
+
+    function getResolvedComponentsForItem(itemObj) {
+        if (!itemObj) return [];
+        let comps = (itemObj.components && itemObj.components.length > 0) ? [...itemObj.components] : [];
+
+        const strippedKey = (itemObj.key || itemObj.code || '').toLowerCase().replace(/^item_/i, '').replace(/[^a-z0-9]/g, '');
+        const itemCodeLower = (itemObj.name || '').toLowerCase().replace(/\s+/g, '');
+        const dynamicRecipeCost = Number(itemObj.recipeCost || 1000);
+
+        if (strippedKey === 'spellshards' || itemCodeLower === 'spellshards') {
+            comps = comps.filter(c => !isRecipeRef(c));
+            comps.push({name: 'Recipe (Lvl 1)', cost: dynamicRecipeCost, icon: 'recipe', isRecipe: true});
+            comps.push({name: 'Recipe (Lvl 2)', cost: dynamicRecipeCost, icon: 'recipe', isRecipe: true});
+            comps.push({name: 'Recipe (Lvl 3)', cost: dynamicRecipeCost, icon: 'recipe', isRecipe: true});
+        } else if (strippedKey === 'riftshards' || itemCodeLower === 'riftshards') {
+            comps = comps.filter(c => !isRecipeRef(c));
+            comps.push({name: 'Recipe (Lvl 1)', cost: dynamicRecipeCost, icon: 'recipe', isRecipe: true});
+            comps.push({name: 'Recipe (Lvl 2)', cost: dynamicRecipeCost, icon: 'recipe', isRecipe: true});
+            comps.push({name: 'Recipe (Lvl 3)', cost: dynamicRecipeCost, icon: 'recipe', isRecipe: true});
+            comps.push({name: 'Recipe (Lvl 4)', cost: dynamicRecipeCost, icon: 'recipe', isRecipe: true});
+        } else if (strippedKey === 'puzzlebox' || itemCodeLower === 'puzzlebox') {
+            comps = comps.filter(c => !isRecipeRef(c));
+            comps.push({name: 'Recipe (Lvl 1)', cost: dynamicRecipeCost, icon: 'recipe', isRecipe: true});
+            comps.push({name: 'Recipe (Lvl 2)', cost: dynamicRecipeCost, icon: 'recipe', isRecipe: true});
+            comps.push({name: 'Recipe (Lvl 3)', cost: dynamicRecipeCost, icon: 'recipe', isRecipe: true});
+        } else if (strippedKey === 'shieldbreaker' || strippedKey === 'pierce' || itemCodeLower === 'shieldbreaker') {
+            comps = comps.filter(c => !isRecipeRef(c));
+            comps.push({name: 'Recipe (Lvl 1)', cost: dynamicRecipeCost, icon: 'recipe', isRecipe: true});
+            comps.push({name: 'Recipe (Lvl 2)', cost: dynamicRecipeCost, icon: 'recipe', isRecipe: true});
+            comps.push({name: 'Recipe (Lvl 3)', cost: dynamicRecipeCost, icon: 'recipe', isRecipe: true});
+        } else if (strippedKey === 'nullfireblade' || strippedKey === 'manaburn1' || itemCodeLower === 'nullfireblade') {
+            comps = comps.filter(c => !isRecipeRef(c));
+            comps.push({name: 'Recipe (Lvl 1)', cost: dynamicRecipeCost, icon: 'recipe', isRecipe: true});
+            comps.push({name: 'Recipe (Lvl 2)', cost: dynamicRecipeCost, icon: 'recipe', isRecipe: true});
+            comps.push({name: 'Recipe (Lvl 3)', cost: dynamicRecipeCost, icon: 'recipe', isRecipe: true});
+        }
+        return comps;
+    }
+
+    function hasAnySubComponents(compList) {
+        if (!compList || compList.length === 0) return false;
+        return compList.some(c => {
+            if (isRecipeRef(c)) return false;
+            const rawCode = extractItemRefCode(c);
+            const matched = getItemByCode(rawCode);
+            if (matched) {
+                const sub = getResolvedComponentsForItem(matched);
+                return sub.length > 0;
+            }
+            return false;
+        });
+    }
+
+    function renderFullComponentTree(compList, depth = 0, visited = new Set()) {
+        if (!compList || compList.length === 0 || depth > 6) return '';
+
+        let html = `<div class="${depth > 0 ? 'mt-2 ml-3.5 pl-3 border-l-2 border-amber-500/30 space-y-2' : 'space-y-2'}">`;
+
+        compList.forEach(c => {
+            const rawCode = extractItemRefCode(c);
+            const isRecipe = isRecipeRef(c);
+            const matchedComp = isRecipe ? null : getItemByCode(rawCode);
+
+            const cObjName = typeof c === 'object' && c !== null ? (c.name || c.Name) : '';
+            const cObjCost = typeof c === 'object' && c !== null ? (c.cost || c.Cost) : 0;
+            const cObjIcon = typeof c === 'object' && c !== null ? (c.icon || c.Icon) : '';
+
+            const cName = (matchedComp && matchedComp.name) ? matchedComp.name : (cObjName || rawCode);
+            const cCost = Number((matchedComp && matchedComp.cost) ? matchedComp.cost : (cObjCost || 0));
+            const cIcon = isRecipe
+                ? '/images/items/recipe.png'
+                : ((matchedComp && matchedComp.icon)
+                    ? matchedComp.icon
+                    : (cObjIcon ? (String(cObjIcon).startsWith('/') ? cObjIcon : `/images/items/${cObjIcon}.png`) : `/images/items/${rawCode}.png`));
+            const cKey = matchedComp ? (matchedComp.key || matchedComp.code || rawCode) : rawCode;
+
+            let subComps = [];
+            if (matchedComp && !isRecipe && !visited.has(cKey)) {
+                subComps = getResolvedComponentsForItem(matchedComp);
+            }
+
+            const hasSub = subComps.length > 0;
+            const nextVisited = new Set(visited);
+            if (cKey) nextVisited.add(cKey);
+
+            html += `
+                <div class="rounded-xl bg-slate-900/90 border border-slate-800/90 p-2.5 hover:border-amber-500/40 transition-all group">
+                    <div class="flex items-center justify-between gap-2">
+                        <div class="flex items-center gap-2.5 ${!isRecipe ? 'cursor-pointer' : ''}" ${!isRecipe ? `onclick="openItemModal('${String(cKey).replace(/'/g, "\\'")}')"` : ''}>
+                            <img src="${escapeHtmlText(cIcon)}" onError="this.onerror=null;this.src='/images/items/default.png';" alt="${escapeHtmlText(cName)}" class="w-5 h-5 rounded object-cover border border-slate-700/80 shadow-sm flex-shrink-0 group-hover:border-amber-400 transition-colors" />
+                            <span class="font-bold text-white text-xs ${!isRecipe ? 'group-hover:text-amber-300' : 'text-slate-300'} transition-colors">${escapeHtmlText(cName)}</span>
+                            <span class="text-amber-400 font-mono text-[11px] font-semibold">(${cCost.toLocaleString()}g)</span>
+                        </div>
+                        ${hasSub ? `<span class="px-2 py-0.5 rounded text-[9px] font-bold tracking-wider uppercase bg-amber-500/10 border border-amber-500/30 text-amber-400 flex-shrink-0">Crafted from ${subComps.length} ${subComps.length === 1 ? 'item' : 'items'}</span>` : ''}
+                    </div>
+                    ${hasSub ? renderFullComponentTree(subComps, depth + 1, nextVisited) : ''}
+                </div>
+            `;
+        });
+
+        html += `</div>`;
+        return html;
+    }
+
+    function loadCatalog() {
+        fetch('/api/items')
+            .then(r => {
+                if (!r.ok) {
+                    throw new Error(`HTTP ${r.status}`);
+                }
+                return r.json();
+            })
+            .then(data => {
+                const uniqueMap = {};
+                const catalogMap = {};
+                const items = Array.isArray(data) ? data : Object.values(data);
+
+                items.forEach(rawItem => {
+                    if (rawItem && (rawItem.name || rawItem.displayName)) {
+                        const item = Object.assign({}, rawItem);
+                        const displayName = item.name || item.displayName || '';
+                        item.name = displayName;
+                        const code = (item.code || item.itemIdentifier || '').toLowerCase();
+                        const ident = (item.itemIdentifier || '').toLowerCase();
+                        item.key = code || displayName.toLowerCase().replace(/[^a-z0-9]/g, '');
+                        item.icon = item.icon || item.iconPath || `/images/items/${item.key}.png`;
+
+                        if (code) {
+                            catalogMap[code] = item;
+                            const clean = code.replace(/^item_/i, '');
+                            catalogMap[clean] = item;
+                            catalogMap[clean.replace(/[^a-z0-9]/g, '')] = item;
+                            catalogMap['item_' + clean] = item;
+                        }
+                        if (ident) {
+                            catalogMap[ident] = item;
+                            const cleanIdent = ident.replace(/^item_/i, '');
+                            catalogMap[cleanIdent] = item;
+                            catalogMap[cleanIdent.replace(/[^a-z0-9]/g, '')] = item;
+                        }
+                        if (item.key) {
+                            catalogMap[item.key] = item;
+                        }
+
+                        const normName = displayName.toLowerCase().replace(/[^a-z0-9]/g, '').trim();
+                        if (normName) {
+                            catalogMap[normName] = catalogMap[normName] || item;
+                            if (!uniqueMap[normName]) {
+                                uniqueMap[normName] = item;
+                            }
+                        }
+                    }
+                });
+
+                window.itemCatalog = catalogMap;
+                window.uniqueItemList = Object.values(uniqueMap);
+
+                const badge = document.getElementById('item-count-badge');
+                if (badge) badge.innerText = `${window.uniqueItemList.length} Catalog Items`;
+
+                renderItems();
+
+                const urlParams = new URLSearchParams(window.location.search);
+                const itemCodeParam = urlParams.get('code') || urlParams.get('item');
+                if (itemCodeParam) {
+                    setTimeout(() => {
+                        openItemModal(itemCodeParam);
+                    }, 100);
+                }
+            })
+            .catch(e => {
+                console.error(e);
+                if (window.uniqueItemList && window.uniqueItemList.length > 0) {
+                    return;
+                }
+                const grid = document.getElementById('items-grid');
+                if (grid) {
+                    grid.innerHTML = `
+                        <div class="col-span-full py-12 text-center text-red-400 font-bold">
+                            Failed to load item catalog. Please refresh the page.
+                        </div>
+                    `;
+                }
+            });
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', loadCatalog);
+    } else {
+        loadCatalog();
+    }
+
+    function setCategory(cat) {
+        currentCategory = cat;
+        document.querySelectorAll('.cat-btn').forEach(btn => {
+            if (btn.getAttribute('data-cat') === cat) {
+                btn.className = 'cat-btn px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all bg-amber-500/20 text-amber-300 border border-amber-500/40 shadow-sm';
+            } else {
+                btn.className = 'cat-btn px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all bg-slate-900/80 text-slate-400 hover:text-white border border-slate-800';
+            }
+        });
+        filterItems();
+    }
+
+    function filterItems() {
+        const query = (document.getElementById('item-search').value || '').toLowerCase().trim();
+        renderItems(query);
+    }
+
+    function renderItems(searchQuery = '') {
+        const grid = document.getElementById('items-grid');
+        if (!grid || !window.uniqueItemList) return;
+
+        grid.innerHTML = '';
+        let visibleCount = 0;
+
+        window.uniqueItemList.forEach(item => {
+            const costNum = Number(item.cost || 0);
+            const nameLower = item.name.toLowerCase();
+            const descLower = (item.description || '').toLowerCase();
+            const flavorLower = (item.flavor || '').toLowerCase();
+            const isActive = item.isActive !== false;
+
+            // Category filtering using official DB category
+            let categoryMatch = true;
+            if (currentCategory && currentCategory !== 'all') {
+                const itemCat = (item.category || '').toLowerCase().trim();
+                const targetCat = currentCategory.toLowerCase().trim();
+                categoryMatch = (itemCat === targetCat);
+            }
+
+            // Search query matching (name, description, flavor, cost, code, abbreviations, and cross-game aliases)
+            let searchMatch = true;
+            if (searchQuery) {
+                const termsLower = (item.searchTerms || '').toLowerCase();
+                const codeLower = (item.code || item.key || '').toLowerCase();
+                const cleanCode = codeLower.replace(/^item_/i, '');
+
+                searchMatch = nameLower.includes(searchQuery) ||
+                    descLower.includes(searchQuery) ||
+                    flavorLower.includes(searchQuery) ||
+                    costNum.toString().includes(searchQuery) ||
+                    codeLower.includes(searchQuery) ||
+                    cleanCode.includes(searchQuery) ||
+                    termsLower.includes(searchQuery);
+            }
+
+            if (categoryMatch && searchMatch) {
+                visibleCount++;
+                const card = document.createElement('a');
+                card.href = `/item/${item.key || item.code}`;
+                const catBadge = item.category ? `<span class="px-2 py-0.5 rounded text-[10px] font-semibold bg-slate-900 border border-slate-800 text-amber-300 uppercase tracking-wider">${escapeHtmlText(item.category)}</span>` : '';
+                let cardBorderGlow = 'border-slate-800/80 hover:border-amber-400/50 hover:shadow-amber-500/10';
+                let socketBorder = 'border-amber-400/40 group-hover:border-amber-400';
+                const catLower = (item.category || '').toLowerCase();
+                if (costNum >= 4500 || catLower.includes('relic') || catLower.includes('artifact')) {
+                    cardBorderGlow = 'border-amber-500/30 hover:border-amber-400/70 hover:shadow-amber-500/20';
+                    socketBorder = 'border-amber-400/60 group-hover:border-amber-300 shadow-amber-500/20';
+                } else if (catLower.includes('combative') || catLower.includes('morph')) {
+                    cardBorderGlow = 'border-purple-500/20 hover:border-purple-400/60 hover:shadow-purple-500/15';
+                    socketBorder = 'border-purple-400/50 group-hover:border-purple-300 shadow-purple-500/20';
+                } else if (catLower.includes('protective') || catLower.includes('initiation')) {
+                    cardBorderGlow = 'border-cyan-500/20 hover:border-cyan-400/60 hover:shadow-cyan-500/15';
+                    socketBorder = 'border-cyan-400/50 group-hover:border-cyan-300 shadow-cyan-500/20';
+                } else if (catLower.includes('supplies') || catLower.includes('consumable')) {
+                    cardBorderGlow = 'border-emerald-500/20 hover:border-emerald-400/60 hover:shadow-emerald-500/15';
+                    socketBorder = 'border-emerald-400/50 group-hover:border-emerald-300 shadow-emerald-500/20';
+                }
+
+                const isBelowFoldItem = visibleCount > 18;
+                card.className = `glass-card ${isBelowFoldItem ? 'kongor-cv-item ' : ''}p-4 sm:p-5 rounded-2xl border ${isActive ? `${cardBorderGlow} md:hover:scale-[1.03] md:hover:-translate-y-1` : 'border-red-900/40 opacity-60 hover:opacity-100 hover:border-red-500/40'} transition-all duration-300 cursor-pointer shadow-lg flex flex-col justify-between group block no-underline relative overflow-hidden bg-slate-900/85`;
+
+                let compIconsHtml = '';
+                let rawComps = (item.components && item.components.length > 0) ? item.components : [];
+                if (rawComps.length === 0 && item.componentCodesJson && item.componentCodesJson !== '[]') {
+                    try {
+                        const parsedCodes = JSON.parse(item.componentCodesJson);
+                        if (Array.isArray(parsedCodes)) rawComps = parsedCodes;
+                    } catch (_) { }
+                }
+                const realComps = rawComps.filter(c => !isRecipeRef(c));
+                const hasRecipe = rawComps.some(c => isRecipeRef(c)) || (item.recipeCost && Number(item.recipeCost) > 0);
+
+                if (realComps.length > 0 || hasRecipe) {
+                    let iconsListHtml = '';
+                    realComps.forEach(c => {
+                        const compCode = extractItemRefCode(c);
+                        if (!compCode) return;
+                        const matchedComp = getItemByCode(compCode);
+                        const cObjIcon = typeof c === 'object' && c !== null ? (c.icon || c.Icon) : '';
+                        const cObjName = typeof c === 'object' && c !== null ? (c.name || c.Name) : '';
+                        const cObjCost = typeof c === 'object' && c !== null ? (c.cost || c.Cost) : 0;
+
+                        const cIcon = (matchedComp && matchedComp.icon)
+                            ? matchedComp.icon
+                            : (cObjIcon ? (String(cObjIcon).startsWith('/') ? cObjIcon : `/images/items/${cObjIcon}.png`) : `/images/items/${compCode.replace(/^item_/i, '')}.png`);
+                        const cName = (matchedComp && matchedComp.name) ? matchedComp.name : (cObjName || compCode);
+                        const cCost = Number((matchedComp && matchedComp.cost) ? matchedComp.cost : (cObjCost || 0));
+
+                        iconsListHtml += `<img src="${escapeHtmlText(cIcon)}" width="28" height="28" draggable="false" ${isBelowFoldItem ? 'loading="lazy" ' : ''}decoding="async" onError="this.onerror=null;this.src='/images/items/default.png';" alt="${escapeHtmlText(cName)}" title="${escapeHtmlText(cName)} (${cCost.toLocaleString()}g)" class="w-7 h-7 rounded-lg object-cover border border-amber-400/35 bg-slate-950 flex-shrink-0 shadow-sm hover:border-amber-400 transition-colors select-none" />`;
+                    });
+
+                    if (hasRecipe) {
+                        iconsListHtml += `<div title="Recipe Scroll (${Number(item.recipeCost || 0).toLocaleString()}g)" class="w-7 h-7 rounded-lg bg-slate-950 border border-amber-400/45 flex items-center justify-center text-xs flex-shrink-0 shadow-sm leading-none select-none">📜</div>`;
+                    }
+
+                    if (iconsListHtml) {
+                        compIconsHtml = `
+                            <div data-drag-scroll="true"
+                                 class="drag-scroll-strip no-scrollbar flex items-center gap-2 w-full bg-slate-950/85 px-2.5 py-1.5 rounded-xl border border-slate-800/90 shadow-inner flex-nowrap overflow-x-auto select-none"
+                                 title="Recipe Components (drag horizontally if overflowed)">
+                                <span class="text-[9px] font-extrabold uppercase tracking-wider text-slate-500 flex-shrink-0">Parts</span>
+                                <div class="flex items-center gap-1.5 flex-nowrap">${iconsListHtml}</div>
+                            </div>`;
+                    }
+                }
+
+                const iconPath = item.icon || `/images/items/${item.key}.png`;
+
+                card.innerHTML = `
+                    <div class="space-y-3">
+                        <div class="flex items-start gap-3.5">
+                            <div class="relative w-14 h-14 sm:w-16 sm:h-16 rounded-2xl p-0.5 bg-gradient-to-b from-slate-800 to-slate-950 border-2 ${socketBorder} transition-all duration-300 flex-shrink-0 shadow-lg group-hover:scale-105">
+                                <div class="relative w-full h-full rounded-xl overflow-hidden bg-slate-950 ring-1 ring-white/10 ring-inset">
+                                    <img src="${escapeHtmlText(iconPath)}" width="64" height="64" draggable="false" ${isBelowFoldItem ? 'loading="lazy" ' : ''}decoding="async" onError="this.onerror=null;this.src='/images/items/default.png';" alt="${escapeHtmlText(item.name)}" class="w-full h-full object-cover rounded-xl transition-transform duration-300 group-hover:scale-110" />
+                                    <div class="pointer-events-none absolute inset-0 bg-gradient-to-tr from-transparent via-white/15 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                                </div>
+                                ${hasRecipe ? `<div class="absolute -bottom-1 -right-1 px-1 py-0.2 rounded bg-slate-950/95 border border-amber-400/70 text-[9px] font-mono text-amber-300 shadow-md">📜</div>` : ''}
+                            </div>
+                            <div class="space-y-1.5 min-w-0 flex-1 pt-0.5">
+                                <div class="flex items-start justify-between gap-2">
+                                    <h4 class="font-extrabold text-white text-base leading-tight group-hover:text-amber-300 transition-colors break-words">${escapeHtmlText(item.name)}</h4>
+                                    ${!isActive ? `<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-red-500/10 border border-red-500/30 text-red-400 flex-shrink-0">DISABLED</span>` : ''}
+                                </div>
+                                <div class="flex items-center gap-2 text-xs flex-wrap">
+                                    <span class="px-2.5 py-0.5 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-400 font-bold font-mono text-[11px] flex-shrink-0">💰 ${costNum.toLocaleString()}g</span>
+                                </div>
+                            </div>
+                        </div>
+                        ${compIconsHtml}
+
+                        <p class="text-xs text-slate-300 line-clamp-2 leading-relaxed font-normal">
+                            ${escapeHtmlText(item.description || 'Standard Hero Item used in Project KONGOR combat.')}
+                        </p>
+                    </div>
+
+                    <div class="pt-3 border-t border-slate-800/80 flex items-center justify-between gap-2 text-xs text-slate-400 font-semibold transition-colors mt-3">
+                        <div class="flex items-center gap-1.5 flex-wrap">
+                            ${catBadge || ''}
+                            ${(item.buildsInto && item.buildsInto.length > 0) ? `<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-cyan-950/70 border border-cyan-500/30 text-cyan-300" title="Builds into ${item.buildsInto.length} higher-tier items">⚡ +${item.buildsInto.length}</span>` : ''}
+                        </div>
+                        <div class="flex items-center gap-2 flex-shrink-0">
+                            <button type="button"
+                                    onclick="event.preventDefault(); event.stopPropagation(); openItemModal('${String(item.key || item.code || '').replace(/'/g, "\\'")}'); return false;"
+                                    class="px-2.5 py-1 rounded-lg bg-slate-950/90 hover:bg-amber-500/20 border border-slate-700 hover:border-amber-400/60 text-[11px] font-bold text-amber-300 hover:text-white transition-all shadow-sm">
+                                🌳 Tree
+                            </button>
+                            <div class="flex items-center gap-1 group-hover:text-amber-300 transition-colors">
+                                <span>Details</span>
+                                <span class="group-hover:translate-x-1 transition-transform inline-block">➔</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                grid.appendChild(card);
+            }
+        });
+
+        const countSpan = document.getElementById('visible-count');
+        if (countSpan) countSpan.innerText = visibleCount;
+
+        if (visibleCount === 0) {
+            grid.innerHTML = `
+                <div class="col-span-full py-16 text-center space-y-2">
+                    <div class="text-3xl">🔍</div>
+                    <div class="text-slate-300 font-bold">No items found</div>
+                    <div class="text-slate-500 text-xs">Try adjusting your search filter or category selection.</div>
+                </div>
+            `;
+        }
+    }
+
+    function escapeHtmlText(str) {
+        return String(str || '')
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
+    }
+
+    function buildModalDownstreamList(itemObj, depth = 0, visited = new Set()) {
+        if (!itemObj || depth > 4) return [];
+        const rawComps = (itemObj.components && itemObj.components.length > 0) ? itemObj.components : [];
+        const grouped = new Map();
+        let hasRecipe = false;
+        let recipeCost = Number(itemObj.recipeCost || 0);
+
+        rawComps.forEach(c => {
+            const rawCode = extractItemRefCode(c);
+            const isRecipe = isRecipeRef(c);
+            if (isRecipe) {
+                hasRecipe = true;
+                const objCost = typeof c === 'object' && c !== null ? Number(c.cost || c.Cost || 0) : 0;
+                if (!recipeCost && objCost > 0) recipeCost = objCost;
+                return;
+            }
+            const matched = getItemByCode(rawCode);
+            const normCode = matched ? String(matched.key || matched.code || rawCode).toLowerCase() : rawCode.replace(/^item_/i, '');
+            if (!normCode) return;
+
+            const cObjName = typeof c === 'object' && c !== null ? (c.name || c.Name) : '';
+            const cObjCost = typeof c === 'object' && c !== null ? (c.cost || c.Cost) : 0;
+            const cObjIcon = typeof c === 'object' && c !== null ? (c.icon || c.Icon) : '';
+            const explicitQty = typeof c === 'object' && c !== null && Number(c.quantity || c.Quantity) > 1
+                ? Number(c.quantity || c.Quantity)
+                : 1;
+
+            if (grouped.has(normCode)) {
+                grouped.get(normCode).quantity += explicitQty;
+            } else {
+                const nextVisited = new Set(visited);
+                nextVisited.add(normCode);
+                const children = (matched && !visited.has(normCode))
+                    ? buildModalDownstreamList(matched, depth + 1, nextVisited)
+                    : [];
+                grouped.set(normCode, {
+                    code: normCode,
+                    name: (matched && matched.name) ? matched.name : (cObjName || normCode),
+                    cost: Number((matched && matched.cost) ? matched.cost : (cObjCost || 0)),
+                    icon: (matched && matched.icon)
+                        ? matched.icon
+                        : (cObjIcon && String(cObjIcon).startsWith('/') ? cObjIcon : `/images/items/${cObjIcon || normCode}.png`),
+                    isRecipe: false,
+                    quantity: explicitQty,
+                    children: children
+                });
+            }
+        });
+
+        const nodes = Array.from(grouped.values());
+        if ((hasRecipe || recipeCost > 0) && recipeCost > 0) {
+            nodes.push({
+                code: 'recipe',
+                name: 'Recipe Scroll',
+                cost: recipeCost,
+                icon: '/images/items/recipe.png',
+                isRecipe: true,
+                quantity: 1,
+                children: []
+            });
+        }
+        return nodes;
+    }
+
+    function buildModalUpstreamList(itemObj, depth = 0, visited = new Set()) {
+        if (!itemObj || depth > 2) return [];
+        const rawBuilds = (itemObj.buildsInto && itemObj.buildsInto.length > 0) ? itemObj.buildsInto : [];
+        const nodes = [];
+        rawBuilds.forEach(b => {
+            const rawCode = extractItemRefCode(b);
+            if (!rawCode) return;
+            const matched = getItemByCode(rawCode);
+            const normCode = matched ? String(matched.key || matched.code || rawCode).toLowerCase() : rawCode.replace(/^item_/i, '');
+            if (visited.has(normCode)) return;
+
+            const bObjName = typeof b === 'object' && b !== null ? (b.name || b.Name) : '';
+            const bObjCost = typeof b === 'object' && b !== null ? (b.cost || b.Cost) : 0;
+            const bObjIcon = typeof b === 'object' && b !== null ? (b.icon || b.Icon) : '';
+
+            const nextVisited = new Set(visited);
+            nextVisited.add(normCode);
+            const children = matched ? buildModalUpstreamList(matched, depth + 1, nextVisited) : [];
+            nodes.push({
+                code: normCode,
+                name: (matched && matched.name) ? matched.name : (bObjName || normCode),
+                cost: Number((matched && matched.cost) ? matched.cost : (bObjCost || 0)),
+                icon: (matched && matched.icon)
+                    ? matched.icon
+                    : (bObjIcon ? (String(bObjIcon).startsWith('/') ? bObjIcon : `/images/items/${bObjIcon}.png`) : `/images/items/${normCode}.png`),
+                children: children
+            });
+        });
+        return nodes;
+    }
+
+    function renderModalUpstreamHtml(nodes) {
+        if (!nodes || nodes.length === 0) return '';
+        let html = '<ul class="moba-modal-tree-up">';
+        nodes.forEach(n => {
+            const safeCodeJs = String(n.code || '').replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+            html += `
+                <li>
+                    <button type="button" onclick="openItemModal('${safeCodeJs}')"
+                            class="group flex flex-col items-center gap-1 px-2.5 py-2 rounded-2xl bg-slate-900/95 border border-cyan-500/35 hover:border-cyan-400 hover:bg-slate-800 transition-all shadow-md min-w-[92px] max-w-[122px] text-center cursor-pointer">
+                        <div class="w-9 h-9 rounded-xl p-0.5 bg-slate-950 border border-cyan-400/40 overflow-hidden">
+                            <img src="${escapeHtmlText(n.icon)}" onError="this.onerror=null;this.src='/images/items/default.png';" alt="${escapeHtmlText(n.name)}" class="w-full h-full object-cover rounded-lg" />
+                        </div>
+                        <span class="font-bold text-[10px] text-white group-hover:text-cyan-300 leading-tight line-clamp-2">${escapeHtmlText(n.name)}</span>
+                        <span class="text-[9px] font-mono font-bold text-cyan-300">💰 ${Number(n.cost || 0).toLocaleString()}g</span>
+                    </button>
+                    ${renderModalUpstreamHtml(n.children)}
+                </li>
+            `;
+        });
+        html += '</ul>';
+        return html;
+    }
+
+    function renderModalDownstreamHtml(nodes) {
+        if (!nodes || nodes.length === 0) return '';
+        let html = '<ul class="moba-modal-tree-down">';
+        nodes.forEach(n => {
+            if (n.isRecipe) {
+                html += `
+                    <li>
+                        <div class="flex flex-col items-center gap-1 px-2.5 py-2 rounded-2xl bg-slate-900/75 border border-purple-500/35 min-w-[92px] max-w-[122px] text-center shadow-md">
+                            <div class="w-9 h-9 rounded-xl bg-slate-950 border border-amber-400/40 flex items-center justify-center text-base overflow-hidden">📜</div>
+                            <span class="font-bold text-[10px] text-purple-200 leading-tight">Recipe Scroll</span>
+                            <span class="text-[9px] font-mono font-bold text-amber-300">+${Number(n.cost || 0).toLocaleString()}g</span>
+                        </div>
+                    </li>
+                `;
+            } else {
+                const safeCodeJs = String(n.code || '').replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+                const qtyBadge = n.quantity > 1
+                    ? `<span class="absolute -top-1.5 -right-1.5 px-1.5 py-0.2 rounded-full bg-amber-400 text-slate-950 font-black text-[9px] leading-tight ring-2 ring-slate-950">×${n.quantity}</span>`
+                    : '';
+                html += `
+                    <li>
+                        <button type="button" onclick="openItemModal('${safeCodeJs}')"
+                                class="group flex flex-col items-center gap-1 px-2.5 py-2 rounded-2xl bg-slate-900/95 border border-amber-500/35 hover:border-amber-400 hover:bg-slate-800 transition-all shadow-md min-w-[92px] max-w-[122px] text-center cursor-pointer">
+                            <div class="relative w-9 h-9 rounded-xl p-0.5 bg-slate-950 border border-amber-400/40 overflow-visible">
+                                <img src="${escapeHtmlText(n.icon)}" onError="this.onerror=null;this.src='/images/items/default.png';" alt="${escapeHtmlText(n.name)}" class="w-full h-full object-cover rounded-lg" />
+                                ${qtyBadge}
+                            </div>
+                            <span class="font-bold text-[10px] text-white group-hover:text-amber-300 leading-tight line-clamp-2">${escapeHtmlText(n.name)}</span>
+                            <span class="text-[9px] font-mono font-bold text-amber-300">💰 ${Number(n.cost || 0).toLocaleString()}g</span>
+                        </button>
+                        ${renderModalDownstreamHtml(n.children)}
+                    </li>
+                `;
+            }
+        });
+        html += '</ul>';
+        return html;
+    }
+
+    function renderVisualCraftingTreeModal(item) {
+        const rootKey = String(item.key || item.code || '').toLowerCase();
+        const rootVisitedUp = new Set(rootKey ? [rootKey] : []);
+        const rootVisitedDown = new Set(rootKey ? [rootKey] : []);
+        const upstream = buildModalUpstreamList(item, 0, rootVisitedUp);
+        const downstream = buildModalDownstreamList(item, 0, rootVisitedDown);
+        const iconUrl = item.icon || `/images/items/${rootKey}.png`;
+
+        const upHtml = upstream.length > 0
+            ? `<div class="mb-1.5 px-2.5 py-0.5 rounded-full bg-cyan-950/70 border border-cyan-500/30 text-[9px] font-bold uppercase tracking-wider text-cyan-300">⚡ Builds Into</div>${renderModalUpstreamHtml(upstream)}`
+            : `<div class="mb-2 px-3 py-1 rounded-full bg-slate-900/70 border border-slate-800 text-[10px] text-slate-400">👑 Terminal Item</div>`;
+
+        const downHtml = downstream.length > 0
+            ? `${renderModalDownstreamHtml(downstream)}<div class="mt-2 px-2.5 py-0.5 rounded-full bg-amber-950/60 border border-amber-500/30 text-[9px] font-bold uppercase tracking-wider text-amber-300">🔨 Required Components</div>`
+            : `<div class="mt-2 px-3 py-1 rounded-full bg-slate-900/70 border border-slate-800 text-[10px] text-slate-400">🌱 Base Shop Component</div>`;
+
+        return `
+            <div class="overflow-x-auto py-2">
+                <div class="min-w-full w-max mx-auto flex flex-col items-center px-3">
+                    ${upHtml}
+                    <div class="relative z-10 flex flex-col items-center gap-1.5 px-5 py-3 rounded-2xl bg-gradient-to-b from-amber-500/20 via-slate-900 to-slate-950 border-2 border-amber-400 shadow-xl shadow-amber-500/15 min-w-[144px] text-center">
+                        <span class="px-2 py-0.2 rounded-full bg-amber-400 text-slate-950 text-[8px] font-black uppercase tracking-widest">🌟 Active Item</span>
+                        <div class="w-12 h-12 rounded-xl p-0.5 bg-slate-950 border border-amber-300 overflow-hidden">
+                            <img src="${escapeHtmlText(iconUrl)}" onError="this.onerror=null;this.src='/images/items/default.png';" alt="${escapeHtmlText(item.name)}" class="w-full h-full object-cover rounded-lg" />
+                        </div>
+                        <span class="font-extrabold text-xs text-white leading-tight">${escapeHtmlText(item.name)}</span>
+                        <span class="text-[10px] font-mono font-extrabold text-amber-300">💰 ${Number(item.cost || 0).toLocaleString()}g</span>
+                    </div>
+                    ${downHtml}
+                </div>
+            </div>
+        `;
+    }
+
+    function openItemModal(cleanCode) {
+        const key = (cleanCode || '').toLowerCase().trim();
+        let item = getItemByCode(key);
+
+        if (!item) {
+            item = {
+                name: (cleanCode || '').replace(/_/g, ' ').toUpperCase(),
+                cost: "1000",
+                description: "Standard Hero Item used in Project KONGOR combat.",
+                flavor: "",
+                icon: `/images/items/${key}.png`,
+                components: [],
+                buildsInto: [],
+                upgrade: "",
+                isActive: true
+            };
+        }
+
+        const isActive = item.isActive !== false;
+
+        const rawIcon = item.icon || `/images/items/${key}.png`;
+        document.getElementById('modal-item-icon').src = rawIcon;
+        document.getElementById('modal-item-name').innerText = item.name;
+
+        const codeElem = document.getElementById('modal-item-code-val');
+        if (codeElem) codeElem.innerText = item.code || item.key || key;
+
+        document.getElementById('modal-item-desc').innerText = item.description || "No description available.";
+
+        const statusBadge = document.getElementById('modal-status-badge');
+        const disabledWarning = document.getElementById('modal-disabled-warning');
+
+        if (isActive) {
+            statusBadge.className = 'px-3 py-1 rounded-full text-xs font-bold tracking-wider uppercase bg-emerald-500/10 border border-emerald-500/30 text-emerald-400';
+            statusBadge.innerText = 'ACTIVE';
+            disabledWarning.classList.add('hidden');
+        } else {
+            statusBadge.className = 'px-3 py-1 rounded-full text-xs font-bold tracking-wider uppercase bg-red-500/10 border border-red-500/30 text-red-400';
+            statusBadge.innerText = 'DISABLED';
+            disabledWarning.classList.remove('hidden');
+        }
+
+        // Header Metadata Pills
+        const costContainer = document.getElementById('modal-item-cost-container');
+        if (costContainer) {
+            let html = '';
+            if (item.category) {
+                html += `<span class="px-3 py-1 rounded-xl bg-slate-900 border border-slate-800 text-slate-300 font-medium">Category: <strong class="text-amber-300">${escapeHtmlText(item.category)}</strong></span>`;
+            }
+            html += `<span class="px-3 py-1 rounded-xl bg-slate-900 border border-slate-800 text-slate-300 font-medium">Cost: <strong class="text-amber-400 font-mono">💰 ${Number(item.cost || 0).toLocaleString()} Gold</strong></span>`;
+            if (item.recipeCost && Number(item.recipeCost) > 0) {
+                html += `<span class="px-3 py-1 rounded-xl bg-purple-500/10 border border-purple-500/30 text-purple-300 font-medium">Recipe Scroll Cost: <strong class="font-mono">${Number(item.recipeCost).toLocaleString()}g</strong></span>`;
+            }
+            costContainer.innerHTML = html;
+        }
+
+        let compsToRender = (item.components && item.components.length > 0) ? [...item.components] : [];
+        const realComps = compsToRender.filter(c => !isRecipeRef(c));
+        const hasRecipe = compsToRender.some(c => isRecipeRef(c)) || (item.recipeCost && Number(item.recipeCost) > 0);
+
+        const fullPageLink = document.getElementById('modal-full-page-link');
+        if (fullPageLink) {
+            fullPageLink.href = `/item/${encodeURIComponent(item.key || item.code || key)}`;
+        }
+
+        // Populate Connected MOBA Visual Crafting Tree (Forward & Backward)
+        const treeContainer = document.getElementById('modal-item-tree-container');
+        const treeContent = document.getElementById('modal-item-tree-content');
+        const treeSummary = document.getElementById('modal-item-tree-summary');
+        if (treeContainer && treeContent) {
+            const upstreamCount = (item.buildsInto && item.buildsInto.length) ? item.buildsInto.length : 0;
+            const downstreamCount = realComps.length + (hasRecipe ? 1 : 0);
+            if (treeSummary) {
+                treeSummary.innerText = `${upstreamCount} Upgrades • ${downstreamCount} Ingredients`;
+            }
+            treeContent.innerHTML = renderVisualCraftingTreeModal(item);
+            treeContainer.classList.remove('hidden');
+        }
+
+        // Populate Builds Into section
+        const buildsContainer = document.getElementById('modal-item-builds-into-container');
+        const buildsList = document.getElementById('modal-item-builds-into-list');
+        if (buildsList && buildsContainer) {
+            buildsList.innerHTML = '';
+            let buildsToRender = (item.buildsInto && item.buildsInto.length > 0) ? item.buildsInto : [];
+
+            if (buildsToRender.length > 0) {
+                buildsContainer.classList.remove('hidden');
+                buildsToRender.forEach(b => {
+                    const bCode = extractItemRefCode(b);
+                    if (!bCode) return;
+                    const matchedTarget = getItemByCode(bCode);
+                    const bObjIcon = typeof b === 'object' && b !== null ? (b.icon || b.Icon) : '';
+                    const bObjName = typeof b === 'object' && b !== null ? (b.name || b.Name) : '';
+                    const bObjCost = typeof b === 'object' && b !== null ? (b.cost || b.Cost) : 0;
+
+                    const normCode = matchedTarget ? (matchedTarget.key || matchedTarget.code || bCode) : bCode.replace(/^item_/i, '');
+                    const bIcon = (matchedTarget && matchedTarget.icon)
+                        ? matchedTarget.icon
+                        : (bObjIcon ? (String(bObjIcon).startsWith('/') ? bObjIcon : `/images/items/${bObjIcon}.png`) : `/images/items/${normCode}.png`);
+                    const bName = (matchedTarget && matchedTarget.name) ? matchedTarget.name : (bObjName || normCode);
+                    const bCost = (matchedTarget && matchedTarget.cost) ? matchedTarget.cost : bObjCost;
+
+                    const bCard = document.createElement('div');
+                    bCard.className = 'flex items-center gap-3 p-3 rounded-2xl bg-slate-900 border border-cyan-500/30 hover:border-cyan-400 hover:bg-slate-800/80 transition-all text-slate-200 group cursor-pointer';
+                    const targetBCode = normCode;
+                    bCard.addEventListener('click', function () {
+                        openItemModal(targetBCode);
+                    });
+                    bCard.innerHTML = `
+                        <img src="${escapeHtmlText(bIcon)}" onError="this.onerror=null;this.src='/images/items/default.png';" alt="${escapeHtmlText(bName)}" class="w-9 h-9 rounded-xl object-cover border border-slate-700 bg-slate-950 flex-shrink-0" />
+                        <div class="flex flex-col min-w-0">
+                            <span class="font-bold text-xs text-white group-hover:text-cyan-300 transition-colors truncate">${escapeHtmlText(bName)}</span>
+                            <span class="text-[11px] text-amber-400 font-mono">💰 ${Number(bCost || 0).toLocaleString()}g</span>
+                        </div>
+                    `;
+                    buildsList.appendChild(bCard);
+                });
+            } else {
+                buildsContainer.classList.add('hidden');
+            }
+        }
+
+        const upgradeContainer = document.getElementById('modal-item-upgrade-container');
+        const upgradeText = document.getElementById('modal-item-upgrade-text');
+        if (item.upgrade && item.upgrade.trim().length > 0) {
+            upgradeText.innerText = item.upgrade;
+            upgradeContainer.classList.remove('hidden');
+        } else {
+            upgradeContainer.classList.add('hidden');
+        }
+
+        // Populate Level Upgrade Breakdown
+        const levelsContainer = document.getElementById('modal-item-levels-container');
+        const levelsList = document.getElementById('modal-item-levels-list');
+        const levelsCount = document.getElementById('modal-item-levels-count');
+
+        if (levelsContainer && levelsList) {
+            levelsList.innerHTML = '';
+            const upgText = item.upgrade || item.description || '';
+            const lvlMatch = upgText.match(/level\s*(\d+)/i) || upgText.match(/upgradable\s*to\s*level\s*(\d+)/i);
+            let maxLvl = lvlMatch ? parseInt(lvlMatch[1]) : 0;
+            if (maxLvl <= 1) {
+                const keyLower = (item.key || item.code || cleanCode || '').toLowerCase();
+                if (['shieldbreaker', 'pierce', 'spellshards', 'riftshards', 'puzzlebox', 'nullfireblade', 'manaburn1'].includes(keyLower)) {
+                    maxLvl = (keyLower === 'riftshards') ? 4 : 3;
+                }
+            }
+
+            if (maxLvl > 1) {
+                levelsContainer.classList.remove('hidden');
+                if (levelsCount) levelsCount.innerText = `${maxLvl} Upgradable Tiers`;
+
+                const baseCost = Number(item.cost || 0);
+                const scrollCost = Number(item.recipeCost || 1000);
+
+                for (let l = 1; l <= maxLvl; l++) {
+                    const totalCost = baseCost + (l - 1) * scrollCost;
+                    const tierCard = document.createElement('div');
+                    tierCard.className = 'p-3 rounded-2xl bg-slate-900 border border-slate-800 space-y-1.5 hover:border-slate-700 transition-colors';
+                    tierCard.innerHTML = `
+                        <div class="flex items-center justify-between">
+                            <span class="px-2.5 py-0.5 rounded-lg text-xs font-bold bg-slate-800 text-amber-300 border border-slate-700">
+                                LEVEL ${l}
+                            </span>
+                            <span class="text-xs font-bold text-amber-400 font-mono">
+                                💰 ${totalCost.toLocaleString()}g
+                            </span>
+                        </div>
+                        <div class="text-[11px] text-slate-400 font-mono pt-1 border-t border-slate-800/60">
+                            ${l === 1 ? 'Base Item Initial Cost' : `Recipe Scroll (+${scrollCost.toLocaleString()}g)`}
+                        </div>
+                    `;
+                    levelsList.appendChild(tierCard);
+                }
+            } else {
+                levelsContainer.classList.add('hidden');
+            }
+        }
+
+        const flavorElem = document.getElementById('modal-item-flavor');
+        const flavorContainer = document.getElementById('modal-item-flavor-container');
+        if (item.flavor && item.flavor.trim().length > 0) {
+            flavorElem.innerText = `"${item.flavor}"`;
+            flavorContainer.classList.remove('hidden');
+        } else {
+            flavorContainer.classList.add('hidden');
+        }
+
+        document.getElementById('item-detail-modal').classList.remove('hidden');
+    }
+
+    function closeItemModal() {
+        const modal = document.getElementById('item-detail-modal');
+        if (modal) modal.classList.add('hidden');
+    }
+
+    window.openItemModal = openItemModal;
+    window.closeItemModal = closeItemModal;
+
+    // Close modal when clicking backdrop outside dialog card or pressing Escape key
+    const itemModalElem = document.getElementById('item-detail-modal');
+    if (itemModalElem) {
+        itemModalElem.addEventListener('click', function (e) {
+            if (e.target === this) {
+                closeItemModal();
+            }
+        });
+    }
+
+    document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape') {
+            closeItemModal();
+        }
+    });
+
+    // Click-and-drag horizontal scrolling on mini component strips (zero visible scrollbar; suppresses card click only when dragged)
+    (function initComponentDragScroll() {
+        const gridElem = document.getElementById('items-grid');
+        if (!gridElem) return;
+
+        let activeStrip = null;
+        let pointerId = null;
+        let startX = 0;
+        let startScrollLeft = 0;
+        let hasDragged = false;
+        let suppressCardClickUntil = 0;
+
+        gridElem.addEventListener('pointerdown', function (e) {
+            if (e.button !== 0) return;
+            const strip = e.target.closest('[data-drag-scroll="true"]');
+            if (!strip || strip.scrollWidth <= strip.clientWidth) return;
+            activeStrip = strip;
+            pointerId = e.pointerId;
+            startX = e.clientX;
+            startScrollLeft = strip.scrollLeft;
+            hasDragged = false;
+        });
+
+        gridElem.addEventListener('pointermove', function (e) {
+            if (!activeStrip || e.pointerId !== pointerId) return;
+            const dx = e.clientX - startX;
+            if (!hasDragged && Math.abs(dx) > 5) {
+                hasDragged = true;
+                activeStrip.classList.add('is-dragging');
+                try { activeStrip.setPointerCapture(e.pointerId); } catch (_) { }
+            }
+            if (hasDragged) {
+                activeStrip.scrollLeft = startScrollLeft - dx;
+                e.preventDefault();
+            }
+        });
+
+        function endStripDrag(e) {
+            if (!activeStrip) return;
+            if (hasDragged) {
+                suppressCardClickUntil = performance.now() + 220;
+                console.debug('[ItemsCompendium] Completed horizontal drag-scroll on component strip (scrollLeft=%d)', activeStrip.scrollLeft);
+            }
+            activeStrip.classList.remove('is-dragging');
+            try {
+                if (pointerId !== null && activeStrip.hasPointerCapture(pointerId)) {
+                    activeStrip.releasePointerCapture(pointerId);
+                }
+            } catch (_) { }
+            activeStrip = null;
+            pointerId = null;
+            hasDragged = false;
+        }
+
+        gridElem.addEventListener('pointerup', endStripDrag);
+        gridElem.addEventListener('pointercancel', endStripDrag);
+
+        gridElem.addEventListener('click', function (e) {
+            if (performance.now() < suppressCardClickUntil) {
+                e.preventDefault();
+                e.stopPropagation();
+                suppressCardClickUntil = 0;
+            }
+        }, true);
+    })();
+</script>

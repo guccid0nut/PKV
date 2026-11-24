@@ -1,0 +1,4 @@
+LIBRARY "vid_vulkan_x64"
+EXPORTS
+    InitAPIs
+    KongorProbeDriverBackend

@@ -1,0 +1,53 @@
+# ============================================================================
+# Agones Helm Values for k3s Bare-Metal Deployment (Project Kongor)
+# Optimized for high-density dedicated game server fleets on single/multi-node k3s.
+# ============================================================================
+
+agones:
+  # Allocator Service: Uses NodePort or ClusterIP on bare-metal k3s (no cloud LoadBalancer needed)
+  allocator:
+    service:
+      type: NodePort
+      http:
+        nodePort: 30443
+    resources:
+      requests:
+        cpu: 50m
+        memory: 64Mi
+      limits:
+        cpu: 200m
+        memory: 256Mi
+
+  # Controller: Lightweight resource profile for k3s bare-metal
+  controller:
+    resources:
+      requests:
+        cpu: 50m
+        memory: 128Mi
+      limits:
+        cpu: 500m
+        memory: 512Mi
+
+# Game server port allocations: Offset 200 (Game 11435-11436, Voice 11935-11936)
+gameservers:
+  minPort: 11435
+  maxPort: 11436
+  additionalPortRanges:
+    voice: [11935, 11936]
+
+  # Agones Ping Service: Disabled as COMPEL provides native UDP ping responder
+  ping:
+    http:
+      enabled: false
+    udp:
+      enabled: false
+
+  # Extensions / Webhooks
+  extensions:
+    resources:
+      requests:
+        cpu: 25m
+        memory: 64Mi
+      limits:
+        cpu: 100m
+        memory: 128Mi

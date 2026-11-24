@@ -1,0 +1,169 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "version": "2.0.0",
+  "description": "Project Kongor Master VFS Mount Definition and Asset DB Source Specification",
+  "mod_launch_arg": "base;game;ClientPackageFiles;../shared;KONGOR/configuration;KONGOR/updates;KONGOR/extensions;override",
+  "client_sources": [
+    {
+      "path": "games/client/base",
+      "kind": "directory",
+      "priority": 50,
+      "mounted": true,
+      "description": "Client loose base configuration"
+    },
+    {
+      "path": "games/client/game/textures.s2z",
+      "kind": "archive",
+      "priority": 90,
+      "mounted": true,
+      "is_texture_archive": true,
+      "description": "Retail precompressed texture cache (00000000/<vpath>.dds fallback)"
+    },
+    {
+      "path": "games/client/game/resources0.s2z",
+      "kind": "archive",
+      "priority": 100,
+      "mounted": true,
+      "description": "Retail core game archive 0"
+    },
+    {
+      "path": "games/client/game/resources1.s2z",
+      "kind": "archive",
+      "priority": 110,
+      "mounted": true,
+      "description": "Retail game archive 1"
+    },
+    {
+      "path": "games/client/game/resources2.s2z",
+      "kind": "archive",
+      "priority": 120,
+      "mounted": true,
+      "description": "Retail game archive 2"
+    },
+    {
+      "path": "games/client/game/resources3.s2z",
+      "kind": "archive",
+      "priority": 130,
+      "mounted": true,
+      "description": "Retail game archive 3"
+    },
+    {
+      "path": "games/client/game/resources4.s2z",
+      "kind": "archive",
+      "priority": 140,
+      "mounted": true,
+      "description": "Retail game archive 4"
+    },
+    {
+      "path": "games/client/game/resources5.s2z",
+      "kind": "archive",
+      "priority": 150,
+      "mounted": true,
+      "description": "Retail game archive 5"
+    },
+    {
+      "path": "games/client/game/resources94.s2z",
+      "kind": "archive",
+      "priority": 160,
+      "mounted": true,
+      "description": "Kongor patch archive 94"
+    },
+    {
+      "path": "games/client/game/resources95.s2z",
+      "kind": "archive",
+      "priority": 170,
+      "mounted": true,
+      "description": "Kongor patch archive 95"
+    },
+    {
+      "path": "games/client/game/resources96.s2z",
+      "kind": "archive",
+      "priority": 180,
+      "mounted": true,
+      "description": "Kongor patch archive 96"
+    },
+    {
+      "path": "games/client/game/resources97.s2z",
+      "kind": "archive",
+      "priority": 190,
+      "mounted": true,
+      "description": "Kongor patch archive 97"
+    },
+    {
+      "path": "games/client/game/resources98.s2z",
+      "kind": "archive",
+      "priority": 200,
+      "mounted": true,
+      "description": "Kongor custom hero & alt avatar skins archive 98"
+    },
+    {
+      "path": "games/client/game/resources99.s2z",
+      "kind": "archive",
+      "priority": 210,
+      "mounted": true,
+      "description": "Kongor UI, XML, and core patch override archive 99"
+    },
+    {
+      "path": "games/client/game",
+      "kind": "directory",
+      "priority": 220,
+      "mounted": true,
+      "ignore_extensions": [".s2z", ".tmp", ".bak"],
+      "description": "Client game folder loose files (overrides archives within game mod)"
+    },
+    {
+      "path": "games/client/ClientPackageFiles",
+      "kind": "directory",
+      "priority": 300,
+      "mounted": true,
+      "description": "ClientPackageFiles loose files"
+    },
+    {
+      "path": "games/shared",
+      "kind": "directory",
+      "priority": 310,
+      "mounted": true,
+      "description": "Shared override folder mounted via -mod ../shared"
+    },
+    {
+      "path": "games/client/KONGOR/configuration",
+      "kind": "directory",
+      "priority": 320,
+      "mounted": true,
+      "description": "KONGOR configuration mod mount"
+    },
+    {
+      "path": "games/client/KONGOR/updates/textures.s2z",
+      "kind": "archive",
+      "priority": 329,
+      "mounted": true,
+      "is_texture_archive": true,
+      "description": "Kongor sharded texture update cache (world, ui, buildings, shared)"
+    },
+    {
+      "path": "games/client/KONGOR/updates",
+      "kind": "directory",
+      "priority": 330,
+      "mounted": true,
+      "description": "KONGOR updates mod mount"
+    },
+    {
+      "path": "games/client/KONGOR/extensions",
+      "kind": "directory",
+      "priority": 340,
+      "mounted": true,
+      "description": "KONGOR extensions mod mount"
+    },
+    {
+      "path": "games/client/override",
+      "kind": "directory",
+      "priority": 350,
+      "mounted": true,
+      "description": "Client loose override directory (highest priority mod)"
+    }
+  ],
+  "archive_scan_globs": [
+    "games/client/game/*.s2z",
+    "games/client/KONGOR/updates/*.s2z"
+  ]
+}

@@ -1,0 +1,67 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// SPDX-FileCopyrightText: 2026 guccidonut and Project KONGOR V Contributors
+// Project KONGOR V (https://github.com/guccidonut/PKV)
+
+using TRANSMUTANSTEIN.ChatServer.Domain.Clans;
+
+namespace TRANSMUTANSTEIN.ChatServer.CommandProcessors.Clans;
+
+[ChatCommand(ChatProtocol.Command.CHAT_CMD_CLAN_DEMOTE_NOTIFY)]
+public class ClanDemoteNotify(MerrickContext merrick, IChatContext chatContext)
+    : IAsynchronousCommandProcessor<ChatSession>
+{
+    public async Task Process(ChatSession session, ChatBuffer buffer)
+    {
+        Account? account = (Account?)session.Account;
+        if (account is null) return;
+
+        // Consume command bytes (2 bytes)
+        buffer.ReadCommandBytes();
+
+        int targetAccountId = buffer.ReadInt32();
+
+        // 1. Validate Requester Permissions
+        // Only Leader can demote Officer? 
+        // Can Officer demote Member? Assuming yes if Officer > Member.
+        if (account.Clan == null || account.ClanTier < ClanTier.Officer) return;
+
+        // 2. Fetch Target
+        Account? targetAccount = await merrick.Accounts
+            .Include(a => a.Clan)
+            .FirstOrDefaultAsync(a => a.ID == targetAccountId);
+
+        if (targetAccount?.Clan == null || targetAccount.Clan.ID != account.Clan.ID) return;
+
+        // 3. Logic
+        // Cannot demote Leader (Self?) or Higher Rank.
+        if (targetAccount.ClanTier >= account.ClanTier) return; // Strict hierarchy check
+
+        // If Target is Member, cannot demote further?
+        if (targetAccount.ClanTier is ClanTier.None or ClanTier.Member) return;
+
+        if (targetAccount.ClanTier == ClanTier.Officer)
+            // Officer -> Member
+            targetAccount.ClanTier = ClanTier.Member;
+
+        await merrick.SaveChangesAsync();
+
+        // 4. Update Target Session if online
+        ChatSession? targetSession =
+            chatContext.ClientChatSessions.Values.FirstOrDefault(cs =>
+                ((Account?)cs.Account)?.ID == targetAccountId);
+        if (targetSession is not null)
+        {
+            targetSession.Account.ClanTier = targetAccount.ClanTier;
+            targetSession.BroadcastConnectionStatusUpdate(ChatProtocol.ChatClientStatus.CHAT_CLIENT_STATUS_CONNECTED);
+        }
+
+        // 5. Broadcast to Clan Channel
+        chatContext.ChatChannels.TryGetValue($"Clan {account.Clan.Name}", out ChatChannel? clanChannel);
+
+        ClanRankChangeResponse rankChangeResponse = new(targetAccountId, targetAccount.ClanTier, account.ID);
+
+        if (clanChannel != null)
+            foreach (ChatChannelMember member in clanChannel.Members.Values)
+                member.Session.Send(rankChangeResponse);
+    }
+}

@@ -1,0 +1,260 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:vm="using:NEXUS.ControlPanel.GUI.ViewModels"
+        xmlns:controls="using:NEXUS.ControlPanel.GUI.Controls"
+        mc:Ignorable="d" d:DesignWidth="1160" d:DesignHeight="800"
+        x:Class="NEXUS.ControlPanel.GUI.Views.MainWindow"
+        x:DataType="vm:MainViewModel"
+        Title="NEXUS — Control Panel &amp; Service Orchestrator"
+        Icon="/Assets/nexus-icon.ico"
+        Width="1260" Height="820"
+        MinWidth="960" MinHeight="640"
+        WindowStartupLocation="CenterScreen"
+        Background="#0B0F17">
+
+    <Grid ColumnDefinitions="235,*">
+
+        <!-- Left Sidebar Navigation -->
+        <Border Grid.Column="0" Background="#0F172A" BorderBrush="#1E293B" BorderThickness="0,0,1,0">
+            <Grid RowDefinitions="Auto,Auto,*,Auto" Margin="14,16">
+
+                <!-- Logo & Brand Header -->
+                <Border Grid.Row="0" Margin="0,0,0,14" Padding="12,10" Background="#1E293B" CornerRadius="10"
+                        BorderBrush="#334155" BorderThickness="1">
+                    <StackPanel Spacing="4" HorizontalAlignment="Center">
+                        <Border Width="40" Height="40" CornerRadius="20" ClipToBounds="True" BorderBrush="#00F0FF"
+                                BorderThickness="1.5" HorizontalAlignment="Center">
+                            <Image Source="/Assets/nexus-icon.png" Width="40" Height="40" Stretch="UniformToFill" />
+                        </Border>
+                        <TextBlock Text="NEXUS" FontSize="16" FontWeight="Black" Foreground="#00F0FF" LetterSpacing="2"
+                                   HorizontalAlignment="Center" />
+                        <TextBlock Text="DISTRIBUTED CLUSTER" FontSize="8.5" FontWeight="Bold" Foreground="#94A3B8"
+                                   LetterSpacing="1.2" HorizontalAlignment="Center" />
+                        <TextBlock Text="{Binding FullVersionDisplay}" FontSize="7.5" FontWeight="Medium"
+                                   Foreground="#64748B"
+                                   HorizontalAlignment="Center" Margin="0,1,0,0"
+                                   ToolTip.Tip="Unified Platform Version: SemVer 5.0.2 + CalVer 2026.11.20 + Engine Protocol v5.0.0" />
+                    </StackPanel>
+                </Border>
+
+                <!-- Navigation Links -->
+                <StackPanel Grid.Row="1" Spacing="6">
+                    <Button AutomationProperties.AutomationId="NavDashboard" Classes="secondary" Command="{Binding NavigateToCommand}" CommandParameter="0"
+                            HorizontalAlignment="Stretch" HorizontalContentAlignment="Left" Padding="12,9">
+                        <StackPanel Orientation="Horizontal" Spacing="10">
+                            <TextBlock Text="📊" FontSize="14" />
+                            <TextBlock Text="Dashboard" FontWeight="SemiBold" FontSize="12.5" />
+                        </StackPanel>
+                    </Button>
+
+                    <Button AutomationProperties.AutomationId="NavUsers" Classes="secondary" Command="{Binding NavigateToCommand}" CommandParameter="1"
+                            HorizontalAlignment="Stretch" HorizontalContentAlignment="Left" Padding="12,9">
+                        <StackPanel Orientation="Horizontal" Spacing="10">
+                            <TextBlock Text="👥" FontSize="14" />
+                            <TextBlock Text="Users" FontWeight="SemiBold" FontSize="12.5" />
+                        </StackPanel>
+                    </Button>
+
+                    <Button AutomationProperties.AutomationId="NavSecretsConfig" Classes="secondary" Command="{Binding NavigateToCommand}" CommandParameter="2"
+                            HorizontalAlignment="Stretch" HorizontalContentAlignment="Left" Padding="12,9">
+                        <StackPanel Orientation="Horizontal" Spacing="10">
+                            <TextBlock Text="🔑" FontSize="14" />
+                            <TextBlock Text="Secrets &amp; Config" FontWeight="SemiBold" FontSize="12.5" />
+                        </StackPanel>
+                    </Button>
+
+                    <Button AutomationProperties.AutomationId="NavLiveLogs" Classes="secondary" Command="{Binding NavigateToCommand}" CommandParameter="3"
+                            HorizontalAlignment="Stretch" HorizontalContentAlignment="Left" Padding="12,9">
+                        <StackPanel Orientation="Horizontal" Spacing="10">
+                            <TextBlock Text="📜" FontSize="14" />
+                            <TextBlock Text="Live Logs" FontWeight="SemiBold" FontSize="12.5" />
+                        </StackPanel>
+                    </Button>
+
+                    <Button AutomationProperties.AutomationId="NavDiagnostics" Classes="secondary" Command="{Binding NavigateToCommand}" CommandParameter="4"
+                            HorizontalAlignment="Stretch" HorizontalContentAlignment="Left" Padding="12,9">
+                        <StackPanel Orientation="Horizontal" Spacing="10">
+                            <TextBlock Text="🛠️" FontSize="14" />
+                            <TextBlock Text="Diagnostics" FontWeight="SemiBold" FontSize="12.5" />
+                        </StackPanel>
+                    </Button>
+
+                    <Button AutomationProperties.AutomationId="NavGameServers" Classes="secondary" Command="{Binding NavigateToCommand}" CommandParameter="5"
+                            HorizontalAlignment="Stretch" HorizontalContentAlignment="Left" Padding="12,9">
+                        <StackPanel Orientation="Horizontal" Spacing="10">
+                            <TextBlock Text="🎮" FontSize="14" />
+                            <TextBlock Text="Game Servers" FontWeight="SemiBold" FontSize="12.5" />
+                        </StackPanel>
+                    </Button>
+
+                    <Button AutomationProperties.AutomationId="NavModeration" Classes="secondary" Command="{Binding NavigateToCommand}" CommandParameter="6"
+                            HorizontalAlignment="Stretch" HorizontalContentAlignment="Left" Padding="12,9">
+                        <StackPanel Orientation="Horizontal" Spacing="10">
+                            <TextBlock Text="🛡️" FontSize="14" />
+                            <TextBlock Text="Moderation" FontWeight="SemiBold" FontSize="12.5" />
+                        </StackPanel>
+                    </Button>
+                </StackPanel>
+
+                <!-- 3D Avatar Interactive Viewport (Borderless Model Only) -->
+                <Border Grid.Row="2" Background="Transparent" BorderThickness="0" ClipToBounds="True" Margin="0,4,0,4">
+                    <controls:Kongor3DViewportControl HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />
+                </Border>
+
+                <!-- Bottom Status -->
+                <Border Grid.Row="3" Background="#1E293B" CornerRadius="10" Padding="12,10" BorderBrush="#334155"
+                        BorderThickness="1" ClipToBounds="True">
+                    <StackPanel Spacing="4">
+                        <TextBlock Text="CLUSTER STATE" FontSize="8.5" FontWeight="Bold" Foreground="#94A3B8"
+                                   LetterSpacing="1" />
+                        <Grid ColumnDefinitions="Auto,*" Margin="0,2,0,0">
+                            <Ellipse Grid.Column="0" Width="8" Height="8" Fill="{Binding Dashboard.ClusterStatusColor}"
+                                     VerticalAlignment="Top" Margin="0,4,8,0" />
+                            <TextBlock Grid.Column="1" Text="{Binding Dashboard.ClusterStatusText}" FontSize="11" FontWeight="Bold"
+                                       Foreground="#F8FAFC" TextWrapping="Wrap" LineHeight="15"
+                                       ToolTip.Tip="{Binding Dashboard.ClusterStatusText}" />
+                        </Grid>
+                    </StackPanel>
+                </Border>
+
+            </Grid>
+        </Border>
+
+        <!-- Main Content Area -->
+        <ContentControl Grid.Column="1" Content="{Binding CurrentPage}" />
+
+        <!-- Unsaved Changes Navigation Guard Modal Overlay -->
+        <Border Grid.Column="0" Grid.ColumnSpan="2" Background="#E00B0F17"
+                IsVisible="{Binding IsUnsavedChangesModalOpen}" Padding="32">
+            <Border Classes="card" MaxWidth="560" HorizontalAlignment="Center" VerticalAlignment="Center"
+                    BorderBrush="#F59E0B" BorderThickness="1.5" Background="#0F172A" CornerRadius="12" Padding="24">
+                <StackPanel Spacing="16">
+
+                    <!-- Modal Header -->
+                    <Grid ColumnDefinitions="*,Auto">
+                        <StackPanel Grid.Column="0" Spacing="4">
+                            <Border Background="#451A03" BorderBrush="#F59E0B" BorderThickness="1" CornerRadius="4"
+                                    Padding="8,3" HorizontalAlignment="Left">
+                                <TextBlock Text="⚠️ UNSAVED CHANGES" FontSize="10" FontWeight="Black"
+                                           Foreground="#FBBF24" LetterSpacing="1" />
+                            </Border>
+                            <TextBlock Text="Save Changes Before Leaving?" FontSize="18" FontWeight="Bold"
+                                       Foreground="#F8FAFC" Margin="0,4,0,0" />
+                        </StackPanel>
+                        <Button Grid.Column="1" Classes="secondary" Padding="8,4"
+                                Command="{Binding CancelNavigationCommand}">
+                            <TextBlock Text="✕" FontSize="14" Foreground="#94A3B8" />
+                        </Button>
+                    </Grid>
+
+                    <TextBlock
+                        Text="You have modified configuration or network port settings in the Secrets &amp; Configuration Vault that have not been synchronized to .NET User Secrets yet."
+                        FontSize="12" Foreground="#CBD5E1" TextWrapping="Wrap" LineHeight="18" />
+
+                    <TextBlock Text="{Binding UnsavedModalPromptText}"
+                               FontSize="12" FontWeight="SemiBold" Foreground="#94A3B8" />
+
+                    <!-- Action Buttons -->
+                    <Grid ColumnDefinitions="*,*,*" Margin="0,8,0,0">
+                        <Button Grid.Column="0" Classes="primary" Command="{Binding ConfirmSaveAndNavigateCommand}"
+                                Margin="0,0,6,0" Padding="12,10" HorizontalAlignment="Stretch"
+                                HorizontalContentAlignment="Center">
+                            <TextBlock Text="{Binding UnsavedModalSaveButtonText}" FontSize="12" FontWeight="Bold" Foreground="#0B0F17" />
+                        </Button>
+
+                        <Button Grid.Column="1" Classes="secondary" Command="{Binding DiscardAndNavigateCommand}"
+                                Margin="3,0,3,0" Padding="12,10" HorizontalAlignment="Stretch"
+                                HorizontalContentAlignment="Center"
+                                BorderBrush="#EF4444">
+                            <TextBlock Text="{Binding UnsavedModalDiscardButtonText}" FontSize="12" FontWeight="Bold" Foreground="#EF4444" />
+                        </Button>
+
+                        <Button Grid.Column="2" Classes="secondary" Command="{Binding CancelNavigationCommand}"
+                                Margin="6,0,0,0" Padding="12,10" HorizontalAlignment="Stretch"
+                                HorizontalContentAlignment="Center">
+                            <TextBlock Text="✕ Stay Here" FontSize="12" Foreground="#94A3B8" />
+                        </Button>
+                    </Grid>
+
+                </StackPanel>
+            </Border>
+        </Border>
+
+        <!-- Exit Confirmation Modal Overlay -->
+        <Border Grid.Column="0" Grid.ColumnSpan="2" Background="#E00B0F17"
+                IsVisible="{Binding IsExitConfirmationModalOpen}" Padding="32">
+            <Border Classes="card" MaxWidth="660" HorizontalAlignment="Center" VerticalAlignment="Center"
+                    BorderBrush="{Binding ExitModalBorderColor}" BorderThickness="1.5"
+                    Background="#0F172A" CornerRadius="12" Padding="24">
+                <StackPanel Spacing="16">
+
+                    <!-- Modal Header -->
+                    <Grid ColumnDefinitions="*,Auto">
+                        <StackPanel Grid.Column="0" Spacing="4">
+                            <Border Background="{Binding ExitModalBadgeBackground}"
+                                    BorderBrush="{Binding ExitModalBorderColor}"
+                                    BorderThickness="1" CornerRadius="4"
+                                    Padding="8,3" HorizontalAlignment="Left">
+                                <TextBlock Text="{Binding ExitModalBadgeText}" FontSize="10" FontWeight="Black"
+                                           Foreground="{Binding ExitModalBadgeForeground}" LetterSpacing="1" />
+                            </Border>
+                            <TextBlock Text="{Binding ExitModalTitle}" FontSize="18" FontWeight="Bold"
+                                       Foreground="#F8FAFC" Margin="0,4,0,0" />
+                        </StackPanel>
+                        <Button Grid.Column="1" Classes="secondary" Padding="8,4"
+                                Command="{Binding CancelExitConfirmationCommand}">
+                            <TextBlock Text="✕" FontSize="14" Foreground="#94A3B8" />
+                        </Button>
+                    </Grid>
+
+                    <TextBlock Text="{Binding ExitModalDescription}"
+                               FontSize="12.5" Foreground="#CBD5E1" TextWrapping="Wrap" LineHeight="19" />
+
+                    <TextBlock Text="{Binding ExitModalSubtext}"
+                               FontSize="11.5" FontWeight="SemiBold" Foreground="#94A3B8" TextWrapping="Wrap" />
+
+                    <!-- Action Buttons -->
+                    <Grid ColumnDefinitions="Auto,Auto,Auto" HorizontalAlignment="Right" Margin="0,8,0,0">
+                        <Button Grid.Column="0"
+                                AutomationProperties.AutomationId="ExitKeepDockerButton"
+                                Classes="primary"
+                                IsVisible="{Binding IsDockerExitMode}"
+                                IsDefault="{Binding IsKeepDockerDefaultButton}"
+                                Command="{Binding ConfirmExitKeepDockerRunningCommand}"
+                                Margin="0,0,10,0" Padding="14,10"
+                                HorizontalContentAlignment="Center">
+                            <TextBlock Text="✓ No — Close Panel Only (Keep Docker)" FontSize="12" FontWeight="Bold"
+                                       Foreground="#0B0F17" />
+                        </Button>
+
+                        <Button Grid.Column="1"
+                                AutomationProperties.AutomationId="ExitShutDownAllButton"
+                                Classes="secondary"
+                                BorderBrush="#EF4444"
+                                Command="{Binding ConfirmExitShutDownServicesCommand}"
+                                Margin="0,0,10,0" Padding="14,10"
+                                HorizontalContentAlignment="Center">
+                            <TextBlock Text="{Binding ExitShutDownButtonText}" FontSize="12" FontWeight="Bold"
+                                       Foreground="#EF4444" />
+                        </Button>
+
+                        <Button Grid.Column="2"
+                                AutomationProperties.AutomationId="ExitCancelButton"
+                                Classes="secondary"
+                                IsCancel="{Binding IsExitConfirmationModalOpen}"
+                                Command="{Binding CancelExitConfirmationCommand}"
+                                Padding="14,10"
+                                HorizontalContentAlignment="Center">
+                            <TextBlock Text="✕ Cancel" FontSize="12" Foreground="#94A3B8" />
+                        </Button>
+                    </Grid>
+
+                </StackPanel>
+            </Border>
+        </Border>
+
+    </Grid>
+
+</Window>

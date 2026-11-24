@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Project Kongor - Live Spectator Console</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎥</text></svg>">
+</head>
+<body class="theme-dark">
+    <div id="appContainer" class="app-container">
+        <!-- Top Navigation / Broadcast Header -->
+        <header id="mainHeader" class="header-bar">
+            <div class="header-left">
+                <span class="live-pill"><span class="pulse-dot"></span> LIVE</span>
+                <h1 class="title">KONGOR SPECTATOR CONSOLE</h1>
+                <span class="badge badge-purple">PHASE 4 STREAM</span>
+            </div>
+
+            <!-- Match Scoreboard -->
+            <div class="header-center">
+                <div class="team-score team-legion">
+                    <span class="team-name">LEGION</span>
+                    <span id="scoreLegion" class="score">14</span>
+                </div>
+                <div class="match-time-badge">
+                    <span id="matchClock">18:42</span>
+                </div>
+                <div class="team-score team-hellbourne">
+                    <span id="scoreHellbourne" class="score">11</span>
+                    <span class="team-name">HELLBOURNE</span>
+                </div>
+            </div>
+
+            <!-- Mode Switcher & Stream Info -->
+            <div class="header-right">
+                <div class="mode-toggle">
+                    <button id="btnModeLive" class="mode-btn active" title="Vulkan 60 FPS Viewport Stream">🎥 Live Viewport</button>
+                    <button id="btnModeSimd" class="mode-btn" title="Client-Side SIMD 3D Rigging Inspector">🧬 SIMD Rig</button>
+                </div>
+                <div class="stream-stats">
+                    <span id="fpsBadge" class="badge badge-green">144.0 FPS</span>
+                    <span id="pingBadge" class="badge badge-blue">24 ms</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Viewport Stage -->
+        <main class="viewport-stage">
+            <div class="canvas-wrapper">
+                <!-- Mode A: Live Video Viewport -->
+                <canvas id="viewportCanvas" width="960" height="540"></canvas>
+
+                <!-- Mode B: SIMD 3D Rig Inspector Canvas -->
+                <canvas id="rigCanvas" width="960" height="540" class="hidden"></canvas>
+
+                <!-- Overlay HUD Controls -->
+                <div class="overlay-hud top-left">
+                    <div class="hud-card">
+                        <div class="hud-row"><span class="label">Backend:</span> <span id="telemSource" class="val val-accent">SHM_SEQLOCK</span></div>
+                        <div class="hud-row"><span class="label">Frame:</span> <span id="telemFrame" class="val font-mono">0</span></div>
+                        <div class="hud-row"><span class="label">CPU Frame:</span> <span id="telemCpu" class="val">3.1 ms</span></div>
+                        <div class="hud-row"><span class="label">GPU Frame:</span> <span id="telemGpu" class="val">3.8 ms</span></div>
+                    </div>
+                </div>
+
+                <div class="overlay-hud top-right">
+                    <div class="hud-card">
+                        <div class="hud-row"><span class="label">Draw Calls:</span> <span id="telemDrawCalls" class="val">342</span></div>
+                        <div class="hud-row"><span class="label">Entities:</span> <span id="telemEntities" class="val">84</span></div>
+                        <div class="hud-row"><span class="label">Particles:</span> <span id="telemParticles" class="val">128</span></div>
+                        <div class="hud-row"><span class="label">Tick:</span> <span id="telemTick" class="val font-mono">2480</span></div>
+                    </div>
+                </div>
+
+                <!-- Bottom Status Bar -->
+                <div class="overlay-hud bottom-left">
+                    <div class="connection-status">
+                        <span id="wsIndicator" class="indicator disconnected"></span>
+                        <span id="wsStatusText">Connecting to Viewport Streamer...</span>
+                        <span class="label" style="margin-left:8px;">| <a href="https://github.com/guccidonut/PKV" target="_blank" rel="noopener noreferrer" style="color:#a78bfa;">AGPL-3.0-or-later Source (PKV)</a></span>
+                    </div>
+                </div>
+
+                <div class="overlay-hud bottom-right">
+                    <div class="stream-controls">
+                        <button id="btnFullscreen" class="ctrl-btn" title="Fullscreen Viewport">⛶ Fullscreen</button>
+                        <button id="btnSnapshot" class="ctrl-btn" title="Capture High-Res Screenshot">📷 Snapshot</button>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>

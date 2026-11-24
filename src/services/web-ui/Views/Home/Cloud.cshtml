@@ -1,0 +1,116 @@
+@{
+    ViewData["Title"] = "Cloud Sync & Configuration";
+    var account = ViewData["Account"] as AccountDto;
+    var useCloud = account?.UseCloud ?? false;
+    var autoUpload = account?.AutomaticCloudUpload ?? false;
+}
+
+<div class="w-full max-w-6xl mx-auto py-4 sm:py-8 px-3 sm:px-4 space-y-6 sm:space-y-8 animate-fade-in-up">
+    <!-- Breadcrumb & Header -->
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 text-left">
+        <div>
+            <a href="/" class="text-xs text-purple-400 hover:underline font-semibold flex items-center gap-1 mb-2">
+                <span>←</span> Back to Command Center
+            </a>
+            <h1 class="text-2xl sm:text-4xl font-black text-white tracking-tight">Cloud Sync & Configuration
+                Settings</h1>
+            <p class="text-slate-400 text-xs sm:text-sm mt-1">Manage keybindings, custom macros, client settings, and
+                cloud backup preferences for @(account?.Name ?? "Player")</p>
+        </div>
+        <div
+            class="self-start sm:self-center px-4 py-2 rounded-xl glass-panel border border-amber-500/20 text-amber-300 text-xs font-bold uppercase tracking-wider flex-shrink-0">
+            Cloud Status: @(useCloud || autoUpload ? "Active 🟢" : "Disabled ⚪")
+        </div>
+    </div>
+
+    @if (TempData["CloudErrorMessage"] != null)
+    {
+        <div
+            class="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-amber-300 text-xs sm:text-sm font-semibold flex items-center gap-3">
+            <span>⚠️</span>
+            <span>@TempData["CloudErrorMessage"]</span>
+        </div>
+    }
+
+    <!-- Main Configuration Panel -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8">
+        <!-- Settings Form Card -->
+        <div class="lg:col-span-2 glass-panel p-5 sm:p-8 rounded-3xl space-y-6">
+            <h2 class="text-xl sm:text-2xl font-bold text-white flex items-center gap-2">
+                <span>☁️</span> Cloud Backup Preferences
+            </h2>
+
+            <form asp-controller="Home" asp-action="ToggleCloud" method="post" class="space-y-6">
+                <!-- Toggle 1: Auto download config settings -->
+                <div
+                    class="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 sm:p-5 rounded-2xl bg-slate-900/60 border border-slate-800 gap-4">
+                    <div>
+                        <h4 class="font-bold text-white text-sm sm:text-base">Auto download config settings</h4>
+                        <p class="text-slate-400 text-xs mt-0.5">Automatically download custom keybindings, chat macros,
+                            and video options when logging into the game client.</p>
+                    </div>
+                    <label
+                        class="relative inline-flex items-center cursor-pointer flex-shrink-0 self-end sm:self-center">
+                        <input type="checkbox" name="useCloud" value="true" @(useCloud ? "checked" : "")
+                               class="sr-only peer" onchange="this.form.submit()"/>
+                        <div
+                            class="w-11 h-6 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber-500"></div>
+                    </label>
+                </div>
+
+                <!-- Toggle 2: Auto upload config settings -->
+                <div
+                    class="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 sm:p-5 rounded-2xl bg-slate-900/60 border border-slate-800 gap-4">
+                    <div>
+                        <h4 class="font-bold text-white text-sm sm:text-base">Auto upload config settings</h4>
+                        <p class="text-slate-400 text-xs mt-0.5">Automatically save and upload configuration changes
+                            whenever you exit a match or logout.</p>
+                    </div>
+                    <label
+                        class="relative inline-flex items-center cursor-pointer flex-shrink-0 self-end sm:self-center">
+                        <input type="checkbox" name="autoUpload" value="true" @(autoUpload ? "checked" : "")
+                               class="sr-only peer" onchange="this.form.submit()"/>
+                        <div
+                            class="w-11 h-6 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber-500"></div>
+                    </label>
+                </div>
+
+            </form>
+        </div>
+
+        <!-- Backup Status & Profiles -->
+        <div class="glass-panel p-6 rounded-3xl space-y-6 flex flex-col justify-between">
+            <div>
+                <h3 class="text-xl font-bold text-white mb-2">Cloud Storage Status</h3>
+                <p class="text-slate-400 text-xs leading-relaxed mb-4">
+                    Your keybinds, chat configs, and UI mods are securely backed up in the PROJECT KONGOR cloud storage
+                    vault.
+                </p>
+
+                <div class="p-4 rounded-2xl bg-slate-900/80 border border-slate-800 space-y-3">
+                    <div class="flex justify-between text-xs">
+                        <span class="text-slate-400">Last Synced:</span>
+                        <span
+                            class="text-amber-300 font-semibold">@(account?.BackupLastUpdatedTime?.ToString("g") ?? "Never")</span>
+                    </div>
+                    <div class="flex justify-between text-xs">
+                        <span class="text-slate-400">Config Vault Size:</span>
+                        <span class="text-white font-semibold">14.2 KB</span>
+                    </div>
+                    <div class="flex justify-between text-xs">
+                        <span class="text-slate-400">Encryption:</span>
+                        <span class="text-emerald-400 font-semibold">AES-256 Enabled</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="pt-4 border-t border-slate-800">
+                <a asp-controller="Home" asp-action="DownloadCloudPackage"
+                   class="w-full py-3 rounded-2xl bg-slate-800 hover:bg-slate-700 text-white font-semibold text-xs transition-all border border-slate-700 flex items-center justify-center gap-2">
+                    <span>💾</span>
+                    <span>Download Raw Config Package (.zip)</span>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,20 @@
+{
+  "viewerId": "empath_ar_r128",
+  "threeRevision": "r168",
+  "legacyBaselineRevision": "r128",
+  "step6_5a_core_extract_ssim": 1.0,
+  "step6_5a_core_extract_local_max_7x7": 0.0,
+  "step6_5b_rebaselined": true,
+  "dracoMeshoptEnabled": true,
+  "lightIntensityCalibration": "candela_pi",
+  "renderer": "Google SwiftShader (--use-gl=angle --use-angle=swiftshader)",
+  "devicePixelRatio": 1,
+  "viewport": {
+    "width": 320,
+    "height": 240
+  },
+  "timestamp": 0,
+  "playheadPaused": true,
+  "colorSpace": "srgb",
+  "imageSha256": "a3c8a0c7666a18abd90abba37471c8df89b9bc7cd70165b2ee6726ce744274c4"
+}

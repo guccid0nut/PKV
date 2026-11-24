@@ -1,0 +1,41 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net11.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <AvaloniaUseCompiledBindingsByDefault>false</AvaloniaUseCompiledBindingsByDefault>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <NoWarn>$(NoWarn);MSB3277;AVLN5001;CA1416</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Avalonia"/>
+    <PackageReference Include="Avalonia.Desktop"/>
+    <PackageReference Include="Avalonia.Themes.Fluent"/>
+    <PackageReference Include="Avalonia.Fonts.Inter"/>
+    <PackageReference Include="Avalonia.Diagnostics" Condition="'$(Configuration)' == 'Debug'"/>
+    <PackageReference Include="CommunityToolkit.Mvvm"/>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\libs\protocol-core\Kongor.Core.csproj"/>
+    <ProjectReference Include="..\..\libs\contracts\NEXUS.Contracts.csproj"/>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Include="NEXUS.Contracts.Configuration"/>
+    <Using Include="NEXUS.Contracts.ControlPlane"/>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="..\control-panel\Services\ISecretsManagerService.cs" Link="Services\ISecretsManagerService.cs" />
+    <Compile Include="..\control-panel\Services\SecretsManagerService.cs" Link="Services\SecretsManagerService.cs" />
+    <Compile Include="..\control-panel\Services\IGameServerFleetService.cs" Link="Services\IGameServerFleetService.cs" />
+    <Compile Include="..\control-panel\Services\GameServerFleetService.cs" Link="Services\GameServerFleetService.cs" />
+    <Compile Include="..\control-panel\Services\Models\GameServerFleetModels.cs" Link="Services\Models\GameServerFleetModels.cs" />
+    <Compile Include="..\control-panel\ViewModels\GameServerChatMessageViewModel.cs" Link="ViewModels\GameServerChatMessageViewModel.cs" />
+    <Compile Include="..\control-panel\ViewModels\GameServerInstanceDetailViewModel.cs" Link="ViewModels\GameServerInstanceDetailViewModel.cs" />
+  </ItemGroup>
+</Project>

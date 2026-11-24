@@ -1,0 +1,178 @@
+# Project KONGOR - Official WILLOWMAKER Linux Flatpak Manifest
+# Note: This flatpak was inspired by manu311
+
+app-id: net.kongor.Willowmaker
+runtime: org.freedesktop.Platform
+runtime-version: "24.08"
+sdk: org.freedesktop.Sdk
+branch: stable
+command: willowmaker
+
+finish-args:
+  # Graphics Acceleration and Hardware Access
+  - --device=dri
+  # Networking for Matchmaking, Game Servers, and CDN
+  - --share=network
+  # Inter-Process Communication
+  - --share=ipc
+  # Display servers: X11 / XWayland required by K2 Engine (hon-x86_64)
+  - --socket=x11
+  - --socket=fallback-x11
+  - --socket=wayland
+  # Audio system (PulseAudio / PipeWire)
+  - --socket=pulseaudio
+  # Desktop configuration systems for legacy GNOME bindings
+  - --talk-name=ca.desrt.dconf
+  - --talk-name=org.gnome.GConf
+  # Game and user state filesystem access (isolated inside container storage)
+  - --filesystem=xdg-data/Heroes of Newerth
+  - --filesystem=xdg-data/ProjectKongor
+  # Library search path
+  - --env=LD_LIBRARY_PATH=/app/lib
+
+modules:
+  - name: freetype
+    buildsystem: meson
+    cleanup:
+      - "/include"
+      - "/lib/pkgconfig"
+      - "/share"
+      - "*.la"
+    sources:
+      - type: archive
+        url: https://download.savannah.gnu.org/releases/freetype/freetype-2.13.2.tar.xz
+        sha256: 12991c4e55c506dd7f9b765933e62fd2be2e06d421505d7950a132e4f1bb484d
+
+  - name: harfbuzz
+    sources:
+      - type: archive
+        url: https://github.com/harfbuzz/harfbuzz/releases/download/3.4.0/harfbuzz-3.4.0.tar.xz
+        sha256: 7158a87c4db82521fc506711f0c8864115f0292d95f7136c8812c11811cdf952
+
+  - name: pango
+    buildsystem: meson
+    config-opts:
+      - -Dintrospection=disabled
+    cleanup:
+      - "/include"
+      - "/lib/pkgconfig"
+      - "/share"
+      - "*.la"
+    sources:
+      - type: archive
+        url: https://download.gnome.org/sources/pango/1.50/pango-1.50.14.tar.xz
+        sha256: 1d67f205bfc318c27a29cfdfb6828568df566795df0cb51d2189cde7f2d581e8
+
+  - name: gtk3
+    cleanup:
+      - "/cache"
+      - "/man"
+      - "/share/aclocal"
+      - "/share/devhelp"
+      - "/include"
+      - "/lib/pkgconfig"
+      - "/share/gtk-doc"
+      - "/share/man"
+      - "/lib/*.a"
+      - "*.a"
+      - "*.la"
+    sources:
+      - type: archive
+        url: https://download.gnome.org/sources/gtk+/3.24/gtk%2B-3.24.12.tar.xz
+        sha256: 1384eba5614fed160044ae0d32369e3df7b4f517b03f4b1f24d383e528f4be83
+
+  - name: gtk-2.24
+    cleanup:
+      - "/cache"
+      - "/man"
+      - "/share/aclocal"
+      - "/share/devhelp"
+      - "/include"
+      - "/lib/pkgconfig"
+      - "/share/gtk-doc"
+      - "/share/man"
+      - "/lib/*.a"
+      - "*.a"
+      - "*.la"
+    sources:
+      - type: archive
+        url: https://download.gnome.org/sources/gtk+/2.24/gtk+-2.24.32.tar.xz
+        sha256: b6c8a93ddda5eabe3bfee1eb39636c9a03d2a56c7b62828b359bf197943c582e
+    build-options:
+      no-debuginfo: true
+      cflags: "-Wno-error=incompatible-pointer-types -Wno-error=implicit-int"
+
+  - name: dbus-glib
+    cleanup:
+      - "/include"
+      - "/lib/pkgconfig"
+      - "/share"
+      - "*.la"
+    sources:
+      - type: archive
+        url: https://dbus.freedesktop.org/releases/dbus-glib/dbus-glib-0.112.tar.gz
+        sha256: 7d550dccdfcd286e33895501829ed971eeb65c614e73aadb4a08aeef719b143a
+
+  - name: intltool
+    cleanup:
+      - "*"
+    sources:
+      - type: archive
+        url: https://download.gnome.org/sources/intltool/0.40/intltool-0.40.6.tar.bz2
+        sha256: 4d1e5f8561f09c958e303d4faa885079a5e173a61d28437d0013ff5efc9e3b64
+
+  - name: gconf
+    sources:
+      - type: archive
+        url: https://download.gnome.org/sources/GConf/3.2/GConf-3.2.6.tar.xz
+        sha256: 1912b91803ab09a5eed34d364bf09fe3a2a9c96751fde03a4e0cfa51a04d784c
+    config-opts:
+      - --disable-orbit
+    build-options:
+      cflags: "-Wno-error=incompatible-pointer-types -Wno-error=implicit-int"
+
+  - name: libGlu
+    sources:
+      - type: archive
+        url: https://archive.mesa3d.org/glu/glu-9.0.2.tar.xz
+        sha256: 6e7280ff585c6a1d9dfcdf2fca489251634b3377bfc33c29e4002466a38d02d4
+
+  - name: eudev
+    cleanup:
+      - "/include"
+      - "/lib/pkgconfig"
+      - "/lib/udev"
+      - "/share"
+      - "*.la"
+    config-opts:
+      - --disable-gudev
+      - --disable-introspection
+      - --disable-hwdb
+      - --disable-manpages
+      - --disable-shared-mime-info
+    sources:
+      - type: archive
+        url: https://github.com/gentoo/eudev/archive/v3.2.14.tar.gz
+        sha256: c340e6c51dfc5531ac0c0fa84a34b72162acf525f9023eb9cf4931b782c8f177
+
+  - name: libudev-compat
+    buildsystem: simple
+    build-commands:
+      - ln -s /app/lib/libudev.so.1 /app/lib/libudev.so.0
+
+  - name: willowmaker-runtime
+    buildsystem: simple
+    build-commands:
+      - install -D -m 755 willowmaker-launcher.sh /app/bin/willowmaker
+      - install -D -m 644 net.kongor.Willowmaker.desktop /app/share/applications/net.kongor.Willowmaker.desktop
+      - install -D -m 644 net.kongor.Willowmaker.metainfo.xml /app/share/metainfo/net.kongor.Willowmaker.metainfo.xml
+      - install -D -m 644 net.kongor.Willowmaker.png /app/share/icons/hicolor/256x256/apps/net.kongor.Willowmaker.png
+    sources:
+      - type: file
+        path: willowmaker-launcher.sh
+      - type: file
+        path: net.kongor.Willowmaker.desktop
+      - type: file
+        path: net.kongor.Willowmaker.metainfo.xml
+      - type: file
+        path: net.kongor.Willowmaker.png

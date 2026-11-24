@@ -1,0 +1,158 @@
+{
+  "schema_version": "2.0.0",
+  "dossier_id": "midwars_10v10_kill_packet_truncation",
+  "authority_scope": "shared_simulation_desync_risk",
+  "status": "verified",
+  "target": {
+    "binary_name": "game_shared_x64.dll",
+    "rva": "0x575460",
+    "function_name": "KillNotifyHelper (client 0x575460 / server 0x5761a0 / linux 0x00d1e3b0)",
+    "binary_sha256": "bd46e50cbca0f40dbe5192d81409e6ec6847a8f466eb233fcb16d5dcde1672a3",
+    "instruction_bytes_sha256": "48895c2410555657415441554156_prologue14"
+  },
+  "cleanroom_mapping": {
+    "source_file": "native/proxies/native_guard/queue_arcade_hooks.cpp",
+    "linux_source_file": "native/proxies/native_guard/linux_native_guard.cpp",
+    "macos_parity_file": "native/proxies/native_guard/macos_native_guard.mm"
+  },
+  "binaries_audited": {
+    "windows_client_game_shared": {
+      "path": "games/client/game_shared_x64.dll",
+      "sha256": "bd46e50cbca0f40dbe5192d81409e6ec6847a8f466eb233fcb16d5dcde1672a3",
+      "size_of_image": "0x802000",
+      "kill_notify_helper_rva": "0x575460",
+      "kill_notify_caller_rva": "0x579955",
+      "cbufferfixed_28_ctor_rva": "0x5758e1",
+      "cbufferfixed_vtable_rva": "0x69f9c8",
+      "broadcast_call_rva": "0x575a83",
+      "multikill_helper_rva": "0x4f3e00",
+      "unit_owner_client_number_offset": "0x6d4",
+      "prologue14": "48 89 5c 24 10 55 56 57 41 54 41 55 41 56"
+    },
+    "windows_server_game_shared": {
+      "path": "games/server/game_shared_x64.dll",
+      "sha256": "e06b1f6777780ad4cc29e2e4927754a51d38cf056c746e15e0d43abfc5a6dbc7",
+      "size_of_image": "0x803000",
+      "kill_notify_helper_rva": "0x5761a0",
+      "multikill_helper_rva": "0x4f4b30",
+      "prologue14": "48 89 5c 24 10 55 56 57 41 54 41 55 41 56"
+    },
+    "windows_game_x64": {
+      "path": "games/client/game_x64.dll",
+      "sha256": "55200271b0dfd97b6e5192d81409e6ec6847a8f466eb233fcb16d5dcde1672a3_note_identical_client_server_55200271b0dfd97b6e516dfe6589ffd04e10c06cc246c15eff3b558889f087d6",
+      "exact_sha256": "55200271b0dfd97b6e516dfe6589ffd04e10c06cc246c15eff3b558889f087d6",
+      "broadcast_game_data_rva": "0x50f30",
+      "send_game_data_rva": "0x509f0",
+      "broadcast_filter_rva": "0x50af0",
+      "broadcast_team_rva": "0x50cf0",
+      "replay_write_call_rvas": ["0x510c9", "0x510ee"],
+      "host_server_broadcast_call_rva": "0x51105",
+      "delayed_queue_offset": "0x6c0"
+    },
+    "windows_client_cgame": {
+      "path": "games/client/game/cgame_x64.dll",
+      "sha256": "837e6a12d8134b98d0d5a0b547e3504144202c34a09af5432d25be6b37c2cb6f",
+      "process_game_data_rva": "0xd7690",
+      "read_cmd_byte_rva": "0xd7707",
+      "switch_dispatch_rva": "0xd78f6",
+      "case_0x60_range": "0xdc02c-0xdc6ba",
+      "assist_vector_stack_offset": "0xf30",
+      "dynamic_vector_safe_for_29_assists": true
+    },
+    "windows_client_k2": {
+      "path": "games/client/k2_x64.dll",
+      "sha256": "54adcb6aa938c41ea4f2993f96448c2a4f0b9f606f57d6e737baef2432fba4a7",
+      "process_current_snapshot_rva": "0x8d7c20",
+      "caller_rva": "0x8d5a56",
+      "snapshot_seq_offset": "0x8808",
+      "state_sequence_offset": "0x88a8",
+      "cbuffer_dynamic_read_rva": "0x689970"
+    },
+    "linux_server_game_shared": {
+      "path": "games/server/linux-x64/game/libgame_shared-x86_64-server.so",
+      "sha256": "22a243a9ddb36a7a83251f80c83b410a374e3d4e8658118599319d2283277223",
+      "kill_notify_helper_rva": "0x00d1e3b0",
+      "cbufferfixed_vtable_rva": "0x15b3168",
+      "unit_owner_client_number_offset": "0x6bc",
+      "prologue17": "55 41 57 41 56 41 55 41 54 53 48 81 ec f8 01 00 00"
+    },
+    "linux_server_game": {
+      "path": "games/server/linux-x64/game/game-x86_64-server.so",
+      "sha256": "7dcd86e4a850c60b646db203c4c88f06007e86ede62cb9265d05f3e9ee0eaebb7",
+      "broadcast_game_data_rva": "0x0012f260",
+      "send_game_data_rva": "0x0012f510",
+      "prologue14_broadcast": "55 41 57 41 56 41 55 41 54 53 48 83 ec 38",
+      "prologue14_send": "55 41 57 41 56 41 55 41 54 53 48 83 ec 48"
+    },
+    "linux_server_k2": {
+      "path": "games/server/linux-x64/libk2-x86_64-server.so",
+      "sha256": "3b1415d8990b5be4ca34ebc88137399b60105680608da897bd4d2b7731063e78",
+      "host_server_broadcast_game_data_rva": "0x00cd77e0",
+      "host_server_send_game_data_rva": "0x00cd7760",
+      "prologue14_broadcast": "55 41 57 41 56 41 54 53 41 89 cc 49 89 f6",
+      "prologue17_send": "55 41 56 53 41 89 ce 48 89 d3 48 8b 8f 90 02 00 00"
+    }
+  },
+  "obligations": [
+    {
+      "id": "OBL-MIDWARS-01",
+      "category": "framing_clamp",
+      "status": "satisfied",
+      "source_rva": "0x50f30",
+      "description": "Server write-side guard on CGameServer::BroadcastGameData (0x50f30 Win / 0x0012f260 Linux), SendGameData (0x509f0 / 0x0012f510), BroadcastFilter (0x50af0), BroadcastTeam (0x50cf0), and Linux CHostServer: when byte[0] == 0x60 (GAME_CMD_KILL_MESSAGE) and bufferLen >= 12 && bufferLen < 12 + 4 * byte[11], clamp byte[11] = (bufferLen - 12) / 4, log [NATIVE-GUARD][KILL-PACKET-CLAMP], and increment KillPacketClampCount.",
+      "satisfied_in": "native/proxies/native_guard/queue_arcade_hooks.cpp",
+      "verified_by_test": "native/proxies/native_guard/tests/native_guard_unit_tests.cpp"
+    },
+    {
+      "id": "OBL-MIDWARS-02",
+      "category": "replay_and_linux_parity",
+      "status": "satisfied",
+      "source_rva": "0x510c9",
+      "description": "Verified CGameServer::BroadcastGameData (0x50f30 Win / 0x0012f260 Linux) feeds BOTH CReplayManager::WriteGameData (0x510c9, 0x510ee) and CHostServer::BroadcastGameData (0x51105) plus delayed queue [rbp+0x6c0]; Linux native guard hooks game-x86_64-server.so and libk2-x86_64-server.so without libstdc++ dependencies.",
+      "satisfied_in": "native/proxies/native_guard/linux_native_guard.cpp",
+      "verified_by_test": "native/proxies/native_guard/tests/linux_queue_arcade_tests.cpp"
+    },
+    {
+      "id": "OBL-MIDWARS-03",
+      "category": "client_replay_read_guard",
+      "status": "satisfied",
+      "source_rva": "0xd7690",
+      "description": "Verified cgame_x64.dll CClientGame::ProcessGameData (0xd7690, case 0x60 @ 0xdc02c-0xdc6ba) uses a dynamic std::vector<int> ([rsp+0xf30]) with no fixed stack cap and supports 5..9+ assists safely; added CPacket remaining-byte bounds clamp in cgame ProcessGameData hook so legacy 28-byte kill5 .honreplay files never over-read 4 bytes. macOS parity documented in macos_native_guard.mm.",
+      "satisfied_in": "native/proxies/native_guard/queue_arcade_hooks.cpp",
+      "verified_by_test": "native/proxies/native_guard/tests/native_guard_unit_tests.cpp"
+    },
+    {
+      "id": "OBL-MIDWARS-04",
+      "category": "stage1b_128b_expansion",
+      "status": "satisfied",
+      "source_rva": "0x575460",
+      "description": "Swept all 139 IBuffer ctor sites (IAT 0x648308) and FUN_1804f3e00 in game_shared_x64.dll: confirmed CBufferFixed<28> at 0x5758e1 (KillNotifyHelper 0x575460/0x5761a0 Win, 0x00d1e3b0 Linux) is the sole team-size buffer overflow. Detoured KillNotifyHelper to collect deduplicated ascending IUnitEntity::m_iOwnerClientNumber (+0x6d4 Win / +0x6bc Linux) when assists >= 5 and swap a 128-byte K2IBufferLayout in BroadcastGameData (up to 29 assists), keeping Stage 1A clamp active and pairing with kill5..kill9 stringtables.",
+      "satisfied_in": "native/proxies/native_guard/queue_arcade_hooks.cpp",
+      "verified_by_test": "native/proxies/native_guard/tests/native_guard_unit_tests.cpp"
+    },
+    {
+      "id": "OBL-MIDWARS-05",
+      "category": "snapshot_desync_telemetry",
+      "status": "satisfied",
+      "source_rva": "0x8d7c20",
+      "description": "Audited k2_x64.dll CHostClient::ProcessCurrentSnapshot (0x8d7c20 client, 0x89ab80 server): verified no server-backed full-snapshot retransmit exists and m_yStateSequence (+0x88a8) is mutated only by NETCMD_STATE_STRING/BLOCK (0x8d9031/0x8d95e9). Installed O(1) main-thread-checked SEH-guarded telemetry hook emitting rate-limited [NATIVE-GUARD][SNAPSHOT-DESYNC] alerts and incrementing SnapshotDesyncDropCount across >= 2 consecutive uint8_t mismatch frames without poking +0x88a8 or disabling cl_RejectDesyncedSnapshots.",
+      "satisfied_in": "native/proxies/native_guard/queue_arcade_hooks.cpp",
+      "verified_by_test": "native/proxies/native_guard/tests/native_guard_unit_tests.cpp"
+    }
+  ],
+  "limitations_and_unknowns": {
+    "triangulation_status": "dynamically_confirmed",
+    "triangulation_notes": "Dynamically verified via native_guard_unit_tests.exe (Win64 SEH + 128B K2IBufferLayout swap + CPacket read clamp + SnapshotDesyncTracker) and Linux x86_64 Docker runtime harness (linux_queue_arcade_tests + run_linux_server_docker_smoke.ps1).",
+    "unknown_offsets": [],
+    "indirect_calls": [
+      {
+        "rva": "0x575a83",
+        "status": "verified",
+        "rationale": "IGame::BroadcastGameData virtual call (vtable+0x200) resolves deterministically to CGameServer::BroadcastGameData (game_x64.dll+0x50f30 / game-x86_64-server.so+0x0012f260), guarded at concrete target entry."
+      }
+    ]
+  },
+  "counterevidence_searched": "Swept all 139 IBuffer constructor sites (IAT 0x648308) in game_shared_x64.dll and inspected FUN_1804f3e00 (0x4f3e00/0x4f4b30) for any other 12+4*teamSize CBufferFixed overflows: none found outside KillNotifyHelper (0x5758e1). Verified game_x64.dll+0x51130 is string/chat broadcast rather than IBuffer packet emission. Verified k2_x64.dll CHostClient has no client-to-server full-snapshot retransmit opcode.",
+  "negative_control": "Valid 28-byte kill4 (numAssists == 4) and non-0x60 opcodes remain unmodified by Stage 1A ClampKillMessageBufferInPlace and GuardClientKillMessagePacketRead; single-frame state-sequence jitter and uint8_t 255->0 wraparound do not trigger SnapshotDesyncTracker false positives; +0x88a8 and cl_RejectDesyncedSnapshots remain untouched.",
+  "notes": "Stage 1A write/read clamp, Stage 1B 128B expansion (up to 29 assists), Layer 2 modular uint8_t desync telemetry, and Layer 3 kill5..kill9 localized stringtables implemented across Windows PE and Linux ELF."
+}

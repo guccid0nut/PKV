@@ -1,0 +1,74 @@
+﻿syntax = "proto3";
+
+package nexus.contracts.telemetry.v1;
+option csharp_namespace = "NEXUS.Contracts.Telemetry.V1";
+
+service TelemetryStreamService {
+  rpc StreamCombatEvents (stream CombatTelemetryFrame) returns (StreamSummaryResponse);
+  rpc IngestMatchSummary (MatchSummaryPayload) returns (IngestSummaryResponse);
+}
+
+message Vector3D {
+  float x = 1;
+  float y = 2;
+  float z = 3;
+}
+
+message PlayerLiveState {
+  uint32 account_id = 1;
+  int32 slot_index = 2;
+  uint32 hero_id = 3;
+  Vector3D position = 4;
+  int32 health = 5;
+  int32 max_health = 6;
+  int32 mana = 7;
+  int32 max_mana = 8;
+  int32 gold = 9;
+  int32 level = 10;
+  repeated uint32 inventory_item_ids = 11;
+}
+
+message CombatTelemetryFrame {
+  uint64 match_id = 1;
+  uint32 frame_index = 2;
+  int64 timestamp_utc_ms = 3;
+  uint32 game_time_seconds = 4;
+  repeated PlayerLiveState players = 5;
+  repeated CombatEvent events = 6;
+}
+
+enum CombatEventType {
+  EVENT_TYPE_UNSPECIFIED = 0;
+  EVENT_TYPE_HERO_KILL = 1;
+  EVENT_TYPE_TOWER_DESTROY = 2;
+  EVENT_TYPE_BARRACKS_DESTROY = 3;
+  EVENT_TYPE_BOSS_KILL = 4;
+  EVENT_TYPE_ITEM_PURCHASE = 5;
+}
+
+message CombatEvent {
+  CombatEventType event_type = 1;
+  uint32 source_account_id = 2;
+  uint32 target_account_id = 3;
+  uint32 entity_id = 4;
+  Vector3D location = 5;
+  string narrative = 6;
+}
+
+message StreamSummaryResponse {
+  uint64 total_frames_received = 1;
+  bool is_healthy = 2;
+}
+
+message MatchSummaryPayload {
+  uint64 match_id = 1;
+  uint32 duration_seconds = 2;
+  int32 winning_team = 3; // 1 = Legion, 2 = Hellbourne
+  string replay_file_sha256 = 4;
+  int64 replay_file_size_bytes = 5;
+}
+
+message IngestSummaryResponse {
+  bool success = 1;
+  string storage_uri = 2;
+}

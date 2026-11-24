@@ -1,0 +1,50 @@
+[
+  {
+    "Id": "kongor_update_502",
+    "Title": "Project Kongor v5.0.2 Update",
+    "Category": "PATCH NOTES",
+    "BadgeColor": "#00e5ff",
+    "Date": "Nov 20, 2026",
+    "Description": "War Effort 14-bag quest cycles & leaderboard, Valkey matchmaking fix, seamless Queue Arcade bot/player swaps, custom map stats, match history & scoreboards, fixed mode items & rules, Strikers 3-2-1 kickoff fix, RNNoise voice & P2P relays, and avatar polish!",
+    "ImageUrl": "/ui/fe2/mainmenu/bg3_new.tga",
+    "ActionType": "url",
+    "ActionTarget": "https://discord.gg/projectkongor",
+    "VideoUrl": null,
+    "IsActive": true,
+    "Priority": 100,
+    "CreatedAt": "2026-11-20T06:00:00Z",
+    "UpdatedAt": null
+  },
+  {
+    "Id": "custom_maps_10v10",
+    "Title": "10v10 Chaos & Repaired Custom Maps",
+    "Category": "CUSTOM MAPS",
+    "BadgeColor": "#ffb300",
+    "Date": "Nov 09, 2026",
+    "Description": "Host 20-player Devo Wars, True Devo & Mid Wars 10v10, Three Kingdoms, Persian Pass, Strikers, Valkyrie/Archer Wars, Enfo's, Nightmarish Co-Op, WTF, and Halloween maps!",
+    "ImageUrl": "/ui/fe2/mainmenu/bg3_new.tga",
+    "ActionType": "url",
+    "ActionTarget": "https://discord.gg/projectkongor",
+    "VideoUrl": null,
+    "IsActive": true,
+    "Priority": 90,
+    "CreatedAt": "2026-11-09T18:00:00Z",
+    "UpdatedAt": null
+  },
+  {
+    "Id": "guccidonut_twitch",
+    "Title": "guccidonut Live on Twitch",
+    "Category": "STREAM",
+    "BadgeColor": "#a855f7",
+    "Date": "LIVE NOW",
+    "Description": "Watch competitive HoN matches, community viewer lobbies, and custom map nights live on Twitch!",
+    "ImageUrl": "/ui/fe2/mainmenu/bg3_new.tga",
+    "ActionType": "video",
+    "ActionTarget": "https://twitch.tv/theguccidonut/",
+    "VideoUrl": "https://twitch.tv/theguccidonut/",
+    "IsActive": true,
+    "Priority": 80,
+    "CreatedAt": "2026-08-26T17:36:35.0977474Z",
+    "UpdatedAt": null
+  }
+]

@@ -1,0 +1,29 @@
+{
+    "cmake.sourceDirectory": "${workspaceFolder}/native/vulkan-layer",
+    "cmake.configureOnOpen": true,
+    "cmake.autoSelectActiveFolder": false,
+    "dotrush.roslyn.projectOrSolutionFiles": [
+        "ProjectKongor.slnx"
+    ],
+    "dotnet.defaultSolution": "ProjectKongor.slnx",
+    "files.watcherExclude": {
+        "**/games/client/game/**": true,
+        "**/games/client/ClientPackageFiles/**": true,
+        "**/games/server/**": true,
+        "**/userdata*/**": true,
+        "**/src/tools/ghidra/projects/**": true,
+        "**/artifacts/**": true,
+        "**/captures/**": true,
+        "**/logs/**": true
+    },
+    "search.exclude": {
+        "**/games/client/game/**": true,
+        "**/games/client/ClientPackageFiles/**": true,
+        "**/games/server/**": true,
+        "**/userdata*/**": true,
+        "**/src/tools/ghidra/projects/**": true,
+        "**/artifacts/**": true,
+        "**/captures/**": true,
+        "**/logs/**": true
+    }
+}

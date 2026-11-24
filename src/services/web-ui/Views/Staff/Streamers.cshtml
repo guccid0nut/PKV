@@ -1,0 +1,581 @@
+@model ASPIRE.Common.DTOs.StaffStreamersViewModel
+@{
+    ViewData["Title"] = "Staff Command Center - Streamer Administration";
+
+    string GetStatusBadgeClass(string status)
+    {
+        return status.ToUpperInvariant() switch
+        {
+            "PENDING" => "bg-amber-500/15 text-amber-300 border-amber-500/30",
+            "APPROVED" => "bg-[#9146FF]/20 text-[#C499FF] border-[#9146FF]/40",
+            "REJECTED" => "bg-rose-500/15 text-rose-300 border-rose-500/30",
+            "REVOKED" => "bg-slate-500/15 text-slate-400 border-slate-500/30",
+            _ => "bg-purple-500/15 text-purple-300 border-purple-500/30"
+        };
+    }
+
+    string TimeAgo(DateTimeOffset dateTime)
+    {
+        var span = TimeProvider.System.GetUtcNow() - dateTime;
+        return span.TotalDays switch
+        {
+            > 30 => $"{(int)(span.TotalDays / 30)}mo ago",
+            >= 1 => $"{(int)span.TotalDays}d ago",
+            _ when span.TotalHours >= 1 => $"{(int)span.TotalHours}h ago",
+            _ when span.TotalMinutes >= 1 => $"{(int)span.TotalMinutes}m ago",
+            _ => "just now"
+        };
+    }
+}
+
+<div class="w-full max-w-[1700px] mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6 animate-fadeIn">
+    <!-- Top Header Banner -->
+    <div
+        class="relative overflow-hidden rounded-2xl p-5 sm:p-6 bg-gradient-to-r from-[#9146FF]/30 via-slate-900/80 to-slate-950/90 border border-[#9146FF]/30 shadow-xl backdrop-blur-xl">
+        <div
+            class="absolute -right-12 -top-12 w-64 h-64 bg-[#9146FF]/15 rounded-full blur-3xl pointer-events-none"></div>
+        <div
+            class="absolute -left-12 -bottom-12 w-64 h-64 bg-purple-600/10 rounded-full blur-3xl pointer-events-none"></div>
+
+        <div class="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div class="space-y-1.5">
+                <div
+                    class="inline-flex items-center gap-2 px-3 py-0.5 rounded-full bg-[#9146FF]/20 border border-[#9146FF]/40 text-[#C499FF] text-xs font-bold tracking-wider uppercase">
+                    <i class="fab fa-twitch text-[#9146FF]"></i>
+                    <span>Streamer Verification &amp; Broadcast Management</span>
+                </div>
+                <h1 class="text-2xl sm:text-3xl font-black text-white tracking-tight">
+                    VERIFIED STREAMER <span
+                        class="bg-gradient-to-r from-[#C499FF] via-pink-400 to-amber-400 bg-clip-text text-transparent">APPROVALS</span>
+                </h1>
+                <p class="text-xs sm:text-sm text-slate-400 max-w-2xl">
+                    Review and verify community content creators. Approving an application assigns the <code
+                        class="text-[#C499FF] font-mono">Streamer (101)</code> account role, grants verified profile
+                    badges, enables public Twitch linking, unlocks the <code class="text-purple-300 font-mono">#STREAMERS</code>
+                    chat channel, and activates live client homescreen broadcasting.
+                </p>
+            </div>
+
+            <!-- Action / Nav Switcher -->
+            <div class="flex flex-wrap items-center gap-2.5">
+                <a href="@Url.Action("Hosts", "Staff")"
+                   class="px-3.5 py-2 rounded-xl bg-slate-800/80 hover:bg-slate-700/80 border border-slate-700 text-slate-300 text-xs font-bold transition-all flex items-center gap-1.5">
+                    <span>🖥️</span> Host Nodes
+                </a>
+                <a href="@Url.Action("Reports", "Staff")"
+                   class="px-3.5 py-2 rounded-xl bg-slate-800/80 hover:bg-slate-700/80 border border-slate-700 text-slate-300 text-xs font-bold transition-all flex items-center gap-1.5">
+                    <span>🛡️</span> Reports
+                </a>
+                <a href="@Url.Action("Inventory", "Staff")"
+                   class="px-3.5 py-2 rounded-xl bg-slate-800/80 hover:bg-slate-700/80 border border-slate-700 text-slate-300 text-xs font-bold transition-all flex items-center gap-1.5">
+                    <span>🎒</span> Inventory
+                </a>
+                <a href="@Url.Action("Store", "Staff")"
+                   class="px-3.5 py-2 rounded-xl bg-slate-800/80 hover:bg-slate-700/80 border border-slate-700 text-slate-300 text-xs font-bold transition-all flex items-center gap-1.5">
+                    <span>🏪</span> Store Prices
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stat KPI Cards -->
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+        <div class="glass-card p-4 rounded-xl border border-amber-500/30 bg-amber-500/5">
+            <div class="flex items-center justify-between text-amber-400 mb-1">
+                <span class="text-xs font-bold uppercase tracking-wider">Pending Review</span>
+                <span class="text-base">⏳</span>
+            </div>
+            <div class="text-2xl sm:text-3xl font-black text-white font-mono">@Model.PendingApplications.Count</div>
+            <div class="text-[11px] text-slate-400 mt-1">Awaiting staff decision</div>
+        </div>
+
+        <div class="glass-card p-4 rounded-xl border border-[#9146FF]/30 bg-[#9146FF]/5">
+            <div class="flex items-center justify-between text-[#C499FF] mb-1">
+                <span class="text-xs font-bold uppercase tracking-wider">Verified Streamers</span>
+                <i class="fab fa-twitch text-[#9146FF]"></i>
+            </div>
+            <div class="text-2xl sm:text-3xl font-black text-white font-mono">@Model.ActiveStreamerCount</div>
+            <div class="text-[11px] text-slate-400 mt-1">Active verified creators</div>
+        </div>
+
+        <div class="glass-card p-4 rounded-xl border border-rose-500/30 bg-rose-500/5">
+            <div class="flex items-center justify-between text-rose-400 mb-1">
+                <span class="text-xs font-bold uppercase tracking-wider">Rejected</span>
+                <span class="text-base">❌</span>
+            </div>
+            <div class="text-2xl sm:text-3xl font-black text-white font-mono">@Model.RejectedApplications.Count</div>
+            <div class="text-[11px] text-slate-400 mt-1">Declined applications</div>
+        </div>
+
+        <div class="glass-card p-4 rounded-xl border border-slate-700 bg-slate-900/50">
+            <div class="flex items-center justify-between text-slate-400 mb-1">
+                <span class="text-xs font-bold uppercase tracking-wider">Total Applications</span>
+                <span class="text-base">📋</span>
+            </div>
+            <div class="text-2xl sm:text-3xl font-black text-white font-mono">@Model.TotalApplications</div>
+            <div class="text-[11px] text-slate-400 mt-1">Lifetime creator submissions</div>
+        </div>
+    </div>
+
+    <!-- Search & Filter Bar -->
+    <div
+        class="glass-card p-4 rounded-xl border border-slate-800 flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4">
+        <div class="flex flex-wrap items-center gap-2">
+            <button type="button" onclick="switchTab('pending')" id="tab-btn-pending"
+                    class="tab-btn px-4 py-2 rounded-xl text-xs font-bold transition-all border bg-amber-500 text-slate-950 border-amber-300 shadow-md">
+                Pending (@Model.PendingApplications.Count)
+            </button>
+            <button type="button" onclick="switchTab('approved')" id="tab-btn-approved"
+                    class="tab-btn px-4 py-2 rounded-xl text-xs font-bold transition-all border bg-slate-900 text-slate-400 border-slate-800 hover:bg-slate-800 hover:text-white">
+                Verified Streamers (@Model.ApprovedStreamers.Count)
+            </button>
+            <button type="button" onclick="switchTab('rejected')" id="tab-btn-rejected"
+                    class="tab-btn px-4 py-2 rounded-xl text-xs font-bold transition-all border bg-slate-900 text-slate-400 border-slate-800 hover:bg-slate-800 hover:text-white">
+                Rejected (@Model.RejectedApplications.Count)
+            </button>
+            <button type="button" onclick="switchTab('revoked')" id="tab-btn-revoked"
+                    class="tab-btn px-4 py-2 rounded-xl text-xs font-bold transition-all border bg-slate-900 text-slate-400 border-slate-800 hover:bg-slate-800 hover:text-white">
+                Revoked (@Model.RevokedStreamers.Count)
+            </button>
+        </div>
+
+        <form method="get" action="@Url.Action("Streamers", "Staff")" class="flex items-center gap-2 w-full md:w-80">
+            <div class="relative flex-1">
+                <input type="text" name="search" placeholder="Search by IGN, Twitch, or notes..."
+                       class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white placeholder-slate-500 focus:border-[#9146FF] outline-none"/>
+            </div>
+            <button type="submit"
+                    class="px-3.5 py-2 rounded-xl bg-[#9146FF] hover:bg-[#7C2DF0] text-white text-xs font-bold transition-all">
+                🔍
+            </button>
+        </form>
+    </div>
+
+    <!-- TAB CONTENT: PENDING APPLICATIONS -->
+    <div id="tab-pending" class="tab-content space-y-4">
+        @if (Model.PendingApplications.Count == 0)
+        {
+            <div class="glass-card p-12 text-center rounded-2xl border border-slate-800 space-y-3">
+                <div class="text-4xl">✨</div>
+                <div class="text-lg font-bold text-white">No Pending Streamer Applications</div>
+                <div class="text-xs text-slate-400 max-w-md mx-auto">All streamer applications have been reviewed.
+                    Outstanding creator requests will appear here as soon as users apply.
+                </div>
+            </div>
+        }
+        else
+        {
+            <div class="grid grid-cols-1 gap-4">
+                @foreach (var app in Model.PendingApplications)
+                {
+                    <div
+                        class="glass-card p-5 rounded-2xl border border-amber-500/30 bg-slate-900/80 shadow-lg space-y-4">
+                        <div
+                            class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-800/80 pb-3">
+                            <div class="flex items-center gap-3">
+                                <div
+                                    class="w-10 h-10 rounded-full bg-[#9146FF]/20 border border-[#9146FF]/40 flex items-center justify-center text-lg font-black text-[#C499FF] font-mono">
+                                    @app.MainAccountName[..1].ToUpperInvariant()
+                                </div>
+                                <div>
+                                    <div class="flex items-center gap-2">
+                                        <a href="@Url.Action("Stats", "Home", new { accountName = app.MainAccountName })"
+                                           target="_blank"
+                                           class="text-base font-black text-white hover:text-[#C499FF] transition-colors">
+                                            @app.MainAccountName
+                                        </a>
+                                        <span
+                                            class="px-2 py-0.5 rounded text-[10px] font-bold border @GetStatusBadgeClass(app.Status)">
+                                            @app.Status
+                                        </span>
+                                    </div>
+                                    <div class="text-xs text-slate-400">
+                                        Applied @TimeAgo(app.TimestampApplied) • Twitch:
+                                        <a href="https://twitch.tv/@app.TwitchUsername" target="_blank"
+                                           rel="noopener noreferrer" class="font-bold text-[#A970FF] underline">
+                                            @@@app.TwitchUsername
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="flex items-center gap-2 self-end sm:self-auto">
+                                <button type="button"
+                                        onclick="openApproveModal(@app.Id, '@app.MainAccountName', '@app.TwitchUsername')"
+                                        class="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-md shadow-emerald-950 flex items-center gap-1.5 transition-all">
+                                    <span>✓</span> Approve Streamer
+                                </button>
+                                <button type="button" onclick="openRejectModal(@app.Id, '@app.MainAccountName')"
+                                        class="px-3.5 py-2 rounded-xl bg-rose-600/20 hover:bg-rose-600/30 border border-rose-500/40 text-rose-300 font-bold text-xs transition-all">
+                                    ✕ Reject
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Details Grid -->
+                        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
+                            <div class="p-3 rounded-xl bg-slate-950/60 border border-slate-800/80">
+                                <span
+                                    class="text-slate-500 block text-[10px] uppercase font-semibold">Twitch Channel</span>
+                                <a href="@(app.TwitchChannelUrl ?? ("https://twitch.tv/" + app.TwitchUsername))"
+                                   target="_blank" rel="noopener noreferrer"
+                                   class="font-bold text-[#A970FF] text-sm truncate block">
+                                    @(app.TwitchChannelUrl ?? ("twitch.tv/" + app.TwitchUsername))
+                                </a>
+                            </div>
+                            <div class="p-3 rounded-xl bg-slate-950/60 border border-slate-800/80">
+                                <span class="text-slate-500 block text-[10px] uppercase font-semibold">User ID</span>
+                                <span class="font-black text-white text-sm font-mono">#@app.UserId</span>
+                            </div>
+                            <div class="p-3 rounded-xl bg-slate-950/60 border border-slate-800/80">
+                                <span
+                                    class="text-slate-500 block text-[10px] uppercase font-semibold">Matches Played</span>
+                                <span
+                                    class="font-black text-purple-300 text-sm font-mono">@app.TotalMatchesPlayed Matches</span>
+                            </div>
+                            <div class="p-3 rounded-xl bg-slate-950/60 border border-slate-800/80">
+                                <span class="text-slate-500 block text-[10px] uppercase font-semibold">Disciplinary Standing</span>
+                                @if (app.DisciplinaryReportCount == 0)
+                                {
+                                    <span class="font-bold text-emerald-400 text-sm">Clean (0 Reports)</span>
+                                }
+                                else
+                                {
+                                    <span
+                                        class="font-bold text-rose-400 text-sm">@app.DisciplinaryReportCount Reports</span>
+                                }
+                            </div>
+                        </div>
+
+                        @if (!string.IsNullOrWhiteSpace(app.ApplicationNotes))
+                        {
+                            <div
+                                class="p-3 rounded-xl bg-slate-950/40 border border-slate-800/60 text-xs text-slate-300">
+                                <span class="text-slate-500 font-semibold block text-[10px] uppercase mb-0.5">Stream Schedule / Creator Notes:</span>
+                                @app.ApplicationNotes
+                            </div>
+                        }
+                    </div>
+                }
+            </div>
+        }
+    </div>
+
+    <!-- TAB CONTENT: APPROVED STREAMERS -->
+    <div id="tab-approved" class="tab-content hidden space-y-4">
+        @if (Model.ApprovedStreamers.Count == 0)
+        {
+            <div class="glass-card p-12 text-center rounded-2xl border border-slate-800 space-y-3">
+                <div class="text-4xl">📺</div>
+                <div class="text-lg font-bold text-white">No Active Verified Streamers</div>
+                <div class="text-xs text-slate-400 max-w-md mx-auto">Approved content creators will be listed here with
+                    broadcast options and role management.
+                </div>
+            </div>
+        }
+        else
+        {
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                @foreach (var streamer in Model.ApprovedStreamers)
+                {
+                    <div
+                        class="glass-card p-5 rounded-2xl border border-[#9146FF]/30 bg-slate-900/80 shadow-lg space-y-4">
+                        <div class="flex items-center justify-between border-b border-slate-800/80 pb-3">
+                            <div class="flex items-center gap-3">
+                                <div
+                                    class="w-10 h-10 rounded-full bg-[#9146FF]/20 border border-[#9146FF]/40 flex items-center justify-center text-[#C499FF] font-black text-lg">
+                                    <i class="fab fa-twitch"></i>
+                                </div>
+                                <div>
+                                    <div class="flex items-center gap-2">
+                                        <a href="@Url.Action("Stats", "Home", new { accountName = streamer.MainAccountName })"
+                                           target="_blank"
+                                           class="text-base font-black text-white hover:text-[#C499FF] transition-colors">
+                                            @streamer.MainAccountName
+                                        </a>
+                                        <span
+                                            class="px-2 py-0.5 rounded text-[10px] font-bold border @GetStatusBadgeClass(streamer.Status)">
+                                            @streamer.Status
+                                        </span>
+                                    </div>
+                                    <div class="text-xs text-slate-400">
+                                        Twitch: <a href="https://twitch.tv/@streamer.TwitchUsername" target="_blank"
+                                                   rel="noopener noreferrer"
+                                                   class="font-bold text-[#A970FF] underline">@@@streamer.TwitchUsername</a>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <span class="text-xs text-slate-500">Approved by @streamer.ReviewedByStaffName</span>
+                        </div>
+
+                        <div class="grid grid-cols-3 gap-2 text-xs">
+                            <div class="p-2.5 rounded-xl bg-slate-950/60 border border-slate-800 text-center">
+                                <span class="text-slate-500 block text-[10px] uppercase">Matches</span>
+                                <span class="font-black text-white">@streamer.TotalMatchesPlayed</span>
+                            </div>
+                            <div class="p-2.5 rounded-xl bg-slate-950/60 border border-slate-800 text-center">
+                                <span class="text-slate-500 block text-[10px] uppercase">Reports</span>
+                                <span
+                                    class="font-black @(streamer.DisciplinaryReportCount == 0 ? "text-emerald-400" : "text-rose-400")">@streamer.DisciplinaryReportCount</span>
+                            </div>
+                            <div class="p-2.5 rounded-xl bg-slate-950/60 border border-slate-800 text-center">
+                                <span class="text-slate-500 block text-[10px] uppercase">Role</span>
+                                <span class="font-black text-[#C499FF]">STREAMER</span>
+                            </div>
+                        </div>
+
+                        @if (!string.IsNullOrWhiteSpace(streamer.ApplicationNotes))
+                        {
+                            <div
+                                class="p-2.5 rounded-xl bg-slate-950/40 border border-slate-800/60 text-xs text-slate-300">
+                                <span
+                                    class="text-slate-500 font-semibold block text-[10px] uppercase mb-0.5">Notes:</span>
+                                @streamer.ApplicationNotes
+                            </div>
+                        }
+
+                        <div class="flex items-center justify-between gap-2 pt-2 border-t border-slate-800/80">
+                            <a href="https://twitch.tv/@streamer.TwitchUsername" target="_blank"
+                               rel="noopener noreferrer"
+                               class="px-3 py-1.5 rounded-xl bg-[#9146FF]/20 hover:bg-[#9146FF]/30 border border-[#9146FF]/40 text-[#C499FF] font-bold text-xs transition-all flex items-center gap-1.5">
+                                <i class="fab fa-twitch"></i> Open Twitch Channel
+                            </a>
+                            <button type="button"
+                                    onclick="openRevokeModal(@streamer.Id, '@streamer.MainAccountName', '@streamer.TwitchUsername')"
+                                    class="px-3 py-1.5 rounded-xl bg-rose-600/20 hover:bg-rose-600/30 border border-rose-500/40 text-rose-300 font-bold text-xs transition-all">
+                                🚫 Revoke Streamer
+                            </button>
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+    </div>
+
+    <!-- TAB CONTENT: REJECTED APPLICATIONS -->
+    <div id="tab-rejected" class="tab-content hidden space-y-4">
+        @if (Model.RejectedApplications.Count == 0)
+        {
+            <div class="glass-card p-12 text-center rounded-2xl border border-slate-800">
+                <div class="text-xs text-slate-400">No rejected applications.</div>
+            </div>
+        }
+        else
+        {
+            <div class="divide-y divide-slate-800 rounded-2xl border border-slate-800 overflow-hidden bg-slate-900/60">
+                @foreach (var rej in Model.RejectedApplications)
+                {
+                    <div class="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+                        <div>
+                            <div class="font-bold text-white">@rej.MainAccountName <span
+                                    class="text-slate-500 font-normal">(Twitch: @@@rej.TwitchUsername)</span></div>
+                            <div class="text-slate-400">Reviewed by @rej.ReviewedByStaffName •
+                                Notes: @(rej.StaffNotes ?? "None provided")</div>
+                        </div>
+                        <button type="button"
+                                onclick="openApproveModal(@rej.Id, '@rej.MainAccountName', '@rej.TwitchUsername')"
+                                class="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-xs">
+                            Reconsider &amp; Approve
+                        </button>
+                    </div>
+                }
+            </div>
+        }
+    </div>
+
+    <!-- TAB CONTENT: REVOKED STREAMERS -->
+    <div id="tab-revoked" class="tab-content hidden space-y-4">
+        @if (Model.RevokedStreamers.Count == 0)
+        {
+            <div class="glass-card p-12 text-center rounded-2xl border border-slate-800">
+                <div class="text-xs text-slate-400">No revoked streamer accounts.</div>
+            </div>
+        }
+        else
+        {
+            <div class="divide-y divide-slate-800 rounded-2xl border border-slate-800 overflow-hidden bg-slate-900/60">
+                @foreach (var rev in Model.RevokedStreamers)
+                {
+                    <div class="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+                        <div>
+                            <div class="font-bold text-slate-300">@rev.MainAccountName <span
+                                    class="text-[#C499FF] font-mono">(@@@rev.TwitchUsername)</span></div>
+                            <div class="text-slate-500">Revoked by @rev.ReviewedByStaffName •
+                                Reason: @(rev.StaffNotes ?? "No notes")</div>
+                        </div>
+                        <button type="button"
+                                onclick="openApproveModal(@rev.Id, '@rev.MainAccountName', '@rev.TwitchUsername')"
+                                class="px-3 py-1.5 rounded-xl bg-emerald-600/20 hover:bg-emerald-600/30 border border-emerald-500/40 text-emerald-300 font-bold text-xs">
+                            Re-Authorize Streamer
+                        </button>
+                    </div>
+                }
+            </div>
+        }
+    </div>
+</div>
+
+<!-- APPROVE MODAL -->
+<div id="approveModal"
+     class="hidden fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+    <div
+        class="glass-card max-w-md w-full p-6 rounded-2xl border border-emerald-500/40 bg-slate-900 shadow-2xl space-y-4 animate-scaleUp">
+        <div class="flex items-center justify-between">
+            <h3 class="text-lg font-black text-white">Approve Streamer Status</h3>
+            <button type="button" onclick="closeApproveModal()" class="text-slate-400 hover:text-white text-lg">✕
+            </button>
+        </div>
+        <form id="approveForm" method="post">
+            @Html.AntiForgeryToken()
+            <p class="text-xs text-slate-300 leading-relaxed mb-3">
+                Approving application for <strong id="approvePlayerName" class="text-emerald-300"></strong> (Twitch:
+                <span id="approveTwitchHandle" class="font-bold text-[#A970FF]"></span>) will assign the <code
+                    class="text-purple-300">Streamer (101)</code> role, verified badge, and public channel links.
+            </p>
+            <div class="space-y-3">
+                <div>
+                    <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Staff Notes
+                        (Optional)</label>
+                    <input type="text" name="notes" placeholder="e.g. Verified partner / community caster"
+                           class="w-full px-3.5 py-2 rounded-xl bg-slate-950 border border-slate-700 text-white text-xs focus:outline-none focus:border-emerald-500"/>
+                </div>
+            </div>
+            <div class="flex items-center justify-end gap-2 mt-5">
+                <button type="button" onclick="closeApproveModal()"
+                        class="px-4 py-2 rounded-xl bg-slate-800 text-slate-300 font-bold text-xs">Cancel
+                </button>
+                <button type="submit"
+                        class="px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs shadow-lg shadow-emerald-950">
+                    Confirm Approval
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- REJECT MODAL -->
+<div id="rejectModal"
+     class="hidden fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+    <div
+        class="glass-card max-w-md w-full p-6 rounded-2xl border border-rose-500/40 bg-slate-900 shadow-2xl space-y-4 animate-scaleUp">
+        <div class="flex items-center justify-between">
+            <h3 class="text-lg font-black text-white">Reject Streamer Application</h3>
+            <button type="button" onclick="closeRejectModal()" class="text-slate-400 hover:text-white text-lg">✕
+            </button>
+        </div>
+        <form id="rejectForm" method="post">
+            @Html.AntiForgeryToken()
+            <p class="text-xs text-slate-300 leading-relaxed mb-3">
+                Reject streamer application for <strong id="rejectPlayerName" class="text-rose-300"></strong>.
+            </p>
+            <div class="space-y-3">
+                <div>
+                    <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Rejection Reason</label>
+                    <input type="text" name="notes"
+                           placeholder="e.g. Channel inactive / does not meet streaming criteria"
+                           class="w-full px-3.5 py-2 rounded-xl bg-slate-950 border border-slate-700 text-white text-xs focus:outline-none focus:border-rose-500"/>
+                </div>
+            </div>
+            <div class="flex items-center justify-end gap-2 mt-5">
+                <button type="button" onclick="closeRejectModal()"
+                        class="px-4 py-2 rounded-xl bg-slate-800 text-slate-300 font-bold text-xs">Cancel
+                </button>
+                <button type="submit"
+                        class="px-5 py-2 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-black text-xs">
+                    Confirm Rejection
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- REVOKE MODAL -->
+<div id="revokeModal"
+     class="hidden fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+    <div
+        class="glass-card max-w-md w-full p-6 rounded-2xl border border-rose-500/40 bg-slate-900 shadow-2xl space-y-4 animate-scaleUp">
+        <div class="flex items-center justify-between">
+            <h3 class="text-lg font-black text-white">Revoke Streamer Status</h3>
+            <button type="button" onclick="closeRevokeModal()" class="text-slate-400 hover:text-white text-lg">✕
+            </button>
+        </div>
+        <form id="revokeForm" method="post">
+            @Html.AntiForgeryToken()
+            <p class="text-xs text-slate-300 leading-relaxed mb-3">
+                Revoke streamer status from <strong id="revokePlayerName" class="text-rose-300"></strong>. This will
+                return their account to Normal status.
+            </p>
+            <div class="space-y-3">
+                <div>
+                    <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Revocation Reason</label>
+                    <input type="text" name="notes" placeholder="e.g. Inactive broadcast status / policy violation"
+                           class="w-full px-3.5 py-2 rounded-xl bg-slate-950 border border-slate-700 text-white text-xs focus:outline-none focus:border-rose-500"/>
+                </div>
+            </div>
+            <div class="flex items-center justify-end gap-2 mt-5">
+                <button type="button" onclick="closeRevokeModal()"
+                        class="px-4 py-2 rounded-xl bg-slate-800 text-slate-300 font-bold text-xs">Cancel
+                </button>
+                <button type="submit"
+                        class="px-5 py-2 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-black text-xs">
+                    Confirm Revocation
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    function switchTab(tabId) {
+        document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.className = 'tab-btn px-4 py-2 rounded-xl text-xs font-bold transition-all border bg-slate-900 text-slate-400 border-slate-800 hover:bg-slate-800 hover:text-white';
+        });
+
+        const activeContent = document.getElementById('tab-' + tabId);
+        if (activeContent) activeContent.classList.remove('hidden');
+
+        const activeBtn = document.getElementById('tab-btn-' + tabId);
+        if (activeBtn) {
+            if (tabId === 'pending') {
+                activeBtn.className = 'tab-btn px-4 py-2 rounded-xl text-xs font-bold transition-all border bg-amber-500 text-slate-950 border-amber-300 shadow-md';
+            } else if (tabId === 'approved') {
+                activeBtn.className = 'tab-btn px-4 py-2 rounded-xl text-xs font-bold transition-all border bg-[#9146FF] text-white border-[#C499FF] shadow-md';
+            } else {
+                activeBtn.className = 'tab-btn px-4 py-2 rounded-xl text-xs font-bold transition-all border bg-slate-700 text-white border-slate-600 shadow-md';
+            }
+        }
+    }
+
+    function openApproveModal(id, ign, twitch) {
+        document.getElementById('approvePlayerName').innerText = ign;
+        document.getElementById('approveTwitchHandle').innerText = '@@' + twitch;
+        document.getElementById('approveForm').action = `/staff/streamers/${id}/approve`;
+        document.getElementById('approveModal').classList.remove('hidden');
+    }
+
+    function closeApproveModal() {
+        document.getElementById('approveModal').classList.add('hidden');
+    }
+
+    function openRejectModal(id, ign) {
+        document.getElementById('rejectPlayerName').innerText = ign;
+        document.getElementById('rejectForm').action = `/staff/streamers/${id}/reject`;
+        document.getElementById('rejectModal').classList.remove('hidden');
+    }
+
+    function closeRejectModal() {
+        document.getElementById('rejectModal').classList.add('hidden');
+    }
+
+    function openRevokeModal(id, ign, twitch) {
+        document.getElementById('revokePlayerName').innerText = `${ign} (@@${twitch})`;
+        document.getElementById('revokeForm').action = `/staff/streamers/${id}/revoke`;
+        document.getElementById('revokeModal').classList.remove('hidden');
+    }
+
+    function closeRevokeModal() {
+        document.getElementById('revokeModal').classList.add('hidden');
+    }
+</script>

@@ -1,0 +1,272 @@
+- name: Overview
+  href: index.md
+- name: What's New in 5.0
+  href: releases/whats-new-in-v5.md
+- name: 5.0 & 5.0.1 Update Notes
+  href: releases/v5-update-notes.md
+- name: Developer Guide & Workflows
+  href: guides/developer-guide.md
+- name: P2P & LAN Hosting Guide
+  href: guides/p2p-lan-hosting-guide.md
+- name: TAO MCP Server (Together As One)
+  items:
+    - name: TAO MCP Overview
+      href: tao-mcp/overview.md
+    - name: TAO Docs Hub
+      href: tao-mcp/README.md
+    - name: TAO Architecture
+      href: tao-mcp/architecture.md
+    - name: Agent Integration Guide
+      href: tao-mcp/instructions.md
+    - name: Tools Catalog
+      href: tao-mcp/tools-catalog.md
+    - name: Autonomous Self-Healing
+      href: tao-mcp/self-healing.md
+- name: Getting Started
+  items:
+    - name: Optional Agent & Asset Tooling
+      href: getting-started/optional-agent-tools.md
+- name: How-To Guides
+  items:
+    - name: Vibe Coding & AI Agent Tips
+      href: how-to/vibe-coding-and-agent-tips.md
+    - name: Surgical Client Override & VFS Workflow
+      href: how-to/client-override-vfs-workflow.md
+    - name: Entity & UI Debugging Telemetry
+      href: how-to/entity-and-ui-debugging-telemetry.md
+    - name: Testing, Quality Gates & Slow-Test Gating
+      href: how-to/testing-and-quality-gates.md
+    - name: Verify Reconstruction Obligations
+      href: operations/how-to-verify-reconstruction-obligations.md
+- name: K2 Engine & Modding Reference
+  items:
+    - name: K2 .entity XML Schema & Combat Actions
+      href: reference/k2-entity-xml-schema.md
+    - name: K2 Lua Native Widget API
+      href: reference/k2-lua-api.md
+    - name: Custom & Seasonal Maps Catalog
+      href: reference/custom-maps-catalog.md
+    - name: Archived HoN Modification Forum Index
+      href: reference/archived-hon-forum-index.md
+    - name: Field-Note Knowledge Base
+      href: reference/field-notes/README.md
+- name: Architecture
+  items:
+    - name: 5-Tier Ecosystem Topology
+      href: architecture/ecosystem.md
+    - name: Autonomous Self-Healing Hexad
+      href: architecture/self-healing.md
+    - name: Vulkan & DXVK 3.0 Architecture
+      href: explanation/vulkan-and-dxvk3-architecture.md
+    - name: Replay Renderer Specification
+      href: specs/replay-renderer-spec.md
+    - name: Architecture Decision Records (ADRs)
+      items:
+        - name: ADR Overview & Index
+          href: adr/README.md
+        - name: ADR-0001 SRP Auth Permanence
+          href: adr/0001-srp-auth-permanence.md
+        - name: ADR-0002 Docker.DotNet Boundaries
+          href: adr/0002-docker-dotnet-boundaries.md
+        - name: ADR-0003 MediatR Contracts Placement
+          href: adr/0003-mediatr-contracts-placement.md
+        - name: ADR-0004 Tailwind CSS v4 Standalone
+          href: adr/0004-tailwind-standalone-cli.md
+        - name: ADR-0005 Aspire for Dev Orchestration
+          href: adr/0005-aspire-for-orchestration.md
+        - name: ADR-0006 Agones for Game Servers
+          href: adr/0006-agones-for-game-servers.md
+        - name: ADR-0007 MCP Rate Limiting Strategy
+          href: adr/0007-mcp-rate-limiting-strategy.md
+        - name: ADR-0008 Argon2id Shadow Upgrade
+          href: adr/0008-argon2id-shadow-upgrade.md
+        - name: ADR-0009 Native Build Unification
+          href: adr/0009-native-build-unification.md
+        - name: ADR-0010 Goose Language Evaluation
+          href: adr/0010-goose-systems-language-evaluation.md
+- name: Modernization Roadmaps
+  items:
+    - name: Roadmaps Hub Overview
+      href: roadmaps/README.md
+    - name: Master Recommendation Roadmap
+      href: roadmaps/junies_recommendation_roadmap.md
+    - name: Phased Implementation Plans
+      items:
+        - name: Phase 0 - Hygiene & Foundation Plan
+          href: roadmaps/phase-0-hygiene-foundation-plan.md
+        - name: Phase 1 - In-Game Client UI Plaintext Plan
+          href: roadmaps/phase-1-client-ui-plaintext-plan.md
+        - name: Phase 2 - Distributed Cloud & Server Mesh Plan
+          href: roadmaps/phase-2-distributed-cloud-mesh-plan.md
+        - name: Phase 3 - Competitive Netcode & Sub-Tick Plan
+          href: roadmaps/phase-3-kernel-netcode-subtick-plan.md
+        - name: Phase 4 - Next-Gen Esports & AI Studio Plan
+          href: roadmaps/phase-4-next-gen-esports-ai-plan.md
+        - name: Phase 5 - Store Decomposition Plan
+          href: roadmaps/phase-5-store-decomposition-plan.md
+        - name: Phase 6 - Client Modernization Plan
+          href: roadmaps/phase-6-client-modernization-plan.md
+        - name: Chrono-Pong Riftbreaker Future V2 Plan
+          href: roadmaps/chrono-pong-riftbreaker-future-plan.md
+    - name: Engine Modernization & Hardening
+      href: roadmaps/engine-modernization-roadmap.md
+    - name: Infrastructure & Server Horizons
+      href: roadmaps/infra-modernization-roadmap.md
+    - name: Data Architecture & Analytics
+      href: roadmaps/data-optimization-roadmap.md
+    - name: MCP Autonomous Ecosystem
+      href: roadmaps/mcp-ecosystem-roadmap.md
+    - name: App Architecture Scorecard
+      href: roadmaps/app-architecture-review-roadmap.md
+    - name: Client Control & Headless Horizons
+      href: roadmaps/client-control-roadmap.md
+    - name: BOB (Bot Orchestration & Behavior)
+      href: roadmaps/bob-roadmap.md
+    - name: Native C++ Hardening
+      href: roadmaps/native-cpp-roadmap.md
+    - name: In-Game Client Organization
+      href: roadmaps/in-game-client-organization-updates-roadmap.md
+    - name: TAO MCP Client Dev Velocity
+      href: roadmaps/tao-mcp-client-dev-velocity-roadmap.md
+    - name: Microsoft Garnet HybridCache
+      href: roadmaps/garnet-caching-roadmap.md
+    - name: 10x Developer Velocity
+      href: roadmaps/roadmap-10x.md
+    - name: Upgrade Technology Baseline
+      href: roadmaps/upgrade-tech-roadmap.md
+- name: 3D Art & Asset Pipelines
+  items:
+    - name: Art & Asset Hub Overview
+      href: art-and-assets/README.md
+    - name: Hero Forge Complete Guide
+      href: art-and-assets/hero-forge.md
+    - name: Hero Animation Standards
+      href: art-and-assets/hero-animation-standards.md
+    - name: Announcer & Voice Studio
+      href: art-and-assets/announcer-forge.md
+    - name: 3D Model Import & Rigging
+      href: art-and-assets/import-models.md
+- name: Security & Reliability Audits
+  items:
+    - name: Security Audits Overview
+      href: audits/README.md
+    - name: Native Security Audit Report
+      href: audits/native-security-audit-report.md
+- name: CLI Reference
+  href: guides/cli-reference.md
+- name: About & Philosophy
+  items:
+    - name: Preservation Charter
+      href: charter.md
+    - name: Credits & Gratitude
+      href: credits-and-gratitude.md
+    - name: AI Gratitude & Educational Notes
+      href: ai-gratitude-and-methodology.md
+- name: Infrastructure & Hosting
+  items:
+    - name: Network Ports & IPC Matrix
+      href: infrastructure/network-and-ports.md
+    - name: Container Hosting Guide
+      href: infrastructure/container-hosting-guide.md
+    - name: VPS Gateway Hosting
+      href: infrastructure/vps-hosting-guide.md
+    - name: Host Estimation & Pricing Guide (2026)
+      href: infrastructure/host-estimation-pricing-guide-2026.md
+- name: Issue Backlog & Diagnostics
+  items:
+    - name: Active Living Issue Log
+      href: ISSUES.md
+    - name: Historical Issue Archive (001-149)
+      href: archive/ISSUES_ARCHIVE_001_149.md
+- name: Applications
+  items:
+    - name: compel
+      href: ../src/apps/compel/README.md
+    - name: compel-gui
+      href: ../src/apps/compel-gui/README.md
+    - name: control-panel
+      href: ../src/apps/control-panel/README.md
+    - name: replay-studio
+      href: ../src/apps/replay-studio/README.md
+    - name: willowmaker
+      href: ../src/apps/willowmaker/README.md
+- name: Microservices
+  items:
+    - name: aspire-host
+      href: ../src/services/aspire-host/README.md
+    - name: chat-server
+      href: ../src/services/chat-server/README.md
+    - name: master-server
+      href: ../src/services/master-server/README.md
+    - name: web-api
+      href: ../src/services/web-api/README.md
+    - name: web-ui
+      href: ../src/services/web-ui/README.md
+- name: Libraries
+  items:
+    - name: contracts
+      href: ../src/libs/contracts/README.md
+    - name: database-context
+      href: ../src/libs/database-context/README.md
+    - name: protocol-core
+      href: ../src/libs/protocol-core/README.md
+    - name: service-defaults
+      href: ../src/libs/service-defaults/README.md
+    - name: source-generators
+      href: ../src/libs/source-generators/README.md
+- name: Extensions
+  items:
+    - name: cdn-broker
+      href: ../src/extensions/cdn-broker/README.md
+    - name: modding
+      href: ../src/extensions/modding/README.md
+    - name: replay-renderer
+      href: ../src/extensions/replay-renderer/README.md
+    - name: spatial-audio
+      href: ../src/extensions/spatial-audio/README.md
+    - name: vulkan-interop
+      href: ../src/extensions/vulkan-interop/README.md
+- name: Developer Tools & Infrastructure
+  items:
+    - name: kongor-cli
+      href: ../src/tools/kongor-cli/README.md
+    - name: endpoint-auditor
+      href: ../src/tools/endpoint-auditor/README.md
+    - name: headless-renderer
+      href: ../src/tools/headless-renderer/README.md
+    - name: lua-verifier
+      href: ../src/tools/lua-verifier/README.md
+    - name: mod-cli
+      href: ../src/tools/mod-cli/README.md
+    - name: prebake-tool
+      href: ../src/tools/prebake-tool/README.md
+    - name: blender
+      href: ../src/tools/blender/io_scene_hon/README.md
+    - name: comfyui
+      href: ../src/tools/comfyui/README.md
+    - name: frida
+      href: ../src/tools/frida/README.md
+    - name: ghidra
+      href: tools/ghidra.md
+    - name: assetdb
+      href: ../tools/assetdb/README.md
+    - name: export
+      href: ../tools/export/README.md
+    - name: hon-model-tools
+      href: ../tools/hon-model-tools/README.md
+    - name: spectator-console
+      href: ../tools/spectator-console/README.md
+    - name: ui-playground
+      href: ../tools/ui-playground/README.md
+    - name: native
+      href: ../native/README.md
+    - name: native-proxies
+      href: ../native/proxies/README.md
+    - name: docker-stack
+      href: ../infra/docker/README.md
+    - name: k8s-agones
+      href: ../infra/k8s/README.md
+    - name: k3s-bare-metal
+      href: ../infra/k3s/README.md
+- name: API Catalog
+  href: reference/api-catalog.md

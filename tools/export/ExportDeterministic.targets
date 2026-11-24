@@ -1,0 +1,5 @@
+<Project>
+  <ItemGroup Condition="'$(PublishAot)' == 'true'">
+    <LinkerArg Include="/PDBALTPATH:%_PDB%" />
+  </ItemGroup>
+</Project>

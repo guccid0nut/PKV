@@ -1,0 +1,20 @@
+# Cleanroom Public Export .gitattributes (Zero Git LFS)
+.githooks/* text eol=lf
+*.sh text eol=lf
+*.command text eol=lf
+scripts/gate_check.ps1 text eol=lf
+scripts/test_gate_mutants.ps1 text eol=lf
+scripts/verify_netcode_oracle.ps1 text eol=lf
+scripts/test_netcode_mutants.ps1 text eol=lf
+*.lua text eol=lf
+*.package text eol=lf
+*.interface text eol=lf
+*.effect text eol=lf
+*.vsh text eol=lf
+*.psh text eol=lf
+*.honreplay binary -text
+*.png binary -text
+*.webp binary -text
+*.ico binary -text
+*.gif binary -text
+*.ttf binary -text

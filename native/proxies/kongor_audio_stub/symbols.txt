@@ -1,0 +1,90 @@
+?addDSP@Channel@FMOD@@QEAA?AW4FMOD_RESULT@@PEAVDSP@2@PEAPEAVDSPConnection@2@@Z	public: enum FMOD_RESULT __cdecl FMOD::Channel::addDSP(class FMOD::DSP * __ptr64,class FMOD::DSPConnection * __ptr64 * __ptr64) __ptr64
+?addGroup@ChannelGroup@FMOD@@QEAA?AW4FMOD_RESULT@@PEAV12@@Z	public: enum FMOD_RESULT __cdecl FMOD::ChannelGroup::addGroup(class FMOD::ChannelGroup * __ptr64) __ptr64
+?addPolygon@Geometry@FMOD@@QEAA?AW4FMOD_RESULT@@MM_NHPEBUFMOD_VECTOR@@PEAH@Z	public: enum FMOD_RESULT __cdecl FMOD::Geometry::addPolygon(float,float,bool,int,struct FMOD_VECTOR const * __ptr64,int * __ptr64) __ptr64
+?createChannelGroup@System@FMOD@@QEAA?AW4FMOD_RESULT@@PEBDPEAPEAVChannelGroup@2@@Z	public: enum FMOD_RESULT __cdecl FMOD::System::createChannelGroup(char const * __ptr64,class FMOD::ChannelGroup * __ptr64 * __ptr64) __ptr64
+?createDSPByType@System@FMOD@@QEAA?AW4FMOD_RESULT@@W4FMOD_DSP_TYPE@@PEAPEAVDSP@2@@Z	public: enum FMOD_RESULT __cdecl FMOD::System::createDSPByType(enum FMOD_DSP_TYPE,class FMOD::DSP * __ptr64 * __ptr64) __ptr64
+?createGeometry@System@FMOD@@QEAA?AW4FMOD_RESULT@@HHPEAPEAVGeometry@2@@Z	public: enum FMOD_RESULT __cdecl FMOD::System::createGeometry(int,int,class FMOD::Geometry * __ptr64 * __ptr64) __ptr64
+?createSound@System@FMOD@@QEAA?AW4FMOD_RESULT@@PEBDIPEAUFMOD_CREATESOUNDEXINFO@@PEAPEAVSound@2@@Z	public: enum FMOD_RESULT __cdecl FMOD::System::createSound(char const * __ptr64,unsigned int,struct FMOD_CREATESOUNDEXINFO * __ptr64,class FMOD::Sound * __ptr64 * __ptr64) __ptr64
+?createStream@System@FMOD@@QEAA?AW4FMOD_RESULT@@PEBDIPEAUFMOD_CREATESOUNDEXINFO@@PEAPEAVSound@2@@Z	public: enum FMOD_RESULT __cdecl FMOD::System::createStream(char const * __ptr64,unsigned int,struct FMOD_CREATESOUNDEXINFO * __ptr64,class FMOD::Sound * __ptr64 * __ptr64) __ptr64
+?get3DAttributes@Channel@FMOD@@QEAA?AW4FMOD_RESULT@@PEAUFMOD_VECTOR@@0@Z	public: enum FMOD_RESULT __cdecl FMOD::Channel::get3DAttributes(struct FMOD_VECTOR * __ptr64,struct FMOD_VECTOR * __ptr64) __ptr64
+?get3DMinMaxDistance@Channel@FMOD@@QEAA?AW4FMOD_RESULT@@PEAM0@Z	public: enum FMOD_RESULT __cdecl FMOD::Channel::get3DMinMaxDistance(float * __ptr64,float * __ptr64) __ptr64
+?getChannelsPlaying@System@FMOD@@QEAA?AW4FMOD_RESULT@@PEAH@Z	public: enum FMOD_RESULT __cdecl FMOD::System::getChannelsPlaying(int * __ptr64) __ptr64
+?getCurrentSound@Channel@FMOD@@QEAA?AW4FMOD_RESULT@@PEAPEAVSound@2@@Z	public: enum FMOD_RESULT __cdecl FMOD::Channel::getCurrentSound(class FMOD::Sound * __ptr64 * __ptr64) __ptr64
+?getDefaults@Sound@FMOD@@QEAA?AW4FMOD_RESULT@@PEAM00PEAH@Z	public: enum FMOD_RESULT __cdecl FMOD::Sound::getDefaults(float * __ptr64,float * __ptr64,float * __ptr64,int * __ptr64) __ptr64
+?getDriverCaps@System@FMOD@@QEAA?AW4FMOD_RESULT@@HPEAIPEAHPEAW4FMOD_SPEAKERMODE@@@Z	public: enum FMOD_RESULT __cdecl FMOD::System::getDriverCaps(int,unsigned int * __ptr64,int * __ptr64,enum FMOD_SPEAKERMODE * __ptr64) __ptr64
+?getDriverInfoW@System@FMOD@@QEAA?AW4FMOD_RESULT@@HPEAFHPEAUFMOD_GUID@@@Z	public: enum FMOD_RESULT __cdecl FMOD::System::getDriverInfoW(int,short * __ptr64,int,struct FMOD_GUID * __ptr64) __ptr64
+?getFormat@Sound@FMOD@@QEAA?AW4FMOD_RESULT@@PEAW4FMOD_SOUND_TYPE@@PEAW4FMOD_SOUND_FORMAT@@PEAH2@Z	public: enum FMOD_RESULT __cdecl FMOD::Sound::getFormat(enum FMOD_SOUND_TYPE * __ptr64,enum FMOD_SOUND_FORMAT * __ptr64,int * __ptr64,int * __ptr64) __ptr64
+?getFrequency@Channel@FMOD@@QEAA?AW4FMOD_RESULT@@PEAM@Z	public: enum FMOD_RESULT __cdecl FMOD::Channel::getFrequency(float * __ptr64) __ptr64
+?getLength@Sound@FMOD@@QEAA?AW4FMOD_RESULT@@PEAII@Z	public: enum FMOD_RESULT __cdecl FMOD::Sound::getLength(unsigned int * __ptr64,unsigned int) __ptr64
+?getMasterChannelGroup@System@FMOD@@QEAA?AW4FMOD_RESULT@@PEAPEAVChannelGroup@2@@Z	public: enum FMOD_RESULT __cdecl FMOD::System::getMasterChannelGroup(class FMOD::ChannelGroup * __ptr64 * __ptr64) __ptr64
+?getMasterSoundGroup@System@FMOD@@QEAA?AW4FMOD_RESULT@@PEAPEAVSoundGroup@2@@Z	public: enum FMOD_RESULT __cdecl FMOD::System::getMasterSoundGroup(class FMOD::SoundGroup * __ptr64 * __ptr64) __ptr64
+?getMemoryInfo@Sound@FMOD@@QEAA?AW4FMOD_RESULT@@IIPEAIPEAUFMOD_MEMORY_USAGE_DETAILS@@@Z	public: enum FMOD_RESULT __cdecl FMOD::Sound::getMemoryInfo(unsigned int,unsigned int,unsigned int * __ptr64,struct FMOD_MEMORY_USAGE_DETAILS * __ptr64) __ptr64
+?getMode@Channel@FMOD@@QEAA?AW4FMOD_RESULT@@PEAI@Z	public: enum FMOD_RESULT __cdecl FMOD::Channel::getMode(unsigned int * __ptr64) __ptr64
+?getMute@Channel@FMOD@@QEAA?AW4FMOD_RESULT@@PEA_N@Z	public: enum FMOD_RESULT __cdecl FMOD::Channel::getMute(bool * __ptr64) __ptr64
+?getMute@ChannelGroup@FMOD@@QEAA?AW4FMOD_RESULT@@PEA_N@Z	public: enum FMOD_RESULT __cdecl FMOD::ChannelGroup::getMute(bool * __ptr64) __ptr64
+?getNumDrivers@System@FMOD@@QEAA?AW4FMOD_RESULT@@PEAH@Z	public: enum FMOD_RESULT __cdecl FMOD::System::getNumDrivers(int * __ptr64) __ptr64
+?getNumSounds@SoundGroup@FMOD@@QEAA?AW4FMOD_RESULT@@PEAH@Z	public: enum FMOD_RESULT __cdecl FMOD::SoundGroup::getNumSounds(int * __ptr64) __ptr64
+?getOutput@System@FMOD@@QEAA?AW4FMOD_RESULT@@PEAW4FMOD_OUTPUTTYPE@@@Z	public: enum FMOD_RESULT __cdecl FMOD::System::getOutput(enum FMOD_OUTPUTTYPE * __ptr64) __ptr64
+?getPosition@Channel@FMOD@@QEAA?AW4FMOD_RESULT@@PEAII@Z	public: enum FMOD_RESULT __cdecl FMOD::Channel::getPosition(unsigned int * __ptr64,unsigned int) __ptr64
+?getRecordDriverInfoW@System@FMOD@@QEAA?AW4FMOD_RESULT@@HPEAFHPEAUFMOD_GUID@@@Z	public: enum FMOD_RESULT __cdecl FMOD::System::getRecordDriverInfoW(int,short * __ptr64,int,struct FMOD_GUID * __ptr64) __ptr64
+?getRecordNumDrivers@System@FMOD@@QEAA?AW4FMOD_RESULT@@PEAH@Z	public: enum FMOD_RESULT __cdecl FMOD::System::getRecordNumDrivers(int * __ptr64) __ptr64
+?getRecordPosition@System@FMOD@@QEAA?AW4FMOD_RESULT@@HPEAI@Z	public: enum FMOD_RESULT __cdecl FMOD::System::getRecordPosition(int,unsigned int * __ptr64) __ptr64
+?getSound@SoundGroup@FMOD@@QEAA?AW4FMOD_RESULT@@HPEAPEAVSound@2@@Z	public: enum FMOD_RESULT __cdecl FMOD::SoundGroup::getSound(int,class FMOD::Sound * __ptr64 * __ptr64) __ptr64
+?getSpeakerMode@System@FMOD@@QEAA?AW4FMOD_RESULT@@PEAW4FMOD_SPEAKERMODE@@@Z	public: enum FMOD_RESULT __cdecl FMOD::System::getSpeakerMode(enum FMOD_SPEAKERMODE * __ptr64) __ptr64
+?getTag@Sound@FMOD@@QEAA?AW4FMOD_RESULT@@PEBDHPEAUFMOD_TAG@@@Z	public: enum FMOD_RESULT __cdecl FMOD::Sound::getTag(char const * __ptr64,int,struct FMOD_TAG * __ptr64) __ptr64
+?getUserData@Channel@FMOD@@QEAA?AW4FMOD_RESULT@@PEAPEAX@Z	public: enum FMOD_RESULT __cdecl FMOD::Channel::getUserData(void * __ptr64 * __ptr64) __ptr64
+?getVersion@System@FMOD@@QEAA?AW4FMOD_RESULT@@PEAI@Z	public: enum FMOD_RESULT __cdecl FMOD::System::getVersion(unsigned int * __ptr64) __ptr64
+?getVolume@Channel@FMOD@@QEAA?AW4FMOD_RESULT@@PEAM@Z	public: enum FMOD_RESULT __cdecl FMOD::Channel::getVolume(float * __ptr64) __ptr64
+?init@System@FMOD@@QEAA?AW4FMOD_RESULT@@HIPEAX@Z	public: enum FMOD_RESULT __cdecl FMOD::System::init(int,unsigned int,void * __ptr64) __ptr64
+?isPlaying@Channel@FMOD@@QEAA?AW4FMOD_RESULT@@PEA_N@Z	public: enum FMOD_RESULT __cdecl FMOD::Channel::isPlaying(bool * __ptr64) __ptr64
+?isRecording@System@FMOD@@QEAA?AW4FMOD_RESULT@@HPEA_N@Z	public: enum FMOD_RESULT __cdecl FMOD::System::isRecording(int,bool * __ptr64) __ptr64
+?loadGeometry@System@FMOD@@QEAA?AW4FMOD_RESULT@@PEBXHPEAPEAVGeometry@2@@Z	public: enum FMOD_RESULT __cdecl FMOD::System::loadGeometry(void const * __ptr64,int,class FMOD::Geometry * __ptr64 * __ptr64) __ptr64
+?lock@Sound@FMOD@@QEAA?AW4FMOD_RESULT@@IIPEAPEAX0PEAI1@Z	public: enum FMOD_RESULT __cdecl FMOD::Sound::lock(unsigned int,unsigned int,void * __ptr64 * __ptr64,void * __ptr64 * __ptr64,unsigned int * __ptr64,unsigned int * __ptr64) __ptr64
+?playSound@System@FMOD@@QEAA?AW4FMOD_RESULT@@W4FMOD_CHANNELINDEX@@PEAVSound@2@_NPEAPEAVChannel@2@@Z	public: enum FMOD_RESULT __cdecl FMOD::System::playSound(enum FMOD_CHANNELINDEX,class FMOD::Sound * __ptr64,bool,class FMOD::Channel * __ptr64 * __ptr64) __ptr64
+?recordStart@System@FMOD@@QEAA?AW4FMOD_RESULT@@HPEAVSound@2@_N@Z	public: enum FMOD_RESULT __cdecl FMOD::System::recordStart(int,class FMOD::Sound * __ptr64,bool) __ptr64
+?recordStop@System@FMOD@@QEAA?AW4FMOD_RESULT@@H@Z	public: enum FMOD_RESULT __cdecl FMOD::System::recordStop(int) __ptr64
+?release@ChannelGroup@FMOD@@QEAA?AW4FMOD_RESULT@@XZ	public: enum FMOD_RESULT __cdecl FMOD::ChannelGroup::release(void) __ptr64
+?release@DSP@FMOD@@QEAA?AW4FMOD_RESULT@@XZ	public: enum FMOD_RESULT __cdecl FMOD::DSP::release(void) __ptr64
+?release@Geometry@FMOD@@QEAA?AW4FMOD_RESULT@@XZ	public: enum FMOD_RESULT __cdecl FMOD::Geometry::release(void) __ptr64
+?release@Sound@FMOD@@QEAA?AW4FMOD_RESULT@@XZ	public: enum FMOD_RESULT __cdecl FMOD::Sound::release(void) __ptr64
+?release@System@FMOD@@QEAA?AW4FMOD_RESULT@@XZ	public: enum FMOD_RESULT __cdecl FMOD::System::release(void) __ptr64
+?save@Geometry@FMOD@@QEAA?AW4FMOD_RESULT@@PEAXPEAH@Z	public: enum FMOD_RESULT __cdecl FMOD::Geometry::save(void * __ptr64,int * __ptr64) __ptr64
+?set3DAttributes@Channel@FMOD@@QEAA?AW4FMOD_RESULT@@PEBUFMOD_VECTOR@@0@Z	public: enum FMOD_RESULT __cdecl FMOD::Channel::set3DAttributes(struct FMOD_VECTOR const * __ptr64,struct FMOD_VECTOR const * __ptr64) __ptr64
+?set3DCustomRolloff@Channel@FMOD@@QEAA?AW4FMOD_RESULT@@PEAUFMOD_VECTOR@@H@Z	public: enum FMOD_RESULT __cdecl FMOD::Channel::set3DCustomRolloff(struct FMOD_VECTOR * __ptr64,int) __ptr64
+?set3DListenerAttributes@System@FMOD@@QEAA?AW4FMOD_RESULT@@HPEBUFMOD_VECTOR@@000@Z	public: enum FMOD_RESULT __cdecl FMOD::System::set3DListenerAttributes(int,struct FMOD_VECTOR const * __ptr64,struct FMOD_VECTOR const * __ptr64,struct FMOD_VECTOR const * __ptr64,struct FMOD_VECTOR const * __ptr64) __ptr64
+?set3DMinMaxDistance@Channel@FMOD@@QEAA?AW4FMOD_RESULT@@MM@Z	public: enum FMOD_RESULT __cdecl FMOD::Channel::set3DMinMaxDistance(float,float) __ptr64
+?set3DRolloffCallback@System@FMOD@@QEAA?AW4FMOD_RESULT@@P6AMPEAUFMOD_CHANNEL@@M@Z@Z	public: enum FMOD_RESULT __cdecl FMOD::System::set3DRolloffCallback(float (__cdecl*)(struct FMOD_CHANNEL * __ptr64,float)) __ptr64
+?set3DSettings@System@FMOD@@QEAA?AW4FMOD_RESULT@@MMM@Z	public: enum FMOD_RESULT __cdecl FMOD::System::set3DSettings(float,float,float) __ptr64
+?set3DSpread@Channel@FMOD@@QEAA?AW4FMOD_RESULT@@M@Z	public: enum FMOD_RESULT __cdecl FMOD::Channel::set3DSpread(float) __ptr64
+?setActive@Geometry@FMOD@@QEAA?AW4FMOD_RESULT@@_N@Z	public: enum FMOD_RESULT __cdecl FMOD::Geometry::setActive(bool) __ptr64
+?setCallback@Channel@FMOD@@QEAA?AW4FMOD_RESULT@@P6A?AW43@PEAUFMOD_CHANNEL@@W4FMOD_CHANNEL_CALLBACKTYPE@@PEAX2@Z@Z	public: enum FMOD_RESULT __cdecl FMOD::Channel::setCallback(enum FMOD_RESULT (__cdecl*)(struct FMOD_CHANNEL * __ptr64,enum FMOD_CHANNEL_CALLBACKTYPE,void * __ptr64,void * __ptr64)) __ptr64
+?setChannelGroup@Channel@FMOD@@QEAA?AW4FMOD_RESULT@@PEAVChannelGroup@2@@Z	public: enum FMOD_RESULT __cdecl FMOD::Channel::setChannelGroup(class FMOD::ChannelGroup * __ptr64) __ptr64
+?setDSPBufferSize@System@FMOD@@QEAA?AW4FMOD_RESULT@@IH@Z	public: enum FMOD_RESULT __cdecl FMOD::System::setDSPBufferSize(unsigned int,int) __ptr64
+?setDriver@System@FMOD@@QEAA?AW4FMOD_RESULT@@H@Z	public: enum FMOD_RESULT __cdecl FMOD::System::setDriver(int) __ptr64
+?setFileSystem@System@FMOD@@QEAA?AW4FMOD_RESULT@@P6A?AW43@PEBDHPEAIPEAPEAX2@ZP6A?AW43@PEAX4@ZP6A?AW43@44I14@ZP6A?AW43@4I4@ZP6A?AW43@PEAUFMOD_ASYNCREADINFO@@4@Z5H@Z	public: enum FMOD_RESULT __cdecl FMOD::System::setFileSystem(enum FMOD_RESULT (__cdecl*)(char const * __ptr64,int,unsigned int * __ptr64,void * __ptr64 * __ptr64,void * __ptr64 * __ptr64),enum FMOD_RESULT (__cdecl*)(void * __ptr64,void * __ptr64),enum FMOD_RESULT (__cdecl*)(void * __ptr64,void * __ptr64,unsigned int,unsigned int * __ptr64,void * __ptr64),enum FMOD_RESULT (__cdecl*)(void * __ptr64,unsigned int,void * __ptr64),enum FMOD_RESULT (__cdecl*)(struct FMOD_ASYNCREADINFO * __ptr64,void * __ptr64),enum FMOD_RESULT (__cdecl*)(void * __ptr64,void * __ptr64),int) __ptr64
+?setFrequency@Channel@FMOD@@QEAA?AW4FMOD_RESULT@@M@Z	public: enum FMOD_RESULT __cdecl FMOD::Channel::setFrequency(float) __ptr64
+?setGeometrySettings@System@FMOD@@QEAA?AW4FMOD_RESULT@@M@Z	public: enum FMOD_RESULT __cdecl FMOD::System::setGeometrySettings(float) __ptr64
+?setLoopPoints@Sound@FMOD@@QEAA?AW4FMOD_RESULT@@IIII@Z	public: enum FMOD_RESULT __cdecl FMOD::Sound::setLoopPoints(unsigned int,unsigned int,unsigned int,unsigned int) __ptr64
+?setMode@Channel@FMOD@@QEAA?AW4FMOD_RESULT@@I@Z	public: enum FMOD_RESULT __cdecl FMOD::Channel::setMode(unsigned int) __ptr64
+?setMute@Channel@FMOD@@QEAA?AW4FMOD_RESULT@@_N@Z	public: enum FMOD_RESULT __cdecl FMOD::Channel::setMute(bool) __ptr64
+?setMute@ChannelGroup@FMOD@@QEAA?AW4FMOD_RESULT@@_N@Z	public: enum FMOD_RESULT __cdecl FMOD::ChannelGroup::setMute(bool) __ptr64
+?setOutput@System@FMOD@@QEAA?AW4FMOD_RESULT@@W4FMOD_OUTPUTTYPE@@@Z	public: enum FMOD_RESULT __cdecl FMOD::System::setOutput(enum FMOD_OUTPUTTYPE) __ptr64
+?setParameter@DSP@FMOD@@QEAA?AW4FMOD_RESULT@@HM@Z	public: enum FMOD_RESULT __cdecl FMOD::DSP::setParameter(int,float) __ptr64
+?setPaused@Channel@FMOD@@QEAA?AW4FMOD_RESULT@@_N@Z	public: enum FMOD_RESULT __cdecl FMOD::Channel::setPaused(bool) __ptr64
+?setPitch@ChannelGroup@FMOD@@QEAA?AW4FMOD_RESULT@@M@Z	public: enum FMOD_RESULT __cdecl FMOD::ChannelGroup::setPitch(float) __ptr64
+?setPosition@Channel@FMOD@@QEAA?AW4FMOD_RESULT@@II@Z	public: enum FMOD_RESULT __cdecl FMOD::Channel::setPosition(unsigned int,unsigned int) __ptr64
+?setPosition@Geometry@FMOD@@QEAA?AW4FMOD_RESULT@@PEBUFMOD_VECTOR@@@Z	public: enum FMOD_RESULT __cdecl FMOD::Geometry::setPosition(struct FMOD_VECTOR const * __ptr64) __ptr64
+?setPriority@Channel@FMOD@@QEAA?AW4FMOD_RESULT@@H@Z	public: enum FMOD_RESULT __cdecl FMOD::Channel::setPriority(int) __ptr64
+?setSoftwareChannels@System@FMOD@@QEAA?AW4FMOD_RESULT@@H@Z	public: enum FMOD_RESULT __cdecl FMOD::System::setSoftwareChannels(int) __ptr64
+?setSoftwareFormat@System@FMOD@@QEAA?AW4FMOD_RESULT@@HW4FMOD_SOUND_FORMAT@@HHW4FMOD_DSP_RESAMPLER@@@Z	public: enum FMOD_RESULT __cdecl FMOD::System::setSoftwareFormat(int,enum FMOD_SOUND_FORMAT,int,int,enum FMOD_DSP_RESAMPLER) __ptr64
+?setSpeakerMode@System@FMOD@@QEAA?AW4FMOD_RESULT@@W4FMOD_SPEAKERMODE@@@Z	public: enum FMOD_RESULT __cdecl FMOD::System::setSpeakerMode(enum FMOD_SPEAKERMODE) __ptr64
+?setUserData@Channel@FMOD@@QEAA?AW4FMOD_RESULT@@PEAX@Z	public: enum FMOD_RESULT __cdecl FMOD::Channel::setUserData(void * __ptr64) __ptr64
+?setVolume@Channel@FMOD@@QEAA?AW4FMOD_RESULT@@M@Z	public: enum FMOD_RESULT __cdecl FMOD::Channel::setVolume(float) __ptr64
+?setVolume@ChannelGroup@FMOD@@QEAA?AW4FMOD_RESULT@@M@Z	public: enum FMOD_RESULT __cdecl FMOD::ChannelGroup::setVolume(float) __ptr64
+?stop@Channel@FMOD@@QEAA?AW4FMOD_RESULT@@XZ	public: enum FMOD_RESULT __cdecl FMOD::Channel::stop(void) __ptr64
+?stop@SoundGroup@FMOD@@QEAA?AW4FMOD_RESULT@@XZ	public: enum FMOD_RESULT __cdecl FMOD::SoundGroup::stop(void) __ptr64
+?unlock@Sound@FMOD@@QEAA?AW4FMOD_RESULT@@PEAX0II@Z	public: enum FMOD_RESULT __cdecl FMOD::Sound::unlock(void * __ptr64,void * __ptr64,unsigned int,unsigned int) __ptr64
+?update@System@FMOD@@QEAA?AW4FMOD_RESULT@@XZ	public: enum FMOD_RESULT __cdecl FMOD::System::update(void) __ptr64
+FMOD_Memory_GetStats	FMOD_Memory_GetStats
+FMOD_Memory_Initialize	FMOD_Memory_Initialize
+FMOD_System_Create	FMOD_System_Create

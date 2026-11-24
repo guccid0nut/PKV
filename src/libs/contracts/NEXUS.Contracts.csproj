@@ -1,0 +1,36 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Library</OutputType>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <IsAotCompatible>true</IsAotCompatible>
+    <EnableTrimAnalyzer>true</EnableTrimAnalyzer>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Google.Protobuf"/>
+    <PackageReference Include="Grpc.Tools">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Grpc.Net.Client"/>
+    <PackageReference Include="Grpc.AspNetCore"/>
+    <PackageReference Include="MemoryPack"/>
+    <PackageReference Include="OneOf"/>
+    <PackageReference Include="MediatR.Contracts"/>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Protobuf Include="Protos\*.proto" GrpcServices="Both"/>
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="NEXUS.Contracts.Tests" />
+    <InternalsVisibleTo Include="Kongor.Core.Tests" />
+    <InternalsVisibleTo Include="ASPIRE.Common.Tests" />
+    <InternalsVisibleTo Include="ASPIRE.Integration.Tests" />
+    <InternalsVisibleTo Include="Kongor.Mcp.Tests" />
+  </ItemGroup>
+
+</Project>

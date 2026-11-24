@@ -1,0 +1,67 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <OutputType>exe</OutputType>
+    <Features>$(Features);runtime-async=on</Features>
+    <RazorCompileOnBuild Condition="'$(Configuration)' == 'Debug'">false</RazorCompileOnBuild>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="KONGOR.MasterServer.Tests" />
+    <InternalsVisibleTo Include="ASPIRE.Integration.Tests" />
+    <InternalsVisibleTo Include="Kongor.Mcp.Tests" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Update="Configuration\**">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
+    <Content Update="Data\Seed\Coupons.JSON">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
+    <Content Update="Data\Seed\Upgrades.JSON">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
+    <Content Include="Resources\**" Exclude="Resources\Replays\**\*.honreplay">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
+    <Content Include="..\..\..\data\wareffort\catalog.json" Link="Data\wareffort\catalog.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Aspire.StackExchange.Redis.DistributedCaching"/>
+    <PackageReference Include="Microsoft.Extensions.Caching.Hybrid"/>
+    <PackageReference Include="MemoryPack"/>
+    <PackageReference Include="Microsoft.IO.RecyclableMemoryStream"/>
+    <PackageReference Include="AWSSDK.S3"/>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="OneOf"/>
+    <PackageReference Include="Serilog.AspNetCore"/>
+    <PackageReference Include="Serilog.Sinks.File"/>
+    <PackageReference Include="Serilog.Sinks.OpenTelemetry"/>
+    <PackageReference Include="srp"/>
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi"/>
+    <PackageReference Include="Scalar.AspNetCore"/>
+    <PackageReference Include="Grpc.AspNetCore"/>
+  </ItemGroup>
+
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\libs\service-defaults\ASPIRE.ServiceDefaults.csproj"/>
+    <ProjectReference Include="..\..\libs\protocol-core\Kongor.Core.csproj"/>
+    <ProjectReference Include="..\..\libs\database-context\MERRICK.DatabaseContext.csproj"/>
+    <ProjectReference Include="..\..\libs\contracts\NEXUS.Contracts.csproj"/>
+    <ProjectReference Include="..\..\libs\source-generators\ASPIRE.SourceGenerator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="true" GlobalPropertiesToRemove="TargetFramework"/>
+  </ItemGroup>
+
+</Project>

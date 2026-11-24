@@ -1,0 +1,480 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="using:NEXUS.ControlPanel.GUI.ViewModels"
+             xmlns:services="using:NEXUS.ControlPanel.GUI.Services"
+             mc:Ignorable="d" d:DesignWidth="950" d:DesignHeight="780"
+             x:Class="NEXUS.ControlPanel.GUI.Views.DashboardView"
+             x:DataType="vm:DashboardViewModel">
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel Spacing="16" Margin="20">
+
+            <!-- Global Cluster Control Card -->
+            <Border Classes="card">
+                <StackPanel Spacing="12">
+                    <!-- Title & Status Line -->
+                    <StackPanel Spacing="4">
+                        <TextBlock Text="NEXUS DISTRIBUTED CLUSTER" FontSize="11" FontWeight="Bold"
+                                   Foreground="#00F0FF" LetterSpacing="1.5" />
+                        <Grid ColumnDefinitions="Auto,*" Margin="0,2,0,0">
+                            <Ellipse Grid.Column="0" Width="12" Height="12" Fill="{Binding ClusterStatusColor}"
+                                     VerticalAlignment="Center" Margin="0,0,10,0" />
+                            <TextBlock Grid.Column="1" Text="{Binding ClusterStatusText}" FontSize="20" FontWeight="Black"
+                                       Foreground="#F8FAFC" TextWrapping="Wrap" VerticalAlignment="Center" />
+                        </Grid>
+                    </StackPanel>
+
+                    <TextBlock
+                        Text="{Binding ClusterSubtitleText}"
+                        FontSize="12"
+                        Foreground="#94A3B8"
+                        TextWrapping="Wrap" />
+
+                    <TextBlock
+                        Text="{Binding StaleImageWarningText}"
+                        IsVisible="{Binding HasStaleImageWarning}"
+                        FontSize="12"
+                        FontWeight="SemiBold"
+                        Foreground="#F59E0B"
+                        TextWrapping="Wrap" />
+
+                    <!-- Action Buttons Toolbar (Fluid WrapPanel) -->
+                    <WrapPanel Orientation="Horizontal">
+                        <!-- Start Cluster -->
+                        <Button Classes="success" Command="{Binding StartClusterCommand}"
+                                IsEnabled="{Binding CanStartCluster}" Margin="0,0,8,8">
+                            <TextBlock Text="▶ Start Cluster" />
+                        </Button>
+
+                        <!-- Turnkey Full Docker Stack Launcher -->
+                        <Button Classes="teal"
+                                AutomationProperties.AutomationId="BtnDockerStackMenu"
+                                IsEnabled="{Binding !IsDockerStackBusy}"
+                                Margin="0,0,8,8"
+                                ToolTip.Tip="Launch, verify, initialize dev secrets, or stop the full containerized kongor-stack cluster + COMPEL fleets">
+                            <StackPanel Orientation="Horizontal" Spacing="6">
+                                <TextBlock Text="{Binding DockerStackButtonLabel}" />
+                                <TextBlock Text="▾" FontSize="11" Foreground="#CFFAFE" VerticalAlignment="Center" />
+                            </StackPanel>
+                            <Button.Flyout>
+                                <MenuFlyout Placement="BottomEdgeAlignedLeft">
+                                    <MenuItem Header="🐳 Launch Full Stack — Balanced (2 Match + 1 Arcade)"
+                                              Command="{Binding LaunchDockerStackBalancedCommand}" />
+                                    <MenuItem Header="🌱 Launch Full Stack — Eco (1 Match + 1 Arcade)"
+                                              Command="{Binding LaunchDockerStackEcoCommand}" />
+                                    <MenuItem Header="🔥 Launch Full Stack — High (4 Match + 2 Arcade)"
+                                              Command="{Binding LaunchDockerStackHighCommand}" />
+                                    <MenuItem Header="🎮 Launch Stack (Balanced) + Local Game Client"
+                                              Command="{Binding LaunchDockerStackWithClientCommand}" />
+                                    <Separator />
+                                    <MenuItem Header="🔄 Restart Docker Stack (Fast — Keep Redis)"
+                                              Command="{Binding RestartDockerStackCommand}" />
+                                    <MenuItem Header="🔨 Rebuild &amp; Sync Stack (Apply Code Changes)"
+                                              Command="{Binding SyncDockerStackCommand}" />
+                                    <Separator />
+                                    <MenuItem Header="🩺 Pre-Flight Check Secrets &amp; Prerequisites"
+                                              Command="{Binding CheckDockerStackPreflightCommand}" />
+                                    <MenuItem Header="🔑 Initialize / Rotate Dev Secrets (Safe)"
+                                              Command="{Binding InitDockerStackSecretsCommand}" />
+                                    <MenuItem Header="🧹 Clean Up Legacy Docker Containers &amp; Images"
+                                              Command="{Binding CleanupLegacyDockerCommand}" />
+                                    <Separator />
+                                    <MenuItem Header="⏹️ Stop Docker Stack"
+                                              Command="{Binding StopDockerStackCommand}" />
+                                </MenuFlyout>
+                            </Button.Flyout>
+                        </Button>
+
+                        <!-- Game Servers (Dual Action Menu: Local vs Hosted) -->
+                        <Button Classes="purple" Margin="0,0,8,8" ToolTip.Tip="Launch local native game server or hosted cloud container">
+                            <StackPanel Orientation="Horizontal" Spacing="6">
+                                <TextBlock Text="🎮 Game Servers" />
+                                <TextBlock Text="▾" FontSize="11" Foreground="#DDD6FE" VerticalAlignment="Center" />
+                            </StackPanel>
+                            <Button.Flyout>
+                                <MenuFlyout Placement="BottomEdgeAlignedLeft">
+                                    <MenuItem Header="💻 Local Game Server (Windows Native)"
+                                              Command="{Binding LaunchLocalGameServersCommand}" />
+                                    <MenuItem Header="🐳 Docker Game Server (Container)"
+                                              Command="{Binding LaunchDockerGameServersCommand}" />
+                                    <MenuItem Header="☸️ K3s + Agones Game Server (Cloud-Native)"
+                                              Command="{Binding LaunchK3sAgonesGameServersCommand}" />
+                                </MenuFlyout>
+                            </Button.Flyout>
+                        </Button>
+
+                        <!-- Queue Arcade ("While You Wait" Mini-Games Fleet) -->
+                        <Button Classes="teal" Margin="0,0,8,8"
+                                ToolTip.Tip="Launch, pause, or stop isolated Queue Arcade ('While You Wait') mini-game servers">
+                            <StackPanel Orientation="Horizontal" Spacing="6">
+                                <TextBlock Text="{Binding QueueArcadeButtonLabel}" />
+                                <TextBlock Text="▾" FontSize="11" Foreground="#CFFAFE" VerticalAlignment="Center" />
+                            </StackPanel>
+                            <Button.Flyout>
+                                <MenuFlyout Placement="BottomEdgeAlignedLeft">
+                                    <MenuItem Header="💻 Local Queue Arcade (Windows Native)"
+                                              Command="{Binding LaunchLocalQueueArcadeCommand}" />
+                                    <MenuItem Header="🐳 Docker Queue Arcade (Container)"
+                                              Command="{Binding LaunchDockerQueueArcadeCommand}" />
+                                    <MenuItem Header="☸️ K3s + Agones Queue Arcade (Cloud-Native)"
+                                              Command="{Binding LaunchK3sAgonesQueueArcadeCommand}" />
+                                    <Separator />
+                                    <MenuItem Header="{Binding QueueArcadeToggleMenuHeader}"
+                                              Command="{Binding ToggleQueueArcadeEnabledCommand}" />
+                                    <MenuItem Header="⏹️ Stop Queue Arcade Servers"
+                                              Command="{Binding StopQueueArcadeServersCommand}" />
+                                </MenuFlyout>
+                            </Button.Flyout>
+                        </Button>
+
+                        <!-- WILLOWMAKER (Live IPC Sync / 1-Click Launch) -->
+                        <Button Classes="primary" Command="{Binding OpenWillowmakerCommand}"
+                                AutomationProperties.AutomationId="BtnOpenWillowmaker"
+                                ToolTip.Tip="Focus running WILLOWMAKER &amp; sync active Master Server + CDN endpoints via IPC, or launch WILLOWMAKER if closed"
+                                Margin="0,0,8,8">
+                            <TextBlock Text="🎯 WILLOWMAKER" />
+                        </Button>
+
+                        <!-- Server Chat Pop-Out (Live Multi-Server Chat Manager) -->
+                        <Button Classes="secondary" Command="{Binding OpenCompelGuiCommand}"
+                                AutomationProperties.AutomationId="BtnOpenCompelGui"
+                                ToolTip.Tip="Pop out or focus the live multi-server Game Server Chat Manager (Local, Docker &amp; K3s fleets)"
+                                Margin="0,0,8,8">
+                            <TextBlock Text="💬 Server Chat" />
+                        </Button>
+
+                        <!-- Stop All -->
+                        <Button Classes="danger" Command="{Binding StopAllServicesCommand}"
+                                ToolTip.Tip="Stops all running server processes and exits the application"
+                                Margin="0,0,8,8">
+                            <TextBlock Text="⏹ Stop All" />
+                        </Button>
+
+                        <!-- Restart -->
+                        <Button Classes="secondary" Command="{Binding RestartClusterCommand}"
+                                ToolTip.Tip="Restarts all core microservices without closing the GUI"
+                                IsEnabled="{Binding CanRestartCluster}" Margin="0,0,0,8">
+                            <TextBlock Text="🔄 Restart" />
+                        </Button>
+                    </WrapPanel>
+                </StackPanel>
+            </Border>
+
+            <!-- Real-Time Infrastructure Health Section (Compact Fluid Design) -->
+            <Border Background="#0F172A" BorderBrush="#1E293B" BorderThickness="1" CornerRadius="12" Padding="14,10">
+                <StackPanel Spacing="6">
+                    <Grid ColumnDefinitions="*,Auto">
+                        <TextBlock Grid.Column="0" Text="INFRASTRUCTURE &amp; DATABASE STATUS" FontSize="11"
+                                   FontWeight="Bold" Foreground="#00F0FF" LetterSpacing="1"
+                                   VerticalAlignment="Center" />
+                        <Button Grid.Column="1" Classes="secondary" Padding="8,4"
+                                Command="{Binding RefreshInfrastructureHealthCommand}" VerticalAlignment="Center">
+                            <TextBlock Text="🔄 Check Health" FontSize="11" />
+                        </Button>
+                    </Grid>
+
+                    <!-- Responsive Health Badges -->
+                    <WrapPanel Orientation="Horizontal">
+                        <!-- 1. Docker Daemon -->
+                        <Border Background="#1E293B" BorderBrush="#334155" BorderThickness="1" CornerRadius="8"
+                                Padding="12,8" Margin="0,0,8,8">
+                            <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                                <TextBlock Text="🐳 Docker:" FontWeight="Bold" Foreground="#38BDF8" FontSize="12" />
+                                <Ellipse Width="8" Height="8" Fill="{Binding DockerStatusColor}"
+                                         VerticalAlignment="Center" />
+                                <TextBlock Text="{Binding DockerStatusMessage}" FontSize="12" Foreground="#E2E8F0" />
+                            </StackPanel>
+                        </Border>
+
+                        <!-- 2. Database Provider (Supabase / PostgreSQL / SQL Server) -->
+                        <Border Background="#1E293B" BorderBrush="#334155" BorderThickness="1" CornerRadius="8"
+                                Padding="12,8" Margin="0,0,8,8">
+                            <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                                <TextBlock Text="{Binding DatabaseLabel}" FontWeight="Bold" Foreground="#06B6D4"
+                                           FontSize="12" />
+                                <Ellipse Width="8" Height="8" Fill="{Binding DatabaseStatusColor}"
+                                         VerticalAlignment="Center" />
+                                <TextBlock Text="{Binding DatabaseStatusMessage}" FontSize="12" Foreground="#E2E8F0" />
+                            </StackPanel>
+                        </Border>
+
+                        <!-- 3. Redis Cache -->
+                        <Border Background="#1E293B" BorderBrush="#334155" BorderThickness="1" CornerRadius="8"
+                                Padding="12,8" Margin="0,0,8,8">
+                            <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                                <TextBlock Text="⚡ Redis:" FontWeight="Bold" Foreground="#EC4899" FontSize="12" />
+                                <Ellipse Width="8" Height="8" Fill="{Binding RedisStatusColor}"
+                                         VerticalAlignment="Center" />
+                                <TextBlock Text="{Binding RedisStatusMessage}" FontSize="12" Foreground="#E2E8F0" />
+                            </StackPanel>
+                        </Border>
+
+                        <!-- 4. Pyroscope Continuous Profiler (Hidden when bundled) -->
+                        <Border Background="#1E293B" BorderBrush="#334155" BorderThickness="1" CornerRadius="8"
+                                Padding="12,8" Margin="0,0,8,8"
+                                IsVisible="{Binding !IsBundledLayout}">
+                            <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                                <TextBlock Text="🔥 Pyroscope:" FontWeight="Bold" Foreground="#F43F5E" FontSize="12" />
+                                <Ellipse Width="8" Height="8" Fill="{Binding PyroscopeStatusColor}"
+                                         VerticalAlignment="Center" />
+                                <TextBlock Text="{Binding PyroscopeStatusMessage}" FontSize="12" Foreground="#E2E8F0" />
+                                <Button Classes="secondary" Content="Start" Command="{Binding StartPyroscopeCommand}"
+                                        IsVisible="{Binding !IsPyroscopeOnline}" Padding="6,2" FontSize="11" Margin="4,0,0,0"
+                                        ToolTip.Tip="Start local Pyroscope profiler container in Docker" />
+                            </StackPanel>
+                        </Border>
+
+                        <!-- 5. Connected IPC Pipes (WILLOWMAKER / MCP, Game Client TAO, Grouped Server Pipes, Replay Renderer — hidden when disconnected) -->
+                        <ItemsControl ItemsSource="{Binding ConnectedIpcPipes}"
+                                      IsVisible="{Binding HasConnectedIpcPipes}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <WrapPanel Orientation="Horizontal" />
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate x:DataType="services:CockpitPipeBadgeItem">
+                                    <Border Background="#1E293B" BorderBrush="#334155" BorderThickness="1" CornerRadius="8"
+                                            Padding="12,8" Margin="0,0,8,8"
+                                            ToolTip.Tip="{Binding ToolTipText}">
+                                        <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                                            <TextBlock Text="{Binding Label}" FontWeight="Bold" Foreground="{Binding LabelColor}" FontSize="12" />
+                                            <Ellipse Width="8" Height="8" Fill="{Binding StatusColor}"
+                                                     VerticalAlignment="Center" />
+                                            <TextBlock Text="{Binding StatusMessage}" FontSize="12" Foreground="#E2E8F0" />
+                                        </StackPanel>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </WrapPanel>
+                </StackPanel>
+            </Border>
+
+            <!-- Hosting Mode & Friend Access Card -->
+            <Border Classes="card">
+                <StackPanel Spacing="12">
+                    <!-- Header + Refresh IPs -->
+                    <Grid ColumnDefinitions="*,Auto">
+                        <StackPanel Grid.Column="0" Spacing="2">
+                            <TextBlock Text="HOSTING MODE &amp; FRIEND ONBOARDING" FontSize="11" FontWeight="Bold"
+                                       Foreground="#00F0FF" LetterSpacing="1" VerticalAlignment="Center" />
+                            <TextBlock Text="Configure local, LAN / Tailscale, or public internet hosting and copy connection details for friends."
+                                       FontSize="12" Foreground="#94A3B8" TextWrapping="Wrap" />
+                        </StackPanel>
+                        <Button Grid.Column="1" Classes="secondary" Padding="8,4"
+                                Command="{Binding RefreshNetworkInterfacesCommand}" VerticalAlignment="Center"
+                                ToolTip.Tip="Scan and refresh local network interfaces and Tailscale IPs">
+                            <TextBlock Text="🔄 Refresh IPs" FontSize="11" />
+                        </Button>
+                    </Grid>
+
+                    <!-- Network Controls Row -->
+                    <WrapPanel Orientation="Horizontal">
+                        <!-- Hosting Mode Selector -->
+                        <StackPanel Spacing="4" Margin="0,0,16,8" Width="200">
+                            <TextBlock Text="Hosting Mode:" FontSize="11" FontWeight="SemiBold" Foreground="#94A3B8" />
+                            <ComboBox ItemsSource="{Binding HostingModeOptions}"
+                                      SelectedItem="{Binding SelectedHostingMode}"
+                                      HorizontalAlignment="Stretch" />
+                        </StackPanel>
+
+                        <!-- LAN / Tailscale IPv4 Selector -->
+                        <StackPanel Spacing="4" Margin="0,0,16,8" Width="220"
+                                    IsVisible="{Binding ShowLanSelector}">
+                            <TextBlock Text="LAN / Tailscale IPv4:" FontSize="11" FontWeight="SemiBold" Foreground="#94A3B8" />
+                            <ComboBox ItemsSource="{Binding AvailableLanIps}"
+                                      SelectedItem="{Binding SelectedLanIp}"
+                                      HorizontalAlignment="Stretch" />
+                        </StackPanel>
+
+                        <!-- WAN Public Host / DNS TextBox -->
+                        <StackPanel Spacing="4" Margin="0,0,16,8" Width="260"
+                                    IsVisible="{Binding IsWanMode}">
+                            <TextBlock Text="WAN Public Host / IP / DNS:" FontSize="11" FontWeight="SemiBold" Foreground="#94A3B8" />
+                            <TextBox Text="{Binding WanHost}"
+                                     Watermark="e.g. play.example.com or 203.0.113.10"
+                                     HorizontalAlignment="Stretch" />
+                        </StackPanel>
+                    </WrapPanel>
+
+                    <!-- WAN Security Warning Dialog / Banner (Amber / Red Border) -->
+                    <Border Background="#2A1215" BorderBrush="#EF4444" BorderThickness="1.5" CornerRadius="8"
+                            Padding="14,12" IsVisible="{Binding IsWanWarningDialogOpen}">
+                        <StackPanel Spacing="10">
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <TextBlock Text="⚠️" FontSize="14" VerticalAlignment="Center" />
+                                <TextBlock Text="SECURITY NOTICE: Plaintext HTTP Over Public Internet"
+                                           FontWeight="Bold" Foreground="#F87171" FontSize="12" VerticalAlignment="Center" />
+                            </StackPanel>
+                            <TextBlock Text="WARNING: Public Internet mode serves the Web Portal (:5266) and Master Server (:55555) over plaintext HTTP unless fronted by a TLS reverse proxy (Caddy / Cloudflare Tunnel). Passwords and invite codes sent over the open internet without HTTPS can be intercepted."
+                                       FontSize="12" Foreground="#FECACA" TextWrapping="Wrap" />
+                            <StackPanel Orientation="Horizontal" Spacing="10" Margin="0,4,0,0">
+                                <Button Classes="danger" Command="{Binding ConfirmWanWarningCommand}">
+                                    <TextBlock Text="I Understand — Enable Public Internet" />
+                                </Button>
+                                <Button Classes="secondary" Command="{Binding CancelWanWarningCommand}">
+                                    <TextBlock Text="Cancel" />
+                                </Button>
+                            </StackPanel>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Restart Hint Notification -->
+                    <Border Background="#1E293B" BorderBrush="#F59E0B" BorderThickness="1" CornerRadius="8"
+                            Padding="12,8" IsVisible="{Binding HasHostingModeRestartHint}">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <TextBlock Text="⚠️" FontSize="12" VerticalAlignment="Center" />
+                            <TextBlock Text="{Binding HostingModeRestartHint}" FontSize="12"
+                                       Foreground="#FCD34D" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Copy Friend Join Instructions Button & Feedback -->
+                    <StackPanel Spacing="8">
+                        <StackPanel Orientation="Horizontal" Spacing="12">
+                            <Button Classes="primary" Command="{Binding CopyFriendJoinInstructionsCommand}">
+                                <TextBlock Text="📋 Copy Friend Join Instructions" />
+                            </Button>
+                            <TextBlock Text="{Binding CopyFeedbackMessage}" FontSize="12" Foreground="#10B981"
+                                       FontWeight="SemiBold" VerticalAlignment="Center"
+                                       IsVisible="{Binding HasCopyFeedbackMessage}" />
+                        </StackPanel>
+
+                        <!-- Preview TextBlock -->
+                        <Border Background="#020617" BorderBrush="#1E293B" BorderThickness="1" CornerRadius="8" Padding="12">
+                            <SelectableTextBlock Text="{Binding FriendJoinInstructionsPreview}"
+                                                 FontFamily="Consolas, monospace" FontSize="11"
+                                                 Foreground="#38BDF8" TextWrapping="Wrap" />
+                        </Border>
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+
+            <!-- Microservices Independent Controls Header -->
+            <Grid ColumnDefinitions="*,Auto" Margin="0,2,0,0">
+                <TextBlock Grid.Column="0" Text="MICROSERVICES &amp; INDEPENDENT PROCESS CONTROLS" FontSize="12"
+                           FontWeight="Bold" Foreground="#00F0FF" LetterSpacing="1" VerticalAlignment="Center" />
+                <TextBlock Grid.Column="1" Text="Start or stop each service independently" FontSize="12"
+                           Foreground="#64748B" VerticalAlignment="Center" />
+            </Grid>
+
+            <!-- Interactive Microservices Grid (Fluid Responsive Layout) -->
+            <ItemsControl ItemsSource="{Binding Microservices}">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <WrapPanel Orientation="Horizontal" />
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="vm:ServiceItemViewModel">
+                        <Border Classes="card" Margin="0,0,12,12" MinWidth="320" MaxWidth="500" Width="380">
+                            <Grid RowDefinitions="Auto,Auto,Auto,Auto">
+
+                                <!-- Header & Status Pill -->
+                                <Grid Grid.Row="0" ColumnDefinitions="*,Auto" Margin="0,0,0,6">
+                                    <TextBlock Grid.Column="0" Text="{Binding Title}" FontWeight="Bold" FontSize="13"
+                                               Foreground="{Binding AccentColor}" VerticalAlignment="Center"
+                                               TextTrimming="CharacterEllipsis" />
+                                    <Border Grid.Column="1" Background="#1E293B" CornerRadius="6" Padding="8,3"
+                                            VerticalAlignment="Center" Margin="6,0,0,0">
+                                        <StackPanel Orientation="Horizontal" Spacing="6">
+                                            <Ellipse Width="8" Height="8" Fill="{Binding StatusColor}"
+                                                     VerticalAlignment="Center" />
+                                            <TextBlock Text="{Binding StatusText}" FontSize="11" FontWeight="Bold"
+                                                       Foreground="#F8FAFC" VerticalAlignment="Center" />
+                                        </StackPanel>
+                                    </Border>
+                                </Grid>
+
+                                <!-- Port Info -->
+                                <TextBlock Grid.Row="1" Text="{Binding PortInfo}" FontSize="12" Foreground="#38BDF8"
+                                           FontWeight="SemiBold" Margin="0,0,0,4" />
+
+                                <!-- Description -->
+                                <TextBlock Grid.Row="2" Text="{Binding Description}" FontSize="12" Foreground="#94A3B8"
+                                           TextWrapping="Wrap" Margin="0,0,0,12" />
+
+                                <!-- Individual Start / Stop Buttons -->
+                                <StackPanel Grid.Row="3" Orientation="Horizontal" Spacing="8">
+                                    <Button Classes="secondary"
+                                            Command="{Binding RestartCommand}"
+                                            IsEnabled="{Binding CanRestart}"
+                                            Padding="10,6"
+                                            FontSize="12"
+                                            ToolTip.Tip="Restart this microservice">
+                                        <TextBlock Text="🔄 Restart" />
+                                    </Button>
+                                    <Button Classes="small-start"
+                                            Command="{Binding StartCommand}"
+                                            IsEnabled="{Binding CanStart}"
+                                            ToolTip.Tip="Start this microservice (works for stopped kongor-stack Docker containers or standalone services)">
+                                        <TextBlock Text="▶ Start Service" />
+                                    </Button>
+                                    <Button Classes="small-stop" Command="{Binding StopCommand}"
+                                            IsEnabled="{Binding CanStop}">
+                                        <TextBlock Text="⏹ Stop Service" />
+                                    </Button>
+                                </StackPanel>
+
+                            </Grid>
+                        </Border>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+
+            <!-- Quick Launch Hub -->
+            <TextBlock Text="QUICK LAUNCH DASHBOARDS &amp; APIS" FontSize="12" FontWeight="Bold" Foreground="#00F0FF"
+                       LetterSpacing="1" Margin="0,4,0,0" />
+            <WrapPanel Orientation="Horizontal">
+                <Button Classes="secondary" Command="{Binding OpenAspireDashboardCommand}" Margin="0,0,10,10"
+                        IsVisible="{Binding !IsBundledLayout}"
+                        ToolTip.Tip="Open local Aspire Distributed Dashboard with OpenTelemetry traces and resource health">
+                    <TextBlock Text="📊 Aspire Dashboard (5550)" />
+                </Button>
+                <Button Classes="secondary" Command="{Binding OpenPyroscopeDashboardCommand}" Margin="0,0,10,10"
+                        IsVisible="{Binding !IsBundledLayout}"
+                        ToolTip.Tip="Open local Pyroscope Continuous Profiling Flamegraphs dashboard on port 4040">
+                    <TextBlock Text="🔥 Pyroscope Profiler (4040)" Foreground="#F43F5E" />
+                </Button>
+                <Button Classes="secondary" Command="{Binding OpenWebPortalCommand}" Margin="0,0,10,10"
+                        ToolTip.Tip="Open DAWNBRINGER Web Portal UI">
+                    <TextBlock Text="{Binding WebPortalButtonLabel}" />
+                </Button>
+                <Button Classes="secondary" Command="{Binding OpenMasterServerCommand}" Margin="0,0,10,10"
+                        ToolTip.Tip="Open KONGOR Master Server Swagger API documentation">
+                    <TextBlock Text="📜 Master Server Swagger (55555)" />
+                </Button>
+                <Button Classes="secondary" Command="{Binding OpenWebPortalApiCommand}" Margin="0,0,10,10"
+                        ToolTip.Tip="Open ZORGATH Web Portal API Swagger documentation">
+                    <TextBlock Text="{Binding WebPortalApiButtonLabel}" />
+                </Button>
+
+                <!-- Dynamic Cloud & Developer Integrations (Visible when configured in Secrets) -->
+                <Button Classes="secondary" Command="{Binding OpenSupabaseDashboardCommand}" Margin="0,0,10,10"
+                        IsVisible="{Binding HasSupabaseConfigured}"
+                        ToolTip.Tip="Open Supabase Cloud Database &amp; Storage Dashboard">
+                    <TextBlock Text="⚡ Supabase Dashboard" Foreground="#10B981" />
+                </Button>
+                <Button Classes="secondary" Command="{Binding OpenGrafanaDashboardCommand}" Margin="0,0,10,10"
+                        IsVisible="{Binding HasGrafanaConfigured}"
+                        ToolTip.Tip="Open Grafana Cloud OpenTelemetry Traces &amp; Metrics Dashboard">
+                    <TextBlock Text="📈 Grafana Cloud" Foreground="#F59E0B" />
+                </Button>
+                <Button Classes="secondary" Command="{Binding OpenDiscordDevPortalCommand}" Margin="0,0,10,10"
+                        IsVisible="{Binding HasDiscordConfigured}"
+                        ToolTip.Tip="Open Discord Developer Portal for KONGOR Application">
+                    <TextBlock Text="🎮 Discord Dev Portal" Foreground="#818CF8" />
+                </Button>
+                <Button Classes="secondary" Command="{Binding OpenTwitchDevConsoleCommand}" Margin="0,0,10,10"
+                        IsVisible="{Binding HasTwitchConfigured}"
+                        ToolTip.Tip="Open Twitch Developer Console">
+                    <TextBlock Text="💜 Twitch Dev Console" Foreground="#C084FC" />
+                </Button>
+            </WrapPanel>
+
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

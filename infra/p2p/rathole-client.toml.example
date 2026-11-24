@@ -1,0 +1,32 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# SPDX-FileCopyrightText: 2026 guccidonut and Project KONGOR V Contributors
+# Project KONGOR V (https://github.com/guccidonut/PKV)
+#
+# Project KONGOR DirectPlay rathole v0.5+ Client Configuration Example
+# Run on a DirectPlay Host behind Carrier-Grade NAT (CGNAT) or Symmetric NAT:
+#   1. Copy to an untracked local file (e.g. rathole-client.local.toml).
+#   2. Replace relay.example.com with your community relay host and substitute ${KONGOR_RATHOLE_TOKEN}.
+#   3. Start: rathole --client rathole-client.local.toml
+#   4. Share <relay-host>:20550 as your DirectPlay Invite Code (maps to local K2_SERVER 127.0.0.1:11550).
+
+[client]
+remote_addr = "relay.example.com:2333"
+default_token = "${KONGOR_RATHOLE_TOKEN}"
+heartbeat_timeout = 40
+retry_interval = 2
+
+[client.transport]
+type = "tcp"
+
+[client.transport.tcp]
+nodelay = true
+keepalive_secs = 20
+keepalive_interval = 8
+
+[client.services.kongor_directplay_udp]
+type = "udp"
+local_addr = "127.0.0.1:11550"
+
+[client.services.kongor_directplay_udp_voice]
+type = "udp"
+local_addr = "127.0.0.1:12050"

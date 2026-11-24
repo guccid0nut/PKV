@@ -1,0 +1,7 @@
+[submodule "native/deps/rmlui"]
+	path = native/deps/rmlui
+	url = https://github.com/mikke89/RmlUi.git
+
+[submodule "native/deps/libdeflate"]
+	path = native/deps/libdeflate
+	url = https://github.com/ebiggers/libdeflate.git

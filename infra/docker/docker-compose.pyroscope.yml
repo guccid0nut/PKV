@@ -1,0 +1,9 @@
+services:
+  pyroscope:
+    image: grafana/pyroscope:latest
+    container_name: kongor-pyroscope
+    restart: unless-stopped
+    ports:
+      - "4040:4040"
+    environment:
+      - PYROSCOPE_LOG_LEVEL=info

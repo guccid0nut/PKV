@@ -1,0 +1,26 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// SPDX-FileCopyrightText: 2026 guccidonut and Project KONGOR V Contributors
+// Project KONGOR V (https://github.com/guccidonut/PKV)
+
+namespace TRANSMUTANSTEIN.ChatServer.CommandProcessors.Connection;
+
+public class ServerHandshakeRequestData(ChatBuffer buffer)
+{
+    public byte[] CommandBytes { get; init; } = buffer.ReadCommandBytes();
+
+    public int ServerId { get; } = buffer.ReadInt32();
+
+    public string SessionCookie { get; } = buffer.ReadString();
+
+    public int ChatProtocolVersion { get; } = buffer.ReadInt32();
+
+    public MatchServerChatSessionMetadata ToMetadata()
+    {
+        return new MatchServerChatSessionMetadata
+        {
+            ServerID = ServerId,
+            SessionCookie = SessionCookie,
+            ChatProtocolVersion = ChatProtocolVersion
+        };
+    }
+}

@@ -1,0 +1,2205 @@
+@* ReSharper disable All *@
+@using System.Text.Json
+@using NEXUS.Contracts.Clients
+@using HeroOptionDto = ASPIRE.Common.Models.Guides.HeroOptionDto;
+@model NEXUS.Contracts.Clients.HeroGuideDto?
+@{
+    ViewData["Title"] = Model != null ? $"Edit {Model.Name} - Hero Guide Studio" : "Hero Guide Studio & Builder";
+    string preselectedHero = ViewBag.PreselectedHero as string ?? ViewBag.SelectedHero as string ?? Model?.HeroIdentifier ?? "Hero_Panda";
+    bool isEditing = Model is { ID: > 0 };
+    string guideId = isEditing ? Model!.ID.ToString() : "0";
+    string guideName = Model?.Name ?? "";
+    string targetMap = Model?.TargetMap ?? "caldavar";
+    string intro = Model?.Intro ?? "";
+    string content = Model?.Content ?? "";
+    string startingItems = Model?.StartingItems ?? "";
+    string earlyGameItems = Model?.EarlyGameItems ?? "";
+    string coreItems = Model?.CoreItems ?? "";
+    string luxuryItems = Model?.LuxuryItems ?? "";
+    string abilityQueue = Model?.AbilityQueue ?? "";
+    bool isPublic = Model?.Public ?? true;
+    bool hasLaningSection = !string.IsNullOrWhiteSpace(earlyGameItems);
+}
+
+@Html.AntiForgeryToken()
+
+<div class="w-full max-w-[1920px] mx-auto py-4 sm:py-6 px-3 sm:px-6 lg:px-8 xl:px-10 space-y-5 animate-fade-in-up">
+    <!-- Top Action & Navigation Bar -->
+    <div
+        class="glass-panel p-4 sm:p-5 rounded-3xl border border-slate-700/60 shadow-2xl bg-gradient-to-r from-slate-900/90 via-slate-900/80 to-purple-950/40 backdrop-blur-xl flex flex-col md:flex-row items-center justify-between gap-4">
+        <div class="flex items-center gap-3">
+            <a href="/guides"
+               class="p-2 rounded-2xl bg-slate-800/80 hover:bg-slate-700 text-slate-300 hover:text-white transition-all border border-slate-700 text-xs font-bold flex items-center gap-1.5 shadow-sm">
+                <span>←</span>
+                <span class="hidden sm:inline">Browse Guides</span>
+            </a>
+            <div>
+                <div class="flex items-center gap-2">
+                    <span
+                        class="px-2.5 py-0.5 rounded-full text-[10px] font-bold tracking-wider uppercase bg-amber-500/10 border border-amber-500/30 text-amber-400">
+                        HERO GUIDE STUDIO
+                    </span>
+                    <span
+                        class="px-2.5 py-0.5 rounded-full text-[10px] font-mono bg-purple-500/10 border border-purple-500/30 text-purple-300">
+                        @(isEditing ? $"Editing #{guideId}" : "New Build")
+                    </span>
+                </div>
+                <h1 class="text-xl sm:text-2xl font-black text-white tracking-tight">
+                    @(isEditing ? $"Edit Guide: {guideName}" : "Create Hero Guide")
+                </h1>
+            </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="flex flex-wrap items-center gap-2 w-full md:w-auto justify-end">
+            <!-- Import Modal Trigger -->
+            <button onclick="openImportModal()" type="button"
+                    class="px-3.5 py-2 rounded-2xl bg-slate-800/90 hover:bg-slate-700 text-slate-200 hover:text-white border border-slate-700 text-xs font-bold transition-all flex items-center gap-1.5 shadow-sm active:scale-95">
+                <span>📥</span>
+                <span>Import Code</span>
+            </button>
+
+            <!-- Export Modal Trigger -->
+            <button onclick="openExportModal()" type="button"
+                    class="px-3.5 py-2 rounded-2xl bg-slate-800/90 hover:bg-slate-700 text-slate-200 hover:text-white border border-slate-700 text-xs font-bold transition-all flex items-center gap-1.5 shadow-sm active:scale-95">
+                <span>📤</span>
+                <span>Export Code</span>
+            </button>
+
+            <!-- Publish / Save Guide -->
+            <button onclick="saveHeroGuide()" type="button" id="save-guide-btn"
+                    class="px-5 py-2 rounded-2xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-black text-xs transition-all shadow-lg shadow-amber-500/25 flex items-center gap-2 active:scale-95 border border-amber-300">
+                <span>💾</span>
+                <span>@(isEditing ? "Update Guide" : "Publish Guide")</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Main 3-Column Studio Grid -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-5">
+        <!-- ========================================== -->
+        <!-- LEFT COLUMN: ITEM COMPENDIUM PALETTE (4 cols) -->
+        <!-- ========================================== -->
+        <div class="lg:col-span-4 space-y-4">
+            <div
+                class="glass-panel p-4 rounded-3xl border border-slate-800 shadow-xl space-y-3 sticky top-4 max-h-[88vh] flex flex-col bg-slate-950/80">
+                <div class="flex items-center justify-between border-b border-slate-800/80 pb-2.5 flex-shrink-0">
+                    <div class="flex items-center gap-2">
+                        <span class="text-base">📦</span>
+                        <h2 class="font-extrabold text-white text-sm tracking-wide uppercase">Item Compendium</h2>
+                    </div>
+                    <span id="palette-item-count"
+                          class="text-[11px] font-mono text-slate-400 bg-slate-900 px-2 py-0.5 rounded-full border border-slate-800">
+                        Loading...
+                    </span>
+                </div>
+
+                <!-- Active Target Section Indicator for '+' Click -->
+                <div
+                    class="p-2.5 rounded-2xl bg-slate-900/90 border border-slate-800 flex items-center justify-between gap-2 flex-shrink-0 shadow-inner">
+                    <div class="flex items-center gap-1.5 min-w-0">
+                        <span class="text-xs">🎯</span>
+                        <span class="text-[11px] text-slate-400">Click <strong>+</strong> adds to:</span>
+                    </div>
+                    <span id="palette-active-section-label"
+                          class="px-2.5 py-0.5 rounded-full text-[11px] font-black bg-amber-500/20 text-amber-300 border border-amber-500/40 shadow-sm truncate">
+                        🎒 Starting Items
+                    </span>
+                </div>
+
+                <!-- Search Input -->
+                <div class="relative flex-shrink-0">
+                    <input type="text"
+                           id="palette-item-search"
+                           oninput="filterPaletteItems()"
+                           placeholder="Search items, stats, components..."
+                           class="w-full bg-slate-900 text-white placeholder-slate-500 text-xs rounded-xl px-3.5 py-2 pl-9 border border-slate-700 focus:outline-none focus:border-amber-400 shadow-inner transition-all"/>
+                    <span class="absolute left-3 top-2.5 text-slate-400 text-xs">🔍</span>
+                </div>
+
+                <!-- Category Filters (Horizontal Scrollable Pills matching HoN Shop) -->
+                <div class="flex items-center gap-1.5 overflow-x-auto pb-1.5 no-scrollbar flex-shrink-0">
+                    <button onclick="setPaletteCategory('all')" data-cat="all"
+                            class="palette-cat-btn px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all bg-amber-500/20 text-amber-300 border border-amber-500/40 shadow-sm flex-shrink-0">
+                        All Items
+                    </button>
+                    <button onclick="setPaletteCategory('supplies')" data-cat="supplies"
+                            class="palette-cat-btn px-2.5 py-1 rounded-lg text-[11px] font-medium transition-all bg-slate-900 text-slate-400 hover:text-white border border-slate-800 flex-shrink-0">
+                        🧪 Supplies
+                    </button>
+                    <button onclick="setPaletteCategory('accessories')" data-cat="accessories"
+                            class="palette-cat-btn px-2.5 py-1 rounded-lg text-[11px] font-medium transition-all bg-slate-900 text-slate-400 hover:text-white border border-slate-800 flex-shrink-0">
+                        💍 Accessories
+                    </button>
+                    <button onclick="setPaletteCategory('weapons')" data-cat="weapons"
+                            class="palette-cat-btn px-2.5 py-1 rounded-lg text-[11px] font-medium transition-all bg-slate-900 text-slate-400 hover:text-white border border-slate-800 flex-shrink-0">
+                        ⚔️ Weapons
+                    </button>
+                    <button onclick="setPaletteCategory('relics')" data-cat="relics"
+                            class="palette-cat-btn px-2.5 py-1 rounded-lg text-[11px] font-medium transition-all bg-slate-900 text-slate-400 hover:text-white border border-slate-800 flex-shrink-0">
+                        🔮 Relics
+                    </button>
+                    <button onclick="setPaletteCategory('initiation')" data-cat="initiation"
+                            class="palette-cat-btn px-2.5 py-1 rounded-lg text-[11px] font-medium transition-all bg-slate-900 text-slate-400 hover:text-white border border-slate-800 flex-shrink-0">
+                        ⚡ Initiation
+                    </button>
+                    <button onclick="setPaletteCategory('supportive')" data-cat="supportive"
+                            class="palette-cat-btn px-2.5 py-1 rounded-lg text-[11px] font-medium transition-all bg-slate-900 text-slate-400 hover:text-white border border-slate-800 flex-shrink-0">
+                        🛡️ Supportive
+                    </button>
+                    <button onclick="setPaletteCategory('protective')" data-cat="protective"
+                            class="palette-cat-btn px-2.5 py-1 rounded-lg text-[11px] font-medium transition-all bg-slate-900 text-slate-400 hover:text-white border border-slate-800 flex-shrink-0">
+                        🔰 Protective
+                    </button>
+                    <button onclick="setPaletteCategory('combative')" data-cat="combative"
+                            class="palette-cat-btn px-2.5 py-1 rounded-lg text-[11px] font-medium transition-all bg-slate-900 text-slate-400 hover:text-white border border-slate-800 flex-shrink-0">
+                        ⚔️ Combative
+                    </button>
+                    <button onclick="setPaletteCategory('morph attack')" data-cat="morph attack"
+                            class="palette-cat-btn px-2.5 py-1 rounded-lg text-[11px] font-medium transition-all bg-slate-900 text-slate-400 hover:text-white border border-slate-800 flex-shrink-0">
+                        ❄️ Morph Attack
+                    </button>
+                    <button onclick="setPaletteCategory('secret')" data-cat="secret"
+                            class="palette-cat-btn px-2.5 py-1 rounded-lg text-[11px] font-medium transition-all bg-slate-900 text-slate-400 hover:text-white border border-slate-800 flex-shrink-0">
+                        🗝️ Secret
+                    </button>
+                </div>
+
+                <!-- Draggable Items Scroll Grid (Clean 2-column layout with full names) -->
+                <div id="palette-items-grid"
+                     class="grid grid-cols-1 sm:grid-cols-2 gap-2 overflow-y-auto pr-1 flex-1 min-h-[300px]">
+                    <div class="col-span-full py-8 text-center text-slate-500 text-xs">
+                        Loading item compendium codex...
+                    </div>
+                </div>
+
+                <div
+                    class="p-2.5 rounded-2xl bg-slate-900/60 border border-slate-800/80 text-[11px] text-slate-400 flex items-center justify-between flex-shrink-0">
+                    <span class="flex items-center gap-1.5">
+                        <span>💡</span>
+                        <span>Drag items or click <strong>+</strong> to add</span>
+                    </span>
+                    <span class="font-mono text-amber-400/80 text-[10px]">Shop Synced</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- CENTER COLUMN: BUILD ARCHITECTURE (5 cols) -->
+        <!-- ========================================== -->
+        <div class="lg:col-span-5 space-y-4">
+            <!-- Hero Selection & Guide Header Card -->
+            <div class="glass-panel p-4 sm:p-5 rounded-3xl border border-slate-800 shadow-xl space-y-4 bg-slate-900/90">
+                <div class="flex items-start gap-3">
+                    <div
+                        class="w-16 h-16 rounded-2xl overflow-hidden bg-slate-950 border-2 border-amber-500/50 flex-shrink-0 shadow-lg relative">
+                        <img id="builder-hero-portrait"
+                             src="/images/heroes/hero_panda.png"
+                             onError="this.onerror=null;this.src='/images/heroes/default.png';"
+                             alt="Hero Portrait"
+                             class="w-full h-full object-cover"/>
+                    </div>
+                    <div class="space-y-2 flex-1 min-w-0">
+                        <div class="space-y-1">
+                            <label class="text-[10px] font-bold tracking-widest text-slate-400 uppercase">Target
+                                Hero</label>
+                            <select id="builder-hero-select" onchange="handleHeroChange(this.value)"
+                                    class="w-full bg-slate-950 text-white font-bold text-xs border border-slate-700 rounded-xl px-3 py-2 focus:outline-none focus:border-amber-400 cursor-pointer shadow-inner">
+                                <!-- Populated dynamically -->
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Guide Title -->
+                <div class="space-y-1">
+                    <label class="text-[10px] font-bold tracking-widest text-amber-400 uppercase">Guide Title <span
+                            class="text-rose-400">*</span></label>
+                    <input type="text"
+                           id="builder-guide-title"
+                           value="@guideName"
+                           placeholder="e.g. Aggressive Initiator & Burst Build"
+                           class="w-full bg-slate-950 text-white font-bold text-sm rounded-xl px-3.5 py-2.5 border border-slate-700 focus:outline-none focus:border-amber-400 shadow-inner transition-all"/>
+                </div>
+
+                <!-- Map Target Selector (Caldavar, Mid Wars, All Maps) -->
+                <div class="space-y-1.5">
+                    <div class="flex items-center justify-between">
+                        <label class="text-[10px] font-bold tracking-widest text-cyan-400 uppercase">Target Game
+                            Map</label>
+                        <span class="text-[10px] text-slate-400 font-mono">Tailor guide for map mode</span>
+                    </div>
+                    <select id="builder-target-map"
+                            class="w-full bg-slate-950 text-cyan-300 font-bold text-xs border border-slate-700 rounded-xl px-3 py-2 focus:outline-none focus:border-cyan-400 cursor-pointer shadow-inner">
+                        <option value="caldavar"
+                                selected="@(targetMap != "midwars" && targetMap != "midwars_ranked" && targetMap != "midwars_public")">
+                            🌲 Caldavar
+                        </option>
+                        <option value="midwars"
+                                selected="@(targetMap == "midwars" || targetMap == "midwars_ranked" || targetMap == "midwars_public")">
+                            ⚔️ Mid Wars
+                        </option>
+                    </select>
+                </div>
+
+                <!-- Visibility Toggle -->
+                <div class="flex items-center justify-between pt-1 border-t border-slate-800 text-xs">
+                    <span class="text-slate-300 font-medium">Public Community Guide</span>
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" id="builder-is-public" class="sr-only peer" checked="@isPublic">
+                        <div
+                            class="w-11 h-6 bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500"></div>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Item Drop & Selection Containers (Grouped by HoN In-Game Layout) -->
+            <div class="space-y-4">
+                <!-- Group A: Core Items Box (In-Game Category 1) -->
+                <div class="p-3.5 sm:p-4 rounded-3xl bg-slate-950/60 border border-slate-800 space-y-3">
+                    <div class="flex items-center justify-between px-1">
+                        <div class="flex items-center gap-2">
+                            <span class="text-xs font-black uppercase tracking-widest text-amber-400">🔷 Core Items (In-Game)</span>
+                        </div>
+                        <span class="text-[10px] text-slate-500 font-mono">Max 8 items per slot (4x2 Grid)</span>
+                    </div>
+
+                    <!-- 1. Starting Items Section -->
+                    <div id="section-card-starting"
+                         onclick="selectSection('starting')"
+                         class="section-card p-4 rounded-2xl bg-slate-900/90 border border-amber-500/50 space-y-2.5 shadow-lg ring-2 ring-amber-500/20 cursor-pointer transition-all hover:border-amber-400"
+                         ondragover="handleDragOver(event)"
+                         ondrop="handleDrop(event, 'starting')">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-2">
+                                <span class="text-sm">🎒</span>
+                                <span
+                                    class="text-xs font-bold uppercase tracking-wider text-amber-400">Starting Items</span>
+                                <span class="text-[10px] text-slate-400 font-mono hidden sm:inline">(In-Game: Starting Items)</span>
+                                <span id="target-pill-starting"
+                                      class="section-target-pill px-2 py-0.5 rounded-full text-[9px] font-black bg-amber-500 text-slate-950 shadow-sm">
+                                    🎯 ACTIVE TARGET
+                                </span>
+                            </div>
+                            <span id="starting-cost-badge"
+                                  class="text-[11px] text-amber-400 font-mono bg-amber-500/10 px-2 py-0.5 rounded-full border border-amber-500/20">
+                                💰 0g
+                            </span>
+                        </div>
+                        <div id="slot-container-starting"
+                             class="flex flex-wrap gap-2 min-h-[52px] p-2 rounded-xl bg-slate-950/70 border border-dashed border-slate-700/80 items-center">
+                            <!-- Populated by JavaScript -->
+                        </div>
+                    </div>
+
+                    <!-- 2. Essential / Early Game Items Section (Always Visible) -->
+                    <div id="laning-section-container">
+                        <div id="section-card-laning"
+                             onclick="selectSection('laning')"
+                             class="section-card p-4 rounded-2xl bg-slate-900/90 border border-emerald-500/30 space-y-2.5 shadow-lg cursor-pointer transition-all hover:border-emerald-400/80"
+                             ondragover="handleDragOver(event)"
+                             ondrop="handleDrop(event, 'laning')">
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center gap-2">
+                                    <span class="text-sm">🌾</span>
+                                    <span class="text-xs font-bold uppercase tracking-wider text-emerald-400">Essential / Early Game</span>
+                                    <span class="text-[10px] text-slate-400 font-mono hidden sm:inline">(In-Game: Essential Items)</span>
+                                    <span id="target-pill-laning"
+                                          class="section-target-pill px-2 py-0.5 rounded-full text-[9px] font-bold text-slate-400 bg-slate-950/80 border border-slate-800">
+                                        Click to Target
+                                    </span>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <span id="laning-cost-badge"
+                                          class="text-[11px] text-emerald-400 font-mono bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">
+                                        💰 0g
+                                    </span>
+                                </div>
+                            </div>
+                            <div id="slot-container-laning"
+                                 class="flex flex-wrap gap-2 min-h-[52px] p-2 rounded-xl bg-slate-950/70 border border-dashed border-slate-700/80 items-center">
+                                <!-- Populated by JavaScript -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Group B: Situational Items Box (In-Game Category 2) -->
+                <div class="p-3.5 sm:p-4 rounded-3xl bg-slate-950/60 border border-slate-800 space-y-3">
+                    <div class="flex items-center justify-between px-1">
+                        <div class="flex items-center gap-2">
+                            <span class="text-xs font-black uppercase tracking-widest text-purple-400">🔶 Situational Items (In-Game)</span>
+                        </div>
+                        <span class="text-[10px] text-slate-500 font-mono">Max 8 items per slot (4x2 Grid)</span>
+                    </div>
+
+                    <!-- 3. Offensive Items Section (In-Game: Core Items) -->
+                    <div id="section-card-core"
+                         onclick="selectSection('core')"
+                         class="section-card p-4 rounded-2xl bg-slate-900/90 border border-purple-500/30 space-y-2.5 shadow-lg cursor-pointer transition-all hover:border-purple-400/80"
+                         ondragover="handleDragOver(event)"
+                         ondrop="handleDrop(event, 'core')">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-2">
+                                <span class="text-sm">⚔️</span>
+                                <span
+                                    class="text-xs font-bold uppercase tracking-wider text-purple-400">Offensive Items</span>
+                                <span class="text-[10px] text-slate-400 font-mono hidden sm:inline">(In-Game: Offensive Items)</span>
+                                <span id="target-pill-core"
+                                      class="section-target-pill px-2 py-0.5 rounded-full text-[9px] font-bold text-slate-400 bg-slate-950/80 border border-slate-800">
+                                    Click to Target
+                                </span>
+                            </div>
+                            <span id="core-cost-badge"
+                                  class="text-[11px] text-purple-400 font-mono bg-purple-500/10 px-2 py-0.5 rounded-full border border-purple-500/20">
+                                💰 0g
+                            </span>
+                        </div>
+                        <div id="slot-container-core"
+                             class="flex flex-wrap gap-2 min-h-[52px] p-2 rounded-xl bg-slate-950/70 border border-dashed border-slate-700/80 items-center">
+                            <!-- Populated by JavaScript -->
+                        </div>
+                    </div>
+
+                    <!-- 4. Defensive Items Section (In-Game: Luxury Items) -->
+                    <div id="section-card-luxury"
+                         onclick="selectSection('luxury')"
+                         class="section-card p-4 rounded-2xl bg-slate-900/90 border border-pink-500/30 space-y-2.5 shadow-lg cursor-pointer transition-all hover:border-pink-400/80"
+                         ondragover="handleDragOver(event)"
+                         ondrop="handleDrop(event, 'luxury')">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-2">
+                                <span class="text-sm">🛡️</span>
+                                <span
+                                    class="text-xs font-bold uppercase tracking-wider text-pink-400">Defensive Items</span>
+                                <span class="text-[10px] text-slate-400 font-mono hidden sm:inline">(In-Game: Defensive Items)</span>
+                                <span id="target-pill-luxury"
+                                      class="section-target-pill px-2 py-0.5 rounded-full text-[9px] font-bold text-slate-400 bg-slate-950/80 border border-slate-800">
+                                    Click to Target
+                                </span>
+                            </div>
+                            <span id="luxury-cost-badge"
+                                  class="text-[11px] text-pink-400 font-mono bg-pink-500/10 px-2 py-0.5 rounded-full border border-pink-500/20">
+                                💰 0g
+                            </span>
+                        </div>
+                        <div id="slot-container-luxury"
+                             class="flex flex-wrap gap-2 min-h-[52px] p-2 rounded-xl bg-slate-950/70 border border-dashed border-slate-700/80 items-center">
+                            <!-- Populated by JavaScript -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Introduction & Strategy Textareas -->
+            <div class="glass-panel p-4 rounded-3xl border border-slate-800 shadow-xl space-y-3 bg-slate-900/90">
+                <div class="space-y-1">
+                    <label class="text-[10px] font-bold tracking-widest text-amber-400 uppercase">Introduction
+                        Summary</label>
+                    <textarea id="builder-intro" rows="2"
+                              placeholder="Brief overview of this hero build, playstyle role, and power spikes..."
+                              class="w-full bg-slate-950 text-slate-200 text-xs rounded-xl p-3 border border-slate-700 focus:outline-none focus:border-amber-400 shadow-inner resize-none">@intro</textarea>
+                </div>
+
+                <div class="space-y-1">
+                    <label class="text-[10px] font-bold tracking-widest text-purple-400 uppercase">Detailed Description
+                        & Strategy</label>
+                    <textarea id="builder-content" rows="4"
+                              placeholder="Laning phase tips, skill combos, teamfight positioning, and item timing walkthrough..."
+                              class="w-full bg-slate-950 text-slate-200 text-xs rounded-xl p-3 border border-slate-700 focus:outline-none focus:border-purple-400 shadow-inner resize-y">@content</textarea>
+                </div>
+            </div>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- RIGHT COLUMN: ABILITY LEVELING TREE (3 cols) -->
+        <!-- ========================================== -->
+        <div class="lg:col-span-3 space-y-4">
+            <div
+                class="glass-panel p-4 rounded-3xl border border-slate-800 shadow-xl space-y-3 sticky top-4 max-h-[88vh] flex flex-col bg-slate-950/80">
+                <div class="flex items-center justify-between border-b border-slate-800/80 pb-2.5 flex-shrink-0">
+                    <div class="flex items-center gap-2">
+                        <span class="text-base">⚡</span>
+                        <h2 class="font-extrabold text-white text-sm tracking-wide uppercase">Ability Queue</h2>
+                    </div>
+                    <div id="ability-tree-status-badge">
+                        <span
+                            class="text-[11px] font-mono text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded-full border border-amber-500/20">
+                            25 Levels
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Hero Ability Quick Selector Palette with Real Icons, Counters and Tooltips -->
+                <div class="space-y-1.5 flex-shrink-0">
+                    <div class="flex items-center justify-between">
+                        <span
+                            class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Hero Skills & Ult</span>
+                        <span class="text-[9px] text-slate-500 font-mono">Click or drag to slot</span>
+                    </div>
+                    <div class="grid grid-cols-5 gap-1.5" id="hero-ability-icons-container">
+                        <!-- Populated by JavaScript with real Codex icons, rank counters, and tooltips -->
+                    </div>
+                </div>
+
+                <!-- Level 1 to 25 Timeline List -->
+                <div id="ability-levels-timeline" class="space-y-1 overflow-y-auto pr-1 flex-1 min-h-[300px]">
+                    <!-- Rendered dynamically by JavaScript -->
+                </div>
+
+                <!-- Reset / Fill Presets -->
+                <div class="flex items-center gap-2 pt-1 border-t border-slate-800 flex-shrink-0">
+                    <button onclick="resetAbilityQueue()" type="button"
+                            class="flex-1 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-400 hover:text-rose-400 text-[11px] font-semibold transition-colors">
+                        Reset Levels
+                    </button>
+                    <button onclick="autoFillAbilityQueue()" type="button"
+                            class="flex-1 py-1.5 rounded-xl bg-purple-500/10 hover:bg-purple-500/20 border border-purple-500/30 text-purple-300 text-[11px] font-bold transition-colors">
+                        Auto Level
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ========================================== -->
+<!-- GLOBAL FLOATING STUDIO TOOLTIP             -->
+<!-- ========================================== -->
+<div id="studio-floating-tooltip"
+     class="fixed z-50 hidden pointer-events-none w-72 p-3.5 rounded-2xl bg-slate-950/95 border border-amber-500/50 shadow-2xl backdrop-blur-xl text-xs space-y-2 transition-opacity duration-150">
+    <div class="flex items-start justify-between gap-2 border-b border-slate-800 pb-2">
+        <div>
+            <h4 id="tt-title" class="font-extrabold text-white text-sm text-amber-300">Item Name</h4>
+            <span id="tt-category"
+                  class="text-[10px] uppercase tracking-wider font-semibold text-purple-400">Category</span>
+        </div>
+        <span id="tt-cost"
+              class="px-2 py-0.5 rounded-md text-[11px] font-mono font-bold bg-amber-500/20 text-amber-300 border border-amber-500/40 flex-shrink-0">
+            💰 0g
+        </span>
+    </div>
+    <p id="tt-desc" class="text-slate-200 text-[11px] leading-relaxed">
+        Description
+    </p>
+    <p id="tt-flavor" class="text-[10px] text-slate-400 italic border-t border-slate-900 pt-1.5">
+        Flavor
+    </p>
+</div>
+
+<!-- ========================================== -->
+<!-- MODAL: EXPORT BUILD CODE                   -->
+<!-- ========================================== -->
+<div id="export-guide-modal"
+     class="fixed inset-0 z-50 hidden bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4 animate-fade-in">
+    <div
+        class="glass-panel max-w-lg w-full p-6 rounded-3xl border border-slate-700 shadow-2xl space-y-4 bg-slate-900 relative">
+        <button onclick="closeExportModal()" type="button"
+                class="absolute top-4 right-4 text-slate-400 hover:text-white font-bold">✕
+        </button>
+
+        <div class="flex items-center gap-2">
+            <span class="text-xl">📤</span>
+            <h3 class="text-lg font-black text-white">Export Hero Guide</h3>
+        </div>
+
+        <p class="text-xs text-slate-300">
+            Share this build code with friends or in Discord. Anyone can paste this code into the Guide Builder to
+            instantly load this build!
+        </p>
+
+        <div class="space-y-1.5">
+            <label class="text-[10px] font-bold text-amber-400 uppercase">Shareable Build Code (Base64)</label>
+            <textarea id="export-code-textarea" rows="4" readonly
+                      class="w-full bg-slate-950 text-amber-300 font-mono text-[11px] rounded-xl p-3 border border-slate-700 select-all"></textarea>
+        </div>
+
+        <div class="flex items-center gap-3 pt-2">
+            <button onclick="copyExportCode()" type="button" id="copy-code-btn"
+                    class="flex-1 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs transition-all shadow-md shadow-amber-500/20">
+                📋 Copy Build Code
+            </button>
+            <button onclick="downloadExportJson()" type="button"
+                    class="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold transition-all border border-slate-700">
+                💾 Download .JSON
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- ========================================== -->
+<!-- MODAL: IMPORT BUILD CODE                   -->
+<!-- ========================================== -->
+<div id="import-guide-modal"
+     class="fixed inset-0 z-50 hidden bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4 animate-fade-in">
+    <div
+        class="glass-panel max-w-lg w-full p-6 rounded-3xl border border-slate-700 shadow-2xl space-y-4 bg-slate-900 relative">
+        <button onclick="closeImportModal()" type="button"
+                class="absolute top-4 right-4 text-slate-400 hover:text-white font-bold">✕
+        </button>
+
+        <div class="flex items-center gap-2">
+            <span class="text-xl">📥</span>
+            <h3 class="text-lg font-black text-white">Import Hero Guide</h3>
+        </div>
+
+        <p class="text-xs text-slate-300">
+            Paste a build code or upload a JSON guide file to instantly populate the Guide Studio.
+        </p>
+
+        <div class="space-y-1.5">
+            <label class="text-[10px] font-bold text-amber-400 uppercase">Paste Build Code / JSON</label>
+            <textarea id="import-code-textarea" rows="4" placeholder="Paste Base64 build code or JSON here..."
+                      class="w-full bg-slate-950 text-white font-mono text-xs rounded-xl p-3 border border-slate-700 focus:outline-none focus:border-amber-400"></textarea>
+        </div>
+
+        <div class="flex items-center justify-between gap-3 pt-2">
+            <label
+                class="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold transition-all cursor-pointer border border-slate-700">
+                📁 Upload .JSON File
+                <input type="file" accept=".json" onchange="handleFileUpload(event)" class="hidden"/>
+            </label>
+            <button onclick="applyImportCode()" type="button"
+                    class="px-6 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-black text-xs transition-all shadow-md shadow-amber-500/20">
+                ⚡ Load Build into Studio
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- JavaScript Logic -->
+<script>
+    const initialGuideId = @guideId;
+    const initialHero = "@preselectedHero";
+    const initialStartingItems = "@startingItems";
+    const initialEarlyGameItems = "@earlyGameItems";
+    const initialCoreItems = "@coreItems";
+    const initialLuxuryItems = "@luxuryItems";
+    const initialAbilityQueue = "@abilityQueue";
+
+    const rawServerHeroes = @Html.Raw(JsonSerializer.Serialize(ViewBag.HeroList ?? new List<HeroOptionDto>()));
+    const serverHeroList = Array.isArray(rawServerHeroes)
+        ? rawServerHeroes.map(h => ({
+            id: h.Id || h.id || '',
+            displayName: h.DisplayName || h.displayName || (h.Id || h.id || '').replace(/^Hero_/i, ''),
+            cleanId: (h.CleanId || h.cleanId || (h.Id || h.id || '').replace(/^Hero_/i, '')).toLowerCase()
+        }))
+        : [];
+
+    const heroNameMap = {};
+    serverHeroList.forEach(h => {
+        if (h.id) heroNameMap[h.id.toLowerCase()] = h.displayName;
+        if (h.cleanId) heroNameMap[h.cleanId.toLowerCase()] = h.displayName;
+    });
+
+    // Item Slots Data State
+    let buildStartingItems = [];
+    let buildLaningItems = [];
+    let buildCoreItems = [];
+    let buildLuxuryItems = [];
+    let buildAbilityQueue = new Array(25).fill(0); // 0 = unassigned, 1=Q, 2=W, 3=E, 4=R, 5=Stats
+
+    // Active target section for '+' click (default to 'starting')
+    let currentSelectedSection = 'starting';
+
+    let canonicalItemList = [];
+    let itemLookupByCode = {};
+    let heroAbilitiesCache = {};
+    let currentHeroAbilities = [];
+    let activePaletteCategory = 'all';
+    let draggedItemData = null; // { code, sourceSection, sourceIndex }
+
+    document.addEventListener('DOMContentLoaded', async function () {
+        await loadCatalogs();
+        await initHeroPicker();
+        initBuildState();
+        renderPaletteItems();
+        renderBuildSlots();
+        selectSection('starting');
+        renderAbilityQueueTree();
+
+        window.addEventListener('mousemove', (e) => {
+            const tooltip = document.getElementById('studio-floating-tooltip');
+            if (tooltip && !tooltip.classList.contains('hidden')) {
+                positionTooltip(e);
+            }
+        });
+    });
+
+    // =========================================================================
+    // SECTION SELECTION FOR '+' QUICK-ADD & HIGHLIGHTING
+    // =========================================================================
+    function selectSection(section) {
+        currentSelectedSection = section;
+
+        const sectionNames = {
+            'starting': '🎒 Starting Items',
+            'laning': '🌾 Laning Items',
+            'core': '⚔️ Core Build',
+            'luxury': '👑 Luxury Items'
+        };
+
+        const activeLabel = document.getElementById('palette-active-section-label');
+        if (activeLabel) {
+            activeLabel.innerText = sectionNames[section] || '🎒 Starting Items';
+        }
+
+        const sections = ['starting', 'laning', 'core', 'luxury'];
+        sections.forEach(s => {
+            const card = document.getElementById(`section-card-${s}`);
+            const pill = document.getElementById(`target-pill-${s}`);
+
+            if (card) {
+                if (s === section) {
+                    card.classList.add('ring-2', 'ring-amber-400', 'bg-slate-900/98', 'shadow-2xl', 'shadow-amber-500/10');
+                    card.classList.remove('border-slate-800');
+                } else {
+                    card.classList.remove('ring-2', 'ring-amber-400', 'bg-slate-900/98', 'shadow-2xl', 'shadow-amber-500/10');
+                }
+            }
+
+            if (pill) {
+                if (s === section) {
+                    pill.className = 'section-target-pill px-2 py-0.5 rounded-full text-[9px] font-black bg-amber-500 text-slate-950 shadow-md animate-pulse';
+                    pill.innerText = '🎯 ACTIVE TARGET';
+                } else {
+                    pill.className = 'section-target-pill px-2 py-0.5 rounded-full text-[9px] font-bold text-slate-400 bg-slate-950/80 border border-slate-800 hover:text-white';
+                    pill.innerText = 'Click to Target';
+                }
+            }
+        });
+    }
+
+    // =========================================================================
+    // DATA LOADING & DEDUPLICATION (Canonical Item Compendium & Shop Parity)
+    // =========================================================================
+    async function loadCatalogs() {
+        try {
+            const res = await fetch('/api/items');
+            const data = await res.json();
+
+            const uniqueMap = {};
+            const itemsList = Array.isArray(data) ? data : Object.values(data);
+            itemsList.forEach((item, idx) => {
+                if (!item) return;
+                const name = item.displayName || item.name;
+                const code = item.itemIdentifier || item.code || `item_${idx}`;
+                if (name) {
+                    const normName = name.toLowerCase().replace(/[^a-z0-9]/g, '').trim();
+                    if (!uniqueMap[normName]) {
+                        const canonicalCode = toEngineEntityName(code);
+                        const cleanIconCode = getCanonicalItemCode(code || canonicalCode);
+                        const cleanIcon = (item.iconPath && item.iconPath.length > 0)
+                            ? item.iconPath
+                            : `/images/items/${cleanIconCode}.png`;
+
+                        const itemObj = {
+                            code: canonicalCode,
+                            cleanCode: cleanIconCode,
+                            name: name,
+                            cost: Number(item.cost || 0),
+                            category: item.category || 'Supplies',
+                            description: item.description || '',
+                            flavor: item.flavor || '',
+                            icon: cleanIcon,
+                            searchTerms: item.searchTerms || ''
+                        };
+
+                        uniqueMap[normName] = itemObj;
+                        itemLookupByCode[canonicalCode.toLowerCase()] = itemObj;
+                        itemLookupByCode[code.toLowerCase()] = itemObj;
+                        itemLookupByCode[cleanIconCode.toLowerCase()] = itemObj;
+                        if (item.code) itemLookupByCode[item.code.toLowerCase()] = itemObj;
+                    }
+                }
+            });
+
+            canonicalItemList = Object.values(uniqueMap).sort((a, b) => a.name.localeCompare(b.name));
+        } catch (e) {
+            console.error("Failed loading item catalog", e);
+        }
+    }
+
+    async function initHeroPicker() {
+        const heroSelect = document.getElementById('builder-hero-select');
+        if (!heroSelect) return;
+
+        heroSelect.innerHTML = '';
+
+        let heroList = Array.isArray(serverHeroList) && serverHeroList.length > 0 ? serverHeroList : [];
+        if (heroList.length === 0) {
+            try {
+                const res = await fetch('/api/heroes');
+                if (res.ok) {
+                    const heroes = await res.json();
+                    if (Array.isArray(heroes) && heroes.length > 0) {
+                        heroList = heroes.map(h => ({
+                            id: h.heroIdentifier || h.heroCode || h.id,
+                            displayName: h.displayName || (h.heroIdentifier || '').replace(/^Hero_/i, ''),
+                            cleanId: (h.heroIdentifier || h.heroCode || '').replace(/^Hero_/i, '').toLowerCase()
+                        }));
+                        heroList.forEach(h => {
+                            if (h.id) heroNameMap[h.id.toLowerCase()] = h.displayName;
+                            if (h.cleanId) heroNameMap[h.cleanId.toLowerCase()] = h.displayName;
+                        });
+                    }
+                }
+            } catch (e) {
+                console.error("Failed fetching fallback hero roster", e);
+            }
+        }
+
+        if (heroList.length === 0) {
+            heroList = [
+                {id: "Hero_WolfMan", displayName: "War Beast", cleanId: "wolfman"},
+                {id: "Hero_Panda", displayName: "Pandamonium", cleanId: "panda"},
+                {id: "Hero_Plant", displayName: "Keeper of the Forest", cleanId: "plant"},
+                {id: "Hero_Kunas", displayName: "Thunderbringer", cleanId: "kunas"},
+                {id: "Hero_Taint", displayName: "Soul Reaper", cleanId: "taint"},
+                {id: "Hero_Rocky", displayName: "Pebbles", cleanId: "rocky"},
+                {id: "Hero_Frosty", displayName: "Glacius", cleanId: "frosty"},
+                {id: "Hero_Hunter", displayName: "Blood Hunter", cleanId: "hunter"},
+                {id: "Hero_Shaman", displayName: "Demented Shaman", cleanId: "shaman"},
+                {id: "Hero_Jereziah", displayName: "Jeraziah", cleanId: "jereziah"},
+                {id: "Hero_Treant", displayName: "Deadwood", cleanId: "treant"},
+                {id: "Hero_Mumra", displayName: "Pharaoh", cleanId: "mumra"},
+                {id: "Hero_Krixi", displayName: "Moon Queen", cleanId: "krixi"},
+                {id: "Hero_Scar", displayName: "Madman", cleanId: "scar"},
+                {id: "Hero_Fade", displayName: "Fayde", cleanId: "fade"},
+                {id: "Hero_Xalynx", displayName: "Torturer", cleanId: "xalynx"},
+                {id: "Hero_Yogi", displayName: "Wildsoul", cleanId: "yogi"},
+                {id: "Hero_DiseasedRider", displayName: "Plague Rider", cleanId: "diseasedrider"},
+                {id: "Hero_Helldemon", displayName: "Lord Salforis", cleanId: "helldemon"},
+                {id: "Hero_DwarfMagi", displayName: "Blacksmith", cleanId: "dwarfmagi"},
+                {id: "Hero_FlameDragon", displayName: "Pyromancer", cleanId: "flamedragon"},
+                {id: "Hero_Fairy", displayName: "Nymphora", cleanId: "fairy"},
+                {id: "Hero_Ebulus", displayName: "Slither", cleanId: "ebulus"},
+                {id: "Hero_Hiro", displayName: "Swiftblade", cleanId: "hiro"},
+                {id: "Hero_Voodoo", displayName: "Voodoo Jester", cleanId: "voodoo"},
+                {id: "Hero_BabaYaga", displayName: "Wretched Hag", cleanId: "babayaga"},
+                {id: "Hero_Bephelgor", displayName: "Balphagore", cleanId: "bephelgor"},
+                {id: "Hero_Bomb", displayName: "Bombardier", cleanId: "bomb"},
+                {id: "Hero_Javaras", displayName: "Magebane", cleanId: "javaras"},
+                {id: "Hero_Succubis", displayName: "Succubus", cleanId: "succubis"},
+                {id: "Hero_Valkyrie", displayName: "Valkyrie", cleanId: "valkyrie"},
+                {id: "Hero_Legionnaire", displayName: "Legionnaire", cleanId: "legionnaire"},
+                {id: "Hero_Behemoth", displayName: "Behemoth", cleanId: "behemoth"},
+                {id: "Hero_Devourer", displayName: "Devourer", cleanId: "devourer"},
+                {id: "Hero_WitchSlayer", displayName: "Witch Slayer", cleanId: "witchslayer"}
+            ];
+        }
+
+        const sorted = [...heroList].sort((a, b) => {
+            const nameA = a.displayName || a.DisplayName || a.id || a.Id || '';
+            const nameB = b.displayName || b.DisplayName || b.id || b.Id || '';
+            return nameA.localeCompare(nameB);
+        });
+
+        sorted.forEach(h => {
+            const heroId = h.id || h.Id || '';
+            const heroName = h.displayName || h.DisplayName || heroId.replace(/^Hero_/i, '');
+            const cleanId = (h.cleanId || h.CleanId || heroId.replace(/^Hero_/i, '')).toLowerCase();
+
+            const opt = document.createElement('option');
+            opt.value = heroId;
+            opt.text = heroName;
+            if (heroId.toLowerCase() === initialHero.toLowerCase() || cleanId === initialHero.replace(/^Hero_/i, '').toLowerCase()) {
+                opt.selected = true;
+            }
+            heroSelect.appendChild(opt);
+        });
+
+        handleHeroChange(heroSelect.value || initialHero);
+    }
+
+    async function handleHeroChange(heroIdentifier) {
+        const clean = heroIdentifier.replace(/^Hero_/i, '').toLowerCase();
+        const portrait = document.getElementById('builder-hero-portrait');
+        if (portrait) {
+            portrait.src = `/images/heroes/hero_${clean}.png`;
+        }
+        await loadHeroAbilities(heroIdentifier);
+    }
+
+    // =========================================================================
+    // HERO ABILITIES FETCHING & PALETTE (Codex Parity & Real Icons)
+    // =========================================================================
+    async function loadHeroAbilities(heroIdentifier) {
+        const clean = heroIdentifier.replace(/^Hero_/i, '').toLowerCase();
+        if (heroAbilitiesCache[clean]) {
+            currentHeroAbilities = heroAbilitiesCache[clean];
+            renderHeroAbilityPalette();
+            renderAbilityQueueTree();
+            return;
+        }
+
+        try {
+            const res = await fetch(`/api/heroes/${clean}/abilities`);
+            if (res.ok) {
+                const abilities = await res.json();
+                if (abilities && abilities.length >= 4) {
+                    currentHeroAbilities = abilities;
+                    heroAbilitiesCache[clean] = abilities;
+                    renderHeroAbilityPalette();
+                    renderAbilityQueueTree();
+                    return;
+                }
+            }
+        } catch (e) {
+            console.error("Failed fetching abilities", e);
+        }
+
+        // Fallback abilities if fetch fails
+        currentHeroAbilities = [
+            {
+                key: 'Q',
+                name: `${formatHeroName(clean)} Q`,
+                description: 'Primary tactical combat ability.',
+                iconUrl: `/images/abilities/hero_${clean}_1.png`
+            },
+            {
+                key: 'W',
+                name: `${formatHeroName(clean)} W`,
+                description: 'Secondary utility/crowd control spell.',
+                iconUrl: `/images/abilities/hero_${clean}_2.png`
+            },
+            {
+                key: 'E',
+                name: `${formatHeroName(clean)} E`,
+                description: 'Passive/defensive augment ability.',
+                iconUrl: `/images/abilities/hero_${clean}_3.png`
+            },
+            {
+                key: 'R',
+                name: `${formatHeroName(clean)} Ultimate`,
+                description: 'Signature high-impact ultimate ability.',
+                iconUrl: `/images/abilities/hero_${clean}_4.png`
+            }
+        ];
+        heroAbilitiesCache[clean] = currentHeroAbilities;
+        renderHeroAbilityPalette();
+        renderAbilityQueueTree();
+    }
+
+    function renderHeroAbilityPalette() {
+        const container = document.getElementById('hero-ability-icons-container');
+        if (!container) return;
+        container.innerHTML = '';
+
+        const validation = typeof validateAbilityQueue === 'function' ? validateAbilityQueue() : {
+            counts: {},
+            rulesBySlot: {}
+        };
+        const counts = validation.counts || {};
+        const rules = validation.rulesBySlot || {};
+
+        const clean = (document.getElementById('builder-hero-select')?.value || 'Hero_Panda').replace(/^Hero_/i, '').toLowerCase();
+
+        for (let i = 0; i < 4; i++) {
+            const ab = currentHeroAbilities[i] || {
+                key: ['Q', 'W', 'E', 'R'][i],
+                name: `Ability ${['Q', 'W', 'E', 'R'][i]}`,
+                description: 'Hero ability',
+                iconUrl: `/images/abilities/hero_${clean}_${i + 1}.png`
+            };
+
+            const slotIndex = i + 1;
+            const count = counts[slotIndex] || 0;
+            const maxLvl = rules[slotIndex]?.maxLevel || (i === 3 ? 3 : 4);
+            const isMaxed = count >= maxLvl;
+
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.draggable = true;
+            btn.onclick = () => assignNextAvailableLevel(slotIndex);
+            btn.className = 'group relative p-1 rounded-xl bg-slate-900 border border-slate-700 hover:border-amber-400 hover:scale-105 active:scale-95 transition-all flex flex-col items-center justify-center shadow-md cursor-grab active:cursor-grabbing';
+
+            btn.onmouseenter = (e) => showAbilityTooltip(e, ab);
+            btn.onmouseleave = hideTooltip;
+
+            btn.addEventListener('dragstart', (e) => {
+                e.dataTransfer.setData('application/json', JSON.stringify({
+                    type: 'ability-palette',
+                    skillKey: slotIndex
+                }));
+                e.dataTransfer.setData('text/plain', String(slotIndex));
+            });
+
+            const hotkeyColors = ['bg-emerald-500 text-slate-950', 'bg-cyan-500 text-slate-950', 'bg-purple-500 text-white', 'bg-rose-500 text-white'];
+
+            btn.innerHTML = `
+                <div class="w-8 h-8 rounded-lg overflow-hidden bg-slate-950 border border-slate-800 shadow-sm relative pointer-events-none">
+                    <img src="${ab.iconUrl}" onError="this.onerror=null;this.src='/images/heroes/hero_${clean}.png';" alt="${ab.name || 'Ability'}" class="w-full h-full object-cover" />
+                    <span class="absolute -bottom-0.5 -right-0.5 px-1 rounded text-[9px] font-black ${hotkeyColors[i]} shadow">
+                        ${ab.key}
+                    </span>
+                </div>
+                <span class="text-[9px] font-mono font-bold mt-1 ${isMaxed ? 'text-amber-400' : 'text-slate-400'}">
+                    ${count}/${maxLvl}
+                </span>
+            `;
+            container.appendChild(btn);
+        }
+
+        // 5th Button: +Stats / Attribute Boost
+        const statsCount = counts[5] || 0;
+        const statsMax = 10;
+        const isStatsMax = statsCount >= statsMax;
+
+        const statsBtn = document.createElement('button');
+        statsBtn.type = 'button';
+        statsBtn.draggable = true;
+        statsBtn.onclick = () => assignNextAvailableLevel(5);
+        statsBtn.className = 'group relative p-1 rounded-xl bg-slate-900 border border-slate-700 hover:border-amber-400 hover:scale-105 active:scale-95 transition-all flex flex-col items-center justify-center shadow-md cursor-grab active:cursor-grabbing';
+
+        const statsAbility = {
+            key: '+Stats',
+            name: 'Attribute Boost',
+            description: 'Passively increases all primary and secondary attributes (+2 Strength, +2 Agility, +2 Intelligence).'
+        };
+
+        statsBtn.onmouseenter = (e) => showAbilityTooltip(e, statsAbility);
+        statsBtn.onmouseleave = hideTooltip;
+
+        statsBtn.addEventListener('dragstart', (e) => {
+            e.dataTransfer.setData('application/json', JSON.stringify({type: 'ability-palette', skillKey: 5}));
+            e.dataTransfer.setData('text/plain', '5');
+        });
+
+        statsBtn.innerHTML = `
+            <div class="w-8 h-8 rounded-lg overflow-hidden bg-amber-500/10 border border-amber-500/40 text-amber-300 font-bold flex flex-col items-center justify-center pointer-events-none shadow-sm">
+                <span class="text-xs">💎</span>
+                <span class="text-[8px] font-black leading-none">+Stats</span>
+            </div>
+            <span class="text-[9px] font-mono font-bold mt-1 ${isStatsMax ? 'text-amber-400' : 'text-slate-400'}">
+                ${statsCount}/${statsMax}
+            </span>
+        `;
+        container.appendChild(statsBtn);
+    }
+
+    function initBuildState() {
+        if (initialStartingItems) buildStartingItems = parseItems(initialStartingItems);
+        if (initialEarlyGameItems) buildLaningItems = parseItems(initialEarlyGameItems);
+        if (initialCoreItems) buildCoreItems = parseItems(initialCoreItems);
+        if (initialLuxuryItems) buildLuxuryItems = parseItems(initialLuxuryItems);
+
+        if (initialAbilityQueue) {
+            const parts = initialAbilityQueue.split(/[|,]/).map(p => {
+                const s = p.trim().toLowerCase();
+                if (s.endsWith('1') || s === '1' || s === 'q') return 1;
+                if (s.endsWith('2') || s === '2' || s === 'w') return 2;
+                if (s.endsWith('3') || s === '3' || s === 'e') return 3;
+                if (s.endsWith('4') || s === '4' || s === 'r' || s === 'ultimate') return 4;
+                if (s === 'ability_attributeboost' || s === '5' || s.includes('stat') || s.includes('boost') || s.includes('+')) return 5;
+                const num = parseInt(s);
+                return isNaN(num) ? 0 : num;
+            });
+            for (let i = 0; i < 25; i++) {
+                buildAbilityQueue[i] = parts[i] || 0;
+            }
+        }
+    }
+
+    function parseItems(str) {
+        if (!str) return [];
+        return str.replace(/[\[\]"]/g, '').split(/[|,]/).map(s => s.trim()).filter(s => s.length > 0);
+    }
+
+    // =========================================================================
+    // ITEM PALETTE & DRAG-AND-DROP (Deduplicated Compendium Palette)
+    // =========================================================================
+    function setPaletteCategory(cat) {
+        activePaletteCategory = cat;
+        document.querySelectorAll('.palette-cat-btn').forEach(btn => {
+            if (btn.getAttribute('data-cat') === cat) {
+                btn.className = 'palette-cat-btn px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all bg-amber-500/20 text-amber-300 border border-amber-500/40 shadow-sm flex-shrink-0';
+            } else {
+                btn.className = 'palette-cat-btn px-2.5 py-1 rounded-lg text-[11px] font-medium transition-all bg-slate-900 text-slate-400 hover:text-white border border-slate-800 flex-shrink-0';
+            }
+        });
+        renderPaletteItems();
+    }
+
+    function filterPaletteItems() {
+        renderPaletteItems();
+    }
+
+    function renderPaletteItems() {
+        const grid = document.getElementById('palette-items-grid');
+        if (!grid) return;
+
+        const query = (document.getElementById('palette-item-search')?.value || '').toLowerCase().trim();
+        grid.innerHTML = '';
+
+        let count = 0;
+
+        canonicalItemList.forEach(item => {
+            const name = item.name;
+            const code = item.code;
+            const cost = Number(item.cost || 0);
+            const category = (item.category || '').toLowerCase().trim();
+            const desc = (item.description || '').toLowerCase();
+
+            const searchTerms = (item.searchTerms || '').toLowerCase();
+            const cleanCode = (item.cleanCode || '').toLowerCase();
+            const codeLower = (item.code || '').toLowerCase();
+
+            // Search filter (name, description, category, code, abbreviations, and cross-game aliases)
+            if (query &&
+                !name.toLowerCase().includes(query) &&
+                !desc.includes(query) &&
+                !category.includes(query) &&
+                !codeLower.includes(query) &&
+                !cleanCode.includes(query) &&
+                !searchTerms.includes(query)) {
+                return;
+            }
+
+            // Category filter
+            if (activePaletteCategory !== 'all' && !category.includes(activePaletteCategory)) {
+                return;
+            }
+
+            count++;
+            const card = document.createElement('div');
+            card.className = 'p-2 rounded-2xl bg-slate-900/90 border border-slate-800 hover:border-amber-400/60 transition-all flex items-center justify-between gap-2 cursor-grab active:cursor-grabbing shadow-sm hover:scale-[1.02] group select-none relative';
+            card.draggable = true;
+            card.setAttribute('data-item-code', code);
+
+            card.onmouseenter = (e) => showItemTooltip(e, item);
+            card.onmouseleave = hideTooltip;
+
+            card.addEventListener('dragstart', (e) => {
+                draggedItemData = {
+                    code: code,
+                    sourceSection: null,
+                    sourceIndex: -1
+                };
+                e.dataTransfer.setData('application/json', JSON.stringify(draggedItemData));
+                e.dataTransfer.setData('text/plain', code);
+            });
+
+            card.innerHTML = `
+                <div class="flex items-center gap-2 min-w-0 flex-1 pointer-events-none">
+                    <img src="${item.icon}" onError="this.onerror=null;this.src='/images/items/default.png';"
+                         alt="${name}"
+                         class="w-8 h-8 rounded-lg object-cover border border-slate-700 group-hover:border-amber-400 flex-shrink-0 shadow-sm" />
+                    <div class="flex flex-col min-w-0 flex-1">
+                        <span class="text-xs font-bold text-slate-200 group-hover:text-amber-300 truncate">${name}</span>
+                        <span class="text-[10px] text-amber-400/90 font-mono">💰 ${cost.toLocaleString()}g</span>
+                    </div>
+                </div>
+                <button onclick="quickAddItem('${code}')" type="button" title="Add to current active section"
+                        class="w-6 h-6 rounded-lg bg-slate-800 hover:bg-amber-500 hover:text-slate-950 text-amber-400 hover:shadow-md text-xs font-black flex items-center justify-center transition-all flex-shrink-0 border border-slate-700 hover:border-amber-400 active:scale-90">
+                    +
+                </button>
+            `;
+
+            grid.appendChild(card);
+        });
+
+        const countBadge = document.getElementById('palette-item-count');
+        if (countBadge) countBadge.innerText = `${count} Items`;
+    }
+
+    // Quick add adds directly to the user's currently selected section!
+    function quickAddItem(code) {
+        if (currentSelectedSection === 'starting') {
+            if (buildStartingItems.length < 8) {
+                buildStartingItems.push(code);
+            } else {
+                alert("Starting Items is full (maximum 8 items). Click another section to target it.");
+                return;
+            }
+        } else if (currentSelectedSection === 'laning') {
+            if (buildLaningItems.length < 8) {
+                buildLaningItems.push(code);
+            } else {
+                alert("Early Game / Essential Items section is full (maximum 8 items). Click another section to target it.");
+                return;
+            }
+        } else if (currentSelectedSection === 'core') {
+            if (buildCoreItems.length < 8) {
+                buildCoreItems.push(code);
+            } else {
+                alert("Core Build / Offensive Items section is full (maximum 8 items). Click another section to target it.");
+                return;
+            }
+        } else if (currentSelectedSection === 'luxury') {
+            if (buildLuxuryItems.length < 8) {
+                buildLuxuryItems.push(code);
+            } else {
+                alert("Luxury / Defensive Items section is full (maximum 8 items). Click another section to target it.");
+                return;
+            }
+        }
+        renderBuildSlots();
+    }
+
+    function handleDragOver(e) {
+        e.preventDefault();
+    }
+
+    // Handles drops from both item palette and between existing sections!
+    function handleDrop(e, targetSection) {
+        e.preventDefault();
+
+        let dragData = null;
+        try {
+            const rawJson = e.dataTransfer.getData('application/json');
+            if (rawJson) dragData = JSON.parse(rawJson);
+        } catch {
+        }
+
+        if (!dragData && draggedItemData) {
+            dragData = draggedItemData;
+        }
+
+        const code = dragData ? dragData.code : (e.dataTransfer.getData('text/plain') || '');
+        if (!code) return;
+
+        // If dragged from an existing section, remove from source first!
+        if (dragData && dragData.sourceSection) {
+            const src = dragData.sourceSection;
+            const idx = dragData.sourceIndex;
+
+            if (src === targetSection) {
+                draggedItemData = null;
+                return; // Dropped on same section without move
+            }
+
+            if (src === 'starting') buildStartingItems.splice(idx, 1);
+            else if (src === 'laning') buildLaningItems.splice(idx, 1);
+            else if (src === 'core') buildCoreItems.splice(idx, 1);
+            else if (src === 'luxury') buildLuxuryItems.splice(idx, 1);
+        }
+
+        // Add to target section (up to 8 items matching in-game grid)
+        if (targetSection === 'starting') {
+            if (buildStartingItems.length < 8) buildStartingItems.push(code);
+        } else if (targetSection === 'laning') {
+            if (buildLaningItems.length < 8) buildLaningItems.push(code);
+        } else if (targetSection === 'core') {
+            if (buildCoreItems.length < 8) buildCoreItems.push(code);
+        } else if (targetSection === 'luxury') {
+            if (buildLuxuryItems.length < 8) buildLuxuryItems.push(code);
+        }
+
+        selectSection(targetSection);
+        draggedItemData = null;
+        renderBuildSlots();
+    }
+
+    function renderBuildSlots() {
+        renderSlotContainer('slot-container-starting', buildStartingItems, 'starting');
+        renderSlotContainer('slot-container-laning', buildLaningItems, 'laning');
+        renderSlotContainer('slot-container-core', buildCoreItems, 'core');
+        renderSlotContainer('slot-container-luxury', buildLuxuryItems, 'luxury');
+
+        updateCostBadge('starting-cost-badge', buildStartingItems);
+        updateCostBadge('laning-cost-badge', buildLaningItems);
+        updateCostBadge('core-cost-badge', buildCoreItems);
+        updateCostBadge('luxury-cost-badge', buildLuxuryItems);
+    }
+
+    function renderSlotContainer(containerId, itemsArray, section) {
+        const container = document.getElementById(containerId);
+        if (!container) return;
+
+        container.innerHTML = '';
+
+        if (itemsArray.length === 0) {
+            container.innerHTML = `<span class="text-xs text-slate-500 italic px-2">Drag items here or click + from the palette...</span>`;
+            return;
+        }
+
+        itemsArray.forEach((code, idx) => {
+            const itemObj = getItemObject(code);
+            const name = itemObj.name;
+            const icon = itemObj.icon;
+
+            const pill = document.createElement('div');
+            pill.draggable = true;
+            pill.className = 'flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-slate-900 border border-slate-700 text-xs text-slate-200 shadow-sm group hover:border-amber-400 transition-all cursor-grab active:cursor-grabbing select-none';
+
+            pill.onmouseenter = (e) => showItemTooltip(e, itemObj);
+            pill.onmouseleave = hideTooltip;
+
+            pill.addEventListener('dragstart', (e) => {
+                draggedItemData = {
+                    code: code,
+                    sourceSection: section,
+                    sourceIndex: idx
+                };
+                e.dataTransfer.setData('application/json', JSON.stringify(draggedItemData));
+                e.dataTransfer.setData('text/plain', code);
+            });
+
+            pill.innerHTML = `
+                <span class="text-slate-500 font-mono text-[10px] group-hover:text-amber-400">⠿</span>
+                <img src="${icon}" onError="this.onerror=null;this.src='/images/items/default.png';" alt="${name}" class="w-5 h-5 rounded-md object-cover pointer-events-none shadow-sm" />
+                <span class="font-medium text-[11px] truncate max-w-[110px] pointer-events-none">${name}</span>
+                <button onclick="event.stopPropagation(); removeSlotItem('${section}', ${idx})" type="button" title="Remove item" class="text-slate-500 hover:text-rose-400 text-xs font-bold pl-1 transition-colors">✕</button>
+            `;
+            container.appendChild(pill);
+        });
+    }
+
+    function getItemObject(code) {
+        const canonicalCode = toEngineEntityName(code);
+        const cleanKey = (code || '').toLowerCase().trim();
+        const cleanCanon = (canonicalCode || '').toLowerCase().trim();
+        const cleanSlug = getCanonicalItemCode(canonicalCode || code);
+
+        if (itemLookupByCode[cleanCanon]) return itemLookupByCode[cleanCanon];
+        if (itemLookupByCode[cleanKey]) return itemLookupByCode[cleanKey];
+        if (itemLookupByCode[cleanSlug]) return itemLookupByCode[cleanSlug];
+
+        const cleanNoPrefix = cleanKey.replace(/^item_/i, '');
+        if (itemLookupByCode[cleanNoPrefix]) return itemLookupByCode[cleanNoPrefix];
+
+        return {
+            code: canonicalCode || code,
+            name: formatItemName(canonicalCode || code),
+            cost: 0,
+            category: 'Item',
+            description: '',
+            flavor: '',
+            icon: `/images/items/${cleanSlug}.png`
+        };
+    }
+
+    function removeSlotItem(section, index) {
+        if (section === 'starting') buildStartingItems.splice(index, 1);
+        else if (section === 'laning') buildLaningItems.splice(index, 1);
+        else if (section === 'core') buildCoreItems.splice(index, 1);
+        else if (section === 'luxury') buildLuxuryItems.splice(index, 1);
+        renderBuildSlots();
+    }
+
+    function updateCostBadge(badgeId, itemsArray) {
+        const badge = document.getElementById(badgeId);
+        if (!badge) return;
+        let total = 0;
+        itemsArray.forEach(code => {
+            const itemObj = getItemObject(code);
+            if (itemObj && itemObj.cost) total += Number(itemObj.cost);
+        });
+        badge.innerText = `💰 ${total.toLocaleString()}g`;
+    }
+
+    function addLaningSection() {
+        document.getElementById('laning-section-container')?.classList.remove('hidden');
+        document.getElementById('add-laning-btn-container')?.classList.add('hidden');
+        selectSection('laning');
+    }
+
+    function removeLaningSection() {
+        buildLaningItems = [];
+        document.getElementById('laning-section-container')?.classList.add('hidden');
+        document.getElementById('add-laning-btn-container')?.classList.remove('hidden');
+        if (currentSelectedSection === 'laning') {
+            selectSection('starting');
+        }
+        renderBuildSlots();
+    }
+
+    // =========================================================================
+    // ABILITY QUEUE TIMELINE (1 to 25 with Drag-and-Drop Reordering)
+    // =========================================================================
+    let draggedAbilitySourceIndex = -1;
+
+    function handleAbilityDragStart(e, index) {
+        draggedAbilitySourceIndex = index;
+        e.dataTransfer.effectAllowed = 'move';
+        e.dataTransfer.setData('application/json', JSON.stringify({type: 'ability-reorder', sourceIndex: index}));
+        e.dataTransfer.setData('text/plain', String(buildAbilityQueue[index]));
+        setTimeout(() => e.target.classList.add('opacity-40', 'border-amber-400'), 0);
+    }
+
+    function handleAbilityDragEnd(e) {
+        draggedAbilitySourceIndex = -1;
+        document.querySelectorAll('.ability-queue-row').forEach(r => {
+            r.classList.remove('opacity-40', 'border-amber-400', 'bg-amber-500/15', 'ring-2', 'ring-amber-400/50');
+        });
+    }
+
+    function handleAbilityDragOver(e) {
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'move';
+    }
+
+    function handleAbilityDragEnter(e, targetIndex) {
+        e.preventDefault();
+        const row = e.currentTarget;
+        row.classList.add('border-amber-400', 'bg-amber-500/15', 'ring-2', 'ring-amber-400/50');
+    }
+
+    function handleAbilityDragLeave(e, targetIndex) {
+        const row = e.currentTarget;
+        row.classList.remove('border-amber-400', 'bg-amber-500/15', 'ring-2', 'ring-amber-400/50');
+    }
+
+    function handleAbilityDrop(e, targetIndex) {
+        e.preventDefault();
+        const row = e.currentTarget;
+        row.classList.remove('border-amber-400', 'bg-amber-500/15', 'ring-2', 'ring-amber-400/50');
+
+        let dragData = null;
+        try {
+            const raw = e.dataTransfer.getData('application/json');
+            if (raw) dragData = JSON.parse(raw);
+        } catch {
+        }
+
+        if (dragData && dragData.type === 'ability-reorder') {
+            const sourceIndex = dragData.sourceIndex;
+            if (sourceIndex !== targetIndex && sourceIndex >= 0 && sourceIndex < 25 && targetIndex >= 0 && targetIndex < 25) {
+                // Scootch over appropriately: remove from sourceIndex and insert at targetIndex
+                const movedSkill = buildAbilityQueue.splice(sourceIndex, 1)[0];
+                buildAbilityQueue.splice(targetIndex, 0, movedSkill);
+                renderAbilityQueueTree();
+            }
+        } else if (dragData && dragData.type === 'ability-palette') {
+            buildAbilityQueue[targetIndex] = dragData.skillKey;
+            renderAbilityQueueTree();
+        }
+        draggedAbilitySourceIndex = -1;
+    }
+
+    function validateAbilityQueue() {
+        const counts = {1: 0, 2: 0, 3: 0, 4: 0, 5: 0};
+        const warningsByLevel = {};
+        const globalWarnings = [];
+
+        const rulesBySlot = {};
+        for (let i = 0; i < 4; i++) {
+            const ab = currentHeroAbilities[i];
+            rulesBySlot[i + 1] = {
+                maxLevel: ab?.maxLevel ?? (i === 3 ? 3 : 4),
+                requiredLevels: ab?.requiredLevels ?? (i === 3 ? [6, 11, 16] : [1, 3, 5, 7]),
+                key: ab?.key ?? ['Q', 'W', 'E', 'R'][i],
+                name: ab?.name ?? `Ability ${['Q', 'W', 'E', 'R'][i]}`
+            };
+        }
+        rulesBySlot[5] = {
+            maxLevel: 10,
+            requiredLevels: [1],
+            key: '+Stats',
+            name: 'Attribute Boost'
+        };
+
+        for (let lvl = 1; lvl <= 25; lvl++) {
+            const skill = buildAbilityQueue[lvl - 1];
+            if (skill >= 1 && skill <= 5) {
+                counts[skill]++;
+                const currentRank = counts[skill];
+                const rule = rulesBySlot[skill];
+
+                if (currentRank > rule.maxLevel) {
+                    const warn = `${rule.key} exceeds max rank (${currentRank}/${rule.maxLevel})`;
+                    warningsByLevel[lvl - 1] = warningsByLevel[lvl - 1] || [];
+                    warningsByLevel[lvl - 1].push(warn);
+                } else if (skill >= 1 && skill <= 4) {
+                    const reqHeroLevel = (rule.requiredLevels && rule.requiredLevels.length >= currentRank)
+                        ? rule.requiredLevels[currentRank - 1]
+                        : 1;
+                    if (lvl < reqHeroLevel) {
+                        const warn = `${rule.key} (Rank ${currentRank}) requires Hero Level ${reqHeroLevel}`;
+                        warningsByLevel[lvl - 1] = warningsByLevel[lvl - 1] || [];
+                        warningsByLevel[lvl - 1].push(warn);
+                    }
+                }
+            }
+        }
+
+        for (let s = 1; s <= 5; s++) {
+            const rule = rulesBySlot[s];
+            if (counts[s] > rule.maxLevel) {
+                globalWarnings.push(`${rule.key} exceeds max rank (${counts[s]}/${rule.maxLevel})`);
+            }
+        }
+
+        return {counts, warningsByLevel, globalWarnings, rulesBySlot};
+    }
+
+    function assignNextAvailableLevel(skillKey) {
+        const validation = validateAbilityQueue();
+        const currentCount = validation.counts[skillKey] || 0;
+        const rule = validation.rulesBySlot[skillKey];
+
+        let minStartLevel = 1;
+        if (rule && skillKey >= 1 && skillKey <= 4) {
+            const nextRank = currentCount + 1;
+            if (rule.requiredLevels && rule.requiredLevels.length >= nextRank) {
+                minStartLevel = rule.requiredLevels[nextRank - 1];
+            }
+        }
+
+        // Try to place at next available slot >= minStartLevel
+        let assigned = false;
+        for (let i = minStartLevel - 1; i < 25; i++) {
+            if (buildAbilityQueue[i] === 0) {
+                buildAbilityQueue[i] = skillKey;
+                assigned = true;
+                break;
+            }
+        }
+
+        // If no slot >= minStartLevel is empty, place in any first empty slot
+        if (!assigned) {
+            for (let i = 0; i < 25; i++) {
+                if (buildAbilityQueue[i] === 0) {
+                    buildAbilityQueue[i] = skillKey;
+                    break;
+                }
+            }
+        }
+
+        renderAbilityQueueTree();
+    }
+
+    function renderAbilityQueueTree() {
+        const container = document.getElementById('ability-levels-timeline');
+        if (!container) return;
+        container.innerHTML = '';
+
+        const validation = validateAbilityQueue();
+        const warningsByLevel = validation.warningsByLevel;
+        const totalWarningCount = Object.keys(warningsByLevel).length;
+
+        // Update header status badge
+        const badgeElem = document.getElementById('ability-tree-status-badge');
+        if (badgeElem) {
+            if (totalWarningCount === 0) {
+                badgeElem.innerHTML = `
+                    <span class="text-[10px] font-mono font-bold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/30">
+                        ✓ Valid Build
+                    </span>
+                `;
+            } else {
+                badgeElem.innerHTML = `
+                    <span class="text-[10px] font-mono font-bold text-amber-300 bg-amber-500/20 px-2 py-0.5 rounded-full border border-amber-500/40 animate-pulse" title="${totalWarningCount} skill requirement warnings in queue">
+                        ⚠️ ${totalWarningCount} Warnings
+                    </span>
+                `;
+            }
+        }
+
+        renderHeroAbilityPalette();
+
+        const clean = (document.getElementById('builder-hero-select')?.value || 'Hero_Panda').replace(/^Hero_/i, '').toLowerCase();
+
+        for (let lvl = 1; lvl <= 25; lvl++) {
+            const currentSkill = buildAbilityQueue[lvl - 1];
+            const slotWarnings = warningsByLevel[lvl - 1] || [];
+            const hasWarning = slotWarnings.length > 0;
+
+            const row = document.createElement('div');
+            row.className = `ability-queue-row flex items-center justify-between p-1.5 rounded-xl text-xs text-slate-300 transition-all cursor-grab active:cursor-grabbing select-none group border ${
+                hasWarning ? 'bg-rose-950/30 border-rose-500/50 hover:border-rose-400 shadow-rose-950/30' : 'bg-slate-900/90 border-slate-800 hover:border-amber-400/60'
+            }`;
+            row.draggable = true;
+
+            row.addEventListener('dragstart', (e) => handleAbilityDragStart(e, lvl - 1));
+            row.addEventListener('dragend', handleAbilityDragEnd);
+            row.addEventListener('dragover', handleAbilityDragOver);
+            row.addEventListener('dragenter', (e) => handleAbilityDragEnter(e, lvl - 1));
+            row.addEventListener('dragleave', (e) => handleAbilityDragLeave(e, lvl - 1));
+            row.addEventListener('drop', (e) => handleAbilityDrop(e, lvl - 1));
+
+            let skillBadge = `<span class="text-[10px] text-slate-500 font-mono italic">Unassigned</span>`;
+            let abilityForTooltip = null;
+
+            if (currentSkill >= 1 && currentSkill <= 4) {
+                const ab = currentHeroAbilities[currentSkill - 1];
+                abilityForTooltip = ab;
+                const slotLabel = ['Q', 'W', 'E', 'R'][currentSkill - 1];
+                const abName = ab?.name || `Ability ${slotLabel}`;
+                const iconUrl = ab?.iconUrl || `/images/abilities/hero_${clean}_${currentSkill}.png`;
+
+                const colors = [
+                    'bg-emerald-500/20 text-emerald-300 border-emerald-500/40',
+                    'bg-cyan-500/20 text-cyan-300 border-cyan-500/40',
+                    'bg-purple-500/20 text-purple-300 border-purple-500/40',
+                    'bg-rose-500/20 text-rose-300 border-rose-500/40'
+                ];
+
+                skillBadge = `
+                    <div class="flex items-center gap-1.5 px-2 py-0.5 rounded-md text-[10px] font-bold ${colors[currentSkill - 1]} border">
+                        <img src="${iconUrl}" onError="this.onerror=null;this.src='/images/heroes/hero_${clean}.png';" alt="${abName || 'Skill'}" class="w-4 h-4 rounded object-cover" />
+                        <span class="truncate max-w-[100px]">${abName}</span>
+                        <span class="font-mono font-black text-[9px] opacity-80">(${slotLabel})</span>
+                    </div>
+                `;
+            } else if (currentSkill === 5) {
+                abilityForTooltip = {
+                    key: '+Stats',
+                    name: 'Attribute Boost',
+                    description: 'Passively increases all primary and secondary attributes (+2 Str, +2 Agi, +2 Int).'
+                };
+                skillBadge = `
+                    <div class="flex items-center gap-1.5 px-2 py-0.5 rounded-md text-[10px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/40">
+                        <span>💎</span>
+                        <span>+Attributes</span>
+                    </div>
+                `;
+            }
+
+            let warningChip = '';
+            if (hasWarning) {
+                warningChip = `
+                    <span class="px-1.5 py-0.5 rounded text-[8px] font-black uppercase tracking-wider bg-rose-500/20 text-rose-300 border border-rose-500/40 flex items-center gap-0.5 shadow-sm flex-shrink-0 animate-pulse" title="${slotWarnings.join('; ')}">
+                        ⚠️ Level Req
+                    </span>
+                `;
+            }
+
+            if (abilityForTooltip) {
+                row.onmouseenter = (e) => showAbilityTooltip(e, abilityForTooltip);
+                row.onmouseleave = hideTooltip;
+            }
+
+            row.innerHTML = `
+                <div class="flex items-center gap-1.5 min-w-0 flex-1 pointer-events-none">
+                    <span class="text-slate-600 group-hover:text-amber-400 font-mono text-xs select-none" title="Drag to reorder level">⠿</span>
+                    <span class="w-5 h-5 rounded-lg bg-slate-950 border ${hasWarning ? 'border-rose-500 text-rose-300' : 'border-slate-800 text-slate-400'} text-[10px] font-mono font-bold flex items-center justify-center flex-shrink-0">
+                        ${lvl}
+                    </span>
+                    ${skillBadge}
+                    ${warningChip}
+                </div>
+                <div class="flex items-center gap-1">
+                    <select onchange="setAbilityLevel(${lvl - 1}, this.value)" class="bg-slate-950 text-slate-300 text-[10px] border ${hasWarning ? 'border-rose-500/60' : 'border-slate-800'} rounded-lg px-1.5 py-0.5 focus:outline-none focus:border-amber-400 cursor-pointer">
+                        <option value="0" ${currentSkill === 0 ? 'selected' : ''}>-</option>
+                        <option value="1" ${currentSkill === 1 ? 'selected' : ''}>Q</option>
+                        <option value="2" ${currentSkill === 2 ? 'selected' : ''}>W</option>
+                        <option value="3" ${currentSkill === 3 ? 'selected' : ''}>E</option>
+                        <option value="4" ${currentSkill === 4 ? 'selected' : ''}>R (Ult)</option>
+                        <option value="5" ${currentSkill === 5 ? 'selected' : ''}>+Stats</option>
+                    </select>
+                </div>
+            `;
+            container.appendChild(row);
+        }
+    }
+
+    function setAbilityLevel(index, val) {
+        buildAbilityQueue[index] = parseInt(val) || 0;
+        renderAbilityQueueTree();
+    }
+
+    function resetAbilityQueue() {
+        buildAbilityQueue = new Array(25).fill(0);
+        renderAbilityQueueTree();
+    }
+
+    function autoFillAbilityQueue() {
+        buildAbilityQueue = [
+            1, 2, 1, 3, 1, 4, 1, 2, 2, 2, 4, 3, 3, 3, 5, 4, 5, 5, 5, 5, 5, 5, 5, 5, 5
+        ];
+        renderAbilityQueueTree();
+    }
+
+    // =========================================================================
+    // TOOLTIPS
+    // =========================================================================
+    function showItemTooltip(e, item) {
+        const tooltip = document.getElementById('studio-floating-tooltip');
+        if (!tooltip || !item) return;
+
+        document.getElementById('tt-title').innerText = item.name || '';
+        document.getElementById('tt-cost').innerText = `💰 ${Number(item.cost || 0).toLocaleString()}g`;
+        document.getElementById('tt-category').innerText = item.category || 'Item';
+        document.getElementById('tt-desc').innerText = item.description || 'Standard combat equipment.';
+
+        const flavorElem = document.getElementById('tt-flavor');
+        if (item.flavor) {
+            flavorElem.innerText = `"${item.flavor}"`;
+            flavorElem.style.display = 'block';
+        } else {
+            flavorElem.style.display = 'none';
+        }
+
+        tooltip.classList.remove('hidden');
+        positionTooltip(e);
+    }
+
+    function showAbilityTooltip(e, ability) {
+        const tooltip = document.getElementById('studio-floating-tooltip');
+        if (!tooltip || !ability) return;
+
+        document.getElementById('tt-title').innerText = `${ability.name} (${ability.key || ''})`;
+        document.getElementById('tt-cost').innerText = `⚡ Ability`;
+        document.getElementById('tt-category').innerText = `Level Skill`;
+        document.getElementById('tt-desc').innerText = ability.description || 'Hero combat skill.';
+        document.getElementById('tt-flavor').style.display = 'none';
+
+        tooltip.classList.remove('hidden');
+        positionTooltip(e);
+    }
+
+    function hideTooltip() {
+        const tooltip = document.getElementById('studio-floating-tooltip');
+        if (tooltip) tooltip.classList.add('hidden');
+    }
+
+    function positionTooltip(e) {
+        const tooltip = document.getElementById('studio-floating-tooltip');
+        if (!tooltip || tooltip.classList.contains('hidden')) return;
+
+        const x = e.clientX + 16;
+        const y = e.clientY + 16;
+        const maxX = window.innerWidth - 300;
+        const maxY = window.innerHeight - 200;
+
+        tooltip.style.left = `${Math.min(x, maxX)}px`;
+        tooltip.style.top = `${Math.min(y, maxY)}px`;
+    }
+
+    // =========================================================================
+    // SAVE / PUBLISH GUIDE
+    // =========================================================================
+    async function saveHeroGuide() {
+        const title = document.getElementById('builder-guide-title')?.value.trim();
+        const heroSelect = document.getElementById('builder-hero-select');
+        const heroIdentifier = heroSelect ? heroSelect.value : 'Hero_Panda';
+        const targetMap = document.getElementById('builder-target-map')?.value || 'caldavar';
+        const intro = document.getElementById('builder-intro')?.value.trim() || '';
+        const content = document.getElementById('builder-content')?.value.trim() || '';
+        const isPublic = document.getElementById('builder-is-public')?.checked ?? true;
+
+        if (!title) {
+            alert("Please enter a Guide Title.");
+            document.getElementById('builder-guide-title')?.focus();
+            return;
+        }
+
+        const payload = {
+            id: initialGuideId > 0 ? initialGuideId : null,
+            name: title,
+            heroIdentifier: heroIdentifier,
+            heroName: formatHeroName(heroIdentifier.replace(/^Hero_/i, '')),
+            targetMap: targetMap,
+            intro: intro,
+            content: content,
+            startingItems: buildStartingItems.join('|'),
+            earlyGameItems: buildLaningItems.join('|'),
+            coreItems: buildCoreItems.join('|'),
+            luxuryItems: buildLuxuryItems.join('|'),
+            abilityQueue: buildAbilityQueue.join('|'),
+            isPublic: isPublic
+        };
+
+        const saveBtn = document.getElementById('save-guide-btn');
+        if (saveBtn) {
+            saveBtn.disabled = true;
+            saveBtn.innerHTML = `<span>⏳ Saving...</span>`;
+        }
+
+        try {
+            const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value || '';
+            const res = await fetch('/guides/save', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'RequestVerificationToken': token
+                },
+                body: JSON.stringify(payload)
+            });
+
+            const data = await res.json();
+            if (data.success) {
+                alert("🎉 " + data.message);
+                window.location.href = `/guides/${data.guideId}`;
+            } else {
+                alert("⚠️ " + (data.message || "Failed to save guide."));
+                if (saveBtn) {
+                    saveBtn.disabled = false;
+                    saveBtn.innerHTML = `<span>💾 Publish Guide</span>`;
+                }
+            }
+        } catch (e) {
+            console.error(e);
+            alert("Error communicating with server.");
+            if (saveBtn) {
+                saveBtn.disabled = false;
+                saveBtn.innerHTML = `<span>💾 Publish Guide</span>`;
+            }
+        }
+    }
+
+    // =========================================================================
+    // EXPORT / IMPORT BUILD CODE MODALS
+    // =========================================================================
+    function openExportModal() {
+        const title = document.getElementById('builder-guide-title')?.value.trim() || 'My Hero Build';
+        const heroSelect = document.getElementById('builder-hero-select');
+        const heroIdentifier = heroSelect ? heroSelect.value : 'Hero_Panda';
+
+        const exportObj = {
+            version: "1.0",
+            exportedAt: new Date().toISOString(),
+            heroIdentifier: heroIdentifier,
+            heroName: formatHeroName(heroIdentifier.replace(/^Hero_/i, '')),
+            guideName: title,
+            targetMap: document.getElementById('builder-target-map')?.value || 'caldavar',
+            intro: document.getElementById('builder-intro')?.value.trim() || '',
+            detailedDescription: document.getElementById('builder-content')?.value.trim() || '',
+            startingItems: buildStartingItems.join(','),
+            earlyGameItems: buildLaningItems.join(','),
+            coreItems: buildCoreItems.join(','),
+            luxuryItems: buildLuxuryItems.join(','),
+            abilityQueue: buildAbilityQueue.join(',')
+        };
+
+        const jsonStr = JSON.stringify(exportObj);
+        const base64Code = btoa(unescape(encodeURIComponent(jsonStr)));
+        document.getElementById('export-code-textarea').value = base64Code;
+        document.getElementById('export-guide-modal')?.classList.remove('hidden');
+    }
+
+    function closeExportModal() {
+        document.getElementById('export-guide-modal')?.classList.add('hidden');
+    }
+
+    function copyExportCode() {
+        const textarea = document.getElementById('export-code-textarea');
+        textarea.select();
+        document.execCommand('copy');
+        const copyBtn = document.getElementById('copy-code-btn');
+        if (copyBtn) {
+            copyBtn.innerText = "✓ Copied to Clipboard!";
+            setTimeout(() => {
+                copyBtn.innerText = "📋 Copy Build Code";
+            }, 2000);
+        }
+    }
+
+    function downloadExportJson() {
+        const title = document.getElementById('builder-guide-title')?.value.trim() || 'hero-guide';
+        const heroSelect = document.getElementById('builder-hero-select');
+        const heroIdentifier = heroSelect ? heroSelect.value.replace(/^Hero_/i, '').toLowerCase() : 'hero';
+
+        const jsonStr = decodeURIComponent(escape(atob(document.getElementById('export-code-textarea').value)));
+        const blob = new Blob([jsonStr], {type: "application/json"});
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `hon-guide-${heroIdentifier}-${title.toLowerCase().replace(/[^a-z0-9]/g, '-')}.json`;
+        a.click();
+        URL.revokeObjectURL(url);
+    }
+
+    function openImportModal() {
+        document.getElementById('import-code-textarea').value = '';
+        document.getElementById('import-guide-modal')?.classList.remove('hidden');
+    }
+
+    function closeImportModal() {
+        document.getElementById('import-guide-modal')?.classList.add('hidden');
+    }
+
+    function applyImportCode() {
+        const raw = document.getElementById('import-code-textarea')?.value.trim();
+        if (!raw) {
+            alert("Please paste a build code or JSON.");
+            return;
+        }
+
+        try {
+            let data = null;
+            if (raw.startsWith('{')) {
+                data = JSON.parse(raw);
+            } else {
+                const decoded = decodeURIComponent(escape(atob(raw)));
+                data = JSON.parse(decoded);
+            }
+
+            if (data) {
+                if (data.guideName) document.getElementById('builder-guide-title').value = data.guideName;
+                if (data.heroIdentifier) {
+                    const heroSelect = document.getElementById('builder-hero-select');
+                    if (heroSelect) {
+                        heroSelect.value = data.heroIdentifier;
+                        handleHeroChange(data.heroIdentifier);
+                    }
+                }
+                if (data.targetMap) document.getElementById('builder-target-map').value = data.targetMap;
+                if (data.intro) document.getElementById('builder-intro').value = data.intro;
+                if (data.detailedDescription || data.content) document.getElementById('builder-content').value = data.detailedDescription || data.content;
+
+                buildStartingItems = parseItems(data.startingItems || '');
+                buildLaningItems = parseItems(data.earlyGameItems || '');
+                buildCoreItems = parseItems(data.coreItems || '');
+                buildLuxuryItems = parseItems(data.luxuryItems || '');
+
+                if (buildLaningItems.length > 0) {
+                    addLaningSection();
+                } else {
+                    removeLaningSection();
+                }
+
+                if (data.abilityQueue) {
+                    const parts = data.abilityQueue.split(',').map(p => parseInt(p.trim()) || 0);
+                    for (let i = 0; i < 25; i++) {
+                        buildAbilityQueue[i] = parts[i] || 0;
+                    }
+                }
+
+                renderBuildSlots();
+                renderAbilityQueueTree();
+                closeImportModal();
+                alert("✓ Build loaded into Studio successfully!");
+            }
+        } catch (e) {
+            console.error(e);
+            alert("Invalid build code or JSON file.");
+        }
+    }
+
+    function handleFileUpload(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = function (event) {
+            document.getElementById('import-code-textarea').value = event.target.result;
+        };
+        reader.readAsText(file);
+    }
+
+    // Helper functions
+    function formatHeroName(key) {
+        if (!key) return '';
+        const clean = key.replace(/^Hero_/i, '').toLowerCase();
+        if (heroNameMap[clean]) return heroNameMap[clean];
+        if (heroNameMap[key.toLowerCase()]) return heroNameMap[key.toLowerCase()];
+        return key.replace(/^Hero_/i, '').split('_').map(w => capitalize(w)).join(' ');
+    }
+
+    function formatItemName(key) {
+        const clean = key.replace(/^Item_/i, '');
+        const cleanLower = clean.toLowerCase();
+        const knownNames = {
+            'lifesteal4': 'Symbol of Rage',
+            'lifesteal5': 'Abyssal Skull',
+            'symbolofrage': 'Symbol of Rage',
+            'abyssalskull': 'Abyssal Skull',
+            'morph': "Kuldra's Sheepstick",
+            'nuke': 'Codex',
+            'immunity': 'Shrunken Head',
+            'protect': 'Nullstone',
+            'silence': 'Hellflower',
+            'manaburn2': "Geometer's Bane",
+            'manaburn1': 'Nullfire Blade',
+            'freeze': "Frostwolf's Skull",
+            'pierce': 'Shieldbreaker',
+            'excruciator': 'Barbed Armor',
+            'intelligence6': 'Stormspirit',
+            'intelligence7': 'Staff of the Master',
+            'critical1': 'Riftshards',
+            'damage9': 'Mock of Brilliance',
+            'evasion': 'Wingbow',
+            'weapon3': 'Savage Mace',
+            'gloves3': "Alchemist's Bones",
+            'healthmana2': 'Icon of the Goddess',
+            'magicarmor2': "Shaman's Headdress",
+            'manaregen3': 'Ring of the Teacher',
+            'replenish': 'Ring of Sorcery',
+            'shield2': 'Helm of the Black Legion',
+            'splash': 'Runed Cleaver',
+            'stealth': "Assassin's Shroud",
+            'summon': 'Puzzlebox',
+            'arcanebomb': 'Spellshards',
+            'fleetfeet': 'Ghost Marchers',
+            'lightning1': 'Charged Hammer',
+            'lightning2': 'Thunderclaw',
+            'flamingeye': 'Ward of Sight',
+            'manaeye': 'Ward of Revelation'
+        };
+        if (knownNames[cleanLower]) return knownNames[cleanLower];
+        return clean.replace(/([A-Z])/g, ' $1').trim();
+    }
+
+    function capitalize(s) {
+        return s.charAt(0).toUpperCase() + s.slice(1);
+    }
+
+    function toEngineEntityName(item) {
+        if (!item) return '';
+        const clean = item.replace(/^Item_/i, '').replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
+        const map = {
+            'blightstones': 'Item_RunesOfTheBlight',
+            'runesoftheblight': 'Item_RunesOfTheBlight',
+            'healthpotion': 'Item_HealthPotion',
+            'manapotion': 'Item_ManaPotion',
+            'goldenapple': 'Item_GoldenApple',
+            'goldapple': 'Item_GoldenApple',
+            'wardofsight': 'Item_FlamingEye',
+            'flamingeye': 'Item_FlamingEye',
+            'wardofrevelation': 'Item_ManaEye',
+            'manaeye': 'Item_ManaEye',
+            'boundeye': 'Item_BoundEye',
+            'homecomingstone': 'Item_HomecomingStone',
+            'bottle': 'Item_Bottle',
+            'powersupply': 'Item_PowerSupply',
+            'manabattery': 'Item_ManaBattery',
+            'somazsynchronizer': 'Item_SomazsSynchronizer',
+            'somazssynchronizer': 'Item_SomazsSynchronizer',
+            'minortotem': 'Item_MinorTotem',
+            'crushingclaws': 'Item_CrushingClaws',
+            'markofthenovice': 'Item_MarkOfTheNovice',
+            'duckboots': 'Item_DuckBoots',
+            'pretenderscrown': 'Item_PretendersCrown',
+            'scarab': 'Item_Scarab',
+            'soulscream': 'Item_Soulscream',
+            'apprenticesrobe': 'Item_ApprenticesRobe',
+            'broadsword': 'Item_Broadsword',
+            'punchdagger': 'Item_Punchdagger',
+            'quickblade': 'Item_Quickblade',
+            'lifetube': 'Item_Lifetube',
+            'glowstone': 'Item_Glowstone',
+            'mysticvestments': 'Item_MysticVestments',
+            'axeofthemalphai': 'Item_AxeOfTheMalphai',
+            'brutalizer': 'Item_Brutalizer',
+            'spikedbola': 'Item_SpikedBola',
+            'steamstaff': 'Item_Steamstaff',
+            'trinketofrestoration': 'Item_TrinketOfRestoration',
+            'windwhistle': 'Item_WindWhistle',
+            'loggershatchet': 'Item_LoggersHatchet',
+            'ironbuckler': 'Item_IronBuckler',
+            'ironshield': 'Item_IronShield',
+            'guardianring': 'Item_GuardianRing',
+            'marchers': 'Item_Marchers',
+            'steamboots': 'Item_Steamboots',
+            'striders': 'Item_Striders',
+            'platedgreaves': 'Item_PlatedGreaves',
+            'ghostmarchers': 'Item_EnhancedMarchers',
+            'enhancedmarchers': 'Item_EnhancedMarchers',
+            'fleetfeet': 'Item_Fleetfeet',
+            'posthaste': 'Item_PostHaste',
+            'arcaneboots': 'Item_ArcaneBoots',
+            'sorceryboots': 'Item_ArcaneBoots',
+            'pegasusboots': 'Item_PegasusBoots',
+            'bloodchalice': 'Item_BloodChalice',
+            'gravelocket': 'Item_GraveLocket',
+            'opheliaspact': 'Item_OpheliasPact',
+            'lextalionis': 'Item_LexTalionis',
+            'astrolabe': 'Item_Astrolabe',
+            'astrolobe': 'Item_Astrolabe',
+            'portalkey': 'Item_PortalKey',
+            'ringofsorcery': 'Item_Replenish',
+            'replenish': 'Item_Replenish',
+            'ringoftheteacher': 'Item_ManaRegen3',
+            'manaregen3': 'Item_ManaRegen3',
+            'shamansheaddress': 'Item_MagicArmor2',
+            'magicarmor2': 'Item_MagicArmor2',
+            'nomeswisdom': 'Item_NomesWisdom',
+            'barrieridol': 'Item_BarrierIdol',
+            'energizer': 'Item_Energizer',
+            'tabletofcommand': 'Item_PushStaff',
+            'pushstaff': 'Item_PushStaff',
+            'sacrificialstone': 'Item_SacrificialStone',
+            'dreamcatcher': 'Item_Dreamcatcher',
+            'voidtalisman': 'Item_VoidTalisman',
+            'solsbulwark': 'Item_SolsBulwark',
+            'solbulwark': 'Item_SolsBulwark',
+            'kuldrassheepstick': 'Item_Morph',
+            'sheepstick': 'Item_Morph',
+            'morph': 'Item_Morph',
+            'codex': 'Item_Nuke',
+            'nuke': 'Item_Nuke',
+            'shrunkenhead': 'Item_Immunity',
+            'immunity': 'Item_Immunity',
+            'nullstone': 'Item_Protect',
+            'protect': 'Item_Protect',
+            'hellflower': 'Item_Silence',
+            'silence': 'Item_Silence',
+            'geometersbane': 'Item_ManaBurn2',
+            'manaburn2': 'Item_ManaBurn2',
+            'nullfireblade': 'Item_ManaBurn1',
+            'manaburn1': 'Item_ManaBurn1',
+            'frostwolfsskull': 'Item_Freeze',
+            'frostwolfskull': 'Item_Freeze',
+            'freeze': 'Item_Freeze',
+            'shieldbreaker': 'Item_Pierce',
+            'pierce': 'Item_Pierce',
+            'barbedarmor': 'Item_Excruciator',
+            'excruciator': 'Item_Excruciator',
+            'stormspirit': 'Item_Intelligence6',
+            'cyclone': 'Item_Intelligence6',
+            'intelligence6': 'Item_Intelligence6',
+            'harkonsblade': 'Item_HarkonsBlade',
+            'harkons_blade': 'Item_HarkonsBlade',
+            'sandscepter': 'Item_SandScepter',
+            'sand_scepter': 'Item_SandScepter',
+            'grimoireofpower': 'Item_GrimoireOfPower',
+            'grimoire_of_power': 'Item_GrimoireOfPower',
+            'tomeofpower': 'Item_GrimoireOfPower',
+            'staffofthemaster': 'Item_Intelligence7',
+            'intelligence7': 'Item_Intelligence7',
+            'riftshards': 'Item_Critical1',
+            'critical1': 'Item_Critical1',
+            'mockofbrilliance': 'Item_Damage10',
+            'damage10': 'Item_Damage10',
+            'doombringer': 'Item_Damage9',
+            'damage9': 'Item_Damage9',
+            'symbolofrage': 'Item_LifeSteal4',
+            'lifesteal4': 'Item_LifeSteal4',
+            'abyssalskull': 'Item_LifeSteal5',
+            'lifesteal5': 'Item_LifeSteal5',
+            'wingbow': 'Item_Evasion',
+            'evasion': 'Item_Evasion',
+            'dancingblade': 'Item_Wingbow',
+            'savagemace': 'Item_Weapon3',
+            'weapon3': 'Item_Weapon3',
+            'alchemistsbones': 'Item_Gloves3',
+            'gloves3': 'Item_Gloves3',
+            'iconofthegoddess': 'Item_HealthMana2',
+            'healthmana2': 'Item_HealthMana2',
+            'helmoftheblacklegion': 'Item_Shield2',
+            'shield2': 'Item_Shield2',
+            'runedcleaver': 'Item_Splash',
+            'splash': 'Item_Splash',
+            'assassinsshroud': 'Item_Stealth',
+            'stealth': 'Item_Stealth',
+            'puzzlebox': 'Item_Summon',
+            'summon': 'Item_Summon',
+            'spellshards': 'Item_SpellShards',
+            'arcanebomb': 'Item_ArcaneBomb',
+            'daemonicbreastplate': 'Item_DaemonicBreastplate',
+            'behemothsheart': 'Item_BehemothsHeart',
+            'insanitarius': 'Item_Insanitarius',
+            'elderparasite': 'Item_ElderParasite',
+            'dawnbringer': 'Item_Dawnbringer',
+            'lightbrand': 'Item_Lightbrand',
+            'masterslegacy': 'Item_MastersLegacy',
+            'twinblades': 'Item_TwinBlades',
+            'thunderclaw': 'Item_Lightning1',
+            'lightning1': 'Item_Lightning1',
+            'chargedhammer': 'Item_Lightning2',
+            'lightning2': 'Item_Lightning2',
+            'restorationstone': 'Item_RestorationStone',
+            'genjuro': 'Item_Sasuke',
+            'sasuke': 'Item_Sasuke',
+            'slayer': 'Item_Voulge',
+            'voulge': 'Item_Voulge',
+            'refreshingornament': 'Item_MysticPotpourri',
+            'mysticpotpourri': 'Item_MysticPotpourri',
+            'bolsteringarmband': 'Item_BlessedArmband',
+            'blessedarmband': 'Item_BlessedArmband',
+            'blessedorb': 'Item_Confluence',
+            'confluence': 'Item_Confluence',
+            'glovesoftheswift': 'Item_GlovesOfHaste',
+            'glovesofhaste': 'Item_GlovesOfHaste',
+            'pickledbrain': 'Item_BrainOfMaliken',
+            'brainofmaliken': 'Item_BrainOfMaliken',
+            'sustainer': 'Item_Regen',
+            'regen': 'Item_Regen',
+            'arcana': 'Item_Weapon1',
+            'weapon1': 'Item_Weapon1',
+            'fortifiedbracer': 'Item_Strength5',
+            'strength5': 'Item_Strength5',
+            'amuletofexile': 'Item_Intelligence5',
+            'intelligence5': 'Item_Intelligence5',
+            'icebrand': 'Item_Strength6',
+            'strength6': 'Item_Strength6',
+            'firebrand': 'Item_Sicarius',
+            'sicarius': 'Item_Sicarius',
+            'frostburn': 'Item_StrengthAgility',
+            'strengthagility': 'Item_StrengthAgility',
+            'orbofzamos': 'Item_SomazsSynchronizer',
+            'tomeofelements': 'Item_ElementUsersTome',
+            'elementuserstome': 'Item_ElementUsersTome',
+            'ultorsheavyhelm': 'Item_UltorsHeavyPlate',
+            'ultorsheavyplate': 'Item_UltorsHeavyPlate',
+            'groundcourier': 'Item_GroundFamiliar',
+            'groundfamiliar': 'Item_GroundFamiliar',
+            'flyingcourier': 'Item_FlyingCourier',
+            'tokenoflife': 'Item_Revive',
+            'revive': 'Item_Revive',
+            'madfredsbrassknuckles': 'Item_Madfreds_BrassKnuckles',
+            'madfreds_brassknuckles': 'Item_Madfreds_BrassKnuckles',
+            'spellsunder': 'Item_Spell_Sunder',
+            'spell_sunder': 'Item_Spell_Sunder'
+        };
+        if (map[clean]) return map[clean];
+        if (item.startsWith('Item_')) return item;
+        return 'Item_' + item.charAt(0).toUpperCase() + item.slice(1);
+    }
+
+    function getCanonicalItemCode(item) {
+        if (!item) return '';
+        const clean = (item || '').replace(/^Item_/i, '').trim().toLowerCase();
+        const map = {
+            'morph': 'kuldrassheepstick',
+            'pushstaff': 'tabletofcommand',
+            'runesoftheblight': 'blightstones',
+            'nuke': 'codex',
+            'immunity': 'shrunkenhead',
+            'protect': 'nullstone',
+            'silence': 'hellflower',
+            'manaburn2': 'geometersbane',
+            'manaburn1': 'nullfireblade',
+            'freeze': 'frostwolfsskull',
+            'pierce': 'shieldbreaker',
+            'excruciator': 'barbedarmor',
+            'intelligence6': 'stormspirit',
+            'stormspirit': 'stormspirit',
+            'harkonsblade': 'harkonsblade',
+            'intelligence7': 'staffofthemaster',
+            'critical1': 'riftshards',
+            'damage9': 'doombringer',
+            'damage10': 'mockofbrilliance',
+            'lifesteal4': 'symbolofrage',
+            'lifesteal5': 'abyssalskull',
+            'evasion': 'wingbow',
+            'wingbow': 'dancingblade',
+            'weapon3': 'savagemace',
+            'gloves3': 'alchemistsbones',
+            'healthmana2': 'iconofthegoddess',
+            'magicarmor2': 'shamansheaddress',
+            'manaregen3': 'ringoftheteacher',
+            'replenish': 'ringofsorcery',
+            'shield2': 'helmoftheblacklegion',
+            'splash': 'runedcleaver',
+            'stealth': 'assassinsshroud',
+            'summon': 'puzzlebox',
+            'spellshards': 'spellshards',
+            'arcanebomb': 'arcanebomb',
+            'enhancedmarchers': 'ghostmarchers',
+            'fleetfeet': 'fleetfeet',
+            'lightning1': 'thunderclaw',
+            'lightning2': 'chargedhammer',
+            'flamingeye': 'wardofsight',
+            'manaeye': 'wardofrevelation',
+            'sandscepter': 'sandscepter',
+            'grimoireofpower': 'grimoireofpower',
+            'astrolabe': 'astrolabe',
+            'sasuke': 'genjuro',
+            'voulge': 'slayer',
+            'mysticpotpourri': 'refreshingornament',
+            'blessedarmband': 'bolsteringarmband',
+            'confluence': 'blessedorb',
+            'glovesofhaste': 'glovesoftheswift',
+            'brainofmaliken': 'pickledbrain',
+            'regen': 'sustainer',
+            'weapon1': 'arcana',
+            'strength5': 'fortifiedbracer',
+            'intelligence5': 'amuletofexile',
+            'strength6': 'icebrand',
+            'sicarius': 'firebrand',
+            'strengthagility': 'frostburn',
+            'somazssynchronizer': 'orbofzamos',
+            'somazsynchronizer': 'orbofzamos',
+            'elementuserstome': 'tomeofelements',
+            'ultorsheavyplate': 'ultorsheavyhelm',
+            'groundfamiliar': 'groundcourier',
+            'revive': 'tokenoflife',
+            'madfreds_brassknuckles': 'madfredsbrassknuckles',
+            'spell_sunder': 'spellsunder'
+        };
+        return map[clean] || clean;
+    }
+</script>

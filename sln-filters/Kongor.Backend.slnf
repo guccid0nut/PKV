@@ -1,0 +1,19 @@
+{
+  "solution": {
+    "path": "..\\ProjectKongor.slnx",
+    "projects": [
+      "src\\services\\aspire-host\\ASPIRE.ApplicationHost.csproj",
+      "src\\services\\master-server\\KONGOR.MasterServer.csproj",
+      "src\\services\\chat-server\\TRANSMUTANSTEIN.ChatServer.csproj",
+      "src\\services\\web-api\\ZORGATH.WebPortal.API.csproj",
+      "src\\services\\web-ui\\DAWNBRINGER.WebPortal.UI.csproj",
+      "src\\libs\\protocol-core\\Kongor.Core.csproj",
+      "src\\libs\\service-defaults\\ASPIRE.ServiceDefaults.csproj",
+      "src\\libs\\database-context\\MERRICK.DatabaseContext.csproj",
+      "src\\libs\\contracts\\NEXUS.Contracts.csproj",
+      "src\\libs\\source-generators\\ASPIRE.SourceGenerator.csproj",
+      "tests\\integration\\Grpc.Challenger.Tests\\Grpc.Challenger.Tests.csproj",
+      "tests\\integration\\ASPIRE.Integration.Tests\\ASPIRE.Integration.Tests.csproj"
+    ]
+  }
+}

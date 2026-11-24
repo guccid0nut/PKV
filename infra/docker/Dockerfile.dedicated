@@ -1,0 +1,109 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# SPDX-FileCopyrightText: 2026 guccidonut and Project KONGOR V Contributors
+
+# Native Builder Stage: Compile Linux Native Guard shared library
+FROM debian:bookworm-slim AS native-builder
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    g++ \
+    ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /build
+COPY native/include/kongor_deterministic_math.h /build/native/include/kongor_deterministic_math.h
+COPY native/proxies/native_guard/linux_queue_arcade.h /build/native/proxies/native_guard/linux_queue_arcade.h
+COPY native/proxies/native_guard/linux_native_guard.cpp /build/native/proxies/native_guard/linux_native_guard.cpp
+COPY native/proxies/hon_ping_shim/ /build/native/proxies/hon_ping_shim/
+
+RUN mkdir -p /out && \
+    gcc -O2 -shared -fPIC -std=c++17 -fno-exceptions -fno-rtti -Wall -Wextra \
+        -I/build/native/include \
+        -I/build/native/proxies/native_guard \
+        /build/native/proxies/native_guard/linux_native_guard.cpp \
+        -o /out/libkongor_native_guard.so -ldl -lpthread -lrt -lm -lc && \
+    nm -D /out/libkongor_native_guard.so >/dev/null && \
+    grep -qa "ArcadeReserveSlot" /out/libkongor_native_guard.so && \
+    gcc -O2 -shared -fPIC -std=gnu99 -Wall -Wextra \
+        -I/build/native/proxies/hon_ping_shim \
+        /build/native/proxies/hon_ping_shim/hon_ping_shim.c \
+        -o /out/libhon-ping-shim.so -ldl -lc
+
+# Runtime Container with high-density Linux kernel tuning for COMPEL Dedicated Game Server
+FROM debian:bookworm-slim AS runtime
+
+# Install native dependencies required for Heroes of Newerth x64 dedicated server and COMPEL
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    ca-certificates \
+    libstdc++6 \
+    libgcc-s1 \
+    libc6 \
+    libcurl4 \
+    libpng16-16 \
+    zlib1g \
+    procps \
+    iproute2 \
+    curl \
+    socat \
+    libfontconfig1 \
+    libxml2 \
+    libncurses5 \
+    libtinfo5 \
+    && rm -rf /var/lib/apt/lists/*
+
+ARG KONGOR_SOURCE_STAMP=local
+LABEL org.kongor.source-stamp="${KONGOR_SOURCE_STAMP}"
+
+WORKDIR /app
+
+# Copy published COMPEL supervisor and open-source license notices (AGPL-3.0 §4 / MPL-2.0 §3.2)
+COPY artifacts/publish/compel/ /app/
+COPY LICENSE /app/LICENSE
+COPY NOTICE /app/NOTICE
+COPY native/LICENSE /app/LICENSE.native-mpl2.txt
+RUN chmod +x /app/COMPEL
+
+# Copy entrypoint script
+COPY infra/docker/entrypoint.sh /app/entrypoint.sh
+RUN chmod +x /app/entrypoint.sh
+
+# Copy compiled Linux Native Guard and HoN Ping Shim shared libraries
+COPY --from=native-builder /out/libkongor_native_guard.so /app/libkongor_native_guard.so
+COPY --from=native-builder /out/libhon-ping-shim.so /app/libhon-ping-shim.so
+
+RUN groupadd --system --gid 10001 kongor && \
+    useradd --system --uid 10001 --gid 10001 --home-dir /app --no-create-home --shell /usr/sbin/nologin kongor && \
+    mkdir -p /app/run-server /app/logs /app/replays /app/artefacts && \
+    chown -R kongor:kongor /app
+
+USER kongor:kongor
+
+# Environment Defaults:
+# COMPEL_PRIORITY_MODE: Background (0) for local desktop/community nodes, HighPriority (1) for dedicated cloud nodes
+ENV COMPEL_INSTANCES=2
+ENV COMPEL_PRIORITY_MODE=Background
+ENV COMPEL_LOCATION=NEWERTH
+ENV COMPEL_SERVER_NAME_PREFIX="KONGOR ARENA"
+ENV COMPEL_USE_PROXY=false
+ENV COMPEL_PORT_RANGE_OFFSET=0
+ENV COMPEL_CONTROL_PLANE_PORT=11234
+ENV COMPEL_INSTALLATION_DIRECTORY=/app/run-server
+ENV COMPEL_PREBAKED_IMAGE=false
+ENV COMPEL_RECYCLE_EVERY_N_MATCHES=1
+ENV DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=1
+ENV TERM=xterm
+
+# Expose game ports, proxy ports, dedicated voice, and control planes
+# Game UDP: 11235-11534 (Local, Docker, K3s)
+# Proxy Game UDP: 21235-21534
+# Voice UDP: 11735-12034 (Local, Docker, K3s)
+# Proxy Voice UDP: 21735-22034
+ENV COMPEL_CONTROL_PLANE_BIND_ADDRESS=0.0.0.0
+
+# Control Plane HTTP: 11234, 11334, 11434
+EXPOSE 11235-11534/udp 21235-21534/udp 11735-12034/udp 21735-22034/udp 11234/tcp 11334/tcp 11434/tcp
+
+# Healthcheck targeting COMPEL control plane
+HEALTHCHECK --interval=15s --timeout=3s --start-period=10s --retries=3 \
+    CMD curl -f http://127.0.0.1:${COMPEL_CONTROL_PLANE_PORT:-11334}/ping || curl -f http://127.0.0.1:11234/ping || exit 1
+
+ENTRYPOINT ["/app/entrypoint.sh"]

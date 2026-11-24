@@ -1,0 +1,53 @@
+{
+  "schema_version": "1.0.0",
+  "description": "Shared cross-language (C++ NativeGuard & C# Kongor.Core) test vectors for Wave v3 Phase 11 Xash3D-FWGS VfsPathFirewall, wildcard globbing, and quote-balanced command splitting (#135, #137, #144).",
+  "nasty_path_vectors": [
+    { "path": "ui/fe2/store_v2.interface", "expected_safe": true, "reason": "clean relative VFS path" },
+    { "path": "heroes/devourer/model.mdf", "expected_safe": true, "reason": "clean hero model path" },
+    { "path": "00000000/ui/elements/logo.dds", "expected_safe": true, "reason": "clean texture archive path" },
+    { "path": "textures/water_normal.tga", "expected_safe": true, "reason": "clean underscore filename" },
+    { "path": "", "expected_safe": false, "reason": "empty path rejected" },
+    { "path": "../secret.txt", "expected_safe": false, "reason": "leading parent traversal" },
+    { "path": "ui/../../windows/system32/cmd.exe", "expected_safe": false, "reason": "embedded parent traversal" },
+    { "path": "C:/Windows/win.ini", "expected_safe": false, "reason": "drive colon rejected" },
+    { "path": "ui/fe2:ads_stream", "expected_safe": false, "reason": "NTFS alternate data stream colon rejected" },
+    { "path": "/absolute/leading/slash.lua", "expected_safe": false, "reason": "leading slash rejected when allowLeadingSlash is false" },
+    { "path": "ui/./store.lua", "expected_safe": false, "reason": "dot segment rejected" },
+    { "path": "CON", "expected_safe": false, "reason": "reserved DOS device CON" },
+    { "path": "ui/con.txt", "expected_safe": false, "reason": "reserved DOS device con with extension in subdirectory" },
+    { "path": "NUL.dds", "expected_safe": false, "reason": "reserved DOS device NUL with extension" },
+    { "path": "COM1/config.cfg", "expected_safe": false, "reason": "reserved DOS device COM1 directory component" },
+    { "path": "LPT9.xml", "expected_safe": false, "reason": "reserved DOS device LPT9 with extension" },
+    { "path": "PRN", "expected_safe": false, "reason": "reserved DOS device PRN" },
+    { "path": "AUX.lua", "expected_safe": false, "reason": "reserved DOS device AUX" },
+    { "path": "ui/trailing_dot.", "expected_safe": false, "reason": "Windows trailing dot component rejected" }
+  ],
+  "wildcard_vectors": [
+    { "input": "00000000/ui/fe2/main_v2.lua", "pattern": "*main_v2.*", "case_insensitive": true, "expected_match": true },
+    { "input": "00000000/ui/fe2/main_v2.lua", "pattern": "00000000/ui/*/main_v?.lua", "case_insensitive": true, "expected_match": true },
+    { "input": "heroes/devourer/ability_01/effects/impact.effect", "pattern": "heroes/*/ability_??/*.effect", "case_insensitive": true, "expected_match": true },
+    { "input": "UI/FE2/STORE2.LUA", "pattern": "ui/fe2/store?.lua", "case_insensitive": true, "expected_match": true },
+    { "input": "UI/FE2/STORE2.LUA", "pattern": "ui/fe2/store?.lua", "case_insensitive": false, "expected_match": false },
+    { "input": "heroes/devourer/model.mdf", "pattern": "heroes/*.dds", "case_insensitive": true, "expected_match": false }
+  ],
+  "command_split_vectors": [
+    {
+      "buffer": "echo \"hello; world\"; vfs_find *store*; // comment; ignored\nvfs_path",
+      "is_privileged": true,
+      "expected_commands": [
+        "echo \"hello; world\"",
+        "vfs_find *store*",
+        "vfs_path"
+      ],
+      "expected_blocked": 0
+    },
+    {
+      "buffer": "echo \"escaped \\\"quote; inside\\\"\"; @internal_hook; kongor_hook_toggle vfs off",
+      "is_privileged": false,
+      "expected_commands": [
+        "echo \"escaped \\\"quote; inside\\\"\""
+      ],
+      "expected_blocked": 2
+    }
+  ]
+}

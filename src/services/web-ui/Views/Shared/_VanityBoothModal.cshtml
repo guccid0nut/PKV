@@ -1,0 +1,100 @@
+<!-- NEXUS 3D In-Browser Vanity Booth Modal -->
+<dialog id="vanityBoothModal"
+        closedby="any"
+        aria-labelledby="vanityTitle"
+        class="kongor-dialog m-auto w-[calc(100vw-2rem)] max-w-5xl h-[85vh] p-0 bg-transparent border-0 overflow-visible text-slate-100">
+    <div
+        class="relative flex flex-col w-full h-full bg-slate-900 border border-amber-500/30 rounded-2xl shadow-2xl overflow-hidden shadow-amber-500/10">
+
+        <!-- Header -->
+        <div class="flex items-center justify-between px-6 py-4 border-b border-slate-800 bg-slate-950/60">
+            <div class="flex items-center space-x-3">
+                <div
+                    class="w-8 h-8 rounded-lg bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-amber-400">
+                    <i class="fas fa-cube text-sm"></i>
+                </div>
+                <div>
+                    <h3 id="vanityTitle" class="text-lg font-bold text-slate-100 tracking-wide">3D Vanity Booth</h3>
+                    <p class="text-xs text-slate-400">Interactive 3D Model & Animation Viewport</p>
+                </div>
+            </div>
+            <button type="button"
+                    autofocus
+                    aria-label="Close 3D Vanity Booth"
+                    onclick="window.VanityBooth3D.close()"
+                    class="text-slate-400 hover:text-slate-100 hover:bg-slate-800/80 w-8 h-8 rounded-lg flex items-center justify-center transition-colors">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+
+        <!-- 3D Viewport Container -->
+        <div class="relative flex-1 w-full bg-slate-950 overflow-hidden">
+            <div id="vanityViewport" class="w-full h-full cursor-grab active:cursor-grabbing"></div>
+
+            <!-- Loading Spinner -->
+            <div id="vanityLoading"
+                 class="absolute inset-0 flex flex-col items-center justify-center bg-slate-950/70 backdrop-blur-sm z-10 transition-opacity">
+                <div
+                    class="w-12 h-12 border-4 border-amber-500/20 border-t-amber-500 rounded-full animate-spin mb-4"></div>
+                <span id="vanityLoadingMsg" class="text-sm font-medium text-slate-200">Loading 3D Model...</span>
+                <span id="vanityLoadingSub" class="text-xs text-slate-400 mt-1"></span>
+            </div>
+
+            <!-- Error Banner -->
+            <div id="vanityError"
+                 class="absolute top-4 left-4 right-4 bg-red-500/20 border border-red-500/40 text-red-300 text-xs px-4 py-3 rounded-lg z-20 hidden"></div>
+        </div>
+
+        <!-- Control Bar -->
+        <div
+            class="flex flex-wrap items-center justify-between gap-4 px-6 py-3 border-t border-slate-800 bg-slate-950/90">
+            <!-- Left: Animation Controls -->
+            <div class="flex items-center space-x-3">
+                <label for="vanityAnimSelect" class="text-xs font-medium text-slate-400 uppercase tracking-wider">Animation:</label>
+                <select id="vanityAnimSelect" onchange="window.VanityBooth3D.setAnimation(this.value)"
+                        class="bg-slate-800 text-slate-200 border border-slate-700 text-xs rounded-lg px-3 py-1.5 focus:outline-none focus:border-amber-500">
+                    <option value="">Loading...</option>
+                </select>
+
+                <button id="vanityPlayPauseBtn" type="button" onclick="window.VanityBooth3D.togglePlayPause()"
+                        class="bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs px-3 py-1.5 rounded-lg border border-slate-700 transition-colors flex items-center gap-1.5">
+                    <i class="fas fa-pause"></i> Pause
+                </button>
+
+                <button id="vanitySoundBtn" type="button" onclick="window.VanityBooth3D.toggleSound()"
+                        title="Toggle Hero Sound Effects"
+                        class="bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs px-3 py-1.5 rounded-lg border border-slate-700 transition-colors flex items-center gap-1.5">
+                    <i class="fas fa-volume-up text-emerald-400"></i> SFX: On
+                </button>
+            </div>
+
+            <!-- Center: Playback Speed -->
+            <div class="flex items-center space-x-2">
+                <span class="text-xs text-slate-400">Speed:</span>
+                <input type="range" min="0.25" max="2.0" step="0.25" value="1.0"
+                       aria-label="Animation playback speed"
+                       oninput="window.VanityBooth3D.setSpeed(this.value)" class="w-20 accent-amber-500 cursor-pointer">
+                <span id="vanitySpeedLabel" class="text-xs font-mono text-amber-400 w-10">1.00x</span>
+            </div>
+
+            <!-- Right: Viewport Controls -->
+            <div class="flex items-center space-x-2">
+                <button id="vanityRotateBtn" type="button" onclick="window.VanityBooth3D.toggleAutoRotate()"
+                        title="Toggle Auto-Rotation"
+                        class="bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs px-3 py-1.5 rounded-lg border border-slate-700 transition-colors flex items-center gap-1.5">
+                    <i class="fas fa-sync-alt"></i> Auto-Rotate
+                </button>
+                <button type="button" onclick="window.VanityBooth3D.resetCamera()" title="Reset Camera View"
+                        class="bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs px-3 py-1.5 rounded-lg border border-slate-700 transition-colors flex items-center gap-1.5">
+                    <i class="fas fa-compress-arrows-alt"></i> Reset Camera
+                </button>
+                <button type="button" onclick="window.VanityBooth3D.close()"
+                        class="bg-amber-500/20 hover:bg-amber-500/30 text-amber-400 border border-amber-500/40 text-xs px-4 py-1.5 rounded-lg font-medium transition-colors">
+                    Done
+                </button>
+            </div>
+        </div>
+    </div>
+</dialog>
+
+<!-- vanity_booth_3d.js lazy-loaded on demand by _Layout.cshtml -->

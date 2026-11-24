@@ -1,0 +1,115 @@
+{
+  "$schema": "https://raw.githubusercontent.com/dotnet/docfx/main/schemas/docfx.json",
+  "metadata": [
+    {
+      "src": [
+        {
+          "files": [
+            "src/services/**/*.csproj",
+            "src/apps/**/*.csproj",
+            "src/libs/**/*.csproj",
+            "src/extensions/**/*.csproj",
+            "src/tools/kongor-cli/*.csproj",
+            "src/tools/endpoint-auditor/*.csproj",
+            "src/tools/headless-renderer/*.csproj",
+            "src/tools/lua-verifier/*.csproj",
+            "src/tools/mod-cli/*.csproj",
+            "src/tools/prebake-tool/*.csproj"
+          ],
+          "exclude": [
+            "**/bin/**",
+            "**/obj/**",
+            "**/*.Tests/**",
+            "**/tests/**",
+            "**/ComfyUI/**",
+            "**/.venv/**",
+            "**/venv/**",
+            "**/blender-*/**",
+            "**/site-packages/**",
+            "**/node_modules/**"
+          ]
+        }
+      ],
+      "dest": "docs/api",
+      "includePrivateMembers": false,
+      "disableDefaultFilter": false,
+      "memberLayout": "samePage"
+    }
+  ],
+  "build": {
+    "content": [
+      {
+        "files": [
+          "docs/**.md",
+          "docs/**/toc.yml",
+          "docs/toc.yml",
+          "docs/api/**.yml",
+          "docs/api/**/toc.yml",
+          "src/apps/*/README.md",
+          "src/services/*/README.md",
+          "src/libs/*/README.md",
+          "src/extensions/*/README.md",
+          "src/tools/*/README.md",
+          "src/tools/blender/io_scene_hon/README.md",
+          "tools/*/README.md",
+          "infra/*/README.md",
+          "native/README.md",
+          "native/proxies/README.md",
+          "scripts/README.md",
+          "README.md",
+          "CHANGELOG.md",
+          "CONTRIBUTING.md",
+          "SECURITY.md",
+          "THIRD_PARTY_NOTICES.md",
+          "INTEROPERABILITY_AND_DMCA.md",
+          "NAMING_POLICY.md"
+        ],
+        "exclude": [
+          "**/bin/**",
+          "**/obj/**",
+          "**/.venv/**",
+          "**/venv/**",
+          "**/ComfyUI/**",
+          "**/blender-*/**",
+          "**/site-packages/**",
+          "**/node_modules/**",
+          "docs/apps/**",
+          "docs/services/**",
+          "docs/libs/**",
+          "docs/extensions/**",
+          "docs/_site/**"
+        ]
+      }
+    ],
+    "resource": [
+      {
+        "files": [
+          "docs/images/**",
+          "docs/screenshots/**",
+          "LICENSE",
+          "NOTICE",
+          "native/LICENSE"
+        ]
+      }
+    ],
+    "output": "docs/_site",
+    "globalMetadata": {
+      "_appName": "ProjectKongor",
+      "_appTitle": "ProjectKongor Developer Documentation Hub",
+      "_enableSearch": true,
+      "_enableNewTab": true,
+      "_appLogoPath": "docs/images/decision_funnel.svg",
+      "_appFaviconPath": "docs/images/decision_funnel.svg",
+      "_appFooter": "<span>&copy; 2026 guccidonut &amp; Project KONGOR V Contributors | Docs: CC BY-NC-SA 4.0 | Code: AGPL-3.0-or-later &amp; MPL-2.0 | <a href='https://github.com/guccid0nut/PKV'>GitHub Source</a></span>",
+      "_gitContribute": {
+        "repo": "https://github.com/guccid0nut/PKV",
+        "branch": "main"
+      }
+    },
+    "template": [
+      "default",
+      "modern"
+    ],
+    "postProcessors": []
+  }
+}

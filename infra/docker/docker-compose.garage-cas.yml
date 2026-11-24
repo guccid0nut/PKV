@@ -1,0 +1,60 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# SPDX-FileCopyrightText: 2026 guccidonut and Project KONGOR V Contributors
+# Project KONGOR V (https://github.com/guccidonut/PKV)
+#
+# Self-hosted Garage (AGPL-3.0) S3-compatible Content-Addressed Storage (CAS)
+# stack for Project Kongor binary assets & historical repo-diet offload.
+#
+# Usage:
+#   $env:GARAGE_RPC_SECRET = (-join ((1..32) | ForEach-Object { '{0:x2}' -f (Get-Random -Maximum 256) }))
+#   docker compose -f infra/docker/docker-compose.garage-cas.yml up -d
+#
+# Validate schema offline:
+#   docker compose -f infra/docker/docker-compose.garage-cas.yml config -q
+
+name: kongor-garage-cas
+
+services:
+  garage:
+    image: dxflrs/garage:v1.0.1
+    container_name: kongor-garage-cas
+    restart: unless-stopped
+    ports:
+      # S3-compatible CAS API
+      - "${GARAGE_BIND_HOST:-127.0.0.1}:${GARAGE_S3_PORT:-3900}:3900"
+      # Cluster RPC port
+      - "${GARAGE_BIND_HOST:-127.0.0.1}:${GARAGE_RPC_PORT:-3901}:3901"
+      # Static Web / CDN bucket endpoint
+      - "${GARAGE_BIND_HOST:-127.0.0.1}:${GARAGE_WEB_PORT:-3902}:3902"
+      # Admin API & Prometheus metrics endpoint
+      - "${GARAGE_BIND_HOST:-127.0.0.1}:${GARAGE_ADMIN_PORT:-3903}:3903"
+    environment:
+      GARAGE_CONFIG_FILE: "/etc/garage.toml"
+      # Fail-closed non-hex placeholder forces operator to supply a real 64-hex
+      # secret (`openssl rand -hex 32`) before starting in production, while
+      # keeping `docker compose config -q` valid with zero secrets in Git.
+      GARAGE_RPC_SECRET: "${GARAGE_RPC_SECRET:-REPLACE_WITH_64_HEX_FROM_OPENSSL_RAND_HEX_32}"
+      GARAGE_ADMIN_TOKEN: "${GARAGE_ADMIN_TOKEN:-}"
+      GARAGE_METRICS_TOKEN: "${GARAGE_METRICS_TOKEN:-}"
+      RUST_LOG: "${GARAGE_LOG_LEVEL:-garage=info}"
+    volumes:
+      - ../garage/garage.toml:/etc/garage.toml:ro
+      - kongor-garage-meta:/var/lib/garage/meta
+      - kongor-garage-data:/var/lib/garage/data
+    healthcheck:
+      test: ["CMD", "/garage", "status"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    deploy:
+      resources:
+        limits:
+          cpus: "${GARAGE_CPU_LIMIT:-2.0}"
+          memory: "${GARAGE_MEM_LIMIT:-1024M}"
+
+volumes:
+  kongor-garage-meta:
+    name: kongor-garage-meta
+  kongor-garage-data:
+    name: kongor-garage-data

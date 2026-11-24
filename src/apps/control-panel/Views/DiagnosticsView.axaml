@@ -1,0 +1,369 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="using:NEXUS.ControlPanel.GUI.ViewModels"
+             xmlns:models="using:NEXUS.ControlPanel.GUI.Services.Models"
+             xmlns:services="using:NEXUS.ControlPanel.GUI.Services"
+             mc:Ignorable="d" d:DesignWidth="920" d:DesignHeight="700"
+             x:Class="NEXUS.ControlPanel.GUI.Views.DiagnosticsView"
+             x:DataType="vm:DiagnosticsViewModel">
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel Spacing="20" Margin="24">
+
+            <!-- Header & Re-scan -->
+            <Grid ColumnDefinitions="*,Auto">
+                <StackPanel Grid.Column="0" Spacing="4">
+                    <TextBlock Text="SYSTEM DIAGNOSTICS &amp; PREREQUISITES" FontSize="18" FontWeight="Black"
+                               Foreground="#00F0FF" />
+                    <TextBlock
+                        Text="Verify live native client IPC, WILLOWMAKER launcher bridge, core backend endpoints, and multi-OS export readiness."
+                        FontSize="13" Foreground="#94A3B8" />
+                </StackPanel>
+
+                <Button Grid.Column="1" Classes="primary" Command="{Binding RunDiagnosticsCommand}"
+                        IsEnabled="{Binding !IsScanning}">
+                    <TextBlock Text="🔄 Run Full Scan" />
+                </Button>
+            </Grid>
+
+            <!-- Environment Information Card -->
+            <Border Classes="card">
+                <Grid ColumnDefinitions="*,*">
+                    <StackPanel Grid.Column="0" Spacing="4">
+                        <TextBlock Text="Operating System" FontSize="12" Foreground="#64748B" />
+                        <TextBlock Text="{Binding OsInfo}" FontSize="14" FontWeight="Bold" Foreground="#F8FAFC" />
+                    </StackPanel>
+                    <StackPanel Grid.Column="1" Spacing="4">
+                        <TextBlock Text="Runtime Environment" FontSize="12" Foreground="#64748B" />
+                        <TextBlock Text="{Binding DotnetInfo}" FontSize="14" FontWeight="Bold" Foreground="#F8FAFC" />
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <!-- Live Unified Cockpit, TAO Native Client IPC & Core Cluster Readiness -->
+            <Border Classes="card" BorderBrush="#10B981" BorderThickness="1">
+                <StackPanel Spacing="12">
+                    <Grid ColumnDefinitions="*,Auto">
+                        <StackPanel Grid.Column="0" Spacing="4">
+                            <TextBlock Text="⚡ LIVE TAO / NATIVE CLIENT IPC &amp; UNIFIED COCKPIT HEALTH" FontWeight="Bold"
+                                       FontSize="14" Foreground="#10B981" LetterSpacing="0.5" />
+                            <TextBlock
+                                Text="Real-time binary pipe probes for K2/TAO native client, WILLOWMAKER launcher IPC, MasterServer HTTP /health, and ChatServer TCP."
+                                FontSize="12" Foreground="#94A3B8" TextWrapping="Wrap" />
+                        </StackPanel>
+                        <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
+                            <CheckBox Content="Show disconnected pipes"
+                                      IsChecked="{Binding ShowDisconnectedPipes}"
+                                      FontSize="11" Foreground="#94A3B8" VerticalAlignment="Center" />
+                            <Button Classes="secondary" Command="{Binding RefreshCockpitHealthCommand}"
+                                    ToolTip.Tip="Re-probe native client pipe, WILLOWMAKER pipe, dedicated server pipes, MasterServer /health, and ChatServer 11031">
+                                <TextBlock Text="🔄 Probe IPC &amp; Cluster" />
+                            </Button>
+                        </StackPanel>
+                    </Grid>
+
+                    <!-- Connected IPC Pipes (Disconnected pipes hidden by default) -->
+                    <StackPanel Spacing="8">
+                        <Border IsVisible="{Binding HasNoVisibleIpcPipesMessage}"
+                                Background="#0F172A" BorderBrush="#1E293B" BorderThickness="1" CornerRadius="8" Padding="12,8">
+                            <TextBlock Text="No IPC pipes are currently connected. Enable 'Show disconnected pipes' above to inspect standby pipe paths."
+                                       FontSize="11.5" Foreground="#64748B" TextWrapping="Wrap" />
+                        </Border>
+
+                        <WrapPanel Orientation="Horizontal">
+                            <!-- (a) Game Client Native Pipe (TAO) -->
+                            <Border IsVisible="{Binding ShowNativeClientPipeCard}"
+                                    Background="#1E293B" BorderBrush="#334155"
+                                    BorderThickness="1" CornerRadius="8" Padding="12,10" Margin="0,0,8,8" MinWidth="280">
+                                <StackPanel Spacing="4">
+                                    <StackPanel Orientation="Horizontal" Spacing="8">
+                                        <Ellipse Width="8" Height="8" Fill="{Binding NativeClientPipeStatusColor}"
+                                                 VerticalAlignment="Center" />
+                                        <TextBlock Text="🎮 Game Client Native Pipe (TAO)" FontWeight="Bold" FontSize="12.5"
+                                                   Foreground="#38BDF8" />
+                                    </StackPanel>
+                                    <TextBlock Text="{Binding NativeClientPipeStatusMessage}" FontSize="12"
+                                               Foreground="#E2E8F0" TextWrapping="Wrap" />
+                                </StackPanel>
+                            </Border>
+
+                            <!-- (b) WILLOWMAKER / MCP IPC Pipe -->
+                            <Border IsVisible="{Binding ShowWillowmakerPipeCard}"
+                                    Background="#1E293B" BorderBrush="#334155"
+                                    BorderThickness="1" CornerRadius="8" Padding="12,10" Margin="0,0,8,8" MinWidth="280">
+                                <StackPanel Spacing="4">
+                                    <StackPanel Orientation="Horizontal" Spacing="8">
+                                        <Ellipse Width="8" Height="8" Fill="{Binding WillowmakerPipeStatusColor}"
+                                                 VerticalAlignment="Center" />
+                                        <TextBlock Text="{Binding WillowmakerPipeLabel}" FontWeight="Bold" FontSize="12.5"
+                                                   Foreground="#A78BFA" />
+                                    </StackPanel>
+                                    <TextBlock Text="{Binding WillowmakerPipeStatusMessage}" FontSize="12"
+                                               Foreground="#E2E8F0" TextWrapping="Wrap" />
+                                </StackPanel>
+                            </Border>
+
+                            <!-- (c) Dedicated Game Server Pipes (Grouped) -->
+                            <Border IsVisible="{Binding ShowServerPipesCard}"
+                                    ToolTip.Tip="{Binding ServerPipesToolTip}"
+                                    Background="#1E293B" BorderBrush="#334155"
+                                    BorderThickness="1" CornerRadius="8" Padding="12,10" Margin="0,0,8,8" MinWidth="280">
+                                <StackPanel Spacing="4">
+                                    <StackPanel Orientation="Horizontal" Spacing="8">
+                                        <Ellipse Width="8" Height="8" Fill="{Binding ServerPipesStatusColor}"
+                                                 VerticalAlignment="Center" />
+                                        <TextBlock Text="⚔️ Dedicated Server Pipes" FontWeight="Bold" FontSize="12.5"
+                                                   Foreground="#34D399" />
+                                    </StackPanel>
+                                    <TextBlock Text="{Binding ServerPipesStatusMessage}" FontSize="12"
+                                               Foreground="#E2E8F0" TextWrapping="Wrap" />
+                                </StackPanel>
+                            </Border>
+                        </WrapPanel>
+                    </StackPanel>
+
+                    <Grid ColumnDefinitions="*,*">
+                        <!-- (d1) MasterServer /health (:55555) -->
+                        <Border Grid.Column="0" Background="#1E293B" BorderBrush="#334155"
+                                BorderThickness="1" CornerRadius="8" Padding="12,10" Margin="0,0,6,0">
+                            <StackPanel Spacing="4">
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <Ellipse Width="8" Height="8" Fill="{Binding MasterServerHealthColor}"
+                                             VerticalAlignment="Center" />
+                                    <TextBlock Text="👑 KONGOR MasterServer /health (:55555)" FontWeight="Bold"
+                                               FontSize="12.5" Foreground="#FBBF24" />
+                                </StackPanel>
+                                <TextBlock Text="{Binding MasterServerHealthMessage}" FontSize="12"
+                                           Foreground="#E2E8F0" TextWrapping="Wrap" />
+                            </StackPanel>
+                        </Border>
+
+                        <!-- (d2) ChatServer TCP (:11031) -->
+                        <Border Grid.Column="1" Background="#1E293B" BorderBrush="#334155"
+                                BorderThickness="1" CornerRadius="8" Padding="12,10" Margin="6,0,0,0">
+                            <StackPanel Spacing="4">
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <Ellipse Width="8" Height="8" Fill="{Binding ChatServerTcpColor}"
+                                             VerticalAlignment="Center" />
+                                    <TextBlock Text="💬 TRANSMUTANSTEIN Chat TCP (:11031)" FontWeight="Bold"
+                                               FontSize="12.5" Foreground="#34D399" />
+                                </StackPanel>
+                                <TextBlock Text="{Binding ChatServerTcpMessage}" FontSize="12"
+                                           Foreground="#E2E8F0" TextWrapping="Wrap" />
+                            </StackPanel>
+                        </Border>
+                    </Grid>
+                </StackPanel>
+            </Border>
+
+            <!-- Pre-Export Multi-Platform Playtest Bundle Readiness (Zero-Write Dry-Run) -->
+            <Border Classes="card" BorderBrush="#F59E0B" BorderThickness="1">
+                <StackPanel Spacing="12">
+                    <Grid ColumnDefinitions="*,Auto">
+                        <StackPanel Grid.Column="0" Spacing="4">
+                            <TextBlock Text="📦 MULTI-PLATFORM PLAYTEST EXPORT READINESS (DRY-RUN)" FontWeight="Bold"
+                                       FontSize="14" Foreground="#F59E0B" LetterSpacing="0.5" />
+                            <TextBlock
+                                Text="Executes scripts/export_playtest_bundle.ps1 -Platform all -DryRun -AllowDirtyWorktree across Windows, Linux, and macOS stages with 0 disk writes."
+                                FontSize="12" Foreground="#94A3B8" TextWrapping="Wrap" />
+                        </StackPanel>
+                        <Button Grid.Column="1" Classes="primary"
+                                AutomationProperties.AutomationId="BtnVerifyExportReadiness"
+                                Command="{Binding VerifyExportReadinessCommand}"
+                                IsEnabled="{Binding !IsRunningExportDryRun}"
+                                ToolTip.Tip="Run zero-write pre-flight verification across all 3 platforms (auto-selects a drive with &gt;= 20 GB free)">
+                            <TextBlock Text="📦 Verify Export Readiness (Dry-Run)" />
+                        </Button>
+                    </Grid>
+
+                    <Border Background="#1E293B" BorderBrush="#334155" BorderThickness="1" CornerRadius="8"
+                            Padding="12,8">
+                        <StackPanel Spacing="4">
+                            <TextBlock Text="{Binding ExportDryRunSummary}" FontSize="12.5" FontWeight="SemiBold"
+                                       Foreground="{Binding ExportDryRunSummaryColor}" TextWrapping="Wrap" />
+                            <TextBlock Text="{Binding ExportDryRunStagingInfo}" FontSize="11.5" Foreground="#94A3B8"
+                                       IsVisible="{Binding HasExportDryRunResults}" />
+                        </StackPanel>
+                    </Border>
+
+                    <ItemsControl ItemsSource="{Binding ExportDryRunStages}"
+                                  IsVisible="{Binding HasExportDryRunResults}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="services:ExportDryRunStageItem">
+                                <Border Background="#0F172A" BorderBrush="#1E293B" BorderThickness="1"
+                                        CornerRadius="6" Padding="12,8" Margin="0,0,0,6">
+                                    <Grid ColumnDefinitions="*,Auto">
+                                        <StackPanel Grid.Column="0" Spacing="2">
+                                            <TextBlock Text="{Binding StageName}" FontSize="12.5" FontWeight="Bold"
+                                                       Foreground="#F8FAFC" />
+                                            <TextBlock Text="{Binding Detail}" FontSize="11.5" Foreground="#94A3B8"
+                                                       TextWrapping="Wrap" />
+                                        </StackPanel>
+                                        <Border Grid.Column="1" Background="#1E293B" BorderBrush="{Binding BadgeColor}"
+                                                BorderThickness="1" CornerRadius="6" Padding="10,4"
+                                                VerticalAlignment="Center" Margin="12,0,0,0">
+                                            <TextBlock Text="{Binding BadgeText}" FontSize="11" FontWeight="Black"
+                                                       Foreground="{Binding BadgeColor}" />
+                                        </Border>
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+            </Border>
+
+            <!-- Docker Engine Status -->
+            <Border Classes="card">
+                <StackPanel Spacing="8">
+                    <TextBlock Text="🐳 Docker Container Daemon" FontWeight="Bold" FontSize="14" Foreground="#38BDF8" />
+                    <TextBlock Text="{Binding DockerStatusMessage}" FontSize="13" Foreground="#E2E8F0" />
+                </StackPanel>
+            </Border>
+
+            <!-- Continuous Profiling & Flamegraphs (Pyroscope Standalone) -->
+            <Border Classes="card" BorderBrush="#F43F5E" BorderThickness="1">
+                <StackPanel Spacing="12">
+                    <Grid ColumnDefinitions="*,Auto">
+                        <StackPanel Grid.Column="0" Spacing="4">
+                            <TextBlock Text="🔥 CONTINUOUS PROFILING &amp; FLAMEGRAPHS (PYROSCOPE)" FontWeight="Bold"
+                                       FontSize="14"
+                                       Foreground="#F43F5E" LetterSpacing="0.5" />
+                            <TextBlock
+                                Text="Real-time CPU flamegraphs, memory allocation traces, and thread contention analysis ($0 Cloud Cost)."
+                                FontSize="12" Foreground="#94A3B8" />
+                        </StackPanel>
+                        <Button Grid.Column="1" Classes="secondary" Command="{Binding OpenPyroscopeCommand}"
+                                ToolTip.Tip="Open local Pyroscope standalone web dashboard on port 4040">
+                            <TextBlock Text="🌐 Open Pyroscope (4040)" />
+                        </Button>
+                    </Grid>
+
+                    <!-- Status indicator -->
+                    <Border Background="#1E293B" BorderBrush="#334155" BorderThickness="1" CornerRadius="8"
+                            Padding="12,8">
+                        <Grid ColumnDefinitions="Auto,*,Auto">
+                            <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                                <Ellipse Width="8" Height="8" Fill="{Binding PyroscopeStatusColor}"
+                                         VerticalAlignment="Center" />
+                                <TextBlock Text="{Binding PyroscopeStatusMessage}" FontSize="13" Foreground="#E2E8F0"
+                                           FontWeight="SemiBold" />
+                            </StackPanel>
+                            <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="6">
+                                <Button Classes="secondary" Padding="8,4"
+                                        Command="{Binding StartPyroscopeCommand}"
+                                        IsVisible="{Binding !IsPyroscopeHealthy}"
+                                        ToolTip.Tip="Start local Pyroscope container in Docker">
+                                    <TextBlock Text="▶ Start Pyroscope" FontSize="11" />
+                                </Button>
+                                <Button Classes="secondary" Padding="8,4"
+                                        Command="{Binding OpenPyroscopeDiffCommand}"
+                                        ToolTip.Tip="Open Pyroscope profile comparison view">
+                                    <TextBlock Text="⚖️ Compare Diff" FontSize="11" />
+                                </Button>
+                            </StackPanel>
+                        </Grid>
+                    </Border>
+
+                    <!-- Fast Flamegraph Direct Jumps -->
+                    <TextBlock Text="VIEW SERVICE CPU FLAMEGRAPHS:" FontSize="11" FontWeight="Bold"
+                               Foreground="#64748B" LetterSpacing="0.5" />
+                    <WrapPanel Orientation="Horizontal">
+                        <Button Classes="secondary" Command="{Binding OpenServiceFlamegraphCommand}"
+                                CommandParameter="master-server"
+                                Margin="0,0,8,8" ToolTip.Tip="Open CPU flamegraph for KONGOR Master Server">
+                            <TextBlock Text="👑 KONGOR Master Server" Foreground="#FBBF24" />
+                        </Button>
+                        <Button Classes="secondary" Command="{Binding OpenServiceFlamegraphCommand}"
+                                CommandParameter="chat-server"
+                                Margin="0,0,8,8" ToolTip.Tip="Open CPU flamegraph for TRANSMUTANSTEIN Chat Server">
+                            <TextBlock Text="💬 TRANSMUTANSTEIN Chat" Foreground="#A78BFA" />
+                        </Button>
+                        <Button Classes="secondary" Command="{Binding OpenServiceFlamegraphCommand}"
+                                CommandParameter="web-portal-api"
+                                Margin="0,0,8,8" ToolTip.Tip="Open CPU flamegraph for ZORGATH Web Portal API">
+                            <TextBlock Text="🛡️ ZORGATH Web Portal API" Foreground="#38BDF8" />
+                        </Button>
+                        <Button Classes="secondary" Command="{Binding OpenServiceFlamegraphCommand}"
+                                CommandParameter="web-portal-ui"
+                                Margin="0,0,8,8" ToolTip.Tip="Open CPU flamegraph for DAWNBRINGER Web Portal UI">
+                            <TextBlock Text="🌐 DAWNBRINGER Web Portal" Foreground="#34D399" />
+                        </Button>
+                        <Button Classes="secondary" Command="{Binding OpenServiceFlamegraphCommand}"
+                                CommandParameter="k2-game-server"
+                                Margin="0,0,8,8" ToolTip.Tip="Open CPU flamegraph for K2 Game Server Fleet">
+                            <TextBlock Text="🎮 K2 Game Servers" Foreground="#F43F5E" />
+                        </Button>
+                    </WrapPanel>
+                </StackPanel>
+            </Border>
+
+            <!-- Continuous Profiling & Microsecond Allocation Tracing (dotnet-monitor) -->
+            <Border Classes="card" BorderBrush="#38BDF8" BorderThickness="1">
+                <StackPanel Spacing="12">
+                    <Grid ColumnDefinitions="*,Auto">
+                        <StackPanel Grid.Column="0" Spacing="4">
+                            <TextBlock Text="🔬 CONTINUOUS PROFILING &amp; ALLOCATION TRACES (DOTNET-MONITOR)" FontWeight="Bold"
+                                       FontSize="14"
+                                       Foreground="#38BDF8" LetterSpacing="0.5" />
+                            <TextBlock
+                                Text="Real-time EventPipe allocation ticks, microsecond GC latency traces, and live diagnostics ($0 Cloud Cost)."
+                                FontSize="12" Foreground="#94A3B8" />
+                        </StackPanel>
+                        <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8">
+                            <Button Classes="secondary" Command="{Binding OpenDotnetMonitorMetricsCommand}"
+                                     ToolTip.Tip="Open dotnet-monitor Prometheus metrics endpoint on port 52323">
+                                <TextBlock Text="📈 Metrics (/metrics)" />
+                            </Button>
+                            <Button Classes="secondary" Command="{Binding OpenDotnetMonitorCommand}"
+                                     ToolTip.Tip="Open dotnet-monitor processes inspection on port 52323">
+                                <TextBlock Text="🌐 Open Monitor (52323)" />
+                            </Button>
+                        </StackPanel>
+                    </Grid>
+
+                    <!-- Status indicator -->
+                    <Border Background="#1E293B" BorderBrush="#334155" BorderThickness="1" CornerRadius="8"
+                            Padding="12,8">
+                        <Grid ColumnDefinitions="Auto,*">
+                            <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                                <Ellipse Width="8" Height="8" Fill="{Binding DotnetMonitorStatusColor}"
+                                         VerticalAlignment="Center" />
+                                <TextBlock Text="{Binding DotnetMonitorStatusMessage}" FontSize="13" Foreground="#E2E8F0"
+                                           FontWeight="SemiBold" />
+                            </StackPanel>
+                        </Grid>
+                    </Border>
+                </StackPanel>
+            </Border>
+
+            <!-- Required Ports Scanner -->
+            <TextBlock Text="REQUIRED NETWORK PORTS AVAILABILITY" FontSize="12" FontWeight="Bold" Foreground="#00F0FF"
+                       LetterSpacing="1" Margin="0,6,0,0" />
+            <Border Classes="card" Padding="0">
+                <ItemsControl ItemsSource="{Binding PortStatuses}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate x:DataType="models:PortStatus">
+                            <Border BorderBrush="#1E293B" BorderThickness="0,0,0,1" Padding="16,12">
+                                <Grid ColumnDefinitions="90,*,130">
+                                    <TextBlock Grid.Column="0" Text="{Binding Port, StringFormat='{}Port {0}'}"
+                                               FontWeight="Bold" FontSize="13" Foreground="#00F0FF"
+                                               VerticalAlignment="Center" />
+                                    <TextBlock Grid.Column="1" Text="{Binding ServiceName}" FontSize="13"
+                                               Foreground="#F8FAFC" VerticalAlignment="Center" />
+                                    <TextBlock Grid.Column="2" Text="{Binding StatusText}" FontWeight="Bold"
+                                               FontSize="12"
+                                               Foreground="#10B981"
+                                               HorizontalAlignment="Right" VerticalAlignment="Center" />
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </Border>
+
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

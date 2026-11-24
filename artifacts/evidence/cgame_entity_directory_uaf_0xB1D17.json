@@ -1,0 +1,70 @@
+{
+  "schema_version": "2.0.0",
+  "dossier_id": "DOSSIER-CGAME-ENTITY-DIRECTORY-UAF-0xB1D17",
+  "created_utc": "2026-11-05T04:45:00Z",
+  "status": "active",
+  "authority_scope": "client_cosmetic_only",
+  "target": {
+    "binary_name": "cgame_x64.dll",
+    "rva": "0x000B1D17",
+    "function_name": "CEntityDirectory::PostSnapshot / Delete / Clear",
+    "symbol_name": "cgame_x64.dll+0xB1D17 (PostSnapshot dynamic entity list traversal UAF)",
+    "calling_convention": "__fastcall (Win64 ABI)"
+  },
+  "cleanroom_mapping": {
+    "source_file": "native/proxies/native_guard/vfs_and_hooks.cpp"
+  },
+  "triangulation": {
+    "static_source": "Ghidra ProjectKongor.rep cgame_x64.dll decompilation @ 0x1800B1400 (PostSnapshot), 0x1800B2B90 (Delete), 0x1800B3CF0 (Clear)",
+    "dynamic_source": "Kongor_Diag_20261105_014102_cgame_x64.dll_0xB1D17 crash minidump + NativeGuard runtime prologue verification"
+  },
+  "counterevidence_searched": "Inspected cgame_x64.dll PostSnapshot loop @ +0xB1D00 which iterates m_lDynamicEntities (+0x18) and invokes vtable+0x478 on each node->value without checking if the entity pointer was freed or deleted in previous map session.",
+  "negative_control": "On normal match frames with valid dynamic entities, PostSnapshot scans m_lDynamicEntities in < 5 us without VirtualQuery syscalls and performs zero writes.",
+  "obligations": [
+    {
+      "id": "OBL-CG-01",
+      "category": "runtime_prologue_verification",
+      "description": "Verify exact instruction boundaries and 15-byte prologues for cgame_x64.dll functions (+0xB1400 PostSnapshot, +0xB2B90 Delete, +0xB3CF0 Clear) before detouring.",
+      "status": "satisfied",
+      "satisfied_in": "native/proxies/native_guard/vfs_and_hooks.cpp",
+      "verified_by_test": "native/proxies/native_guard/tests/native_guard_unit_tests.cpp"
+    },
+    {
+      "id": "OBL-CG-02",
+      "category": "per_snapshot_telemetry_and_dirty_tracking",
+      "description": "Track Clear (+0xB3CF0) and Delete (+0xB2B90) transitions via g_cgameDynamicListDirty and scan m_lDynamicEntities unconditionally on every PostSnapshot (+0xB1400) so sub-heap/disconnect entity arena releases outside Delete/Clear are caught with microsecond telemetry.",
+      "status": "satisfied",
+      "satisfied_in": "native/proxies/native_guard/vfs_and_hooks.cpp",
+      "verified_by_test": "native/proxies/native_guard/tests/native_guard_unit_tests.cpp"
+    },
+    {
+      "id": "OBL-CG-03",
+      "category": "memory_safety_and_uaf_prevention",
+      "description": "In PostSnapshot (+0xB1400), inspect each node in m_lDynamicEntities (dir + 0x18) under SEH protection to ensure entity pointer and vtable+0x478 are canonical and readable before iteration.",
+      "status": "satisfied",
+      "satisfied_in": "native/proxies/native_guard/vfs_and_hooks.cpp",
+      "verified_by_test": "native/proxies/native_guard/tests/native_guard_unit_tests.cpp"
+    },
+    {
+      "id": "OBL-CG-04",
+      "category": "safe_unlinking_and_resource_reclamation",
+      "description": "When an orphaned, clobbered, or unmapped node span is detected in m_lDynamicEntities, splice via VirtualQuery-verified lastValidFwd and backward pHeadNode->_Prev walk (firstValidBack) with zero valid-entity loss, synchronize m_uiNumDynamicEntities (dir + 0x20), and deallocate intact heap orphan nodes via CMemManager::Deallocate.",
+      "status": "satisfied",
+      "satisfied_in": "native/proxies/native_guard/vfs_and_hooks.cpp",
+      "verified_by_test": "native/proxies/native_guard/tests/native_guard_unit_tests.cpp"
+    },
+    {
+      "id": "OBL-CG-05",
+      "category": "patch_controller_and_kill_switch",
+      "description": "Register under Kongor::PatchController with independent kill switch KONGOR_DISABLE_CGAME_ENTITY_GUARD=1, handling dynamic module unloads and reloads of cgame_x64.dll cleanly.",
+      "status": "satisfied",
+      "satisfied_in": "native/proxies/native_guard/vfs_and_hooks.cpp",
+      "verified_by_test": "native/proxies/native_guard/tests/native_guard_unit_tests.cpp"
+    }
+  ],
+  "limitations_and_unknowns": {
+    "triangulation_status": "dynamically_confirmed",
+    "unknown_offsets": [],
+    "indirect_calls": []
+  }
+}

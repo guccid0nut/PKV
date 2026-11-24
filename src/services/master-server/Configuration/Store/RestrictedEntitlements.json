@@ -1,0 +1,49 @@
+{
+  "schemaVersion": 1,
+  "description": "Canonical server-authoritative restricted cosmetic entitlements excluded from PreservationFreeAll unlocks for non-Staff/non-Clan accounts.",
+  "staffOrGmOnlyCodes": [
+    "frostburnlogo",
+    "cc.frostburnlogo",
+    "cs.frostburnlogo",
+    "gmshield",
+    "cc.gmshield",
+    "cs.gmshield",
+    "gmgold",
+    "cc.gmgold",
+    "cs.gmgold",
+    "banhammer",
+    "cc.banhammer",
+    "cs.banhammer",
+    "techtinker",
+    "cc.techtinker",
+    "cs.techtinker",
+    "candycane",
+    "cc.candycane",
+    "cs.candycane",
+    "sbteye",
+    "cc.sbteye",
+    "cs.sbteye",
+    "sbtpremium",
+    "cc.sbtpremium",
+    "cs.sbtpremium",
+    "sbtsenior",
+    "cc.sbtsenior",
+    "cs.sbtsenior",
+    "Garena Staff",
+    "ai.Garena Staff",
+    "HLL Staff",
+    "ai.HLL Staff"
+  ],
+  "clanScopedCodes": {
+    "GUCI": [
+      "guci",
+      "cc.guci"
+    ]
+  },
+  "staffAndClanScopedCodes": {
+    "GUCI": [
+      "gucistaff",
+      "cc.gucistaff"
+    ]
+  }
+}

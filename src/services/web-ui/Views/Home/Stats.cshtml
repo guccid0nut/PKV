@@ -1,0 +1,1399 @@
+@* ReSharper disable All *@
+@model DAWNBRINGER.WebPortal.UI.Models.PlayerStatsViewModel
+@using DAWNBRINGER.WebPortal.UI.Controllers
+@using DAWNBRINGER.WebPortal.UI.Models
+@using MERRICK.DatabaseContext.Entities.Core
+@using MERRICK.DatabaseContext.Entities.Game
+@{
+    ViewData["Title"] = "Player Analytics";
+    string accountName = Model?.AccountName ?? ViewData["AccountName"] as string ?? "Player";
+    string avatarUrl = Model?.AvatarUrl ?? ViewData["AvatarUrl"] as string ?? "/images/default-avatar.png";
+    string? discordUsername = Model?.DiscordUsername ?? ViewData["DiscordUsername"] as string;
+    string? discordId = Model?.DiscordId ?? ViewData["DiscordId"] as string;
+    int totalMatches = Model?.TotalMatches ?? Convert.ToInt32(ViewData["TotalMatches"] ?? 0);
+    int skillRating = Model?.SkillRating ?? Convert.ToInt32(ViewData["SkillRating"] ?? 1500);
+    double winRate = Model != null ? Model.WinRate : Convert.ToDouble(ViewData["WinRate"] ?? 0.0);
+    double kdr = Model != null ? Model.Kdr : Convert.ToDouble(ViewData["KDR"] ?? 0.0);
+    List<HeroPerformanceDto>? topHeroes = Model?.TopHeroes ?? ViewData["TopHeroes"] as List<HeroPerformanceDto>;
+
+    string playerStatus = Model?.PlayerStatus ?? ViewData["PlayerStatus"] as string ?? "Active";
+    string playerStatusReason = Model?.PlayerStatusReason ?? ViewData["PlayerStatusReason"] as string ?? "";
+    DateTimeOffset? playerStatusExpiration = Model?.PlayerStatusExpiration ?? ViewData["PlayerStatusExpiration"] as DateTimeOffset?;
+    List<PlayerReport> disciplinaryReports = Model?.DisciplinaryReports ?? (ViewData["DisciplinaryReports"] as List<PlayerReport>) ?? [];
+    bool isRoleModel = Model?.IsRoleModel ?? Convert.ToBoolean(ViewData["IsRoleModel"] ?? disciplinaryReports.Count == 0);
+    bool isStaff = Model?.IsStaff ?? (ViewData["IsStaff"] is true);
+
+    bool isOwner = Model?.IsOwner ?? (ViewData["IsOwner"] is true);
+    HostApplicationDto? hostApp = Model?.HostApplication ?? ViewData["HostApplication"] as HostApplicationDto;
+    bool hasHostAccount = Model?.HasHostAccount ?? (ViewData["HasHostAccount"] is true);
+    bool hasLinkedHostAccounts = Model?.HasLinkedHostAccounts ?? (ViewData["HasLinkedHostAccounts"] is true);
+    bool hasPendingHostApplication = Model?.HasPendingHostApplication ?? (ViewData["HasPendingHostApplication"] is true);
+    string hostUsername = !string.IsNullOrWhiteSpace(Model?.HostUsername) ? Model.HostUsername : (ViewData["HostUsername"] as string ?? $"{accountName}_host");
+    int gamesHosted = Model?.GamesHosted ?? Convert.ToInt32(ViewData["GamesHosted"] ?? 0);
+    int totalPlayedAcrossSubaccounts = Model?.TotalPlayedAcrossSubaccounts ?? Convert.ToInt32(ViewData["TotalPlayedAcrossSubaccounts"] ?? totalMatches);
+    double hostingRatio = Model != null ? Model.HostingRatio : Convert.ToDouble(ViewData["HostingRatio"] ?? 0.0);
+    double communityContributionPercentage = Model != null ? Model.CommunityContributionPercentage : Convert.ToDouble(ViewData["CommunityContributionPercentage"] ?? 0.0);
+    string? hostBadgeTier = Model?.HostBadgeTier ?? ViewData["HostBadgeTier"] as string;
+    bool isHost = Model?.IsHost ?? (ViewData["IsHost"] is true);
+
+    bool isStreamer = Model?.IsStreamer ?? (ViewData["IsStreamer"] is true);
+    string? twitchUsername = Model?.TwitchUsername ?? ViewData["TwitchUsername"] as string;
+    string? twitchChannelUrl = Model?.TwitchChannelUrl ?? ViewData["TwitchChannelUrl"] as string;
+
+    string? equippedBorder = Model?.EquippedBorder ?? ViewData["EquippedBorder"] as string;
+    string? equippedTitle = Model?.EquippedTitle ?? ViewData["EquippedTitle"] as string;
+
+    string borderCssClass = equippedBorder switch
+    {
+        "border_flaming_kongor" => "border-flaming-kongor",
+        "border_frostbite" => "border-frostbite",
+        "border_electric_diamond" => "border-electric-diamond",
+        "border_prismatic_void" => "border-prismatic-void",
+        "border_hellbourne_pyre" => "border-hellbourne-pyre",
+        _ => "p-1 bg-gradient-to-tr from-purple-500 via-pink-500 to-amber-400"
+    };
+
+    string? titleDisplayName = equippedTitle switch
+    {
+        "title_legion_veteran" => "Legion Veteran",
+        "title_hellbourne_slayer" => "Hellbourne Slayer",
+        "title_tavern_regular" => "Tavern Regular",
+        "title_kongors_bane" => "Kongor's Bane",
+        "title_immortal_legend" => "Immortal Legend",
+        _ => null
+    };
+
+    string? titleCssClass = equippedTitle switch
+    {
+        "title_legion_veteran" => "title-badge-legion-veteran",
+        "title_hellbourne_slayer" => "title-badge-hellbourne-slayer",
+        "title_tavern_regular" => "title-badge-tavern-regular",
+        "title_kongors_bane" => "title-badge-kongors-bane",
+        "title_immortal_legend" => "title-badge-immortal-legend",
+        _ => null
+    };
+}
+
+<div class="w-full max-w-6xl mx-auto py-8 px-4 space-y-8 animate-fade-in-up">
+    <!-- Top Action / Navigation Bar -->
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div class="flex items-center gap-3">
+            <a href="/" class="text-xs text-purple-400 hover:text-purple-300 font-semibold flex items-center gap-1">
+                <span>←</span> Back to Command Center
+            </a>
+            @if (isStaff)
+            {
+                <span class="text-slate-600">•</span>
+                <a href="@Url.Action("Reports", "Staff")"
+                   class="text-xs text-indigo-400 hover:text-indigo-300 font-semibold flex items-center gap-1">
+                    <span>🛡️</span> Staff Reports Portal
+                </a>
+                <span class="text-slate-600">•</span>
+                <a href="@Url.Action("Hosts", "Staff")"
+                   class="text-xs text-purple-400 hover:text-purple-300 font-semibold flex items-center gap-1">
+                    <span>⚡</span> Staff Hosts Portal
+                </a>
+            }
+        </div>
+
+        <div class="flex flex-wrap items-center gap-3 w-full md:w-auto">
+            <!-- 1-Click Export Player Brag Card Button -->
+            <button type="button" onclick="exportPlayerCard()"
+                    class="px-4 py-2.5 rounded-2xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-black text-xs shadow-lg shadow-amber-500/25 flex items-center gap-2 hover:scale-[1.02] transition-all cursor-pointer">
+                <span>✨</span>
+                <span>Export Player Card</span>
+            </button>
+
+            @if (isOwner)
+            {
+                <a asp-controller="Store" asp-action="Index" asp-route-category="plinko"
+                   class="px-3.5 py-2.5 rounded-2xl bg-slate-900/90 hover:bg-slate-800 border border-purple-500/30 text-purple-300 font-bold text-xs shadow-md flex items-center gap-1.5 transition-all">
+                    <span>🎨</span>
+                    <span>Cosmetics Vault</span>
+                </a>
+            }
+
+            @if (isStaff)
+            {
+                <!-- Direct Staff Disciplinary Action Button -->
+                <button type="button" onclick="openDirectSanctionModal()"
+                        class="px-4 py-2.5 rounded-2xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-bold text-xs shadow-lg shadow-purple-600/30 flex items-center gap-2 hover:scale-[1.02] transition-all">
+                    <span>⚡</span>
+                    <span>Issue Staff Sanction</span>
+                </button>
+            }
+
+            <!-- Real-Time Autocomplete Player Search Bar -->
+            <div class="relative flex-1 md:w-80">
+                <div class="relative">
+                    <input type="text" id="playerSearchInput"
+                           placeholder="Search player name..."
+                           autocomplete="off"
+                           class="w-full px-4 py-2.5 pl-10 rounded-2xl bg-slate-900/90 border border-slate-700 text-white placeholder-slate-500 text-sm focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 transition-all shadow-inner"/>
+                    <svg class="w-4 h-4 text-slate-400 absolute left-3.5 top-3" fill="none" stroke="currentColor"
+                         viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                    </svg>
+                </div>
+
+                <!-- Autocomplete Results Dropdown -->
+                <div id="playerSearchResults"
+                     class="hidden absolute z-50 left-0 right-0 mt-2 bg-slate-900 border border-purple-500/30 rounded-2xl shadow-2xl overflow-hidden max-h-60 overflow-y-auto divide-y divide-slate-800/60 backdrop-blur-xl">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Player Profile Header Banner -->
+    <div
+        class="glass-panel p-6 md:p-8 rounded-3xl border border-purple-500/20 shadow-2xl relative overflow-visible glow-purple space-y-5">
+        <!-- Ambient background glow -->
+        <div
+            class="absolute -top-10 -left-10 w-48 h-48 bg-purple-600/15 rounded-full blur-3xl pointer-events-none"></div>
+
+        <div class="flex flex-col lg:flex-row items-center justify-between gap-6 relative z-10">
+            <!-- Player Avatar with Equipped Cosmetic Animated Border -->
+            <div class="relative flex-shrink-0">
+                <div
+                    class="w-20 h-20 md:w-24 md:h-24 rounded-full @borderCssClass shadow-xl shadow-purple-950/50">
+                    <img src="@avatarUrl"
+                         onError="this.onerror=null;this.src='/images/default-avatar.png';"
+                         alt="@accountName"
+                         class="w-full h-full object-cover rounded-full bg-slate-900"/>
+                </div>
+            </div>
+
+            <!-- Player Info & Status Badges -->
+            <div class="space-y-2 text-center md:text-left flex-1 min-w-0">
+                <div class="flex flex-wrap items-center justify-center md:justify-start gap-2.5">
+                    <h1 class="text-3xl md:text-5xl font-black text-white tracking-tight truncate">@accountName</h1>
+
+                    @if (!string.IsNullOrEmpty(titleDisplayName))
+                    {
+                        <span
+                            class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black @titleCssClass">
+                            <span>👑</span>
+                            <span>@titleDisplayName</span>
+                        </span>
+                    }
+
+                    <!-- Active Standing / Moderation Status Badge -->
+                    @if (playerStatus == "Banned")
+                    {
+                        <span
+                            class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black bg-rose-500/20 text-rose-300 border border-rose-500/40 shadow-sm shadow-rose-950/50">
+                            <span class="w-2 h-2 rounded-full bg-rose-400"></span>
+                            <span>🚫 BANNED</span>
+                        </span>
+                    }
+                    else if (playerStatus == "Suspended")
+                    {
+                        <span
+                            class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black bg-amber-500/20 text-amber-300 border border-amber-500/40 shadow-sm shadow-amber-950/50">
+                            <span class="w-2 h-2 rounded-full bg-amber-400"></span>
+                            <span>⛔ SUSPENDED</span>
+                        </span>
+                    }
+                    else if (playerStatus == "Muted")
+                    {
+                        <span
+                            class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black bg-purple-500/20 text-purple-300 border border-purple-500/40 shadow-sm shadow-purple-950/50">
+                            <span class="w-2 h-2 rounded-full bg-purple-400"></span>
+                            <span>🔇 MUTED</span>
+                        </span>
+                    }
+                    else
+                    {
+                        <span
+                            class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 shadow-sm shadow-emerald-950/50">
+                            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                            <span>🟢 ACTIVE</span>
+                        </span>
+                    }
+
+                    <!-- Role Model Badge -->
+                    @if (isRoleModel)
+                    {
+                        <span
+                            class="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full text-xs font-black bg-gradient-to-r from-amber-500/25 via-yellow-500/20 to-amber-500/25 text-amber-300 border border-amber-500/50 shadow-md shadow-amber-950/40">
+                            <span>⭐</span>
+                            <span>ROLE MODEL</span>
+                        </span>
+                    }
+
+                    <!-- Volunteer Host Badge -->
+                    @if (isHost && !string.IsNullOrEmpty(hostBadgeTier))
+                    {
+                        <span
+                            class="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full text-xs font-black bg-gradient-to-r from-purple-500/30 via-pink-500/25 to-amber-500/30 text-amber-300 border border-amber-500/50 shadow-md shadow-purple-950/40"
+                            title="Volunteer Game Server Host">
+                            <span>⚡</span>
+                            <span>@hostBadgeTier.ToUpperInvariant()</span>
+                        </span>
+                    }
+
+                    <!-- Verified Streamer Badge & Live Status -->
+                    @if (isStreamer)
+                    {
+                        @if (ViewData["IsTwitchLive"] as bool? == true)
+                        {
+                            <a href="@(twitchChannelUrl ?? $"https://twitch.tv/{twitchUsername}")" target="_blank"
+                               rel="noopener noreferrer"
+                               class="inline-flex items-center gap-2 px-3.5 py-1 rounded-full text-xs font-black bg-rose-600/30 text-rose-200 border border-rose-500/70 shadow-lg shadow-rose-950/60 hover:scale-105 transition-all animate-pulse"
+                               title="LIVE NOW on Twitch: @(ViewData["TwitchStreamTitle"] ?? "Streaming")">
+                                <span class="relative flex h-2 w-2">
+                                    <span
+                                        class="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75"></span>
+                                    <span class="relative inline-flex rounded-full h-2 w-2 bg-rose-500"></span>
+                                </span>
+                                <i class="fab fa-twitch text-rose-400"></i>
+                                <span>🔴 LIVE NOW</span>
+                                @if (ViewData["TwitchViewerCount"] is int vCount && vCount > 0)
+                                {
+                                    <span
+                                        class="text-[10px] px-1.5 py-0.2 rounded bg-rose-950/80 text-rose-300 font-mono">@vCount.ToString("N0")</span>
+                                }
+                            </a>
+                        }
+                        else
+                        {
+                            <a href="@(twitchChannelUrl ?? $"https://twitch.tv/{twitchUsername}")" target="_blank"
+                               rel="noopener noreferrer"
+                               class="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full text-xs font-black bg-gradient-to-r from-[#9146FF]/40 via-purple-600/30 to-[#9146FF]/40 text-[#C499FF] border border-[#9146FF]/60 shadow-md shadow-purple-950/60 hover:scale-105 transition-all"
+                               title="Verified Content Creator & Streamer">
+                                <i class="fab fa-twitch text-[#9146FF]"></i>
+                                <span>STREAMER</span>
+                            </a>
+                        }
+                    }
+
+                    @if (isStaff)
+                    {
+                        <span
+                            class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-indigo-500/20 text-indigo-300 border border-indigo-500/40">
+                            <span>🛡️ STAFF VIEW</span>
+                        </span>
+                    }
+                </div>
+
+                <div class="flex flex-wrap items-center justify-center md:justify-start gap-3 text-xs text-slate-400">
+                    <span>Live telemetry and combat statistics for <strong class="text-purple-300">@accountName</strong></span>
+                    @if (!string.IsNullOrEmpty(twitchUsername))
+                    {
+                        <span class="text-slate-500">•</span>
+                        <a href="@(twitchChannelUrl ?? $"https://twitch.tv/{twitchUsername}")" target="_blank"
+                           rel="noopener noreferrer"
+                           class="text-[#9146FF] hover:text-[#C499FF] font-semibold flex items-center gap-1.5 px-2.5 py-0.5 rounded-lg bg-[#9146FF]/10 border border-[#9146FF]/30 transition-colors"
+                           title="Twitch Channel">
+                            <i class="fab fa-twitch"></i>
+                            <span>twitch.tv/@twitchUsername</span>
+                        </a>
+                    }
+                    @if (isStaff && (!string.IsNullOrEmpty(discordUsername) || !string.IsNullOrEmpty(discordId)))
+                    {
+                        <span class="text-slate-500">•</span>
+                        <span
+                            class="text-indigo-300 font-semibold flex items-center gap-1.5 px-2 py-0.5 rounded bg-indigo-500/10 border border-indigo-500/20"
+                            title="Discord Identity (Staff Only)">
+                            <svg class="w-3.5 h-3.5 fill-current text-indigo-400" viewBox="0 0 24 24"><path
+                                    d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994.021-.041.001-.09-.041-.106a13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.061 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.893.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.028zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z"/></svg>
+                            @if (!string.IsNullOrEmpty(discordUsername))
+                            {
+                                <span>@@@discordUsername</span>
+                            }
+                            @if (!string.IsNullOrEmpty(discordId))
+                            {
+                                <span class="text-[10px] text-indigo-300/70 font-mono">(@discordId)</span>
+                            }
+                        </span>
+                    }
+                    @if (isStaff && ViewData["LinkedAccountNames"] is List<string> { Count: > 1 } linkedAccounts)
+                    {
+                        <span class="text-slate-500">•</span>
+                        <span
+                            class="text-indigo-300 font-semibold flex items-center gap-1.5 px-2 py-0.5 rounded bg-indigo-500/10 border border-indigo-500/20"
+                            title="Linked Associated Accounts (Staff Only)">
+                            <span>🔗 Linked (@linkedAccounts.Count):</span>
+                            <span class="text-slate-200 font-mono text-[11px]">@string.Join(", ", linkedAccounts)</span>
+                        </span>
+                    }
+                </div>
+            </div>
+
+            <!-- 3D Hero Avatar Standalone Viewport (Seamless, transparent, Studio Lighting, Interactive Cursor Follow & Drag) -->
+            @if (ViewData["SignatureHeroGlbUrl"] != null)
+            {
+                <div id="banner-hero-3d-container"
+                     class="relative w-full max-w-[280px] sm:max-w-[340px] md:max-w-[380px] lg:w-[420px] h-60 sm:h-72 md:h-80 mx-auto lg:mx-0 lg:-my-6 lg:-mr-6 flex-shrink-0 flex items-center justify-center overflow-visible z-20 pointer-events-auto cursor-grab active:cursor-grabbing select-none"
+                     data-model-url="@ViewData["SignatureHeroGlbUrl"]"
+                     data-avatar-name="@(ViewData["SignatureHeroName"] ?? "Signature Hero")"
+                     title="Click and drag to spin 360° • Follows your cursor">
+                    <canvas id="banner-hero-3d-canvas" role="img" aria-label="Signature hero 3D interactive model preview"
+                            class="w-full h-full object-contain cursor-grab active:cursor-grabbing">Your browser does not support HTML5 Canvas.</canvas>
+                </div>
+            }
+        </div>
+
+        <!-- Moderation Sanction Notice Banner (if non-active) -->
+        @if (playerStatus != "Active")
+        {
+            <div class="p-4 rounded-2xl @(playerStatus switch
+                                        {
+                                            "Banned" => "bg-rose-950/50 border-rose-500/40 text-rose-200",
+                                            "Suspended" => "bg-amber-950/50 border-amber-500/40 text-amber-200",
+                                            _ => "bg-purple-950/50 border-purple-500/40 text-purple-200"
+                                        }) border space-y-1.5 shadow-inner">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
+                    <div class="flex items-center gap-2 font-bold text-sm">
+                        <span>@(playerStatus switch
+                            {
+                                "Banned" => "🚫 Account Disciplinary Ban",
+                                "Suspended" => "⛔ Competitive Matchmaking Queue Suspension",
+                                _ => "🔇 Public Communications Mute"
+                            })</span>
+                    </div>
+                    <div class="text-xs font-mono opacity-90">
+                        Sanction Expiration:
+                        <strong>@(playerStatusExpiration.HasValue ? playerStatusExpiration.Value > TimeProvider.System.GetUtcNow().AddYears(10) ? "Permanent (Indefinite)" : playerStatusExpiration.Value.ToString("yyyy-MM-dd HH:mm UTC") : "Active Sanction")</strong>
+                    </div>
+                </div>
+                @if (!string.IsNullOrWhiteSpace(playerStatusReason))
+                {
+                    <p class="text-xs opacity-90 italic">
+                        <strong>Reason:</strong> @playerStatusReason
+                    </p>
+                }
+            </div>
+        }
+    </div>
+
+    <!-- Overview Stats Grid -->
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
+        <div class="glass-card p-4 sm:p-6 rounded-2xl border border-slate-800 text-center sm:text-left">
+            <span class="text-[10px] sm:text-xs font-semibold text-slate-400 uppercase tracking-wider block mb-1">Matches Played</span>
+            <span class="text-2xl sm:text-3xl font-black text-white">@totalMatches</span>
+            <span class="text-[10px] sm:text-xs text-emerald-400 block mt-1 sm:mt-2">Active Season</span>
+        </div>
+        <div class="glass-card p-4 sm:p-6 rounded-2xl border border-slate-800 text-center sm:text-left">
+            <span class="text-[10px] sm:text-xs font-semibold text-slate-400 uppercase tracking-wider block mb-1">Skill Rating (MMR)</span>
+            <span class="text-2xl sm:text-3xl font-black text-purple-400">@skillRating</span>
+            <span class="text-[10px] sm:text-xs text-purple-300 block mt-1 sm:mt-2">Competitive</span>
+        </div>
+        <div class="glass-card p-4 sm:p-6 rounded-2xl border border-slate-800 text-center sm:text-left">
+            <span class="text-[10px] sm:text-xs font-semibold text-slate-400 uppercase tracking-wider block mb-1">Win Rate</span>
+            <span class="text-2xl sm:text-3xl font-black text-emerald-400">@(winRate)%</span>
+            <span
+                class="text-[10px] sm:text-xs text-slate-400 block mt-1 sm:mt-2">@(winRate >= 50 ? "Above Average" : "Season Average")</span>
+        </div>
+        <div class="glass-card p-4 sm:p-6 rounded-2xl border border-slate-800 text-center sm:text-left">
+            <span class="text-[10px] sm:text-xs font-semibold text-slate-400 uppercase tracking-wider block mb-1">KDR Ratio</span>
+            <span class="text-2xl sm:text-3xl font-black text-amber-400">@kdr</span>
+            <span class="text-[10px] sm:text-xs text-slate-400 block mt-1 sm:mt-2">Kills / Deaths</span>
+        </div>
+    </div>
+
+    @if (hasLinkedHostAccounts || (isOwner && hasPendingHostApplication))
+    {
+        <!-- Volunteer Server Host & Hosting Ratio Banner -->
+        <div class="glass-panel p-6 sm:p-7 rounded-3xl border border-purple-500/25 relative overflow-hidden space-y-4">
+            <div
+                class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-800/80 pb-4">
+                <div class="space-y-1">
+                    <div class="flex items-center gap-2">
+                        <span class="text-xl">⚡</span>
+                        <h3 class="text-lg sm:text-xl font-black text-white tracking-tight">
+                            COMMUNITY SERVER <span
+                                class="bg-gradient-to-r from-purple-400 via-pink-400 to-amber-400 bg-clip-text text-transparent">HOSTING</span>
+                        </h3>
+                        @if (isHost && !string.IsNullOrEmpty(hostBadgeTier))
+                        {
+                            <span
+                                class="px-2.5 py-0.5 rounded-full text-[10px] font-black bg-amber-500/20 text-amber-300 border border-amber-500/40 font-mono uppercase">
+                                @hostBadgeTier
+                            </span>
+                        }
+                    </div>
+                    <p class="text-xs text-slate-400 max-w-2xl">
+                        Dedicated community members host match server nodes on their infrastructure to power fast,
+                        low-latency games for everyone.
+                    </p>
+                </div>
+
+                <div class="flex items-center gap-2.5">
+                    <a href="@Url.Action("Leaderboard", "Home", new { mode = "hosts" })"
+                       class="px-3.5 py-2 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/30 text-amber-300 font-bold text-xs flex items-center gap-1.5 transition-all">
+                        <span>🏆</span> Host Leaderboard
+                    </a>
+                    @if (isOwner && !hasHostAccount && (hostApp == null || hostApp.Status == HostApplicationStatus.Rejected))
+                    {
+                        <button type="button" onclick="openApplyHostModal()"
+                                class="px-4 py-2 rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white font-bold text-xs shadow-lg shadow-purple-950 flex items-center gap-1.5 transition-all">
+                            <span>🚀</span> Apply to Host
+                        </button>
+                    }
+                </div>
+            </div>
+
+            <!-- Hosting Telemetry Metrics -->
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center sm:text-left">
+                <div class="p-3.5 rounded-2xl bg-slate-950/60 border border-slate-800/80">
+                    <span class="text-[10px] uppercase font-bold text-slate-400 block mb-0.5">Hosting Ratio</span>
+                    <div class="flex items-baseline justify-center sm:justify-start gap-1">
+                        <span
+                            class="text-2xl sm:text-3xl font-black text-amber-300 font-mono">@(hostingRatio.ToString("F2"))x</span>
+                    </div>
+                    <span class="text-[10px] text-slate-500 block mt-0.5">Hosted / Played</span>
+                </div>
+
+                <div class="p-3.5 rounded-2xl bg-slate-950/60 border border-slate-800/80">
+                    <span class="text-[10px] uppercase font-bold text-slate-400 block mb-0.5">Matches Hosted</span>
+                    <span class="text-2xl sm:text-3xl font-black text-purple-400 font-mono">@gamesHosted</span>
+                    <span
+                        class="text-[10px] text-purple-300/90 font-semibold block mt-0.5">@(communityContributionPercentage > 0 ? $"{communityContributionPercentage:F1}% Community Share" : "Server node matches")</span>
+                </div>
+
+                <div class="p-3.5 rounded-2xl bg-slate-950/60 border border-slate-800/80">
+                    <span class="text-[10px] uppercase font-bold text-slate-400 block mb-0.5">Total Games Played</span>
+                    <span
+                        class="text-2xl sm:text-3xl font-black text-white font-mono">@totalPlayedAcrossSubaccounts</span>
+                    <span class="text-[10px] text-slate-500 block mt-0.5">Across linked accounts</span>
+                </div>
+
+                <div class="p-3.5 rounded-2xl bg-slate-950/60 border border-slate-800/80">
+                    <span class="text-[10px] uppercase font-bold text-slate-400 block mb-0.5">Host Status</span>
+                    @if (hasHostAccount)
+                    {
+                        <span class="text-sm font-black text-emerald-400 block mt-1">⚡ ACTIVE HOST</span>
+                        <span class="text-[10px] text-emerald-500/80 block">Provisioned Node</span>
+                    }
+                    else if (hostApp is { Status: HostApplicationStatus.Pending })
+                    {
+                        <span class="text-sm font-black text-amber-400 block mt-1">⏳ APPLICATION PENDING</span>
+                        <span class="text-[10px] text-amber-500/80 block">Under Staff Review</span>
+                    }
+                    else
+                    {
+                        <span class="text-sm font-bold text-slate-400 block mt-1">Player</span>
+                        <span class="text-[10px] text-slate-500 block">Not Hosting</span>
+                    }
+                </div>
+            </div>
+
+            @if (isOwner && hostApp is { Status: HostApplicationStatus.Pending })
+            {
+                <div
+                    class="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+                    <div class="space-y-0.5">
+                        <div class="font-bold text-amber-300 flex items-center gap-1.5">
+                            <span>⏳</span> Host Application Pending Staff Approval
+                        </div>
+                        <p class="text-slate-400">
+                            Requested Region: <strong class="text-white">@hostApp.Location</strong> • Instances:
+                            <strong
+                                class="text-white">@hostApp.Instances</strong>. Staff will review your application
+                            shortly.
+                        </p>
+                    </div>
+                    <a href="/account/settings?openHostModal=true"
+                       class="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-xs">
+                        ✏️ View Application in Settings
+                    </a>
+                </div>
+            }
+        </div>
+    }
+
+    <!-- Hero Performance Breakdown -->
+    <div class="glass-panel p-5 sm:p-8 rounded-3xl space-y-6">
+        <h2 class="text-xl sm:text-2xl font-bold text-white flex items-center justify-center sm:justify-start gap-2">
+            <span>⚔️</span> Top Hero Performance
+        </h2>
+
+        @if (totalMatches > 0 && topHeroes is { Count: > 0 })
+        {
+            <div class="space-y-4">
+                @foreach (HeroPerformanceDto hero in topHeroes)
+                {
+                    <div
+                        class="flex flex-col sm:flex-row items-center justify-between p-4 rounded-2xl bg-slate-900/60 border border-slate-800 gap-3 text-center sm:text-left">
+                        <div class="flex flex-col sm:flex-row items-center gap-3 sm:gap-4">
+                            @{
+                                string iconName = !string.IsNullOrEmpty(hero.HeroIdentifier)
+                                    ? hero.HeroIdentifier.ToLowerInvariant()
+                                    : hero.HeroCode.ToLowerInvariant().Replace(" ", "");
+                            }
+                            <div
+                                class="w-12 h-12 rounded-xl overflow-hidden bg-slate-900 border border-purple-500/30 shadow-lg shadow-purple-950/40 flex-shrink-0">
+                                <img src="@(DAWNBRINGER.WebPortal.UI.Services.HeroAndMapAssetResolver.ResolveHeroIconUrl(!string.IsNullOrEmpty(hero.HeroIdentifier) ? hero.HeroIdentifier : hero.HeroCode))"
+                                     onError="this.onerror=null;this.src='/images/heroes/default.png';"
+                                     alt="@hero.HeroCode"
+                                     class="w-full h-full object-cover"/>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-white text-base">@hero.HeroCode</h4>
+                                <span class="text-xs text-slate-400">Combat Hero Stats</span>
+                            </div>
+                        </div>
+                        <div class="text-center sm:text-right">
+                            <span
+                                class="font-black text-white text-base sm:text-lg block">@(hero.WinRate)% Win Rate</span>
+                            <span class="text-xs text-slate-400">@hero.MatchesPlayed Matches Played</span>
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+        else
+        {
+            <!-- Clean Empty State when 0 matches played -->
+            <div class="p-12 text-center rounded-2xl bg-slate-900/40 border border-slate-800/80 space-y-3">
+                <div
+                    class="w-16 h-16 rounded-full bg-slate-800/80 border border-slate-700 flex items-center justify-center text-3xl mx-auto mb-2">
+                    🎮
+                </div>
+                <h3 class="text-xl font-bold text-white">No Match History Recorded Yet</h3>
+                <p class="text-slate-400 text-sm max-w-md mx-auto leading-relaxed">
+                    Play competitive matches in Project KONGOR to automatically record your hero performance breakdown,
+                    win rates, and combat telemetry.
+                </p>
+            </div>
+        }
+    </div>
+
+    <!-- Role Model Standing Showcase Box -->
+    @if (isRoleModel)
+    {
+        <div
+            class="glass-panel p-6 sm:p-10 rounded-3xl border border-amber-500/30 bg-gradient-to-br from-slate-900/90 via-amber-950/15 to-slate-950/90 relative overflow-hidden shadow-2xl space-y-4 text-center sm:text-left">
+            <!-- Glow -->
+            <div
+                class="absolute -right-16 -bottom-16 w-64 h-64 bg-amber-500/10 rounded-full blur-3xl pointer-events-none"></div>
+
+            <div class="flex flex-col sm:flex-row items-center gap-5 relative z-10">
+                <div
+                    class="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-gradient-to-br from-amber-500/20 to-yellow-500/10 border-2 border-amber-400/50 flex items-center justify-center text-3xl sm:text-4xl shadow-xl shadow-amber-950/40 flex-shrink-0">
+                    ⭐
+                </div>
+                <div class="space-y-1 flex-1">
+                    <div class="flex flex-wrap items-center justify-center sm:justify-start gap-2.5">
+                        <h3 class="text-xl sm:text-2xl font-black text-white tracking-tight">Community Role Model</h3>
+                        <span
+                            class="px-3 py-0.5 rounded-full text-[11px] font-black uppercase tracking-wider bg-amber-500/20 text-amber-300 border border-amber-500/40 shadow-sm">
+                            ⭐ Pristine Standing
+                        </span>
+                    </div>
+                    <p class="text-slate-300 text-xs sm:text-sm leading-relaxed max-w-2xl">
+                        <strong class="text-amber-300">@accountName</strong> has an exemplary disciplinary record with
+                        <strong class="text-emerald-400">zero active infractions, sanctions, or penalties</strong>. They
+                        serve as a pillar of fair play and sportsmanship in Project KONGOR.
+                    </p>
+                    @if (disciplinaryReports.Count > 0 && disciplinaryReports.All(r => r.Status is "APPEALED" or "DISMISSED"))
+                    {
+                        <div
+                            class="text-xs text-emerald-400/90 font-medium pt-1 flex items-center gap-1.5 justify-center sm:justify-start">
+                            <span>🛡️</span>
+                            <span>All prior reports were overturned upon appeal or dismissed. Pristine standing is fully preserved.</span>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    }
+
+    <!-- Disciplinary Case Records Section (Bottom of Player Profile) -->
+    @if (disciplinaryReports.Count > 0)
+    {
+        <div class="glass-panel p-5 sm:p-8 rounded-3xl space-y-6">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-800 pb-4">
+                <div class="space-y-1">
+                    <h2 class="text-xl sm:text-2xl font-bold text-white flex items-center gap-2">
+                        <span>⚖️</span> Disciplinary Case Records
+                    </h2>
+                    <p class="text-slate-400 text-xs sm:text-sm">Historical record of community reports, staff
+                        judgments, and appeal decisions.</p>
+                </div>
+                <div class="flex items-center gap-2">
+                    <span
+                        class="px-3 py-1 rounded-full text-xs font-bold bg-slate-800 text-slate-300 border border-slate-700">
+                        @disciplinaryReports.Count @(disciplinaryReports.Count == 1 ? "Record" : "Records") Logged
+                    </span>
+                    @if (isStaff)
+                    {
+                        <a href="@Url.Action("Reports", "Staff", new { query = accountName })"
+                           class="px-3 py-1 rounded-full text-xs font-bold bg-purple-600/20 text-purple-300 border border-purple-500/40 hover:bg-purple-600/40 transition-all flex items-center gap-1">
+                            <span>📋</span> Open in Staff Portal →
+                        </a>
+                    }
+                </div>
+            </div>
+
+            <div class="space-y-3" id="disciplinary-records-container">
+                @foreach (PlayerReport rep in disciplinaryReports)
+                {
+                    <div id="report-card-@rep.ID"
+                         class="p-4 sm:p-5 rounded-2xl bg-slate-900/70 border border-slate-800/90 space-y-3 hover:border-slate-700 transition-all">
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                            <div class="flex items-center gap-2.5 flex-wrap">
+                                <span
+                                    class="text-xs font-mono font-bold text-purple-400 bg-purple-500/10 px-2.5 py-0.5 rounded-lg border border-purple-500/30">#@rep.ID</span>
+
+                                <!-- Status & Action Badge -->
+                                @if (rep.Status == "APPEALED")
+                                {
+                                    <span
+                                        class="px-2.5 py-0.5 rounded-lg text-xs font-black bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 flex items-center gap-1">
+                                        <span>🛡️</span>
+                                        <span>APPEAL GRANTED (Overturned)</span>
+                                    </span>
+                                }
+                                else if (rep.Status == "DISMISSED")
+                                {
+                                    <span
+                                        class="px-2.5 py-0.5 rounded-lg text-xs font-black bg-slate-500/20 text-slate-300 border border-slate-500/40">
+                                        🛡️ DISMISSED
+                                    </span>
+                                }
+                                else if (rep.Status == "PENDING")
+                                {
+                                    <span
+                                        class="px-2.5 py-0.5 rounded-lg text-xs font-black bg-amber-500/20 text-amber-300 border border-amber-500/40">
+                                        ⏳ PENDING REVIEW
+                                    </span>
+                                }
+                                else if (rep.Status == "IN_REVIEW")
+                                {
+                                    <span
+                                        class="px-2.5 py-0.5 rounded-lg text-xs font-black bg-sky-500/20 text-sky-300 border border-sky-500/40">
+                                        🔍 IN REVIEW
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="px-2.5 py-0.5 rounded-lg text-xs font-bold @(rep.PunishmentType switch
+                                                                                            {
+                                                                                                "BAN" => "bg-rose-500/20 text-rose-300 border border-rose-500/40",
+                                                                                                "SUSPEND" => "bg-amber-500/20 text-amber-300 border border-amber-500/40",
+                                                                                                _ => "bg-purple-500/20 text-purple-300 border border-purple-500/40"
+                                                                                            })">
+                                        @(rep.PunishmentType switch
+                                        {
+                                            "BAN" => "🚫 BAN",
+                                            "SUSPEND" => "⛔ SUSPEND",
+                                            _ => "🔇 MUTE"
+                                        })
+                                        <span
+                                            class="font-normal opacity-80">(@(rep.PunishmentDurationHours >= 800000 ? "Permanent" : (rep.PunishmentDurationHours + "h")))</span>
+                                    </span>
+                                }
+
+                                <span
+                                    class="text-xs font-bold text-slate-300 bg-slate-800/80 px-2.5 py-0.5 rounded-lg border border-slate-700">
+                                    ⚠️ @rep.Reason
+                                </span>
+                            </div>
+
+                            <div class="flex items-center gap-3">
+                                <div class="text-xs text-slate-400 font-mono">
+                                    @(rep.TimestampReviewed?.ToString("yyyy-MM-dd HH:mm") ?? rep.TimestampCreated.ToString("yyyy-MM-dd HH:mm")) UTC
+                                </div>
+
+                                @if (isStaff)
+                                {
+                                    <div class="flex items-center gap-1.5">
+                                        @if (rep.MatchID.HasValue)
+                                        {
+                                            <a href="@Url.Action("GetReportDetails", "Staff", new { id = rep.ID })"
+                                               class="px-2.5 py-1 rounded-lg bg-cyan-600/20 hover:bg-cyan-600/40 border border-cyan-500/40 text-cyan-300 text-xs font-bold transition-all flex items-center gap-1"
+                                               title="Inspect in-game chat and voice evidence">
+                                                <span>🎙️ Evidence</span>
+                                            </a>
+                                        }
+
+                                        <a href="@Url.Action("GetReportDetails", "Staff", new { id = rep.ID })"
+                                           class="px-2.5 py-1 rounded-lg bg-purple-600/20 hover:bg-purple-600/40 border border-purple-500/40 text-purple-300 text-xs font-bold transition-all flex items-center gap-1">
+                                            <span>⚖️ Staff Review</span>
+                                        </a>
+
+                                        @if (rep.Status == "RESOLVED" && rep.PunishmentType != "DISMISS" && rep.PunishmentType != "NONE" && rep.PunishmentType != "APPEAL")
+                                        {
+                                            <button type="button"
+                                                    onclick="openAppealModal(@rep.ID, '@rep.ReportedAccountName')"
+                                                    class="px-2.5 py-1 rounded-lg bg-emerald-600/20 hover:bg-emerald-600/40 border border-emerald-500/40 text-emerald-300 text-xs font-bold transition-all flex items-center gap-1">
+                                                <span>🛡️ Grant Appeal</span>
+                                            </button>
+                                        }
+                                    </div>
+                                }
+                            </div>
+                        </div>
+
+                        @if (rep.MatchID.HasValue)
+                        {
+                            <div class="text-xs text-slate-400 flex items-center gap-2">
+                                <span class="text-slate-500">Originating Match:</span>
+                                <a href="/matches/@rep.MatchID"
+                                   class="text-cyan-400 hover:text-cyan-300 font-mono font-bold hover:underline inline-flex items-center gap-1">
+                                    <span>⚔️ Match #@rep.MatchID</span>
+                                </a>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="text-xs text-slate-500 flex items-center gap-1">
+                                <span>⚡ Direct Staff Action</span>
+                                <span>(Filed by @rep.ReporterAccountName)</span>
+                            </div>
+                        }
+
+                        @if (!string.IsNullOrWhiteSpace(rep.StaffNotes))
+                        {
+                            <div
+                                class="text-xs text-purple-300 bg-purple-950/30 p-2.5 rounded-xl border border-purple-500/20 font-medium">
+                                💬 <strong class="text-purple-200">Staff Note:</strong> @rep.StaffNotes
+                            </div>
+                        }
+                        else if (!string.IsNullOrWhiteSpace(rep.Description))
+                        {
+                            <div
+                                class="text-xs text-slate-400 bg-slate-950/50 p-2.5 rounded-xl border border-slate-800 italic">
+                                📝 <strong class="text-slate-300 not-italic">Report Comment:</strong> @rep.Description
+                            </div>
+                        }
+                    </div>
+                }
+            </div>
+        </div>
+    }
+</div>
+
+@if (isStaff)
+{
+    <!-- Direct Staff Disciplinary Action Modal -->
+    <div id="direct-sanction-modal"
+         class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md hidden animate-fade-in">
+        <div
+            class="glass-panel w-full max-w-2xl p-6 sm:p-8 rounded-3xl border border-purple-500/30 shadow-2xl space-y-6 relative max-h-[90vh] overflow-y-auto">
+            <!-- Close Button -->
+            <button type="button" onclick="closeDirectSanctionModal()"
+                    class="absolute top-5 right-5 text-slate-400 hover:text-white text-xl font-bold p-2 transition-colors">
+                ✕
+            </button>
+
+            <!-- Header -->
+            <div class="space-y-1">
+                <div class="flex items-center gap-2">
+                    <span class="text-2xl">⚡</span>
+                    <h3 class="text-2xl font-black text-white tracking-tight">Issue Staff Disciplinary Action</h3>
+                </div>
+                <p class="text-slate-400 text-xs sm:text-sm">
+                    Apply a direct moderation judgment against <strong class="text-purple-300">@accountName</strong>
+                    without needing match context.
+                </p>
+            </div>
+
+            <!-- Form -->
+            <form id="direct-sanction-form" onsubmit="submitDirectSanction(event)" class="space-y-5">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="targetAccountName" value="@accountName"/>
+
+                <!-- Offense Reason -->
+                <div class="space-y-2">
+                    <label class="block text-xs font-black text-slate-300 uppercase tracking-wider">
+                        Offense Reason
+                    </label>
+                    <select name="reason" id="direct-reason-select"
+                            class="w-full bg-slate-950/90 border border-slate-700/80 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/30 rounded-xl px-4 py-3 text-sm text-slate-200 font-semibold outline-none transition-all cursor-pointer">
+                        <option value="Griefing / Intentional Feed">Griefing / Intentional Feeding</option>
+                        <option value="AFK / Leaving">AFK / Leaving Games</option>
+                        <option value="Abusive Language / Toxic Chat">Abusive Language / Toxic Chat</option>
+                        <option value="Exploiting / Cheating">Exploiting / Cheating / Hacking</option>
+                        <option value="Inappropriate Name / Impersonation">Inappropriate Name / Impersonation</option>
+                        <option value="Direct Staff Action" selected>Direct Staff Action</option>
+                        <option value="Other">Other Disciplinary Violation</option>
+                    </select>
+                </div>
+
+                <!-- Violation Details / Evidence -->
+                <div class="space-y-2">
+                    <label class="block text-xs font-black text-slate-300 uppercase tracking-wider">
+                        Incident Details / Evidence
+                    </label>
+                    <textarea name="description" rows="2"
+                              placeholder="Provide context, observed misconduct, or incident summary..."
+                              class="w-full bg-slate-950/90 border border-slate-700/80 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/30 rounded-xl p-3 text-sm text-slate-200 placeholder-slate-500 outline-none transition-all leading-relaxed"></textarea>
+                </div>
+
+                <!-- Select Action Radio Cards -->
+                <div class="space-y-2">
+                    <label class="block text-xs font-black text-slate-300 uppercase tracking-wider">
+                        Select Disciplinary Action
+                    </label>
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+                        <!-- Dismiss -->
+                        <label class="cursor-pointer group">
+                            <input type="radio" name="judgmentAction" value="DISMISS" class="peer sr-only"
+                                   onchange="handleDirectActionChange('DISMISS')"/>
+                            <div
+                                class="h-full p-3 rounded-2xl bg-slate-950/60 border border-slate-800 peer-checked:border-slate-300 peer-checked:bg-slate-800/40 peer-checked:ring-2 peer-checked:ring-slate-400/30 hover:border-slate-700 transition-all text-center space-y-1">
+                                <div class="text-xl">🛡️</div>
+                                <div class="text-xs font-bold text-slate-200">Log / Dismiss</div>
+                                <div class="text-[10px] text-slate-400">No Penalty</div>
+                            </div>
+                        </label>
+
+                        <!-- Mute -->
+                        <label class="cursor-pointer group">
+                            <input type="radio" name="judgmentAction" value="MUTE" class="peer sr-only" checked
+                                   onchange="handleDirectActionChange('MUTE')"/>
+                            <div
+                                class="h-full p-3 rounded-2xl bg-slate-950/60 border border-slate-800 peer-checked:border-purple-400 peer-checked:bg-purple-950/50 peer-checked:ring-2 peer-checked:ring-purple-500/40 hover:border-purple-500/40 transition-all text-center space-y-1">
+                                <div class="text-xl">🔇</div>
+                                <div class="text-xs font-bold text-purple-300">Mute</div>
+                                <div class="text-[10px] text-purple-400/80">Comms Lock</div>
+                            </div>
+                        </label>
+
+                        <!-- Suspend -->
+                        <label class="cursor-pointer group">
+                            <input type="radio" name="judgmentAction" value="SUSPEND" class="peer sr-only"
+                                   onchange="handleDirectActionChange('SUSPEND')"/>
+                            <div
+                                class="h-full p-3 rounded-2xl bg-slate-950/60 border border-slate-800 peer-checked:border-amber-400 peer-checked:bg-amber-950/50 peer-checked:ring-2 peer-checked:ring-amber-500/40 hover:border-amber-500/40 transition-all text-center space-y-1">
+                                <div class="text-xl">⛔</div>
+                                <div class="text-xs font-bold text-amber-300">Suspend</div>
+                                <div class="text-[10px] text-amber-400/80">Queue Lock</div>
+                            </div>
+                        </label>
+
+                        <!-- Ban -->
+                        <label class="cursor-pointer group">
+                            <input type="radio" name="judgmentAction" value="BAN" class="peer sr-only"
+                                   onchange="handleDirectActionChange('BAN')"/>
+                            <div
+                                class="h-full p-3 rounded-2xl bg-slate-950/60 border border-slate-800 peer-checked:border-rose-400 peer-checked:bg-rose-950/50 peer-checked:ring-2 peer-checked:ring-rose-500/40 hover:border-rose-500/40 transition-all text-center space-y-1">
+                                <div class="text-xl">🚫</div>
+                                <div class="text-xs font-bold text-rose-300">Ban</div>
+                                <div class="text-[10px] text-rose-400/80">Full Lockout</div>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Duration Selector -->
+                <div id="direct-duration-container" class="space-y-2">
+                    <label
+                        class="block text-xs font-black text-slate-300 uppercase tracking-wider flex items-center justify-between">
+                        <span>Duration</span>
+                        <span id="direct-duration-preview" class="text-[11px] font-normal text-purple-400">Expires in 24h</span>
+                    </label>
+                    <select name="durationHours" id="direct-duration-select" onchange="updateDirectDurationPreview()"
+                            class="w-full bg-slate-950/90 border border-slate-700/80 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/30 rounded-xl px-4 py-3 text-sm text-slate-200 font-semibold outline-none transition-all cursor-pointer">
+                        <option value="1">1 Hour (Quick Cooldown)</option>
+                        <option value="12">12 Hours (Half Day)</option>
+                        <option value="24" selected>24 Hours (1 Day)</option>
+                        <option value="72">3 Days (72 Hours)</option>
+                        <option value="168">7 Days (1 Week)</option>
+                        <option value="720">30 Days (1 Month)</option>
+                        <option value="876000">Permanent (Indefinite Sanction)</option>
+                    </select>
+                </div>
+
+                <!-- Staff Findings / Notes -->
+                <div class="space-y-2">
+                    <label class="block text-xs font-black text-slate-300 uppercase tracking-wider">
+                        Staff Official Findings
+                    </label>
+                    <textarea name="notes" rows="2"
+                              placeholder="Official findings and disciplinary note..."
+                              class="w-full bg-slate-950/90 border border-slate-700/80 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/30 rounded-xl p-3 text-sm text-slate-200 placeholder-slate-500 outline-none transition-all leading-relaxed"></textarea>
+                </div>
+
+                <!-- Buttons -->
+                <div class="flex items-center justify-end gap-3 pt-3 border-t border-slate-800">
+                    <button type="button" onclick="closeDirectSanctionModal()"
+                            class="px-5 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs sm:text-sm transition-all">
+                        Cancel
+                    </button>
+                    <button type="submit" id="submit-direct-sanction-btn"
+                            class="px-6 py-2.5 rounded-xl bg-gradient-to-r from-purple-600 via-indigo-600 to-purple-600 hover:from-purple-500 hover:to-indigo-500 text-white font-bold text-xs sm:text-sm shadow-xl shadow-purple-600/30 hover:scale-[1.02] transition-all flex items-center gap-2">
+                        <span>⚡ Apply Sanction</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Quick Appeal Modal -->
+    <div id="appeal-modal"
+         class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md hidden animate-fade-in">
+        <div
+            class="glass-panel w-full max-w-lg p-6 sm:p-8 rounded-3xl border border-emerald-500/30 shadow-2xl space-y-5 relative">
+            <button type="button" onclick="closeAppealModal()"
+                    class="absolute top-5 right-5 text-slate-400 hover:text-white text-xl font-bold p-2 transition-colors">
+                ✕
+            </button>
+
+            <div class="space-y-1">
+                <div class="flex items-center gap-2">
+                    <span class="text-2xl">🛡️</span>
+                    <h3 class="text-2xl font-black text-white tracking-tight">Grant Appeal</h3>
+                </div>
+                <p class="text-slate-400 text-xs sm:text-sm">
+                    Overturn disciplinary sanctions for Case <strong id="appeal-report-id-text"
+                                                                     class="text-emerald-300 font-mono">#0</strong> and
+                    restore player standing.
+                </p>
+            </div>
+
+            <form id="appeal-form" onsubmit="submitAppeal(event)" class="space-y-4">
+                <input type="hidden" id="appeal-report-id" name="id"/>
+
+                <div class="space-y-2">
+                    <label class="block text-xs font-black text-slate-300 uppercase tracking-wider">
+                        Appeal Reason & Justification
+                    </label>
+                    <textarea id="appeal-notes" name="appealNotes" rows="3"
+                              placeholder="Reason for appeal approval (e.g., False report verified, mistaken identity, evidence exonerated)..."
+                              class="w-full bg-slate-950/90 border border-slate-700/80 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/30 rounded-xl p-3 text-sm text-slate-200 placeholder-slate-500 outline-none transition-all leading-relaxed"></textarea>
+                </div>
+
+                <div
+                    class="p-3.5 rounded-xl bg-emerald-950/40 border border-emerald-500/30 text-emerald-200 text-xs leading-relaxed space-y-1">
+                    <div class="font-bold flex items-center gap-1.5">
+                        <span>✓</span>
+                        <span>Restoration Effect</span>
+                    </div>
+                    <p class="opacity-90">
+                        Granting this appeal will immediately clear any active ban, mute, or suspension from this case
+                        and restore the player's <strong>Role Model</strong> standing.
+                    </p>
+                </div>
+
+                <div class="flex items-center justify-end gap-3 pt-2 border-t border-slate-800">
+                    <button type="button" onclick="closeAppealModal()"
+                            class="px-5 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs sm:text-sm transition-all">
+                        Cancel
+                    </button>
+                    <button type="submit" id="submit-appeal-btn"
+                            class="px-6 py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-xs sm:text-sm shadow-xl shadow-emerald-600/30 hover:scale-[1.02] transition-all flex items-center gap-2">
+                        <span>🛡️ Grant Appeal & Overturn</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+}
+
+<!-- Autocomplete & Staff Modals Script -->
+<script>
+    function openDirectSanctionModal() {
+        const modal = document.getElementById('direct-sanction-modal');
+        if (modal) {
+            modal.classList.remove('hidden');
+            updateDirectDurationPreview();
+        }
+    }
+
+    function closeDirectSanctionModal() {
+        const modal = document.getElementById('direct-sanction-modal');
+        if (modal) modal.classList.add('hidden');
+    }
+
+    function handleDirectActionChange(action) {
+        const durationContainer = document.getElementById('direct-duration-container');
+        if (durationContainer) {
+            durationContainer.style.display = (action === 'DISMISS' || action === 'APPEAL') ? 'none' : 'block';
+        }
+        updateDirectDurationPreview();
+    }
+
+    function updateDirectDurationPreview() {
+        const select = document.getElementById('direct-duration-select');
+        const preview = document.getElementById('direct-duration-preview');
+        if (!select || !preview) return;
+
+        const hours = parseInt(select.value, 10);
+        if (hours >= 800000) {
+            preview.textContent = "Permanent sanction (No expiration)";
+        } else {
+            const exp = new Date(Date.now() + hours * 3600000);
+            preview.textContent = "Expires on " + exp.toLocaleDateString('en-US', {
+                month: 'short',
+                day: 'numeric',
+                year: 'numeric'
+            }) + " at " + exp.toLocaleTimeString('en-US', {hour: '2-digit', minute: '2-digit'});
+        }
+    }
+
+    async function submitDirectSanction(e) {
+        e.preventDefault();
+        const form = document.getElementById('direct-sanction-form');
+        const btn = document.getElementById('submit-direct-sanction-btn');
+        if (!form || !btn) return;
+
+        btn.disabled = true;
+        btn.innerHTML = '<span>⏳ Applying...</span>';
+
+        const formData = new FormData(form);
+
+        try {
+            const res = await fetch('/staff/reports/create-direct', {
+                method: 'POST',
+                body: formData,
+                headers: {'X-Requested-With': 'XMLHttpRequest'}
+            });
+
+            if (res.ok) {
+                window.location.reload();
+            } else {
+                const errData = await res.json();
+                alert(errData.message || 'Failed to apply disciplinary action.');
+                btn.disabled = false;
+                btn.innerHTML = '<span>⚡ Apply Sanction</span>';
+            }
+        } catch (err) {
+            console.error('Error issuing direct sanction:', err);
+            alert('Error issuing disciplinary action.');
+            btn.disabled = false;
+            btn.innerHTML = '<span>⚡ Apply Sanction</span>';
+        }
+    }
+
+    function openAppealModal(reportId, playerName) {
+        const modal = document.getElementById('appeal-modal');
+        const idInput = document.getElementById('appeal-report-id');
+        const idText = document.getElementById('appeal-report-id-text');
+        if (modal && idInput && idText) {
+            idInput.value = reportId;
+            idText.textContent = '#' + reportId;
+            modal.classList.remove('hidden');
+        }
+    }
+
+    function closeAppealModal() {
+        const modal = document.getElementById('appeal-modal');
+        if (modal) modal.classList.add('hidden');
+    }
+
+    async function submitAppeal(e) {
+        e.preventDefault();
+        const form = document.getElementById('appeal-form');
+        const btn = document.getElementById('submit-appeal-btn');
+        const reportId = document.getElementById('appeal-report-id')?.value;
+        if (!form || !btn || !reportId) return;
+
+        btn.disabled = true;
+        btn.innerHTML = '<span>⏳ Processing Appeal...</span>';
+
+        const formData = new FormData(form);
+
+        try {
+            const res = await fetch('/staff/reports/' + encodeURIComponent(reportId) + '/appeal', {
+                method: 'POST',
+                body: formData,
+                headers: {'X-Requested-With': 'XMLHttpRequest'}
+            });
+
+            if (res.ok) {
+                window.location.reload();
+            } else {
+                const errData = await res.json();
+                alert(errData.message || 'Failed to grant appeal.');
+                btn.disabled = false;
+                btn.innerHTML = '<span>🛡️ Grant Appeal & Overturn</span>';
+            }
+        } catch (err) {
+            console.error('Error granting appeal:', err);
+            alert('Error processing appeal request.');
+            btn.disabled = false;
+            btn.innerHTML = '<span>🛡️ Grant Appeal & Overturn</span>';
+        }
+    }
+
+    document.addEventListener("DOMContentLoaded", function () {
+        const input = document.getElementById("playerSearchInput");
+        const resultsContainer = document.getElementById("playerSearchResults");
+        let debounceTimer;
+        let selectedIndex = 0;
+
+        function updatePlayerHighlight(rows) {
+            rows.forEach((row, idx) => {
+                if (idx === selectedIndex) {
+                    row.classList.add("bg-purple-600/30", "text-white", "ring-1", "ring-purple-400/60");
+                    row.classList.remove("hover:bg-purple-600/20", "text-slate-200");
+                    row.scrollIntoView({block: "nearest"});
+                } else {
+                    row.classList.remove("bg-purple-600/30", "text-white", "ring-1", "ring-purple-400/60");
+                    row.classList.add("hover:bg-purple-600/20", "text-slate-200");
+                }
+            });
+        }
+
+        if (input && resultsContainer) {
+            input.addEventListener("keydown", function (e) {
+                const rows = resultsContainer.querySelectorAll("a");
+                const isVisible = !resultsContainer.classList.contains("hidden") && rows.length > 0;
+
+                if (e.key === "ArrowDown") {
+                    if (!isVisible) return;
+                    e.preventDefault();
+                    selectedIndex = (selectedIndex + 1) % rows.length;
+                    updatePlayerHighlight(rows);
+                } else if (e.key === "ArrowUp") {
+                    if (!isVisible) return;
+                    e.preventDefault();
+                    selectedIndex = selectedIndex <= 0 ? rows.length - 1 : selectedIndex - 1;
+                    updatePlayerHighlight(rows);
+                } else if (e.key === "Enter") {
+                    if (!isVisible) return;
+                    e.preventDefault();
+                    const targetIndex = selectedIndex >= 0 && selectedIndex < rows.length ? selectedIndex : 0;
+                    if (rows[targetIndex]) {
+                        window.location.href = rows[targetIndex].href;
+                    }
+                } else if (e.key === "Escape") {
+                    resultsContainer.classList.add("hidden");
+                    selectedIndex = 0;
+                    closeDirectSanctionModal();
+                    closeAppealModal();
+                }
+            });
+
+            input.addEventListener("input", function () {
+                clearTimeout(debounceTimer);
+                selectedIndex = 0;
+                const query = input.value.trim();
+
+                if (query.length < 2) {
+                    resultsContainer.classList.add("hidden");
+                    resultsContainer.innerHTML = "";
+                    return;
+                }
+
+                debounceTimer = setTimeout(() => {
+                    fetch("/api/players/search?q=" + encodeURIComponent(query))
+                        .then(res => res.json())
+                        .then(data => {
+                            resultsContainer.innerHTML = "";
+                            selectedIndex = 0;
+                            if (data && data.length > 0) {
+                                data.forEach((item, index) => {
+                                    const row = document.createElement("a");
+                                    row.href = "/stats?accountName=" + encodeURIComponent(item.name);
+                                    row.className = "flex items-center justify-between px-4 py-3 text-slate-200 hover:text-white transition-colors cursor-pointer";
+
+                                    const fallbackAvatar = "/images/default-avatar.png";
+                                    const avatarSrc = item.avatarUrl || fallbackAvatar;
+
+                                    let statusBadge = '';
+                                    if (item.status === 'Banned') {
+                                        statusBadge = '<span class="text-[10px] font-bold text-rose-400 bg-rose-500/20 px-1.5 py-0.5 rounded border border-rose-500/30">BANNED</span>';
+                                    } else if (item.status === 'Suspended') {
+                                        statusBadge = '<span class="text-[10px] font-bold text-amber-400 bg-amber-500/20 px-1.5 py-0.5 rounded border border-amber-500/30">SUSPENDED</span>';
+                                    } else if (item.status === 'Muted') {
+                                        statusBadge = '<span class="text-[10px] font-bold text-purple-400 bg-purple-500/20 px-1.5 py-0.5 rounded border border-purple-500/30">MUTED</span>';
+                                    }
+
+                                    row.innerHTML = `
+                                        <div class="flex items-center gap-3">
+                                            <img src="${avatarSrc}" 
+                                                 onError="this.onerror=null;this.src='${fallbackAvatar}';" 
+                                                 alt="${item.name}" 
+                                                 class="w-7 h-7 rounded-full object-cover border border-purple-500/40 bg-slate-800 flex-shrink-0" />
+                                            <span class="font-semibold text-sm">${item.name}</span>
+                                            ${statusBadge}
+                                        </div>
+                                        <span class="text-xs text-purple-400 font-bold">View Stats →</span>
+                                    `;
+
+                                    row.addEventListener("mouseenter", function () {
+                                        selectedIndex = index;
+                                        const rows = resultsContainer.querySelectorAll("a");
+                                        updatePlayerHighlight(rows);
+                                    });
+
+                                    resultsContainer.appendChild(row);
+                                });
+                                resultsContainer.classList.remove("hidden");
+                                const rows = resultsContainer.querySelectorAll("a");
+                                updatePlayerHighlight(rows);
+                            } else {
+                                selectedIndex = -1;
+                                const noResult = document.createElement("div");
+                                noResult.className = "px-4 py-3 text-xs text-slate-400 text-center";
+                                noResult.textContent = "No players found matching '" + query + "'";
+                                resultsContainer.appendChild(noResult);
+                                resultsContainer.classList.remove("hidden");
+                            }
+                        })
+                        .catch(err => {
+                            console.error("Error searching players:", err);
+                        });
+                }, 250);
+            });
+
+            document.addEventListener("click", function (e) {
+                if (!input.contains(e.target) && !resultsContainer.contains(e.target)) {
+                    resultsContainer.classList.add("hidden");
+                    selectedIndex = 0;
+                }
+            });
+        }
+    });
+
+    function openApplyHostModal() {
+        const modal = document.getElementById('applyHostModal');
+        if (modal) modal.classList.remove('hidden');
+    }
+
+    function closeApplyHostModal() {
+        const modal = document.getElementById('applyHostModal');
+        if (modal) modal.classList.add('hidden');
+    }
+</script>
+
+<!-- APPLY TO HOST MODAL -->
+<div id="applyHostModal"
+     class="hidden fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+    <div
+        class="glass-card max-w-lg w-full p-6 sm:p-8 rounded-3xl border border-purple-500/40 bg-slate-900 shadow-2xl space-y-5 animate-scaleUp">
+        <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+            <div class="flex items-center gap-2">
+                <span class="text-xl">⚡</span>
+                <h3 class="text-lg sm:text-xl font-black text-white">Volunteer Host Application</h3>
+            </div>
+            <button type="button" onclick="closeApplyHostModal()" class="text-slate-400 hover:text-white text-lg">✕
+            </button>
+        </div>
+
+        <form method="post" action="@Url.Action("ApplyHost", "Account")" class="space-y-4">
+            <p class="text-xs text-slate-300 leading-relaxed">
+                Apply to become an authorized community game server host. Upon staff approval, a dedicated <span
+                    class="font-mono text-purple-300">@accountName@("_host")</span> account will be created and your
+                custom <strong class="text-amber-300">COMPEL.JSON</strong> configuration will be generated.
+            </p>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Server Location /
+                        Region</label>
+                    <select name="Location"
+                            class="w-full px-3.5 py-2 rounded-xl bg-slate-950 border border-slate-700 text-white text-xs focus:outline-none focus:border-purple-500">
+                        <option value="USE" selected>US East (USE)</option>
+                        <option value="USW">US West (USW)</option>
+                        <option value="EU">Europe (EU)</option>
+                        <option value="AU">Australia (AU)</option>
+                        <option value="SEA">Southeast Asia (SEA)</option>
+                        <option value="BR">Brazil (BR)</option>
+                        <option value="RU">Russia (RU)</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Max Server
+                        Instances</label>
+                    <input type="number" name="Instances" min="1" max="16" value="@(hostApp?.Instances ?? 2)"
+                           class="w-full px-3.5 py-2 rounded-xl bg-slate-950 border border-slate-700 text-white text-xs focus:outline-none focus:border-purple-500"/>
+                </div>
+            </div>
+
+            <div>
+                <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Custom Server Name
+                    Prefix</label>
+                <input type="text" name="ServerNamePrefix"
+                       value="@(hostApp?.ServerNamePrefix ?? $"{accountName} Arena")" placeholder="e.g. DONUT ARENA"
+                       class="w-full px-3.5 py-2 rounded-xl bg-slate-950 border border-slate-700 text-white text-xs focus:outline-none focus:border-purple-500"/>
+            </div>
+
+            <div>
+                <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Application Notes / Specs
+                    (Optional)</label>
+                <textarea name="ApplicationNotes" rows="2"
+                          placeholder="e.g. Dedicated VPS (4 vCPU, 8GB RAM, 1Gbps fiber)"
+                          class="w-full px-3.5 py-2 rounded-xl bg-slate-950 border border-slate-700 text-white text-xs focus:outline-none focus:border-purple-500">@(hostApp?.ApplicationNotes)</textarea>
+            </div>
+
+            <div class="flex items-center justify-end gap-2 pt-2 border-t border-slate-800">
+                <button type="button" onclick="closeApplyHostModal()"
+                        class="px-4 py-2 rounded-xl bg-slate-800 text-slate-300 font-bold text-xs">
+                    Cancel
+                </button>
+                <button type="submit"
+                        class="px-5 py-2 rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white font-black text-xs shadow-lg shadow-purple-950">
+                    Submit Host Application
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    function exportPlayerCard() {
+        const topHeroStr = '@(topHeroes?.FirstOrDefault()?.HeroCode?.Replace("Hero_", "") ?? "Legion Warrior")';
+        const estKills = @((int)Math.Round(kdr * totalMatches * 3));
+        const estDeaths = @(Math.Max(1, totalMatches * 3));
+        const estAssists = @((int)Math.Round(kdr * totalMatches * 2));
+        const estDamage = @(totalMatches * 14500);
+        const estWards = @(totalMatches * 4);
+        const estCreeps = @(totalMatches * 110);
+
+        const playerData = {
+            matchId: 'CAREER',
+            mapName: 'Newerth Veteran',
+            duration: '@totalMatches Matches',
+            gameMode: 'Career Record',
+            isVictory: @(winRate >= 50.0 ? "true" : "false"),
+            isMvp: @(kdr >= 1.5 ? "true" : "false"),
+            playerName: '@accountName',
+            heroName: topHeroStr,
+            rankName: '@(skillRating >= 1800 ? "Immortal" : skillRating >= 1700 ? "Diamond" : skillRating >= 1600 ? "Gold" : "Silver") (@skillRating MMR)',
+            title: '@(titleDisplayName ?? "HoN Champion")',
+            kills: estKills,
+            deaths: estDeaths,
+            assists: estAssists,
+            kdr: @kdr,
+            gpm: 520,
+            xpm: 580,
+            damage: estDamage,
+            wards: estWards,
+            creeps: estCreeps,
+            items: ['Frostwolf', 'Daemonic', 'Savage Mace', 'Geometer', 'Shrunken Head', 'Ghost Marchers']
+        };
+        if (window.NexusBragCard) {
+            window.NexusBragCard.generate(playerData);
+        }
+    }
+</script>
+
+<style>
+    /* 3D Smoke & Portal Transition Effects */
+    .banner-3d-particle {
+        position: absolute;
+        pointer-events: none;
+        user-select: none;
+        opacity: 0;
+        animation: bannerParticlePuff ease-out forwards;
+    }
+
+    @@keyframes bannerParticlePuff {
+        0% {
+            opacity: 0.95;
+            transform: translate(-50%, -50%) scale(0.3) rotate(0deg);
+        }
+        50% {
+            opacity: 0.85;
+            transform: translate(calc(-50% + var(--px)), calc(-50% + var(--py))) scale(var(--pscale)) rotate(var(--prot));
+        }
+        100% {
+            opacity: 0;
+            transform: translate(calc(-50% + var(--px) * 1.5), calc(-50% + var(--py) * 1.5 - 10px)) scale(calc(var(--pscale) * 1.3)) rotate(calc(var(--prot) + 45deg));
+        }
+    }
+</style>
+
+@if (ViewData["SignatureHeroGlbUrl"] != null)
+{
+    <script src="/lib/three/three.r16x.bundle.js"></script>
+    <script src="~/js/banner-avatar-3d.js" asp-append-version="true"></script>
+}

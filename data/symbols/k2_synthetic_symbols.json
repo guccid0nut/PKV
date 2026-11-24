@@ -1,0 +1,311 @@
+{
+    "schema_version":  "1.0.0",
+    "generated_at":  "2026-10-17T03:36:59.9006465-05:00",
+    "source_binary":  "games/client/k2_x64.dll",
+    "target_binary":  "games/client/k2_x64.dll",
+    "transferred_count":  17,
+    "binaries": {
+        "games/client/hon_x64.exe": {
+            "pdb_name": "hon_x64.pdb",
+            "expected_guid": "30d087c1-6d3a-47cb-a8b3-0f424074bb54",
+            "expected_age": 1,
+            "symbols": [
+                { "rva": "0x009E30", "name": "HonShell_WinMainCRTStartup", "source": "pe_entrypoint" }
+            ]
+        },
+        "games/client/k2_x64.dll": {
+            "pdb_name": "k2_x64.pdb",
+            "expected_guid": "fbe0fc92-1e5e-4fb5-9ae4-d3861247c9d1",
+            "expected_age": 1,
+            "symbols": [
+                { "rva": "0x4C2440", "name": "K2_System_SleepMs", "source": "ghidra_native_guard" },
+                { "rva": "0x4DFAD0", "name": "K2_AtoB_ParseBool", "source": "ghidra_native_guard" },
+                { "rva": "0x642014", "name": "K2_DllMainCRTStartup", "source": "pe_entrypoint" },
+                { "rva": "0x674C10", "name": "CFileManager_RegisterArchive", "source": "ghidra_vfs" },
+                { "rva": "0x676BB0", "name": "CFileManager_FindFile", "source": "ghidra_vfs" },
+                { "rva": "0x678D30", "name": "CArchive_Open", "source": "ghidra_vfs" },
+                { "rva": "0x679480", "name": "CArchive_Close", "source": "ghidra_vfs" },
+                { "rva": "0x679610", "name": "CArchive_ContainsFile", "source": "ghidra_vfs" },
+                { "rva": "0x6799A0", "name": "CArchive_ReadFile", "source": "ghidra_vfs" },
+                { "rva": "0x6815A0", "name": "CBitmap::ScaleDownGamma", "source": "kongor_symbols_rva" },
+                { "rva": "0x681D60", "name": "CBitmap::ScaleDown", "source": "kongor_symbols_rva" },
+                { "rva": "0x6835F0", "name": "CBitmap::Alloc", "source": "kongor_symbols_rva" },
+                { "rva": "0x6E3EB0", "name": "CConsoleElement_Execute", "source": "ghidra_console" },
+                { "rva": "0x754AD0", "name": "CHost_PrintInitBanner", "source": "ghidra_host" },
+                { "rva": "0x758FE0", "name": "CHost_Execute", "source": "ghidra_host" },
+                { "rva": "0x75A4E0", "name": "CHost_Init", "source": "ghidra_host" },
+                { "rva": "0x75C3B0", "name": "CHost_ProcessSupervisor", "source": "ghidra_host" },
+                { "rva": "0x7A2CE0", "name": "CTexture_Load", "source": "ghidra_resource" },
+                { "rva": "0x7A8AA0", "name": "CResourceManager_Register", "source": "ghidra_resource" },
+                { "rva": "0x843880", "name": "CConsole::Execute", "source": "kongor_symbols_rva" },
+                { "rva": "0x92EC30", "name": "CLua::ExecuteStack", "source": "kongor_symbols_rva" },
+                { "rva": "0x92EE70", "name": "CLua::PopEnv", "source": "kongor_symbols_rva" },
+                { "rva": "0x94F1E0", "name": "CModelPanel::GetValidAnimCount", "source": "kongor_symbols_rva" },
+                { "rva": "0x951020", "name": "CModelPanel::Frame", "source": "ghidra_ui_fn002" },
+                { "rva": "0x9D9C70", "name": "CSoundManager::StopChannel", "source": "kongor_symbols_rva" },
+                { "rva": "0xC19150", "name": "IWidget::ExecuteLuaCallback", "source": "kongor_symbols_rva" },
+                { "rva": "0xC6E920", "name": "AtoBFastA", "source": "kongor_symbols_rva" },
+                { "rva": "0xC6F3A0", "name": "AtoFFastA", "source": "kongor_symbols_rva" },
+                { "rva": "0xC71330", "name": "AtoFFastW", "source": "kongor_symbols_rva" },
+                { "rva": "0xC722F0", "name": "AtoBFastW", "source": "kongor_symbols_rva" },
+                { "rva": "0xCB62C0", "name": "luaV_concat_entry", "source": "kongor_symbols_rva" },
+                { "rva": "0xCB6477", "name": "luaV_concat", "source": "ghidra_lua_fn004" },
+                { "rva": "0xCB66F0", "name": "CLuaScriptManager::GcClosureBarrier", "source": "kongor_symbols_rva" }
+            ]
+        },
+        "games/client/game_shared_x64.dll": {
+            "pdb_name": "game_shared_x64.pdb",
+            "expected_guid": "de5565af-0723-4bfd-a588-78b014c01a96",
+            "expected_age": 1,
+            "symbols": [
+                { "rva": "0x1EE53F", "name": "GameShared_HeroRespawnNullGuardPatchSite", "source": "ghidra_native_guard" },
+                { "rva": "0x2D2C5C", "name": "GameShared_DllMainCRTStartup", "source": "pe_entrypoint" },
+                { "rva": "0x47A310", "name": "CPrecache::PrecacheBot", "source": "kongor_symbols_rva" },
+                { "rva": "0x4A5E90", "name": "CPrecache::PrecacheEntity", "source": "kongor_symbols_rva" },
+                { "rva": "0x4EB260", "name": "CPlayer::CanAccessAltAvatar_Single", "source": "kongor_symbols_rva" },
+                { "rva": "0x4FC7F0", "name": "CPlayer::CanAccessAltAvatar", "source": "kongor_symbols_rva" },
+                { "rva": "0x569CE0", "name": "CTimeOfDay::Update", "source": "kongor_symbols_rva" }
+            ]
+        },
+        "games/client/vid_d3d9_x64.dll": {
+            "pdb_name": "vid_d3d9_x64.pdb",
+            "expected_guid": "7afd9129-8a08-4ec6-89b8-b7030f87895d",
+            "expected_age": 1,
+            "symbols": [
+                { "rva": "0x026450", "name": "D3D_ScaleDownMipmap_Path1", "source": "kongor_symbols_rva" },
+                { "rva": "0x027DC0", "name": "D3D_ScaleDownMipmap_Paths2To4", "source": "kongor_symbols_rva" },
+                { "rva": "0x02D6A8", "name": "VidD3D9_DllMainCRTStartup", "source": "pe_entrypoint" },
+                { "rva": "0x057A90", "name": "InitAPIs", "source": "kongor_symbols_rva" },
+                { "rva": "0x05CAD0", "name": "D3D_SetMode", "source": "ghidra_issue_097" },
+                { "rva": "0x096040", "name": "D3D_AllocTextureSlot", "source": "kongor_symbols_rva" },
+                { "rva": "0x0982D0", "name": "VidBlitBitmap", "source": "kongor_symbols_rva" },
+                { "rva": "0x09DA30", "name": "D3D_LookupTextureCache", "source": "kongor_symbols_rva" }
+            ]
+        },
+        "games/client/game/cgame_x64.dll": {
+            "pdb_name": "game_client_x64.pdb",
+            "expected_guid": "3afed4ae-36d7-4404-830b-0078e6ce33ea",
+            "expected_age": 1,
+            "symbols": [
+                { "rva": "0x08FB64", "name": "CGame_DllMainCRTStartup", "source": "pe_entrypoint" },
+                { "rva": "0x1E9890", "name": "InitLibrary", "source": "kongor_symbols_rva" }
+            ]
+        },
+        "games/client/game/game_x64.dll": {
+            "pdb_name": "game_server_x64.pdb",
+            "expected_guid": "7a4fc7d2-2e9f-4631-bad7-88e042004066",
+            "expected_age": 1,
+            "symbols": [
+                { "rva": "0x035D40", "name": "Game_ParseClientPacket", "source": "evidence_dossier_0x35d40" },
+                { "rva": "0x03BFB4", "name": "GameServer_DllMainCRTStartup", "source": "pe_entrypoint" },
+                { "rva": "0x0A4090", "name": "InitLibrary", "source": "kongor_symbols_rva" }
+            ]
+        }
+    },
+    "symbols":  [
+                    {
+                        "module":  "k2_x64.dll",
+                        "symbol":  "NativeGuard Reversible Runtime Patch Controller \u0026 64 KiB RegionSnapshot Quiescence",
+                        "source_rva":  "0x67a620",
+                        "target_rva":  "0x67a620",
+                        "start_rva":  "0x67a620",
+                        "end_rva":  "0x67ad0c",
+                        "bounds_source":  "pdata",
+                        "similarity_score":  1,
+                        "match_method":  "cfg_bigram_and_signature_exact",
+                        "status":  ""
+                    },
+                    {
+                        "module":  "k2_x64.dll",
+                        "symbol":  "CBitmap::ScaleDownGamma",
+                        "source_rva":  "0x6815a0",
+                        "target_rva":  "0x6815a0",
+                        "start_rva":  "0x6815a0",
+                        "end_rva":  "0x681c22",
+                        "bounds_source":  "pdata",
+                        "similarity_score":  1,
+                        "match_method":  "cfg_bigram_and_signature_exact",
+                        "status":  "verified"
+                    },
+                    {
+                        "module":  "k2_x64.dll",
+                        "symbol":  "CBitmap::ScaleDown",
+                        "source_rva":  "0x681d60",
+                        "target_rva":  "0x681d60",
+                        "start_rva":  "0x681d60",
+                        "end_rva":  "0x68231b",
+                        "bounds_source":  "pdata",
+                        "similarity_score":  1,
+                        "match_method":  "cfg_bigram_and_signature_exact",
+                        "status":  "verified"
+                    },
+                    {
+                        "module":  "k2_x64.dll",
+                        "symbol":  "CBitmap::Alloc",
+                        "source_rva":  "0x6835f0",
+                        "target_rva":  "0x6835f0",
+                        "start_rva":  "0x6835f0",
+                        "end_rva":  "0x68373a",
+                        "bounds_source":  "pdata",
+                        "similarity_score":  1,
+                        "match_method":  "cfg_bigram_and_signature_exact",
+                        "status":  "verified"
+                    },
+                    {
+                        "module":  "k2_x64.dll",
+                        "symbol":  "CConsole::Execute",
+                        "source_rva":  "0x843880",
+                        "target_rva":  "0x843880",
+                        "start_rva":  "0x843880",
+                        "end_rva":  "0x844988",
+                        "bounds_source":  "pdata",
+                        "similarity_score":  1,
+                        "match_method":  "cfg_bigram_and_signature_exact",
+                        "status":  "verified"
+                    },
+                    {
+                        "module":  "k2_x64.dll",
+                        "symbol":  "CLua::ExecuteStack",
+                        "source_rva":  "0x92ec30",
+                        "target_rva":  "0x92ec30",
+                        "start_rva":  "0x92ec30",
+                        "end_rva":  "0x92ee65",
+                        "bounds_source":  "pdata",
+                        "similarity_score":  1,
+                        "match_method":  "cfg_bigram_and_signature_exact",
+                        "status":  "verified"
+                    },
+                    {
+                        "module":  "k2_x64.dll",
+                        "symbol":  "CLua::PopEnv",
+                        "source_rva":  "0x92ee70",
+                        "target_rva":  "0x92ee70",
+                        "start_rva":  "0x92ee70",
+                        "end_rva":  "0x92ee92",
+                        "bounds_source":  "pdata",
+                        "similarity_score":  1,
+                        "match_method":  "cfg_bigram_and_signature_exact",
+                        "status":  "verified"
+                    },
+                    {
+                        "module":  "k2_x64.dll",
+                        "symbol":  "CModelPanel::GetValidAnimCount",
+                        "source_rva":  "0x94f1e0",
+                        "target_rva":  "0x94f1e0",
+                        "start_rva":  "0x94f1e0",
+                        "end_rva":  "0x94f47e",
+                        "bounds_source":  "pdata",
+                        "similarity_score":  1,
+                        "match_method":  "cfg_bigram_and_signature_exact",
+                        "status":  "verified"
+                    },
+                    {
+                        "module":  "k2_x64.dll",
+                        "symbol":  "CModelPanel::Frame",
+                        "source_rva":  "0x951020",
+                        "target_rva":  "0x951020",
+                        "start_rva":  "0x951020",
+                        "end_rva":  "0x95107c",
+                        "bounds_source":  "pdata",
+                        "similarity_score":  1,
+                        "match_method":  "cfg_bigram_and_signature_exact",
+                        "status":  "verified"
+                    },
+                    {
+                        "module":  "k2_x64.dll",
+                        "symbol":  "CSoundManager::StopChannel",
+                        "source_rva":  "0x9d9cd0",
+                        "target_rva":  "0x9d9cd0",
+                        "start_rva":  "0x9d9c70",
+                        "end_rva":  "0x9d9f4f",
+                        "bounds_source":  "pdata",
+                        "similarity_score":  1,
+                        "match_method":  "cfg_bigram_and_signature_exact",
+                        "status":  "verified"
+                    },
+                    {
+                        "module":  "k2_x64.dll",
+                        "symbol":  "IWidget::ExecuteLuaCallback",
+                        "source_rva":  "0xc19150",
+                        "target_rva":  "0xc19150",
+                        "start_rva":  "0xc19150",
+                        "end_rva":  "0xc1963c",
+                        "bounds_source":  "pdata",
+                        "similarity_score":  1,
+                        "match_method":  "cfg_bigram_and_signature_exact",
+                        "status":  "verified"
+                    },
+                    {
+                        "module":  "k2_x64.dll",
+                        "symbol":  "AtoBFastA",
+                        "source_rva":  "0xc6e920",
+                        "target_rva":  "0xc6e920",
+                        "start_rva":  "0xc6e920",
+                        "end_rva":  "0xc6e969",
+                        "bounds_source":  "pdata",
+                        "similarity_score":  1,
+                        "match_method":  "cfg_bigram_and_signature_exact",
+                        "status":  "verified"
+                    },
+                    {
+                        "module":  "k2_x64.dll",
+                        "symbol":  "AtoFFastA",
+                        "source_rva":  "0xc6f3a0",
+                        "target_rva":  "0xc6f3a0",
+                        "start_rva":  "0xc6f3a0",
+                        "end_rva":  "0xc6f420",
+                        "bounds_source":  "heuristic",
+                        "similarity_score":  1,
+                        "match_method":  "cfg_bigram_and_signature_exact",
+                        "status":  "verified"
+                    },
+                    {
+                        "module":  "k2_x64.dll",
+                        "symbol":  "AtoFFastW",
+                        "source_rva":  "0xc71330",
+                        "target_rva":  "0xc71330",
+                        "start_rva":  "0xc71330",
+                        "end_rva":  "0xc713b0",
+                        "bounds_source":  "heuristic",
+                        "similarity_score":  1,
+                        "match_method":  "cfg_bigram_and_signature_exact",
+                        "status":  "verified"
+                    },
+                    {
+                        "module":  "k2_x64.dll",
+                        "symbol":  "AtoBFastW",
+                        "source_rva":  "0xc722f0",
+                        "target_rva":  "0xc722f0",
+                        "start_rva":  "0xc722f0",
+                        "end_rva":  "0xc72347",
+                        "bounds_source":  "pdata",
+                        "similarity_score":  1,
+                        "match_method":  "cfg_bigram_and_signature_exact",
+                        "status":  "verified"
+                    },
+                    {
+                        "module":  "k2_x64.dll",
+                        "symbol":  "luaV_concat",
+                        "source_rva":  "0xcb6477",
+                        "target_rva":  "0xcb6477",
+                        "start_rva":  "0xcb62c0",
+                        "end_rva":  "0xcb6643",
+                        "bounds_source":  "pdata",
+                        "similarity_score":  1,
+                        "match_method":  "cfg_bigram_and_signature_exact",
+                        "status":  "verified"
+                    },
+                    {
+                        "module":  "k2_x64.dll",
+                        "symbol":  "CLuaScriptManager::GcClosureBarrier",
+                        "source_rva":  "0xcb6820",
+                        "target_rva":  "0xcb6820",
+                        "start_rva":  "0xcb66f0",
+                        "end_rva":  "0xcb6901",
+                        "bounds_source":  "pdata",
+                        "similarity_score":  1,
+                        "match_method":  "cfg_bigram_and_signature_exact",
+                        "status":  "verified"
+                    }
+                ]
+}

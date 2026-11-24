@@ -1,0 +1,52 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="clr-namespace:ReplayStudio.GUI.ViewModels"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="60"
+             x:Class="ReplayStudio.GUI.Controls.TimelineScrubberControl"
+             x:DataType="vm:TimelineViewModel">
+
+    <Border Background="#0D1322" BorderBrush="#1E293B" BorderThickness="1" CornerRadius="6" Padding="8, 6">
+        <Grid RowDefinitions="Auto, Auto">
+            <!-- Timeline Track & Scrubber -->
+            <Grid Grid.Row="0" Height="28" Margin="0, 0, 0, 4" PointerPressed="OnTrackPointerPressed" PointerMoved="OnTrackPointerMoved">
+                <!-- Background Rail -->
+                <Border Height="8" Background="#1E293B" CornerRadius="4" VerticalAlignment="Center" />
+
+                <!-- In/Out Range Highlight Track -->
+                <ProgressBar Height="8" Minimum="0" Maximum="{Binding TotalDurationMs}" Value="{Binding CurrentTimeMs}"
+                             Foreground="#0284C7" Background="Transparent" CornerRadius="4" VerticalAlignment="Center" />
+
+                <!-- Scrubber Slider -->
+                <Slider Minimum="0" Maximum="{Binding TotalDurationMs}" Value="{Binding CurrentTimeMs, Mode=TwoWay}"
+                        VerticalAlignment="Center" Cursor="Hand" />
+            </Grid>
+
+            <!-- Time & Marker Readouts -->
+            <Grid Grid.Row="1" ColumnDefinitions="Auto, *, Auto">
+                <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="6">
+                    <TextBlock Text="⏱" Foreground="#38BDF8" FontSize="11" VerticalAlignment="Center" />
+                    <TextBlock Text="{Binding CurrentTimeFormatted}" Foreground="#F8FAFC" FontSize="11" FontWeight="Bold" FontFamily="Cascadia Mono, Consolas, monospace" VerticalAlignment="Center" />
+                    <TextBlock Text="/" Foreground="#64748B" FontSize="11" VerticalAlignment="Center" />
+                    <TextBlock Text="{Binding TotalDurationFormatted}" Foreground="#94A3B8" FontSize="11" FontFamily="Cascadia Mono, Consolas, monospace" VerticalAlignment="Center" />
+                </StackPanel>
+
+                <!-- Net Worth Advantage Banner -->
+                <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Center" Spacing="8">
+                    <TextBlock Text="Net Worth Lead:" Foreground="#64748B" FontSize="10" VerticalAlignment="Center" />
+                    <TextBlock Text="{Binding NetWorthAdvantage, StringFormat='{}{0:+#,##0;-#,##0;Even}'}"
+                               Foreground="#34D399" FontSize="11" FontWeight="Bold" FontFamily="Cascadia Mono, Consolas, monospace" VerticalAlignment="Center" />
+                </StackPanel>
+
+                <!-- In/Out Markers Readout -->
+                <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="8">
+                    <TextBlock Text="IN:" Foreground="#38BDF8" FontSize="10" FontWeight="Bold" VerticalAlignment="Center" />
+                    <TextBlock Text="{Binding InMarkerFormatted}" Foreground="#94A3B8" FontSize="10" FontFamily="Cascadia Mono, Consolas, monospace" VerticalAlignment="Center" />
+                    <TextBlock Text="OUT:" Foreground="#F87171" FontSize="10" FontWeight="Bold" VerticalAlignment="Center" />
+                    <TextBlock Text="{Binding OutMarkerFormatted}" Foreground="#94A3B8" FontSize="10" FontFamily="Cascadia Mono, Consolas, monospace" VerticalAlignment="Center" />
+                </StackPanel>
+            </Grid>
+        </Grid>
+    </Border>
+</UserControl>

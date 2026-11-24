@@ -1,0 +1,313 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# SPDX-FileCopyrightText: 2026 guccidonut and Project KONGOR V Contributors
+# Project KONGOR V (https://github.com/guccidonut/PKV)
+#
+# Turnkey Opt-In Observability Stack:
+#   - Grafana LGTM+P: OTel Collector (4317/4318) -> Loki, Tempo, Mimir, Pyroscope -> Grafana (:3000)
+#   - GlitchTip: Sentry-compatible crash/error tracking (web :8000 + Celery worker + Postgres + Valkey)
+#   - pgvector (profile: pgvector): PostgreSQL 17 + pgvector 384-d MCP-NNN semantic deduplication DB
+#
+# Required env vars (never hardcode secrets in compose files):
+#   GRAFANA_ADMIN_PASSWORD, GLITCHTIP_SECRET_KEY, GLITCHTIP_DB_PASSWORD
+#   (and PGVECTOR_PASSWORD when enabling --profile pgvector)
+#
+# Quick validate:
+#   docker compose -f infra/docker/docker-compose.observability.yml config -q
+
+name: kongor-observability
+
+services:
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:0.122.1
+    container_name: kongor-obs-otel-collector
+    restart: unless-stopped
+    user: "10001:10001"
+    security_opt:
+      - no-new-privileges:true
+    command: ["--config=/etc/otelcol/config.yaml"]
+    ports:
+      - "127.0.0.1:${OTEL_GRPC_PORT:-4317}:4317"
+      - "127.0.0.1:${OTEL_HTTP_PORT:-4318}:4318"
+      - "127.0.0.1:${OTEL_HEALTH_PORT:-13133}:13133"
+    volumes:
+      - ../observability/otel-collector-config.yaml:/etc/otelcol/config.yaml:ro
+    depends_on:
+      loki:
+        condition: service_started
+      tempo:
+        condition: service_started
+      mimir:
+        condition: service_started
+    networks:
+      - kongor-obs-net
+
+  loki:
+    image: grafana/loki:3.4.2
+    container_name: kongor-obs-loki
+    restart: unless-stopped
+    user: "10001:10001"
+    security_opt:
+      - no-new-privileges:true
+    command: ["-config.file=/etc/loki/loki-config.yaml"]
+    ports:
+      - "127.0.0.1:${LOKI_PORT:-3100}:3100"
+    volumes:
+      - ../observability/loki-config.yaml:/etc/loki/loki-config.yaml:ro
+      - kongor-obs-loki-data:/loki
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:3100/ready || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    networks:
+      - kongor-obs-net
+
+  tempo:
+    image: grafana/tempo:2.7.2
+    container_name: kongor-obs-tempo
+    restart: unless-stopped
+    user: "10001:10001"
+    security_opt:
+      - no-new-privileges:true
+    command: ["-config.file=/etc/tempo/tempo-config.yaml"]
+    ports:
+      - "127.0.0.1:${TEMPO_PORT:-3200}:3200"
+    volumes:
+      - ../observability/tempo-config.yaml:/etc/tempo/tempo-config.yaml:ro
+      - kongor-obs-tempo-data:/var/tempo
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:3200/ready || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    networks:
+      - kongor-obs-net
+
+  mimir:
+    image: grafana/mimir:2.15.2
+    container_name: kongor-obs-mimir
+    restart: unless-stopped
+    user: "10001:10001"
+    security_opt:
+      - no-new-privileges:true
+    command: ["-config.file=/etc/mimir/mimir-config.yaml"]
+    ports:
+      - "127.0.0.1:${MIMIR_PORT:-9009}:9009"
+    volumes:
+      - ../observability/mimir-config.yaml:/etc/mimir/mimir-config.yaml:ro
+      - kongor-obs-mimir-data:/data/mimir
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:9009/ready || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    networks:
+      - kongor-obs-net
+
+  pyroscope:
+    image: grafana/pyroscope:1.12.1
+    container_name: kongor-obs-pyroscope
+    restart: unless-stopped
+    user: "10001:10001"
+    security_opt:
+      - no-new-privileges:true
+    ports:
+      - "127.0.0.1:${PYROSCOPE_PORT:-4040}:4040"
+    environment:
+      PYROSCOPE_LOG_LEVEL: "info"
+    volumes:
+      - kongor-obs-pyroscope-data:/data
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:4040/ready || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    networks:
+      - kongor-obs-net
+
+  grafana:
+    image: grafana/grafana:11.5.2
+    container_name: kongor-obs-grafana
+    restart: unless-stopped
+    user: "472:472"
+    security_opt:
+      - no-new-privileges:true
+    ports:
+      - "127.0.0.1:${GRAFANA_PORT:-3000}:3000"
+    environment:
+      GF_SECURITY_ADMIN_USER: "${GRAFANA_ADMIN_USER:-kongor-admin}"
+      GF_SECURITY_ADMIN_PASSWORD: "${GRAFANA_ADMIN_PASSWORD:?Set GRAFANA_ADMIN_PASSWORD before starting Grafana}"
+      GF_USERS_ALLOW_SIGN_UP: "false"
+      GF_AUTH_ANONYMOUS_ENABLED: "false"
+      GF_FEATURE_TOGGLES_ENABLE: "traceqlEditor,correlations"
+      GF_PLUGINS_PREINSTALL: "grafana-pyroscope-datasource"
+    volumes:
+      - ../observability/grafana-datasources.yaml:/etc/grafana/provisioning/datasources/kongor-datasources.yaml:ro
+      - kongor-obs-grafana-data:/var/lib/grafana
+    depends_on:
+      loki:
+        condition: service_started
+      tempo:
+        condition: service_started
+      mimir:
+        condition: service_started
+      pyroscope:
+        condition: service_started
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:3000/api/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    networks:
+      - kongor-obs-net
+
+  glitchtip-postgres:
+    image: postgres:17.4-alpine
+    container_name: kongor-obs-glitchtip-postgres
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    environment:
+      POSTGRES_DB: "glitchtip"
+      POSTGRES_USER: "glitchtip"
+      POSTGRES_PASSWORD: "${GLITCHTIP_DB_PASSWORD:?Set GLITCHTIP_DB_PASSWORD before starting GlitchTip}"
+    volumes:
+      - kongor-obs-glitchtip-pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U glitchtip -d glitchtip"]
+      interval: 5s
+      timeout: 5s
+      retries: 15
+    networks:
+      - kongor-obs-net
+
+  glitchtip-valkey:
+    image: valkey/valkey:8.1.0-alpine
+    container_name: kongor-obs-glitchtip-valkey
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    command: ["valkey-server", "--save", "60", "1", "--loglevel", "warning"]
+    healthcheck:
+      test: ["CMD", "valkey-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    networks:
+      - kongor-obs-net
+
+  glitchtip-migrate:
+    image: glitchtip/glitchtip:v4.2.5
+    container_name: kongor-obs-glitchtip-migrate
+    restart: "no"
+    security_opt:
+      - no-new-privileges:true
+    command: ["./manage.py", "migrate"]
+    environment:
+      DATABASE_URL: "postgres://glitchtip:${GLITCHTIP_DB_PASSWORD}@glitchtip-postgres:5432/glitchtip"
+      DATABASE_PASSWORD: "${GLITCHTIP_DB_PASSWORD:?Set GLITCHTIP_DB_PASSWORD before starting GlitchTip}"
+      REDIS_URL: "redis://glitchtip-valkey:6379/0"
+      SECRET_KEY: "${GLITCHTIP_SECRET_KEY:?Set GLITCHTIP_SECRET_KEY before starting GlitchTip}"
+      GLITCHTIP_DOMAIN: "${GLITCHTIP_DOMAIN:-http://127.0.0.1:8000}"
+    depends_on:
+      glitchtip-postgres:
+        condition: service_healthy
+      glitchtip-valkey:
+        condition: service_healthy
+    networks:
+      - kongor-obs-net
+
+  glitchtip-web:
+    image: glitchtip/glitchtip:v4.2.5
+    container_name: kongor-obs-glitchtip-web
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    ports:
+      - "127.0.0.1:${GLITCHTIP_PORT:-8000}:8000"
+    environment:
+      DATABASE_URL: "postgres://glitchtip:${GLITCHTIP_DB_PASSWORD}@glitchtip-postgres:5432/glitchtip"
+      DATABASE_PASSWORD: "${GLITCHTIP_DB_PASSWORD:?Set GLITCHTIP_DB_PASSWORD before starting GlitchTip}"
+      REDIS_URL: "redis://glitchtip-valkey:6379/0"
+      SECRET_KEY: "${GLITCHTIP_SECRET_KEY:?Set GLITCHTIP_SECRET_KEY before starting GlitchTip}"
+      GLITCHTIP_DOMAIN: "${GLITCHTIP_DOMAIN:-http://127.0.0.1:8000}"
+      DEFAULT_FROM_EMAIL: "${GLITCHTIP_FROM_EMAIL:-alerts@kongor.local}"
+      ENABLE_USER_REGISTRATION: "false"
+      ENABLE_ORGANIZATION_CREATION: "false"
+      PORT: "8000"
+    depends_on:
+      glitchtip-migrate:
+        condition: service_completed_successfully
+      glitchtip-postgres:
+        condition: service_healthy
+      glitchtip-valkey:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/_health/', timeout=3)\""]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+    networks:
+      - kongor-obs-net
+
+  glitchtip-worker:
+    image: glitchtip/glitchtip:v4.2.5
+    container_name: kongor-obs-glitchtip-worker
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    command: ["./bin/run-celery-with-beat.sh"]
+    environment:
+      DATABASE_URL: "postgres://glitchtip:${GLITCHTIP_DB_PASSWORD}@glitchtip-postgres:5432/glitchtip"
+      DATABASE_PASSWORD: "${GLITCHTIP_DB_PASSWORD:?Set GLITCHTIP_DB_PASSWORD before starting GlitchTip}"
+      REDIS_URL: "redis://glitchtip-valkey:6379/0"
+      SECRET_KEY: "${GLITCHTIP_SECRET_KEY:?Set GLITCHTIP_SECRET_KEY before starting GlitchTip}"
+      GLITCHTIP_DOMAIN: "${GLITCHTIP_DOMAIN:-http://127.0.0.1:8000}"
+      DEFAULT_FROM_EMAIL: "${GLITCHTIP_FROM_EMAIL:-alerts@kongor.local}"
+    depends_on:
+      glitchtip-migrate:
+        condition: service_completed_successfully
+      glitchtip-postgres:
+        condition: service_healthy
+      glitchtip-valkey:
+        condition: service_healthy
+    networks:
+      - kongor-obs-net
+
+  pgvector:
+    image: pgvector/pgvector:0.8.0-pg17
+    container_name: kongor-obs-pgvector
+    profiles:
+      - pgvector
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    ports:
+      - "127.0.0.1:${PGVECTOR_PORT:-25433}:5432"
+    environment:
+      POSTGRES_DB: "${PGVECTOR_DB:-kongor_mcp_kb}"
+      POSTGRES_USER: "${PGVECTOR_USER:-kongor_kb}"
+      POSTGRES_PASSWORD: "${PGVECTOR_PASSWORD:?Set PGVECTOR_PASSWORD when enabling the pgvector profile}"
+    volumes:
+      - ../postgres/pgvector_mcp_issues.sql:/docker-entrypoint-initdb.d/01_pgvector_mcp_issues.sql:ro
+      - kongor-obs-pgvector-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${PGVECTOR_USER:-kongor_kb} -d ${PGVECTOR_DB:-kongor_mcp_kb}"]
+      interval: 5s
+      timeout: 5s
+      retries: 15
+    networks:
+      - kongor-obs-net
+
+networks:
+  kongor-obs-net:
+    driver: bridge
+
+volumes:
+  kongor-obs-loki-data:
+  kongor-obs-tempo-data:
+  kongor-obs-mimir-data:
+  kongor-obs-pyroscope-data:
+  kongor-obs-grafana-data:
+  kongor-obs-glitchtip-pgdata:
+  kongor-obs-pgvector-data:

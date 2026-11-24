@@ -1,0 +1,3 @@
+LIBRARY vid_d3d12_x64
+EXPORTS
+    InitAPIs

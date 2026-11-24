@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net11.0</TargetFramework>
+    <RootNamespace>Kongor.ModCli</RootNamespace>
+    <AssemblyName>mod-cli</AssemblyName>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <Description>ProjectKongor HoN Mod Management CLI Tool</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Spectre.Console"/>
+    <PackageReference Include="Spectre.Console.Cli"/>
+    <PackageReference Include="Microsoft.Extensions.Logging.Console"/>
+  </ItemGroup>
+
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\extensions\modding\Kongor.Modding.csproj"/>
+
+  </ItemGroup>
+
+</Project>

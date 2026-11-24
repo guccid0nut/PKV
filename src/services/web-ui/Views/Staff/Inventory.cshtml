@@ -1,0 +1,478 @@
+@model StaffInventoryViewModel
+@{
+    ViewData["Title"] = "Staff Command Center - Account Inventory Manager";
+
+    string GetTypeBadgeClass(string typeName)
+    {
+        var lower = typeName.ToLowerInvariant();
+        if (lower.Contains("avatar")) return "bg-amber-500/20 text-amber-300 border-amber-500/40";
+        if (lower.Contains("announcer")) return "bg-indigo-500/20 text-indigo-300 border-indigo-500/40";
+        if (lower.Contains("taunt")) return "bg-rose-500/20 text-rose-300 border-rose-500/40";
+        if (lower.Contains("icon")) return "bg-emerald-500/20 text-emerald-300 border-emerald-500/40";
+        if (lower.Contains("color") || lower.Contains("shield")) return "bg-teal-500/20 text-teal-300 border-teal-500/40";
+        if (lower.Contains("courier") || lower.Contains("ward")) return "bg-sky-500/20 text-sky-300 border-sky-500/40";
+        return "bg-purple-500/20 text-purple-300 border-purple-500/40";
+    }
+}
+
+<div class="w-full max-w-[1700px] mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6 animate-fadeIn">
+
+    <!-- Top Header Banner -->
+    <div
+        class="relative overflow-hidden rounded-2xl p-5 sm:p-6 bg-gradient-to-r from-purple-950/80 via-slate-900/90 to-slate-950/95 border border-purple-500/30 shadow-2xl backdrop-blur-xl">
+        <div
+            class="absolute -right-12 -top-12 w-64 h-64 bg-purple-600/20 rounded-full blur-3xl pointer-events-none"></div>
+        <div
+            class="absolute -left-12 -bottom-12 w-64 h-64 bg-amber-600/15 rounded-full blur-3xl pointer-events-none"></div>
+
+        <div class="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div class="space-y-1.5">
+                <div
+                    class="inline-flex items-center gap-2 px-3 py-0.5 rounded-full bg-purple-500/15 border border-purple-500/30 text-purple-300 text-xs font-bold tracking-wider uppercase">
+                    <span class="w-2 h-2 rounded-full bg-purple-400 animate-pulse"></span>
+                    <span>Staff Vault & Inventory Management</span>
+                </div>
+                <h1 class="text-2xl sm:text-3xl font-black text-white tracking-tight">
+                    Player Inventory & Cosmetics Suite
+                </h1>
+                <p class="text-slate-400 text-xs sm:text-sm max-w-3xl">
+                    Inspect player vaults, grant alt avatars and vanity products, manage product codes, and perform bulk
+                    unlocks or restorations across Project KONGOR accounts.
+                </p>
+            </div>
+
+            <!-- Staff Navigation Sub-Tabs -->
+            <div
+                class="flex items-center gap-2 bg-slate-950/80 p-1.5 rounded-xl border border-slate-800 self-start md:self-auto shadow-lg">
+                <a asp-controller="Staff" asp-action="Reports"
+                   class="px-3.5 py-1.5 rounded-lg text-xs font-bold text-slate-400 hover:text-white transition-all flex items-center gap-2">
+                    <i class="fas fa-shield-alt"></i>
+                    <span>Player Reports</span>
+                </a>
+                <a asp-controller="Staff" asp-action="Streamers"
+                   class="px-3.5 py-1.5 rounded-lg text-xs font-bold text-slate-400 hover:text-[#C499FF] transition-all flex items-center gap-2">
+                    <i class="fab fa-twitch text-[#9146FF]"></i>
+                    <span>Streamers</span>
+                </a>
+                <a asp-controller="Staff" asp-action="Hosts"
+                   class="px-3.5 py-1.5 rounded-lg text-xs font-bold text-slate-400 hover:text-white transition-all flex items-center gap-2">
+                    <i class="fas fa-server"></i>
+                    <span>Volunteer Hosts</span>
+                </a>
+                <a asp-controller="Staff" asp-action="Inventory"
+                   class="px-3.5 py-1.5 rounded-lg text-xs font-bold bg-purple-600 text-white shadow-md shadow-purple-600/30 transition-all flex items-center gap-2">
+                    <i class="fas fa-boxes"></i>
+                    <span>Inventory Manager</span>
+                </a>
+                <a asp-controller="Store" asp-action="Index"
+                   class="px-3.5 py-1.5 rounded-lg text-xs font-bold text-slate-400 hover:text-amber-400 transition-all flex items-center gap-2">
+                    <i class="fas fa-store text-amber-500"></i>
+                    <span>Live Store</span>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    @if (Model.IsUnlockAllItemsEnabled)
+    {
+        <div
+            class="p-4 rounded-xl bg-emerald-500/15 border border-emerald-500/40 text-emerald-200 text-xs sm:text-sm font-semibold flex flex-wrap items-center justify-between gap-3 shadow-lg">
+            <div class="flex items-center gap-3">
+                <i class="fas fa-unlock-alt text-emerald-400 text-lg flex-shrink-0"></i>
+                <div>
+                    <span class="font-black text-emerald-300">Global Free Store Unlock Active:</span>
+                    <span>All @(Model.TotalCatalogItems > 0 ? Model.TotalCatalogItems.ToString("N0") : "1,567+") Store Cosmetics &amp; Goblin Plinko Website Rewards are unlocked and 0-cost for every Project KONGOR account. Individual DB grants below are retained for diagnostics.</span>
+                </div>
+            </div>
+            <span class="px-2.5 py-1 rounded-lg bg-emerald-500/20 border border-emerald-400/40 text-emerald-300 font-mono text-[11px] font-bold">Store:UnlockAllItems = true</span>
+        </div>
+    }
+
+    <!-- Alert / Toast Messages -->
+    @if (!string.IsNullOrEmpty(Model.Message))
+    {
+        <div
+            class="p-4 rounded-xl bg-emerald-500/15 border border-emerald-500/40 text-emerald-300 text-sm font-semibold flex items-center gap-3 shadow-lg">
+            <i class="fas fa-check-circle text-lg flex-shrink-0"></i>
+            <span>@Model.Message</span>
+        </div>
+    }
+    @if (!string.IsNullOrEmpty(Model.ErrorMessage))
+    {
+        <div
+            class="p-4 rounded-xl bg-rose-500/15 border border-rose-500/40 text-rose-300 text-sm font-semibold flex items-center gap-3 shadow-lg">
+            <i class="fas fa-exclamation-triangle text-lg flex-shrink-0"></i>
+            <span>@Model.ErrorMessage</span>
+        </div>
+    }
+
+    <!-- Target Account Selector Bar -->
+    <div class="bg-slate-900/70 border border-slate-800/80 rounded-2xl p-5 shadow-xl backdrop-blur-xl space-y-4">
+        <form method="get" asp-controller="Staff" asp-action="Inventory"
+              class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+            <div class="relative flex-1">
+                <i class="fas fa-user absolute left-3.5 top-1/2 -translate-y-1/2 text-purple-400 text-sm"></i>
+                <input type="text" name="accountName" value="@Model.AccountName"
+                       placeholder="Enter In-Game Name (e.g. guccidonut, staff_admin)..."
+                       class="w-full pl-10 pr-4 py-2.5 bg-slate-950 border border-slate-700/80 rounded-xl text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500"/>
+            </div>
+            <button type="submit"
+                    class="px-6 py-2.5 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-bold text-sm shadow-lg shadow-purple-600/25 transition-all flex items-center justify-center gap-2">
+                <i class="fas fa-search"></i>
+                <span>Load Vault</span>
+            </button>
+        </form>
+
+        <!-- Quick Switch Recent Accounts -->
+        @if (Model.RecentAccounts.Count > 0)
+        {
+            <div class="flex flex-wrap items-center gap-2 pt-1 border-t border-slate-800/60">
+                <span
+                    class="text-[11px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1.5 mr-1">
+                    <i class="fas fa-history text-purple-400"></i> Recent Accounts:
+                </span>
+                @foreach (var acc in Model.RecentAccounts)
+                {
+                    <a asp-controller="Staff" asp-action="Inventory" asp-route-accountName="@acc"
+                       class="px-2.5 py-1 rounded-lg text-xs font-mono font-semibold transition-all @(string.Equals(Model.AccountName, acc, StringComparison.OrdinalIgnoreCase) ? "bg-purple-600 text-white shadow" : "bg-slate-950 text-slate-300 hover:text-white border border-slate-800 hover:border-purple-500/40")">
+                        @acc
+                    </a>
+                }
+            </div>
+        }
+    </div>
+
+    @if (!string.IsNullOrWhiteSpace(Model.AccountName) && string.IsNullOrEmpty(Model.ErrorMessage))
+    {
+        <!-- Metric KPI Cards for Selected Account -->
+        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4">
+            <div
+                class="p-4 rounded-xl bg-slate-900/60 border border-slate-800/80 backdrop-blur-xl shadow-md hover:border-purple-500/40 transition-all">
+                <div class="text-slate-400 text-[11px] font-bold uppercase tracking-wider">Total Vault Items</div>
+                <div class="text-2xl font-black text-white mt-0.5">@Model.OwnedItems.Count</div>
+                <div class="text-[11px] text-purple-400 mt-1 flex items-center gap-1 font-medium">
+                    <span>📦</span> <span>Unlocked Cosmetics</span>
+                </div>
+            </div>
+            <div
+                class="p-4 rounded-xl bg-slate-900/60 border border-slate-800/80 backdrop-blur-xl shadow-md hover:border-amber-500/40 transition-all">
+                <div class="text-slate-400 text-[11px] font-bold uppercase tracking-wider">Alt Avatars</div>
+                <div class="text-2xl font-black text-amber-400 mt-0.5">@Model.TotalAvatarsOwned</div>
+                <div class="text-[11px] text-amber-500/80 mt-1 flex items-center gap-1 font-medium">
+                    <span>👑</span> <span>3D Hero Skins</span>
+                </div>
+            </div>
+            <div
+                class="p-4 rounded-xl bg-slate-900/60 border border-slate-800/80 backdrop-blur-xl shadow-md hover:border-indigo-500/40 transition-all">
+                <div class="text-slate-400 text-[11px] font-bold uppercase tracking-wider">Announcers</div>
+                <div class="text-2xl font-black text-indigo-400 mt-0.5">@Model.TotalAnnouncersOwned</div>
+                <div class="text-[11px] text-indigo-400 mt-1 flex items-center gap-1 font-medium">
+                    <span>🎙️</span> <span>Voice Packs</span>
+                </div>
+            </div>
+            <div
+                class="p-4 rounded-xl bg-slate-900/60 border border-slate-800/80 backdrop-blur-xl shadow-md hover:border-rose-500/40 transition-all">
+                <div class="text-slate-400 text-[11px] font-bold uppercase tracking-wider">Taunts</div>
+                <div class="text-2xl font-black text-rose-400 mt-0.5">@Model.TotalTauntsOwned</div>
+                <div class="text-[11px] text-rose-400 mt-1 flex items-center gap-1 font-medium">
+                    <span>💀</span> <span>Kill Effects</span>
+                </div>
+            </div>
+            <div
+                class="p-4 rounded-xl bg-slate-900/60 border border-slate-800/80 backdrop-blur-xl shadow-md hover:border-emerald-500/40 transition-all">
+                <div class="text-slate-400 text-[11px] font-bold uppercase tracking-wider">Account Icons</div>
+                <div class="text-2xl font-black text-emerald-400 mt-0.5">@Model.TotalIconsOwned</div>
+                <div class="text-[11px] text-emerald-400 mt-1 flex items-center gap-1 font-medium">
+                    <span>🎖️</span> <span>Profile Badges</span>
+                </div>
+            </div>
+            <div
+                class="p-4 rounded-xl bg-slate-900/60 border border-slate-800/80 backdrop-blur-xl shadow-md hover:border-teal-500/40 transition-all">
+                <div class="text-slate-400 text-[11px] font-bold uppercase tracking-wider">Name Colors</div>
+                <div class="text-2xl font-black text-teal-400 mt-0.5">@Model.TotalColorsOwned</div>
+                <div class="text-[11px] text-teal-400 mt-1 flex items-center gap-1 font-medium">
+                    <span>🎨</span> <span>Colors & Shields</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Workspace: Left Grant Panel + Right Active Vault Matrix -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+
+            <!-- Left Side: Grant & Moderation Tools (4 cols) -->
+            <div class="lg:col-span-4 space-y-6">
+
+                <!-- Quick Grant From Store Catalog -->
+                <div
+                    class="bg-slate-900/70 border border-slate-800 rounded-2xl p-5 shadow-xl backdrop-blur-xl space-y-4">
+                    <div class="flex items-center gap-2 text-white font-bold text-sm">
+                        <i class="fas fa-plus-circle text-purple-400"></i>
+                        <span>Quick Grant Catalog Item</span>
+                    </div>
+
+                    <form method="post" asp-controller="Staff" asp-action="AddInventoryItem" class="space-y-3">
+                        <input type="hidden" name="accountName" value="@Model.AccountName"/>
+
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-400 mb-1.5">Select Item from
+                                Catalog</label>
+                            <select id="quickGrantSelect" name="productCode"
+                                    class="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded-xl text-xs text-slate-200 focus:outline-none focus:border-purple-500">
+                                <optgroup label="Popular Avatars">
+                                    <option value="Avatar_Legionnaire.Plogger">Legionnaire: Plogger</option>
+                                    <option value="Avatar_Devourer.Oni">Devourer: Oni</option>
+                                    <option value="Avatar_Predator.Xenomorph">Predator: Xenomorph</option>
+                                    <option value="Avatar_FlintBeastwood.Rambo">Flint: Rambo</option>
+                                    <option value="Avatar_Swiftblade.Ronin">Swiftblade: Ronin</option>
+                                    <option value="Avatar_WitchSlayer.Pimp">Witch Slayer: Pimp</option>
+                                    <option value="Avatar_Accursed.Arthas">Accursed: Arthas</option>
+                                    <option value="Avatar_Pyromancer.Female">Pyromancer: Female</option>
+                                </optgroup>
+                                <optgroup label="Popular Announcers & Taunts">
+                                    <option value="Announcer_Flamboyant">Announcer: Flamboyant</option>
+                                    <option value="Announcer_Badass">Announcer: Badass</option>
+                                    <option value="Announcer_English">Announcer: English</option>
+                                    <option value="Taunt_Kongor">Taunt: Kongor</option>
+                                    <option value="Taunt_GDrop">Taunt: G-Drop</option>
+                                    <option value="Taunt_Standard">Taunt: Standard</option>
+                                </optgroup>
+                                <optgroup label="Name Colors & Icons">
+                                    <option value="NameColor_Gold">Name Color: Gold</option>
+                                    <option value="NameColor_Diamond">Name Color: Diamond</option>
+                                    <option value="AccountIcon_HoN">Icon: HoN Logo</option>
+                                    <option value="AccountIcon_Legion">Icon: Legion</option>
+                                    <option value="AccountIcon_Hellbourne">Icon: Hellbourne</option>
+                                </optgroup>
+                                <optgroup label="All Store Items (@Model.CatalogItems.Count Items)">
+                                    @foreach (var item in Model.CatalogItems.Take(1500))
+                                    {
+                                        <option value="@item.Code">@item.Name (@item.TypeName - @item.Code)</option>
+                                    }
+                                </optgroup>
+                            </select>
+                        </div>
+
+                        <button type="submit"
+                                class="w-full py-2.5 px-4 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs shadow-lg shadow-purple-600/20 transition-all flex items-center justify-center gap-2">
+                            <i class="fas fa-gift"></i>
+                            <span>Grant Selected Item</span>
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Manual Product Code Grant -->
+                <div
+                    class="bg-slate-900/70 border border-slate-800 rounded-2xl p-5 shadow-xl backdrop-blur-xl space-y-4">
+                    <div class="flex items-center gap-2 text-white font-bold text-sm">
+                        <i class="fas fa-terminal text-amber-400"></i>
+                        <span>Manual Product Code Grant</span>
+                    </div>
+
+                    <form method="post" asp-controller="Staff" asp-action="AddInventoryItem" class="space-y-3">
+                        <input type="hidden" name="accountName" value="@Model.AccountName"/>
+
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-400 mb-1.5">Direct Product Code /
+                                Identifier</label>
+                            <input type="text" name="productCode"
+                                   placeholder="e.g. Avatar_Legionnaire.Plogger, Taunt_Kongor, cc.gold"
+                                   required
+                                   class="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded-xl text-xs font-mono text-slate-100 placeholder-slate-500 focus:outline-none focus:border-amber-500"/>
+                        </div>
+
+                        <button type="submit"
+                                class="w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-black text-xs shadow-lg shadow-amber-500/20 transition-all flex items-center justify-center gap-2">
+                            <i class="fas fa-plus"></i>
+                            <span>Grant Custom Code</span>
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Bulk Unlock Suite -->
+                <div
+                    class="bg-slate-900/70 border border-slate-800 rounded-2xl p-5 shadow-xl backdrop-blur-xl space-y-4">
+                    <div class="flex items-center gap-2 text-white font-bold text-sm">
+                        <i class="fas fa-layer-group text-sky-400"></i>
+                        <span>Bulk Unlocks & Grants</span>
+                    </div>
+
+                    <div class="grid grid-cols-1 gap-2.5">
+                        <form method="post" asp-controller="Staff" asp-action="GrantAllStoreItems">
+                            <input type="hidden" name="accountName" value="@Model.AccountName"/>
+                            <input type="hidden" name="category" value="alt_avatars"/>
+                            <button type="submit"
+                                    onclick="return confirm('Unlock ALL 1,400+ Alt Avatars for @Model.AccountName?');"
+                                    class="w-full py-2 px-3 rounded-xl bg-slate-950 hover:bg-slate-800 border border-slate-700 text-slate-200 font-bold text-xs transition-all flex items-center justify-between">
+                                <span class="flex items-center gap-2"><i class="fas fa-crown text-amber-400"></i> Unlock All Alt Avatars</span>
+                                <span class="text-[10px] text-slate-400">~1,418 Items</span>
+                            </button>
+                        </form>
+
+                        <form method="post" asp-controller="Staff" asp-action="GrantAllStoreItems">
+                            <input type="hidden" name="accountName" value="@Model.AccountName"/>
+                            <input type="hidden" name="category" value="game_vanity"/>
+                            <button type="submit"
+                                    onclick="return confirm('Unlock ALL Taunts, Announcers, Couriers, and Wards for @Model.AccountName?');"
+                                    class="w-full py-2 px-3 rounded-xl bg-slate-950 hover:bg-slate-800 border border-slate-700 text-slate-200 font-bold text-xs transition-all flex items-center justify-between">
+                                <span class="flex items-center gap-2"><i class="fas fa-microphone text-indigo-400"></i> Unlock All Vanity & Taunts</span>
+                                <span class="text-[10px] text-slate-400">~240 Items</span>
+                            </button>
+                        </form>
+
+                        <form method="post" asp-controller="Staff" asp-action="GrantAllStoreItems">
+                            <input type="hidden" name="accountName" value="@Model.AccountName"/>
+                            <input type="hidden" name="category" value="all"/>
+                            <button type="submit"
+                                    onclick="return confirm('Unlock ENTIRE STORE CATALOG (~4,000+ items) for @Model.AccountName?');"
+                                    class="w-full py-2.5 px-3 rounded-xl bg-purple-600/20 hover:bg-purple-600/30 border border-purple-500/40 text-purple-300 font-black text-xs transition-all flex items-center justify-between">
+                                <span class="flex items-center gap-2"><i class="fas fa-star text-purple-400"></i> Master Unlock (All 4,000+ Items)</span>
+                                <span class="text-[10px] text-purple-300/80">Full Vault</span>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Danger Zone: Wipe Player Inventory -->
+                <div
+                    class="bg-rose-950/20 border border-rose-500/30 rounded-2xl p-5 shadow-xl backdrop-blur-xl space-y-3">
+                    <div class="flex items-center gap-2 text-rose-400 font-bold text-sm">
+                        <i class="fas fa-radiation-alt"></i>
+                        <span>Danger Zone</span>
+                    </div>
+                    <p class="text-slate-400 text-xs">
+                        Permanently clear all owned cosmetic items and product codes for <strong
+                            class="text-rose-300">@Model.AccountName</strong>.
+                    </p>
+                    <form method="post" asp-controller="Staff" asp-action="ResetPlayerInventory">
+                        <input type="hidden" name="accountName" value="@Model.AccountName"/>
+                        <button type="submit"
+                                onclick="return confirm('CRITICAL WARNING: Are you sure you want to completely WIPE all @Model.OwnedItems.Count inventory items for @Model.AccountName? This cannot be undone.');"
+                                class="w-full py-2.5 px-4 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs shadow-lg shadow-rose-600/20 transition-all flex items-center justify-center gap-2">
+                            <i class="fas fa-trash-alt"></i>
+                            <span>Wipe All Inventory Items (@Model.OwnedItems.Count)</span>
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Right Side: Active Inventory Matrix (8 cols) -->
+            <div class="lg:col-span-8 space-y-4">
+
+                <!-- Filter Bar & Search -->
+                <div
+                    class="bg-slate-900/70 border border-slate-800 rounded-2xl p-4 shadow-xl backdrop-blur-xl flex flex-wrap items-center justify-between gap-3">
+                    <div class="flex items-center gap-2">
+                        <span class="text-sm font-bold text-white">Active Vault Items</span>
+                        <span
+                            class="px-2.5 py-0.5 rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/30 text-xs font-mono font-bold">@Model.OwnedItems.Count</span>
+                    </div>
+
+                    <!-- Client Filter Input -->
+                    <div class="relative w-64">
+                        <i class="fas fa-search absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-500 text-xs"></i>
+                        <input type="text" id="inventoryFilterInput" placeholder="Filter owned items..."
+                               class="w-full pl-7 pr-3 py-1 bg-slate-950 border border-slate-700/80 rounded-lg text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-purple-500"/>
+                    </div>
+                </div>
+
+                @if (Model.OwnedItemDetails.Count == 0)
+                {
+                    <div class="bg-slate-950/80 border border-slate-800 rounded-2xl p-12 text-center space-y-3">
+                        <div
+                            class="w-16 h-16 rounded-full bg-slate-900 border border-slate-800 flex items-center justify-center mx-auto text-slate-500 text-2xl">
+                            <i class="fas fa-box-open"></i>
+                        </div>
+                        <h3 class="text-base font-bold text-slate-200">No items found in vault</h3>
+                        <p class="text-xs text-slate-400">Use the grant console on the left to add avatars, announcers,
+                            or vanity items to this account.</p>
+                    </div>
+                }
+                else
+                {
+                    <!-- 2 Columns Responsive Grid of Owned Items -->
+                    <div id="ownedItemsGrid" class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        @foreach (var item in Model.OwnedItemDetails)
+                        {
+                            <div
+                                class="owned-item-card bg-slate-900/80 hover:bg-slate-900 border border-slate-800 hover:border-purple-500/40 rounded-xl p-3 shadow-md transition-all flex items-center justify-between gap-3">
+
+                                <div class="flex items-center gap-3 min-w-0">
+                                    <!-- High-Res Thumbnail -->
+                                    <div
+                                        class="w-12 h-12 rounded-lg bg-slate-950 border border-slate-800 overflow-hidden flex-shrink-0 relative">
+                                        <img src="@item.IconUrl" alt="@item.Name" loading="lazy"
+                                             class="w-full h-full object-cover"
+                                             onerror="this.src='/images/icons/hero_default.png'"/>
+                                        @if (item.CanPreview3D)
+                                        {
+                                            <span
+                                                class="absolute bottom-0 right-0 px-1 py-0.2 rounded-tl bg-sky-500/90 text-slate-950 font-black text-[8px]">3D</span>
+                                        }
+                                    </div>
+
+                                    <div class="flex flex-col min-w-0">
+                                        <span
+                                            class="text-xs font-bold text-slate-100 truncate item-name">@item.Name</span>
+                                        <span
+                                            class="text-[10px] font-mono text-slate-400 truncate item-code">@item.Code</span>
+                                        <div class="mt-1">
+                                            <span
+                                                class="text-[9px] font-bold px-2 py-0.5 rounded-full border @GetTypeBadgeClass(item.TypeName) uppercase tracking-wider">
+                                                @item.TypeName
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Revoke Button -->
+                                <form method="post" asp-controller="Staff" asp-action="RemoveInventoryItem"
+                                      class="flex-shrink-0">
+                                    <input type="hidden" name="accountName" value="@Model.AccountName"/>
+                                    <input type="hidden" name="productCode" value="@item.Code"/>
+                                    <button type="submit"
+                                            onclick="return confirm('Revoke item \'@item.Name\' (@item.Code) from @Model.AccountName?');"
+                                            class="px-2.5 py-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/25 text-rose-400 hover:text-rose-300 border border-rose-500/20 text-xs font-bold transition-all flex items-center gap-1">
+                                        <i class="fas fa-trash-alt text-[10px]"></i>
+                                        <span>Revoke</span>
+                                    </button>
+                                </form>
+                            </div>
+                        }
+                    </div>
+                }
+            </div>
+        </div>
+    }
+    else if (string.IsNullOrWhiteSpace(Model.AccountName))
+    {
+        <div class="bg-slate-950/80 border border-slate-800 rounded-2xl p-12 text-center space-y-3">
+            <div
+                class="w-16 h-16 rounded-full bg-slate-900 border border-slate-800 flex items-center justify-center mx-auto text-purple-400 text-2xl">
+                <i class="fas fa-user-shield"></i>
+            </div>
+            <h3 class="text-base font-bold text-slate-200">Select an Account to Manage Inventory</h3>
+            <p class="text-xs text-slate-400 max-w-md mx-auto">Type a player in-game name in the search bar above or
+                click one of the recent accounts to inspect and grant cosmetics.</p>
+        </div>
+    }
+</div>
+
+<script>
+    // Real-time client-side filter for owned items grid
+    const filterInput = document.getElementById('inventoryFilterInput');
+    if (filterInput) {
+        filterInput.addEventListener('input', function () {
+            const query = this.value.toLowerCase().trim();
+            const cards = document.querySelectorAll('.owned-item-card');
+            cards.forEach(card => {
+                const name = card.querySelector('.item-name')?.innerText.toLowerCase() || '';
+                const code = card.querySelector('.item-code')?.innerText.toLowerCase() || '';
+                if (!query || name.includes(query) || code.includes(query)) {
+                    card.style.display = 'flex';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        });
+    }
+</script>

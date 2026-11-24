@@ -1,0 +1,364 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:COMPEL.GUI.ViewModels"
+        xmlns:cpvm="using:NEXUS.ControlPanel.GUI.ViewModels"
+        x:Class="COMPEL.GUI.Views.MainWindow"
+        x:DataType="vm:CompelChatViewModel"
+        Title="COMPEL Chat — Dedicated Game Server Host Console"
+        Width="1240" Height="820" MinWidth="980" MinHeight="620"
+        WindowStartupLocation="CenterScreen"
+        Background="#070B12">
+
+    <Grid RowDefinitions="Auto,*">
+
+        <!-- ========================================================================= -->
+        <!-- TOP APP & CONNECTION BAR                                                  -->
+        <!-- ========================================================================= -->
+        <Border Grid.Row="0" Background="#0F172A" BorderBrush="#1E293B" BorderThickness="0,0,0,1" Padding="16,10">
+            <Grid ColumnDefinitions="Auto,*,Auto">
+
+                <!-- Brand Title -->
+                <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
+                    <Border Background="#1E1B4B" BorderBrush="#6366F1" BorderThickness="1" CornerRadius="8" Padding="8,5">
+                        <TextBlock Text="💬 COMPEL CHAT" FontSize="12" FontWeight="Black" Foreground="#00F0FF" LetterSpacing="1" />
+                    </Border>
+                    <TextBlock Text="Dedicated Game Server Host Console" FontSize="12" FontWeight="SemiBold"
+                               Foreground="#94A3B8" VerticalAlignment="Center" />
+                </StackPanel>
+
+                <!-- Center Connection Controls -->
+                <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8" HorizontalAlignment="Center" VerticalAlignment="Center">
+                    <TextBlock Text="Host:" FontSize="11" Foreground="#64748B" VerticalAlignment="Center" />
+                    <TextBox Text="{Binding HostAddress}" Width="110" Padding="8,4" FontSize="11" />
+
+                    <TextBlock Text="Port:" FontSize="11" Foreground="#64748B" VerticalAlignment="Center" />
+                    <TextBox Text="{Binding ControlPort}" Width="65" Padding="8,4" FontSize="11" />
+
+                    <TextBlock Text="Token:" FontSize="11" Foreground="#64748B" VerticalAlignment="Center" />
+                    <TextBox Text="{Binding AuthToken}" Watermark="Token (optional)" Width="130" PasswordChar="•" Padding="8,4" FontSize="11" />
+
+                    <Button Classes="primary" Command="{Binding ConnectCommand}" Padding="12,5">
+                        <StackPanel Orientation="Horizontal" Spacing="4">
+                            <TextBlock Text="⚡" FontSize="11" />
+                            <TextBlock Text="Connect" FontSize="11" FontWeight="Bold" />
+                        </StackPanel>
+                    </Button>
+
+                    <Button Classes="secondary" Command="{Binding RefreshInstancesCommand}" Padding="10,5">
+                        <TextBlock Text="🔄 Refresh" FontSize="11" />
+                    </Button>
+                </StackPanel>
+
+                <!-- Right Connection Status Indicator -->
+                <Border Grid.Column="2" Background="#0B0F17" BorderBrush="#1E293B" BorderThickness="1"
+                        CornerRadius="8" Padding="10,5" VerticalAlignment="Center">
+                    <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                        <Border Width="8" Height="8" CornerRadius="4" Background="{Binding ConnectionStatusDotColor}" />
+                        <TextBlock Text="{Binding ConnectionStatusText}" FontSize="11" FontWeight="SemiBold"
+                                   Foreground="#F8FAFC" VerticalAlignment="Center" />
+                    </StackPanel>
+                </Border>
+            </Grid>
+        </Border>
+
+        <!-- ========================================================================= -->
+        <!-- MAIN TWO-COLUMN CHAT CONSOLE                                              -->
+        <!-- ========================================================================= -->
+        <Grid Grid.Row="1" ColumnDefinitions="320,*">
+
+            <!-- Left Column: Server Channels Sidebar -->
+            <Border Grid.Column="0" Background="#0B0F17" BorderBrush="#1E293B" BorderThickness="0,0,1,0">
+                <Grid RowDefinitions="Auto,Auto,*,Auto">
+
+                    <!-- Sidebar Header & Start Server Button -->
+                    <Border Grid.Row="0" Background="#0F172A" BorderBrush="#1E293B" BorderThickness="0,0,0,1" Padding="12,10">
+                        <Grid ColumnDefinitions="*,Auto">
+                            <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                                <TextBlock Text="CHANNELS / INSTANCES" FontSize="10" FontWeight="Bold" Foreground="#00F0FF" LetterSpacing="1" />
+                                <TextBlock Text="Select a server to chat" FontSize="11" Foreground="#64748B" />
+                            </StackPanel>
+
+                            <Button Grid.Column="1" Classes="success" Command="{Binding StartNewServerInstanceCommand}"
+                                    Padding="8,4" ToolTip.Tip="Spin up next stopped server instance">
+                                <StackPanel Orientation="Horizontal" Spacing="4">
+                                    <TextBlock Text="➕" FontSize="10" />
+                                    <TextBlock Text="New" FontWeight="Bold" FontSize="11" />
+                                </StackPanel>
+                            </Button>
+                        </Grid>
+                    </Border>
+
+                    <!-- Search & Status Filter -->
+                    <StackPanel Grid.Row="1" Spacing="6" Margin="10,8,10,6">
+                        <TextBox Text="{Binding ChatSearchQuery}" Watermark="🔍 Search channels..." Padding="8,6" FontSize="11" />
+                        <ComboBox SelectedValue="{Binding SelectedStatusFilter}" SelectedValueBinding="{Binding}"
+                                  HorizontalAlignment="Stretch" FontSize="11">
+                            <x:String>ALL</x:String>
+                            <x:String>AVAILABLE</x:String>
+                            <x:String>IN MATCH</x:String>
+                            <x:String>STOPPED</x:String>
+                        </ComboBox>
+                    </StackPanel>
+
+                    <!-- Channel List -->
+                    <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto">
+                        <ItemsControl ItemsSource="{Binding FilteredInstances}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate DataType="cpvm:GameServerInstanceDetailViewModel">
+                                    <Button Command="{Binding $parent[Window].((vm:CompelChatViewModel)DataContext).SelectInstanceCommand}"
+                                            CommandParameter="{Binding}"
+                                            HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch"
+                                            Background="Transparent" BorderThickness="0" Padding="0" Margin="4,2">
+                                        <Border Background="#0F172A" BorderBrush="#1E293B" BorderThickness="1"
+                                                CornerRadius="8" Padding="10,8">
+                                            <Grid ColumnDefinitions="Auto,*,Auto">
+                                                <!-- Status Circle Indicator -->
+                                                <Border Grid.Column="0" Width="10" Height="10" CornerRadius="5"
+                                                        Background="{Binding StatusDotColor}" Margin="0,0,10,0"
+                                                        VerticalAlignment="Center" />
+
+                                                <!-- Channel Label & Preview -->
+                                                <StackPanel Grid.Column="1" Spacing="2" VerticalAlignment="Center">
+                                                    <StackPanel Orientation="Horizontal" Spacing="6">
+                                                        <TextBlock Text="{Binding GamePort, StringFormat='#{0}'}"
+                                                                   FontSize="12" FontWeight="Black" Foreground="#00F0FF" />
+                                                        <TextBlock Text="{Binding ServerName}" FontSize="11.5"
+                                                                   FontWeight="Bold" Foreground="#F8FAFC" />
+                                                    </StackPanel>
+                                                    <TextBlock Text="{Binding StatusText}" FontSize="10"
+                                                               FontWeight="SemiBold" Foreground="{Binding StatusColor}" />
+                                                    <TextBlock Text="{Binding LastMessageSnippet}" FontSize="9.5"
+                                                               Foreground="#64748B" TextTrimming="CharacterEllipsis"
+                                                               MaxLines="1" />
+                                                </StackPanel>
+
+                                                <!-- Stop/Close Server Button -->
+                                                <Button Grid.Column="2" Classes="danger"
+                                                        Command="{Binding $parent[Window].((vm:CompelChatViewModel)DataContext).StopInstanceCommand}"
+                                                        CommandParameter="{Binding}"
+                                                        Padding="6,2" VerticalAlignment="Center"
+                                                        ToolTip.Tip="Stop &amp; Close this server instance">
+                                                    <TextBlock Text="✕" FontSize="10" FontWeight="Bold" />
+                                                </Button>
+                                            </Grid>
+                                        </Border>
+                                    </Button>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer>
+
+                    <!-- Bottom Channel Count Footer -->
+                    <Border Grid.Row="3" Background="#0F172A" BorderBrush="#1E293B" BorderThickness="0,1,0,0" Padding="10,6">
+                        <TextBlock Text="{Binding FilteredInstances.Count, StringFormat='{}{0} channels available'}"
+                                   FontSize="10" Foreground="#64748B" HorizontalAlignment="Center" />
+                    </Border>
+
+                </Grid>
+            </Border>
+
+            <!-- Right Column: Active Server Chat Feed & Console Bar -->
+            <Grid Grid.Column="1" RowDefinitions="Auto,*,Auto,Auto">
+
+                <!-- Channel Top Header Bar -->
+                <Border Grid.Row="0" Background="#0F172A" BorderBrush="#1E293B" BorderThickness="0,0,0,1" Padding="16,10">
+                    <Grid ColumnDefinitions="*,Auto">
+                        <!-- Left: Server Name, Port, and Status Badge -->
+                        <StackPanel Grid.Column="0" Spacing="3" VerticalAlignment="Center">
+                            <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                                <Border Width="10" Height="10" CornerRadius="5"
+                                        Background="{Binding SelectedInstance.StatusDotColor}"
+                                        VerticalAlignment="Center" />
+                                <TextBlock Text="{Binding SelectedInstance.ServerName, StringFormat='# {0}'}"
+                                           FontSize="15" FontWeight="Black" Foreground="#F8FAFC" />
+                                <Border Background="#1E293B" CornerRadius="4" Padding="6,2">
+                                    <TextBlock Text="{Binding SelectedInstance.GamePort, StringFormat='UDP {0}'}"
+                                               FontSize="10.5" FontWeight="Bold" Foreground="#00F0FF" />
+                                </Border>
+                                <Border Background="{Binding SelectedInstance.StatusBadgeBackground}"
+                                        BorderBrush="{Binding SelectedInstance.StatusColor}" BorderThickness="1"
+                                        CornerRadius="6" Padding="6,2">
+                                    <TextBlock Text="{Binding SelectedInstance.StatusText}" FontSize="10"
+                                               FontWeight="Bold" Foreground="{Binding SelectedInstance.StatusColor}" />
+                                </Border>
+                            </StackPanel>
+
+                            <TextBlock Text="{Binding SelectedInstance.Endpoint, StringFormat='Direct UDP Socket: {0} • Low-Latency Stdin &amp; Named Pipe IPC'}"
+                                       FontSize="10" Foreground="#64748B" />
+                        </StackPanel>
+
+                        <!-- Right: Channel Control Buttons -->
+                        <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                            <!-- Start (if stopped) -->
+                            <Button Classes="success" Command="{Binding StartSelectedInstanceCommand}"
+                                    IsVisible="{Binding !SelectedInstance.IsRunning}" Padding="10,5">
+                                <StackPanel Orientation="Horizontal" Spacing="4">
+                                    <TextBlock Text="▶" />
+                                    <TextBlock Text="Start Server" FontWeight="Bold" FontSize="11" />
+                                </StackPanel>
+                            </Button>
+
+                            <!-- Restart -->
+                            <Button Classes="secondary" Command="{Binding RestartSelectedInstanceCommand}"
+                                    IsVisible="{Binding SelectedInstance.IsRunning}" Padding="10,5">
+                                <StackPanel Orientation="Horizontal" Spacing="4">
+                                    <TextBlock Text="🔄" />
+                                    <TextBlock Text="Restart" FontWeight="SemiBold" FontSize="11" />
+                                </StackPanel>
+                            </Button>
+
+                            <!-- Stop & Close -->
+                            <Button Classes="danger" Command="{Binding StopInstanceCommand}"
+                                    CommandParameter="{Binding SelectedInstance}"
+                                    IsVisible="{Binding SelectedInstance.IsRunning}" Padding="10,5">
+                                <StackPanel Orientation="Horizontal" Spacing="4">
+                                    <TextBlock Text="⏹" />
+                                    <TextBlock Text="Stop &amp; Close" FontWeight="SemiBold" FontSize="11" />
+                                </StackPanel>
+                            </Button>
+
+                            <!-- Clear Chat -->
+                            <Button Classes="secondary" Command="{Binding ClearChatCommand}" Padding="8,5">
+                                <TextBlock Text="🧹 Clear" FontSize="11" />
+                            </Button>
+                        </StackPanel>
+                    </Grid>
+                </Border>
+
+                <!-- Center Chat Feed Stream -->
+                <ScrollViewer Grid.Row="1" x:Name="ChatScrollViewer" VerticalScrollBarVisibility="Auto" Background="#090D16">
+                    <ItemsControl ItemsSource="{Binding SelectedInstance.ChatMessages}" Margin="16,12">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate DataType="cpvm:GameServerChatMessageViewModel">
+                                <!-- Dynamic Alignment Container -->
+                                <Grid HorizontalAlignment="{Binding Alignment}" Margin="0,3">
+
+                                    <!-- CASE 1: System Announcement Pill -->
+                                    <Border IsVisible="{Binding IsSystem}" Background="#1E293B" BorderBrush="#334155"
+                                            BorderThickness="1" CornerRadius="12" Padding="12,4"
+                                            HorizontalAlignment="Center">
+                                        <TextBlock Text="{Binding Message}" FontSize="10.5" Foreground="#94A3B8" />
+                                    </Border>
+
+                                    <!-- CASE 2: User / Operator Outgoing Command Bubble -->
+                                    <Border IsVisible="{Binding IsOperator}" Background="#1E1B4B" BorderBrush="#6366F1"
+                                            BorderThickness="1" CornerRadius="12,12,2,12" Padding="12,8" MaxWidth="600">
+                                        <StackPanel Spacing="3">
+                                            <Grid ColumnDefinitions="*,Auto">
+                                                <TextBlock Grid.Column="0" Text="You (Operator)" FontSize="10.5"
+                                                           FontWeight="Bold" Foreground="#38BDF8" />
+                                                <TextBlock Grid.Column="1"
+                                                           Text="{Binding FormattedTime, StringFormat='{}{0}'}"
+                                                           FontSize="9.5" Foreground="#818CF8" Margin="8,0,0,0" />
+                                            </Grid>
+                                            <TextBlock Text="{Binding Message}" FontSize="12" FontWeight="SemiBold"
+                                                       Foreground="#F8FAFC" TextWrapping="Wrap" />
+                                            <TextBlock Text="{Binding DeliveryChannel, StringFormat='via {0}'}"
+                                                       FontSize="9" Foreground="#60A5FA" HorizontalAlignment="Right" />
+                                        </StackPanel>
+                                    </Border>
+
+                                    <!-- CASE 3: Server Incoming Log / Event Bubble -->
+                                    <Border IsVisible="{Binding IsServer}" Background="{Binding BubbleBackground}"
+                                            BorderBrush="{Binding BubbleBorder}" BorderThickness="1"
+                                            CornerRadius="12,12,12,2" Padding="12,8" MaxWidth="650">
+                                        <StackPanel Spacing="3">
+                                            <Grid ColumnDefinitions="*,Auto">
+                                                <TextBlock Grid.Column="0" Text="{Binding Sender}" FontSize="10.5"
+                                                           FontWeight="Bold" Foreground="#94A3B8" />
+                                                <TextBlock Grid.Column="1"
+                                                           Text="{Binding FormattedTime, StringFormat='{}{0}'}"
+                                                           FontSize="9.5" Foreground="#64748B" Margin="8,0,0,0" />
+                                            </Grid>
+                                            <TextBlock Text="{Binding Message}"
+                                                       FontFamily="Cascadia Mono, Consolas, Courier New, monospace"
+                                                       FontSize="11.5" Foreground="{Binding TextForeground}"
+                                                       TextWrapping="Wrap" />
+                                        </StackPanel>
+                                    </Border>
+
+                                </Grid>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </ScrollViewer>
+
+                <!-- Quick Command Chips Toolbar -->
+                <Border Grid.Row="2" Background="#0B0F17" BorderBrush="#1E293B" BorderThickness="0,1,0,0" Padding="16,6">
+                    <WrapPanel Orientation="Horizontal" VerticalAlignment="Center">
+                        <TextBlock Text="QUICK COMMANDS:" FontSize="9.5" FontWeight="Bold" Foreground="#64748B"
+                                   VerticalAlignment="Center" Margin="0,0,10,4" LetterSpacing="0.5" />
+
+                        <Button Classes="secondary" Command="{Binding SendQuickCommandCommand}"
+                                CommandParameter="AddFakePlayer 1" Margin="0,0,6,4" Padding="8,4">
+                            <TextBlock Text="🤖 +Legion Bot" FontSize="10.5" FontWeight="SemiBold" Foreground="#10B981" />
+                        </Button>
+
+                        <Button Classes="secondary" Command="{Binding SendQuickCommandCommand}"
+                                CommandParameter="AddFakePlayer 2" Margin="0,0,6,4" Padding="8,4">
+                            <TextBlock Text="🤖 +Hellbourne Bot" FontSize="10.5" FontWeight="SemiBold" Foreground="#F59E0B" />
+                        </Button>
+
+                        <Button Classes="secondary" Command="{Binding SendQuickCommandCommand}"
+                                CommandParameter="ServerStatus" Margin="0,0,6,4" Padding="8,4">
+                            <TextBlock Text="📊 Server Status" FontSize="10.5" FontWeight="SemiBold" Foreground="#38BDF8" />
+                        </Button>
+
+                        <Button Classes="secondary" Command="{Binding SendQuickCommandCommand}"
+                                CommandParameter="ListPlayers" Margin="0,0,6,4" Padding="8,4">
+                            <TextBlock Text="👥 List Players" FontSize="10.5" FontWeight="SemiBold" Foreground="#A855F7" />
+                        </Button>
+
+                        <Button Classes="secondary" Command="{Binding SendQuickCommandCommand}"
+                                CommandParameter="GiveGold 55555" Margin="0,0,6,4" Padding="8,4">
+                            <TextBlock Text="💰 +55555 Gold" FontSize="10.5" FontWeight="SemiBold" Foreground="#FACC15" />
+                        </Button>
+
+                        <Button Classes="secondary" Command="{Binding SendQuickCommandCommand}"
+                                CommandParameter="GiveGold " Margin="0,0,6,4" Padding="8,4">
+                            <TextBlock Text="🪙 GiveGold..." FontSize="10.5" FontWeight="SemiBold" Foreground="#FBBF24" />
+                        </Button>
+
+                        <Button Classes="secondary" Command="{Binding SendQuickCommandCommand}"
+                                CommandParameter="announce " Margin="0,0,6,4" Padding="8,4">
+                            <TextBlock Text="📢 Announce" FontSize="10.5" FontWeight="SemiBold" Foreground="#EC4899" />
+                        </Button>
+
+                        <Button Classes="secondary" Command="{Binding SendQuickCommandCommand}"
+                                CommandParameter="svr_name" Margin="0,0,6,4" Padding="8,4">
+                            <TextBlock Text="🏷️ svr_name" FontSize="10.5" FontWeight="SemiBold" Foreground="#F43F5E" />
+                        </Button>
+
+                        <Button Classes="secondary" Command="{Binding SendQuickCommandCommand}"
+                                CommandParameter="echo ping" Margin="0,0,6,4" Padding="8,4">
+                            <TextBlock Text="🏓 Ping" FontSize="10.5" FontWeight="SemiBold" Foreground="#E2E8F0" />
+                        </Button>
+                    </WrapPanel>
+                </Border>
+
+                <!-- Bottom Chat / Command Input Bar -->
+                <Border Grid.Row="3" Background="#0F172A" BorderBrush="#1E293B" BorderThickness="0,1,0,0" Padding="16,10">
+                    <StackPanel Spacing="4">
+                        <Grid ColumnDefinitions="*,Auto">
+                            <TextBox Grid.Column="0" x:Name="CommandTextBox" Text="{Binding CommandInput}"
+                                     Watermark="Type a command (e.g. announce Server restarting in 5m, GiveGold 1000, AddFakePlayer 1)... Press Enter"
+                                     KeyDown="CommandTextBox_KeyDown" Margin="0,0,10,0" />
+
+                            <Button Grid.Column="1" Classes="primary" Command="{Binding SendCommandCommand}"
+                                    IsEnabled="{Binding !IsSendingCommand}" Padding="18,9">
+                                <StackPanel Orientation="Horizontal" Spacing="6">
+                                    <TextBlock Text="✈️" />
+                                    <TextBlock Text="Send" FontWeight="Bold" />
+                                </StackPanel>
+                            </Button>
+                        </Grid>
+
+                        <!-- Command Dispatch Status Feedback -->
+                        <TextBlock Text="{Binding LastCommandStatus}" FontSize="10" Foreground="#38BDF8" Margin="2,0,0,0" />
+                    </StackPanel>
+                </Border>
+
+            </Grid>
+        </Grid>
+    </Grid>
+</Window>

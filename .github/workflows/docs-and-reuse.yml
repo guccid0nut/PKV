@@ -1,0 +1,133 @@
+name: Docs, REUSE & Export Governance
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'docs/**'
+      - 'src/**/README.md'
+      - 'tools/**/README.md'
+      - 'infra/**/README.md'
+      - 'native/**/README.md'
+      - 'README.md'
+      - 'CHANGELOG.md'
+      - 'CONTRIBUTING.md'
+      - 'SECURITY.md'
+      - 'NOTICE'
+      - 'THIRD_PARTY_NOTICES.md'
+      - 'INTEROPERABILITY_AND_DMCA.md'
+      - 'NAMING_POLICY.md'
+      - 'CITATION.cff'
+      - 'llms.txt'
+      - 'REUSE.toml'
+      - 'LICENSES/**'
+      - 'docfx.json'
+      - 'config/public_export_manifest.json'
+      - 'scripts/release/Apply-CleanroomFileHeaders.ps1'
+      - 'scripts/qa/verify_doc_*.ps1'
+      - 'scripts/Invoke-PublicGithubExport.ps1'
+      - '.github/workflows/docs-and-reuse.yml'
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: docs-and-reuse-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  DOTNET_NOLOGO: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: true
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
+  GITHUB_ACTIONS: 'true'
+
+jobs:
+  reuse-and-spdx:
+    name: SPDX & REUSE License Compliance
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: pwsh
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          submodules: recursive
+
+      - name: Verify Cleanroom SPDX File Headers
+        run: ./scripts/release/Apply-CleanroomFileHeaders.ps1 -VerifyOnly -IncludeDirtyWip -ScanNewFiles
+
+      - name: Setup Python for REUSE Linter
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+        with:
+          python-version: '3.12'
+
+      - name: Run REUSE Compliance Lint
+        run: |
+          python -m pip install --quiet reuse
+          reuse lint
+
+  docs-links-and-portal:
+    name: Doc Links, Citations & DocFX Portal Build
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: pwsh
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          submodules: recursive
+
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9 # v4
+        with:
+          global-json-file: global.json
+          dotnet-quality: 'ga'
+
+      - name: Verify Markdown Links & Command Drift
+        run: ./scripts/qa/verify_doc_links.ps1
+
+      - name: Verify Document Citations
+        run: ./scripts/qa/verify_doc_citations.ps1
+
+      - name: Install DocFX & Build Cleanroom Documentation Portal
+        run: |
+          dotnet tool install -g docfx --version 2.78.5
+          docfx build docfx.json
+          if (Test-Path -LiteralPath "docs/_site") {
+            Remove-Item -LiteralPath "docs/_site" -Recurse -Force
+          }
+
+  export-governance-canary:
+    name: Public Export Gates 0-5 & 7-8 Dry-Run
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: pwsh
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          submodules: recursive
+
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9 # v4
+        with:
+          global-json-file: global.json
+          dotnet-quality: 'ga'
+
+      - name: Execute Public Export Canary Dry-Run (No Push)
+        env:
+          KONGOR_EXPORT_CANARY_TEST: '1'
+        run: |
+          $piiTmp = Join-Path ([System.IO.Path]::GetTempPath()) "ci_pii_guard.json"
+          '{"schema_version":1,"terms":[],"allowed_public_identity":["guccidonut","guccid0nut"]}' | Set-Content -LiteralPath $piiTmp -Encoding UTF8
+          try {
+            ./scripts/Invoke-PublicGithubExport.ps1 -SkipBuildGate -PiiConfigPath $piiTmp
+          } finally {
+            Remove-Item -LiteralPath $piiTmp -ErrorAction SilentlyContinue
+          }

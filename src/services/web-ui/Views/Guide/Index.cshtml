@@ -1,0 +1,467 @@
+@* ReSharper disable All *@
+@using NEXUS.Contracts.Clients
+@using ASPIRE.Common.Utilities
+@model IReadOnlyList<HeroGuideDto>
+@{
+    ViewData["Title"] = "Hero Guides & Strategy Codex";
+    AccountDto? currentAccount = ViewBag.CurrentAccount as AccountDto;
+    bool isStaff = ViewBag.IsStaff is true;
+    List<int> userDefaultGuideIds = ViewBag.UserDefaultGuideIds as List<int> ?? [];
+    List<int> userFavoriteGuideIds = ViewBag.UserFavoriteGuideIds as List<int> ?? [];
+    string selectedHero = ViewBag.SelectedHero as string ?? "";
+    string selectedMap = ViewBag.SelectedMap as string ?? "all";
+    string searchQuery = ViewBag.SearchQuery as string ?? "";
+    string currentSort = ViewBag.CurrentSort as string ?? "featured";
+    int currentPage = Convert.ToInt32(ViewBag.CurrentPage ?? 1);
+    int totalPages = Convert.ToInt32(ViewBag.TotalPages ?? 1);
+    int totalCount = Convert.ToInt32(ViewBag.TotalCount ?? 0);
+
+    List<string> ParseItems(string? raw)
+    {
+        if (string.IsNullOrWhiteSpace(raw)) return [];
+        return raw.Replace("[", "").Replace("]", "").Replace("\"", "")
+            .Split(['|', ','], StringSplitOptions.RemoveEmptyEntries)
+            .Select(i => i.Trim())
+            .Where(i => !string.IsNullOrEmpty(i))
+            .Take(5)
+            .ToList();
+    }
+
+    string GetCanonicalItemCode(string item)
+    {
+        return HonItemMapping.ToWebSlug(item);
+    }
+}
+
+<div class="w-full max-w-[1920px] mx-auto py-4 sm:py-6 px-3 sm:px-6 lg:px-8 xl:px-10 space-y-6 animate-fade-in-up">
+    <!-- Header Hero Banner -->
+    <div
+        class="glass-panel p-5 sm:p-8 rounded-3xl relative overflow-hidden border border-slate-700/60 shadow-2xl backdrop-blur-xl bg-gradient-to-r from-slate-900/90 via-slate-900/80 to-amber-950/30">
+        <div
+            class="absolute -right-20 -top-20 w-80 h-80 bg-amber-500/10 rounded-full blur-3xl pointer-events-none"></div>
+
+        <div class="flex flex-col md:flex-row items-center justify-between gap-6 relative z-10">
+            <div class="space-y-3 text-center md:text-left">
+                <div class="flex items-center justify-center md:justify-start gap-2">
+                    <span
+                        class="px-3 py-1 rounded-full text-xs font-bold bg-amber-500/10 border border-amber-500/30 text-amber-400">
+                        COMMUNITY & OFFICIAL BUILDS
+                    </span>
+                    <span
+                        class="px-3 py-1 rounded-full text-xs font-mono bg-purple-500/10 border border-purple-500/30 text-purple-300">
+                        @totalCount Available Guides
+                    </span>
+                    @if (isStaff)
+                    {
+                        <span
+                            class="px-3 py-1 rounded-full text-xs font-bold bg-amber-500/20 border border-amber-500/40 text-amber-300">
+                            🛡️ Staff Curator Active
+                        </span>
+                    }
+                </div>
+                <h1 class="text-2xl sm:text-4xl md:text-5xl font-black text-white tracking-tight">Hero Strategy
+                    Guides</h1>
+                <p class="text-slate-300 text-xs sm:text-sm max-w-2xl leading-relaxed">
+                    Master Newerth heroes with curated item builds, skill leveling queues, laning strategies, and
+                    map-specific setups synchronized directly to your in-game client.
+                </p>
+            </div>
+
+            <!-- Create Guide CTA Button (Only when logged in) -->
+            @if (currentAccount != null)
+            {
+                <div class="flex flex-col sm:flex-row items-center gap-3 w-full md:w-auto justify-end">
+                    <a href="/guides/builder"
+                       class="px-6 py-3.5 rounded-2xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-black text-sm transition-all shadow-xl shadow-amber-500/25 flex items-center gap-2 border border-amber-300 active:scale-95">
+                        <span>➕</span>
+                        <span>Create Hero Guide</span>
+                    </a>
+                </div>
+            }
+        </div>
+    </div>
+
+    <!-- Filter & Search Toolbar -->
+    <div class="glass-panel p-4 rounded-3xl border border-slate-800 space-y-3 bg-slate-900/90 shadow-xl">
+        <form method="get" action="/guides" class="space-y-3">
+            <div class="flex flex-col md:flex-row items-center justify-between gap-3">
+                <!-- Search Box -->
+                <div class="relative flex-1 w-full">
+                    <input type="text"
+                           name="q"
+                           value="@searchQuery"
+                           placeholder="Search guides by title, hero, author, or strategy..."
+                           class="w-full bg-slate-950 text-white placeholder-slate-500 text-xs rounded-2xl px-4 py-2.5 pl-10 border border-slate-700 focus:outline-none focus:border-amber-400 shadow-inner transition-all"/>
+                    <span class="absolute left-3.5 top-2.5 text-slate-400 text-xs">🔍</span>
+                </div>
+
+                <!-- Sorting Tabs -->
+                <div class="flex items-center gap-1.5 overflow-x-auto w-full md:w-auto no-scrollbar">
+                    <a href="/guides?hero=@selectedHero&map=@selectedMap&q=@searchQuery&sort=featured"
+                       class="px-3 py-1.5 rounded-xl text-xs font-bold transition-all @(currentSort == "featured" ? "bg-amber-500 text-slate-950 font-black shadow-md" : "bg-slate-950 text-slate-400 border border-slate-800 hover:text-white")">
+                        ★ Featured
+                    </a>
+                    <a href="/guides?hero=@selectedHero&map=@selectedMap&q=@searchQuery&sort=rating"
+                       class="px-3 py-1.5 rounded-xl text-xs font-bold transition-all @(currentSort == "rating" ? "bg-amber-500 text-slate-950 font-black shadow-md" : "bg-slate-950 text-slate-400 border border-slate-800 hover:text-white")">
+                        🔥 Top Rated
+                    </a>
+                    <a href="/guides?hero=@selectedHero&map=@selectedMap&q=@searchQuery&sort=newest"
+                       class="px-3 py-1.5 rounded-xl text-xs font-bold transition-all @(currentSort == "newest" ? "bg-amber-500 text-slate-950 font-black shadow-md" : "bg-slate-950 text-slate-400 border border-slate-800 hover:text-white")">
+                        ⚡ Newest
+                    </a>
+                    @if (currentAccount != null)
+                    {
+                        <a href="/guides?hero=@selectedHero&map=@selectedMap&q=@searchQuery&sort=favorites"
+                           class="px-3 py-1.5 rounded-xl text-xs font-bold transition-all @(currentSort == "favorites" ? "bg-amber-400 text-slate-950 font-black shadow-md" : "bg-slate-950 text-slate-400 border border-slate-800 hover:text-white")">
+                            ⭐ Favorites
+                        </a>
+                        <a href="/guides?hero=@selectedHero&map=@selectedMap&q=@searchQuery&sort=defaults"
+                           class="px-3 py-1.5 rounded-xl text-xs font-bold transition-all @(currentSort == "defaults" ? "bg-emerald-500 text-slate-950 font-black shadow-md" : "bg-slate-950 text-slate-400 border border-slate-800 hover:text-white")">
+                            👑 Defaults
+                        </a>
+                        <a href="/guides?hero=@selectedHero&map=@selectedMap&q=@searchQuery&sort=myguides"
+                           class="px-3 py-1.5 rounded-xl text-xs font-bold transition-all @(currentSort == "myguides" || currentSort == "my_guides" ? "bg-purple-500 text-white font-black shadow-md" : "bg-slate-950 text-slate-400 border border-slate-800 hover:text-white")">
+                            👤 My Guides
+                        </a>
+                    }
+                </div>
+            </div>
+
+            <!-- Clean Map Target Filter Bar (Caldavar & Mid Wars only) -->
+            <div
+                class="flex items-center gap-1.5 overflow-x-auto pt-2 border-t border-slate-800/80 no-scrollbar text-xs">
+                <span
+                    class="text-[10px] font-bold uppercase tracking-wider text-slate-400 mr-1 flex-shrink-0">Map:</span>
+                <a href="/guides?hero=@selectedHero&map=all&q=@searchQuery&sort=@currentSort"
+                   class="px-3 py-1.5 rounded-xl text-xs font-bold transition-all @(selectedMap == "all" ? "bg-cyan-500 text-slate-950 font-black shadow-sm" : "bg-slate-950 text-slate-400 border border-slate-800 hover:text-white") flex-shrink-0">
+                    🗺️ All Maps
+                </a>
+                <a href="/guides?hero=@selectedHero&map=caldavar&q=@searchQuery&sort=@currentSort"
+                   class="px-3 py-1.5 rounded-xl text-xs font-bold transition-all @(selectedMap == "caldavar" ? "bg-emerald-500 text-slate-950 font-black shadow-sm" : "bg-slate-950 text-slate-400 border border-slate-800 hover:text-white") flex-shrink-0">
+                    🌲 Caldavar
+                </a>
+                <a href="/guides?hero=@selectedHero&map=midwars&q=@searchQuery&sort=@currentSort"
+                   class="px-3 py-1.5 rounded-xl text-xs font-bold transition-all @(selectedMap == "midwars" ? "bg-cyan-500 text-slate-950 font-black shadow-sm" : "bg-slate-950 text-slate-400 border border-slate-800 hover:text-white") flex-shrink-0">
+                    ⚔️ Mid Wars
+                </a>
+            </div>
+        </form>
+    </div>
+
+    <!-- Guides Cards Grid -->
+    @if (Model.Count == 0)
+    {
+        <div class="glass-panel p-12 rounded-3xl border border-slate-800 text-center space-y-4 bg-slate-900/60">
+            <div class="text-4xl">📜</div>
+            <h3 class="text-lg font-bold text-white">No Hero Guides Found</h3>
+            <p class="text-xs text-slate-400 max-w-md mx-auto">
+                No guides matched your current filters. Be the first to create and publish a strategy guide for this
+                hero!
+            </p>
+            @if (currentAccount != null)
+            {
+                <a href="/guides/builder"
+                   class="inline-flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs shadow-lg shadow-amber-500/20">
+                    <span>➕ Create First Guide</span>
+                </a>
+            }
+            else
+            {
+                <a href="/account/login?returnUrl=/guides"
+                   class="inline-flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs shadow-lg shadow-indigo-600/20">
+                    <span>🔑 Connect with Discord to Create Guides</span>
+                </a>
+            }
+        </div>
+    }
+    else
+    {
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
+            @foreach (HeroGuideDto guide in Model)
+            {
+                string cleanHero = guide.HeroIdentifier.Replace("Hero_", "").ToLowerInvariant();
+                string heroPortrait = $"/images/heroes/hero_{cleanHero}.png";
+                bool isAuthor = currentAccount != null && (guide.AuthorAccountID == currentAccount.ID || (guide.Author != null && guide.Author.ID == currentAccount.ID) || string.Equals(guide.AuthorAccountName, currentAccount.Name, StringComparison.OrdinalIgnoreCase));
+                string authorDisplayName = !string.IsNullOrWhiteSpace(guide.AuthorAccountName) ? guide.AuthorAccountName : (guide.Author?.Name ?? "Project KONGOR");
+
+                <div
+                    class="glass-panel p-5 rounded-3xl border border-slate-800 hover:border-slate-700 transition-all flex flex-col justify-between space-y-4 bg-slate-900/80 hover:shadow-2xl hover:shadow-amber-500/5 group relative">
+                    <!-- Top-Right Corner Favorite & Default Actions -->
+                    @if (currentAccount != null)
+                    {
+                        bool isFav = userFavoriteGuideIds.Contains(guide.ID);
+                        bool isDef = userDefaultGuideIds.Contains(guide.ID);
+                        <div class="absolute top-3.5 right-3.5 flex items-center gap-1.5 z-10">
+                            <button onclick="toggleFavoriteDirect(@guide.ID, this)" type="button"
+                                    title="@(isFav ? "Remove from Favorites" : "Add to Favorites (Syncs In-Game)")"
+                                    class="w-7 h-7 rounded-xl flex items-center justify-center transition-all text-xs font-bold @(isFav ? "bg-amber-500/20 text-amber-300 border border-amber-500/50 shadow-md shadow-amber-500/20 hover:bg-amber-500/30" : "bg-slate-800/90 text-slate-400 hover:text-amber-300 hover:bg-slate-700 border border-slate-700/80")">
+                                @(isFav ? "★" : "☆")
+                            </button>
+                            <button onclick="toggleDefaultDirect(@guide.ID, this)" type="button"
+                                    title="@(isDef ? "Unset Default Guide" : $"Set as Default Guide for {guide.HeroName} (Syncs In-Game)")"
+                                    class="w-7 h-7 rounded-xl flex items-center justify-center transition-all text-xs font-bold @(isDef ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/50 shadow-md shadow-emerald-500/20 hover:bg-emerald-500/30" : "bg-slate-800/90 text-slate-400 hover:text-emerald-300 hover:bg-slate-700 border border-slate-700/80")">
+                                👑
+                            </button>
+                        </div>
+                    }
+
+                    <!-- Top Info Row -->
+                    <div class="space-y-3">
+                        <div class="flex items-start gap-3">
+                            <a href="/hero/@cleanHero"
+                               class="w-14 h-14 rounded-2xl overflow-hidden bg-slate-950 border border-slate-700 flex-shrink-0 shadow-md group-hover:border-amber-400 transition-colors">
+                                <img src="@heroPortrait"
+                                     onError="this.onerror=null;this.src='/images/heroes/default.png';"
+                                     alt="@guide.HeroName" class="w-full h-full object-cover"/>
+                            </a>
+                            <div class="flex-1 min-w-0 space-y-1 pr-16">
+                                <div class="flex items-center gap-1.5 flex-wrap">
+                                    @if (userDefaultGuideIds.Contains(guide.ID))
+                                    {
+                                        <span
+                                            class="px-2 py-0.5 rounded-md text-[10px] font-black bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 shadow-sm flex items-center gap-1">
+                                            <span>👑</span> DEFAULT
+                                        </span>
+                                    }
+                                    @if (userFavoriteGuideIds.Contains(guide.ID))
+                                    {
+                                        <span
+                                            class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30 shadow-sm flex items-center gap-1">
+                                            <span>⭐</span> FAVORITE
+                                        </span>
+                                    }
+                                    @if (guide.Featured)
+                                    {
+                                        <span
+                                            class="px-2 py-0.5 rounded-md text-[10px] font-black bg-amber-500/20 text-amber-300 border border-amber-500/40 shadow-sm">
+                                            ★ OFFICIAL
+                                        </span>
+                                    }
+                                    else if (!guide.Public)
+                                    {
+                                        <span
+                                            class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-rose-500/20 text-rose-300 border border-rose-500/40">
+                                            🔒 PRIVATE
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span
+                                            class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-slate-800 text-slate-300 border border-slate-700">
+                                            🌐 COMMUNITY
+                                        </span>
+                                    }
+
+                                    @if (guide.TargetMap == "caldavar")
+                                    {
+                                        <span
+                                            class="px-2 py-0.5 rounded-md text-[10px] font-mono bg-emerald-500/10 text-emerald-300 border border-emerald-500/30">
+                                            🌲 Caldavar
+                                        </span>
+                                    }
+                                    else if (guide.TargetMap == "midwars")
+                                    {
+                                        <span
+                                            class="px-2 py-0.5 rounded-md text-[10px] font-mono bg-cyan-500/10 text-cyan-300 border border-cyan-500/30">
+                                            ⚔️ Mid Wars
+                                        </span>
+                                    }
+                                </div>
+                                <h3 class="font-bold text-white text-sm group-hover:text-amber-300 transition-colors truncate">
+                                    <a href="/guides/@guide.ID">@guide.Name</a>
+                                </h3>
+                                <div class="text-[11px] text-slate-400 font-mono flex items-center gap-1 truncate">
+                                    <span>by</span>
+                                    <span class="text-slate-200 font-semibold truncate">@authorDisplayName</span>
+                                    @if (guide is { Featured: true, Author: not null } && !guide.Author.Name.Equals("KONGOR", StringComparison.OrdinalIgnoreCase))
+                                    {
+                                        <span
+                                            class="text-[10px] text-amber-400/90 font-sans font-bold">• Official</span>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Intro Text Snippet -->
+                        @if (!string.IsNullOrWhiteSpace(guide.Intro))
+                        {
+                            <p class="text-xs text-slate-300 line-clamp-2 leading-relaxed">
+                                @guide.Intro
+                            </p>
+                        }
+
+                        <!-- Essential Item Preview Badges -->
+                        @{
+                            List<string> essentialPreview = ParseItems(guide.EarlyGameItems);
+                            if (essentialPreview.Count == 0)
+                            {
+                                essentialPreview = ParseItems(guide.CoreItems);
+                            }
+
+                            if (essentialPreview.Count == 0)
+                            {
+                                essentialPreview = ParseItems(guide.StartingItems);
+                            }
+                        }
+                        <div class="space-y-1 pt-1 border-t border-slate-800/80">
+                            <span class="text-[10px] font-bold tracking-widest text-emerald-400 uppercase">Essential Items</span>
+                            <div class="flex items-center gap-1.5 flex-wrap">
+                                @foreach (string item in essentialPreview)
+                                {
+                                    string icon = GetCanonicalItemCode(item);
+                                    <div
+                                        class="w-7 h-7 rounded-lg overflow-hidden bg-slate-950 border border-slate-700 shadow-sm">
+                                        <img src="/images/items/@(icon).png"
+                                             onError="this.onerror=null;this.src='/images/items/default.png';"
+                                             alt="@item" class="w-full h-full object-cover"/>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Bottom Action Toolbar -->
+                    <div class="flex items-center justify-between pt-3 border-t border-slate-800/80 text-xs">
+                        <div class="flex items-center gap-1.5 text-amber-400 font-bold">
+                            <span>★</span>
+                            <span class="text-white">@guide.Rating.ToString("F1")</span>
+                            <span
+                                class="text-slate-500 font-mono text-[10px]">(@(guide.UpVotes + guide.DownVotes) votes)</span>
+                        </div>
+
+                        <div class="flex items-center gap-2">
+                            <!-- Staff Toggle Official Action -->
+                            @if (isStaff)
+                            {
+                                <button
+                                    onclick="toggleOfficialGuide(@guide.ID, '@guide.Name', @guide.Featured.ToString().ToLower())"
+                                    type="button"
+                                    title="@(guide.Featured ? "Demote to Community Guide" : "Promote to Official Guide (Staff)")"
+                                    class="p-1.5 rounded-xl @(guide.Featured ? "bg-amber-500/20 text-amber-300 border border-amber-500/40" : "bg-slate-800 text-slate-400 hover:text-amber-300 border border-slate-700") transition-colors text-xs font-bold">
+                                    ★ @(guide.Featured ? "Official" : "Feature")
+                                </button>
+                            }
+
+                            @if (currentAccount != null)
+                            {
+                                <a href="/guides/builder?templateId=@guide.ID"
+                                   title="Clone this build into Studio"
+                                   class="p-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition-colors text-xs">
+                                    📋 Clone
+                                </a>
+                            }
+                            @if (isAuthor)
+                            {
+                                <a href="/guides/builder?id=@guide.ID"
+                                   title="Edit this guide in Studio"
+                                   class="p-1.5 px-2 rounded-xl bg-amber-500/20 hover:bg-amber-500 text-amber-300 hover:text-slate-950 transition-all text-xs font-bold border border-amber-500/30 flex items-center gap-1">
+                                    <span>✏️</span>
+                                    <span>Edit</span>
+                                </a>
+                            }
+                            <a href="/guides/@guide.ID"
+                               class="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-amber-500 hover:text-slate-950 text-slate-200 font-bold transition-all border border-slate-700">
+                                View Guide →
+                            </a>
+                            @if (isAuthor && !guide.Featured)
+                            {
+                                <button onclick="deleteGuideDirect(@guide.ID, '@guide.Name')" type="button"
+                                        title="Delete your custom guide"
+                                        class="p-1.5 rounded-xl bg-rose-500/10 hover:bg-rose-500 text-rose-400 hover:text-white transition-colors text-xs border border-rose-500/20">
+                                    🗑️
+                                </button>
+                            }
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+
+        <!-- Pagination -->
+        @if (totalPages > 1)
+        {
+            <div class="flex items-center justify-center gap-2 pt-6">
+                @for (int p = 1; p <= totalPages; p++)
+                {
+                    <a href="/guides?hero=@selectedHero&map=@selectedMap&q=@searchQuery&sort=@currentSort&page=@p"
+                       class="w-8 h-8 rounded-xl flex items-center justify-center text-xs font-bold transition-all @(p == currentPage ? "bg-amber-500 text-slate-950 font-black shadow-md" : "bg-slate-900 text-slate-400 border border-slate-800 hover:text-white")">
+                        @p
+                    </a>
+                }
+            </div>
+        }
+    }
+</div>
+
+<script>
+    async function deleteGuideDirect(guideId, guideName) {
+        if (!confirm(`Are you sure you want to delete "${guideName}"? This action cannot be undone.`)) {
+            return;
+        }
+
+        try {
+            const res = await fetch(`/guides/delete/${guideId}`, {method: 'POST'});
+            const data = await res.json();
+            if (data.success) {
+                alert("✓ Guide deleted successfully.");
+                window.location.reload();
+            } else {
+                alert("⚠️ " + (data.message || "Failed to delete guide."));
+            }
+        } catch (e) {
+            console.error(e);
+            alert("Error communicating with server.");
+        }
+    }
+
+    async function toggleOfficialGuide(guideId, guideName, isCurrentlyFeatured) {
+        const actionText = isCurrentlyFeatured ? "remove Official status from" : "promote to Official status";
+        if (!confirm(`Are you sure you want to ${actionText} "${guideName}"?`)) {
+            return;
+        }
+
+        try {
+            const res = await fetch(`/guides/feature/${guideId}`, {method: 'POST'});
+            const data = await res.json();
+            if (data.success) {
+                alert("✓ " + data.message);
+                window.location.reload();
+            } else {
+                alert("⚠️ " + (data.message || "Failed to update guide status."));
+            }
+        } catch (e) {
+            console.error(e);
+            alert("Error communicating with server.");
+        }
+    }
+
+    async function toggleDefaultDirect(guideId, btn) {
+        try {
+            const res = await fetch(`/guides/${guideId}/toggle-default`, {method: 'POST'});
+            const data = await res.json();
+            if (data.success) {
+                window.location.reload();
+            } else {
+                alert("⚠️ " + (data.message || "Failed to toggle default guide."));
+            }
+        } catch (e) {
+            console.error(e);
+            alert("Error communicating with server.");
+        }
+    }
+
+    async function toggleFavoriteDirect(guideId, btn) {
+        try {
+            const res = await fetch(`/guides/${guideId}/toggle-favorite`, {method: 'POST'});
+            const data = await res.json();
+            if (data.success) {
+                window.location.reload();
+            } else {
+                alert("⚠️ " + (data.message || "Failed to toggle favorite guide."));
+            }
+        } catch (e) {
+            console.error(e);
+            alert("Error communicating with server.");
+        }
+    }
+</script>

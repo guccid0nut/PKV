@@ -1,0 +1,124 @@
+name: Deploy Agones Fleet
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Target environment'
+        required: true
+        default: 'staging'
+        type: choice
+        options:
+          - staging
+          - production
+      image_tag:
+        description: 'Image tag (e.g. sha-a1b2c3d, latest)'
+        required: false
+        default: 'latest'
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository_owner }}/compel-dedicated
+
+jobs:
+  deploy:
+    name: Deploy to ${{ inputs.environment }}
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+      - name: Setup kubectl
+        uses: azure/setup-kubectl@776406bce94f63e41d621b960d78ee25c8b76ede # v4
+
+      - name: Configure kubeconfig
+        run: |
+          mkdir -p $HOME/.kube
+          echo "${{ secrets.KUBECONFIG }}" | base64 -d > $HOME/.kube/config
+          chmod 600 $HOME/.kube/config
+
+      # Dry-run validation of all Kustomize Agones overlays
+      - name: Validate Kustomize Agones overlays (dry-run)
+        run: |
+          echo "🔍 Validating all Agones overlays..."
+          for overlay in k3d staging production; do
+            echo "--- Validating overlay: $overlay ---"
+            kubectl kustomize "infra/k8s/agones/overlays/$overlay" > /dev/null
+          done
+          echo "✅ All Agones overlays validated successfully without syntax errors."
+
+      # Deploy target Agones overlay using Kustomize and inject target image tag
+      - name: Deploy Agones Fleet Manifests
+        run: |
+          RAW_TAG="${{ inputs.image_tag }}"
+          # Align with docker-publish.yml (type=sha,prefix= produces raw commit hex without 'sha-')
+          if [[ "$RAW_TAG" =~ ^sha-([0-9a-fA-F]{7,40})$ ]]; then
+            NORMALIZED_TAG="${BASH_REMATCH[1]}"
+            echo "ℹ️ Normalized image tag '$RAW_TAG' -> '$NORMALIZED_TAG'"
+          else
+            NORMALIZED_TAG="$RAW_TAG"
+          fi
+          FULL_IMAGE="${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${NORMALIZED_TAG}"
+          echo "🎯 Setting fleet image to: $FULL_IMAGE"
+
+          ENV_INPUT="${{ inputs.environment }}"
+          case "$ENV_INPUT" in
+            production) OVERLAY="production" ;;
+            staging)    OVERLAY="staging" ;;
+            *)          OVERLAY="k3d" ;;
+          esac
+          echo "🚀 Deploying Agones Fleet using overlay: $OVERLAY"
+
+          # Render overlay manifests, substitute image tag, and apply
+          kubectl kustomize "infra/k8s/agones/overlays/${OVERLAY}" \
+            | sed "s|image: projectkongor/compel-dedicated:.*|image: ${FULL_IMAGE}|g" \
+            | kubectl apply -f -
+
+      - name: Verify fleet rollout
+        run: |
+          echo "⏳ Waiting for Agones reconciliation..."
+          MAX_ATTEMPTS=24
+          SLEEP_SECONDS=10
+          DESIRED=$(kubectl get fleet kongor-dedicated-fleet -o jsonpath='{.spec.replicas}')
+          if [ -z "$DESIRED" ] || [ "$DESIRED" -eq 0 ]; then
+            DESIRED=1
+          fi
+
+          echo "Target replicas: $DESIRED. Polling rollout status (timeout: $((MAX_ATTEMPTS * SLEEP_SECONDS))s)..."
+
+          for ((i=1; i<=MAX_ATTEMPTS; i++)); do
+            echo "--- Attempt $i/$MAX_ATTEMPTS ---"
+            kubectl get fleet kongor-dedicated-fleet -o wide
+            READY=$(kubectl get fleet kongor-dedicated-fleet -o jsonpath='{.status.readyReplicas}' 2>/dev/null || echo "0")
+            READY=${READY:-0}
+            echo "🎮 Fleet: $READY/$DESIRED ready"
+            if [ "$READY" -ge "$DESIRED" ]; then
+              echo "✅ Fleet successfully rolled out and ready ($READY/$DESIRED)!"
+              echo ""
+              echo "=== GAME SERVERS ==="
+              kubectl get gameservers -o wide || true
+              exit 0
+            fi
+            sleep $SLEEP_SECONDS
+          done
+
+          echo "❌ Rollout timed out! Fleet only reached $READY/$DESIRED ready replicas."
+          exit 1
+
+      # Capture full diagnostics on failure for rapid triage
+      - name: Capture diagnostics on failure
+        if: failure()
+        run: |
+          echo "=== FLEET DESCRIBE ==="
+          kubectl describe fleet kongor-dedicated-fleet || true
+          echo ""
+          echo "=== GAMESERVER DESCRIBE ==="
+          kubectl describe gameservers || true
+          echo ""
+          echo "=== AGONES CONTROLLER LOGS ==="
+          kubectl logs -n agones-system -l agones.dev/role=controller --tail=50 || true
+          echo ""
+          echo "=== POD EVENTS ==="
+          kubectl get events --sort-by=.lastTimestamp | tail -30 || true

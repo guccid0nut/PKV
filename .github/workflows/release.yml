@@ -1,0 +1,102 @@
+name: Cleanroom Release Packaging
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      tag_name:
+        description: 'Optional tag or release label for manual dry-run packaging'
+        required: false
+        default: 'v5.0.2'
+
+permissions:
+  contents: write
+  id-token: write
+  attestations: write
+
+env:
+  DOTNET_NOLOGO: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: true
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
+  GITHUB_ACTIONS: 'true'
+
+jobs:
+  cleanroom-release-build:
+    name: Build Cleanroom Release, SBOM & Checksums
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: pwsh
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          submodules: recursive
+
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9 # v4
+        with:
+          global-json-file: global.json
+          dotnet-quality: 'ga'
+          cache: true
+          cache-dependency-path: Directory.Packages.props
+
+      - name: Restore .NET Tools & Solution
+        run: |
+          dotnet tool restore
+          dotnet restore ProjectKongor.slnx -v minimal
+
+      - name: Build Native C++ & Vulkan Layer (Release)
+        run: |
+          cmake -B native/build -S native
+          cmake --build native/build --config Release --parallel
+          ctest --test-dir native/build --output-on-failure -C Release
+
+      - name: Build .NET Solution (Release)
+        run: dotnet build ProjectKongor.slnx -c Release --no-restore -v minimal
+
+      - name: Run Cleanroom Unit Tests
+        run: ./kongor.ps1 test unit --no-build -c Release -v minimal
+
+      - name: Generate CycloneDX SBOM & Cleanroom Archive
+        run: |
+          New-Item -ItemType Directory -Path "artifacts/release" -Force | Out-Null
+          ./kongor.ps1 sbom
+          if (Test-Path -LiteralPath "artifacts/sbom.json") {
+            Copy-Item -LiteralPath "artifacts/sbom.json" -Destination "artifacts/release/pkv-cyclonedx-sbom.json" -Force
+          }
+          $tagLabel = if ($env:GITHUB_REF_NAME) { $env:GITHUB_REF_NAME } else { "${{ inputs.tag_name }}" }
+          $srcZip = "artifacts/release/PKV-$tagLabel-cleanroom-source.zip"
+          git archive --format=zip --output="$srcZip" HEAD
+          Get-ChildItem -LiteralPath "artifacts/release" -File | ForEach-Object {
+            $h = (Get-FileHash -LiteralPath $_.FullName -Algorithm SHA256).Hash.ToLowerInvariant()
+            "$h  $($_.Name)"
+          } | Set-Content -LiteralPath "artifacts/release/SHA256SUMS.txt" -Encoding ASCII
+
+      - name: Generate SLSA v1.0 Build Provenance Attestations
+        uses: actions/attest-build-provenance@e8998f949152b193b063cb0ec769d69d929409be # v2.4.0
+        with:
+          subject-path: |
+            artifacts/release/PKV-*-cleanroom-source.zip
+            artifacts/release/pkv-cyclonedx-sbom.json
+            artifacts/release/SHA256SUMS.txt
+
+      - name: Upload Release Staging Artifacts
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: pkv-cleanroom-release-assets
+          path: artifacts/release/*
+          retention-days: 30
+
+      - name: Publish GitHub Release (Tag Triggers Only)
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@3bb12739c298aeb8a4eeaf626c5b8d85266b0e65 # v2
+        with:
+          generate_release_notes: true
+          files: |
+            artifacts/release/PKV-*-cleanroom-source.zip
+            artifacts/release/pkv-cyclonedx-sbom.json
+            artifacts/release/SHA256SUMS.txt
+            CHANGELOG.md

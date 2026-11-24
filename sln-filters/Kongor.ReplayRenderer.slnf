@@ -1,0 +1,13 @@
+{
+  "solution": {
+    "path": "..\\ProjectKongor.slnx",
+    "projects": [
+      "src\\apps\\replay-studio\\ReplayStudio.GUI.csproj",
+      "src\\extensions\\replay-renderer\\ReplayRenderer.Service.csproj",
+      "src\\extensions\\vulkan-interop\\NEXUS.VulkanInterop.csproj",
+      "src\\libs\\protocol-core\\Kongor.Core.csproj",
+      "tests\\unit\\extensions\\ReplayRenderer.Tests\\ReplayRenderer.Tests.csproj",
+      "tests\\unit\\tools\\ReplayStudio.Tests\\ReplayStudio.Tests.csproj"
+    ]
+  }
+}

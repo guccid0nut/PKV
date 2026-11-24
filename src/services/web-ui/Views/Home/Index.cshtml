@@ -1,0 +1,609 @@
+@* ReSharper disable All *@
+@using System.Text.Json
+@using DAWNBRINGER.WebPortal.UI.Services
+@{
+    ViewData["Title"] = "Welcome";
+    bool hasMultipleAccounts = ViewData["HasMultipleAccounts"] is true;
+    List<string>? linkedAccounts = ViewData["LinkedAccounts"] as List<string>;
+    string? mainAccountName = ViewData["MainAccountName"] as string ?? Context.User.Identity?.Name;
+    List<TwitchStreamInfo>? liveHonStreams = ViewData["LiveHonStreams"] as List<TwitchStreamInfo>;
+
+    var homeConfig = Context.RequestServices.GetService(typeof(Microsoft.Extensions.Configuration.IConfiguration)) as Microsoft.Extensions.Configuration.IConfiguration;
+    bool isStandaloneMode = string.Equals(homeConfig?["KONGOR_STANDALONE"], "true", StringComparison.OrdinalIgnoreCase) ||
+                            string.Equals(homeConfig?["KONGOR_STANDALONE"], "1", StringComparison.OrdinalIgnoreCase);
+    bool isPendingRegistration = Context.User.HasClaim("pending_registration", "true");
+    bool hasDiscordIdentity = Context.User.HasClaim(c => c.Type == "discord_id" || c.Type == "urn:discord:id" || c.Type == "urn:discord:avatar");
+    bool hasAccountIdClaim = !string.IsNullOrWhiteSpace(Context.User.FindFirst("AccountId")?.Value);
+    bool isFullyOnboardedUser = Context.User.Identity?.IsAuthenticated == true &&
+                                !isPendingRegistration &&
+                                (isStandaloneMode ||
+                                 (hasDiscordIdentity && hasAccountIdClaim) ||
+                                 string.Equals(Context.User.Identity.AuthenticationType, "TestAuth", StringComparison.OrdinalIgnoreCase) ||
+                                 string.Equals(Context.User.Identity.AuthenticationType, "TestCookieAuth", StringComparison.OrdinalIgnoreCase));
+
+    string rawReturnUrl = Context.Request.Query["returnUrl"].ToString();
+    string? safeReturnUrl = !string.IsNullOrWhiteSpace(rawReturnUrl) && Url.IsLocalUrl(rawReturnUrl) ? rawReturnUrl : null;
+    string rawInvite = Context.Request.Query["invite"].ToString();
+    string discordError = Context.Request.Query["discordError"].ToString();
+    string? flashError = TempData["ErrorMessage"] as string;
+}
+
+<div class="w-full max-w-6xl mx-auto py-4 sm:py-8 px-3 sm:px-4 animate-fade-in-up">
+
+    @if (isFullyOnboardedUser)
+    {
+        <!-- LOGGED-IN COMMAND CENTER -->
+        <div class="space-y-6 sm:space-y-8">
+            <!-- Player Banner Card -->
+            <div class="glass-panel p-5 sm:p-8 rounded-3xl relative overflow-visible glow-purple">
+                <div class="flex flex-col lg:flex-row items-center justify-between gap-6 relative z-10">
+                    <div
+                        class="flex flex-col sm:flex-row items-center gap-4 sm:gap-6 text-center sm:text-left flex-1 min-w-0 w-full">
+                        <div class="relative flex-shrink-0 mx-auto sm:mx-0">
+                            <div
+                                class="w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-gradient-to-tr from-purple-500 via-pink-500 to-amber-400 p-1 shadow-xl shadow-purple-950/60">
+                                <img src="@Url.Action("GetMyAvatar", "Account")"
+                                     onError="this.onerror=null;this.src='https://cdn.discordapp.com/embed/avatars/0.png';"
+                                     alt="Avatar" class="w-full h-full object-cover rounded-full bg-slate-900"/>
+                            </div>
+                            <span
+                                class="absolute bottom-0 right-0 w-6 h-6 rounded-full bg-emerald-500 border-2 border-slate-900 flex items-center justify-center text-slate-950 text-xs font-bold"
+                                title="Discord Icon Synced">✓</span>
+                        </div>
+
+                        <div
+                            class="flex flex-col items-center sm:items-start text-center sm:text-left w-full sm:w-auto">
+                            <div class="flex flex-wrap items-center justify-center sm:justify-start gap-2 mb-2">
+                                <span
+                                    class="px-3 py-1 rounded-full bg-purple-500/10 border border-purple-500/20 text-purple-300 text-xs font-semibold uppercase tracking-wider">
+                                    @(ViewData["MostPlayedHero"] ?? "Legionnaire Main")
+                                </span>
+                                <span
+                                    class="px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-semibold">
+                                    Discord Linked 🟢
+                                </span>
+                                @if (hasMultipleAccounts && linkedAccounts != null)
+                                {
+                                    <span id="slot-accounts-badge"
+                                          class="px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-300 text-xs font-semibold flex items-center gap-1.5 animate-pulse"
+                                          title="Rotating across linked accounts every 10s">
+                                        <span>🎰</span>
+                                        <span>@(linkedAccounts.Count) Linked Accounts</span>
+                                    </span>
+                                }
+                            </div>
+                            <h1 class="text-2xl sm:text-4xl font-black text-white tracking-tight flex flex-wrap items-center justify-center sm:justify-start gap-x-2 gap-y-1">
+                                <span>Welcome back,</span>
+                                @if (hasMultipleAccounts && linkedAccounts is { Count: > 1 })
+                                {
+                                    <span id="slot-machine-username-container"
+                                          class="relative inline-flex items-center justify-center sm:justify-start transition-all duration-500"
+                                          data-accounts='@Html.Raw(JsonSerializer.Serialize(linkedAccounts))'
+                                          data-main-account="@mainAccountName"
+                                          data-current-account="@(mainAccountName ?? Context.User.Identity?.Name)">
+                                        <span id="slot-username-text"
+                                              class="bg-gradient-to-r from-purple-400 via-pink-400 to-amber-400 bg-clip-text text-transparent inline-block font-black tracking-wide">
+                                            @(mainAccountName ?? Context.User.Identity?.Name)
+                                        </span>
+                                        <!-- Winner Jackpot Crown Badge -->
+                                        <span id="slot-winner-badge"
+                                              class="opacity-0 pointer-events-none transition-all duration-500 transform scale-50 -translate-y-2 ml-2.5 px-2.5 py-0.5 rounded-full text-xs font-black bg-gradient-to-r from-amber-400 via-yellow-400 to-amber-500 text-slate-950 shadow-lg shadow-amber-500/40 flex items-center gap-1 border border-yellow-200">
+                                            👑 MAIN ACCOUNT!
+                                        </span>
+                                        <!-- Particle Burst Container -->
+                                        <div id="slot-winner-sparks"
+                                              class="absolute inset-0 pointer-events-none overflow-visible"></div>
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span
+                                        class="bg-gradient-to-r from-purple-400 via-pink-400 to-amber-400 bg-clip-text text-transparent">@(mainAccountName ?? Context.User.Identity?.Name)</span>
+                                }
+                            </h1>
+                            <p class="text-slate-400 text-xs sm:text-sm mt-1 max-w-xl mx-auto sm:mx-0">
+                                Your Discord profile picture is automatically synchronized as your in-game custom
+                                account icon.
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- 3D Hero Avatar Standalone Viewport (No borders, pedestals, or backgrounds) -->
+                    @if (ViewData["MainHeroGlbUrl"] != null)
+                    {
+                        <div id="banner-hero-3d-container"
+                             class="relative w-full max-w-[280px] sm:max-w-[340px] md:max-w-[380px] lg:w-[420px] h-60 sm:h-72 md:h-80 mx-auto lg:mx-0 lg:-my-6 lg:-mr-6 flex-shrink-0 flex items-center justify-center overflow-visible z-20 pointer-events-auto cursor-grab active:cursor-grabbing select-none"
+                             data-model-url="@ViewData["MainHeroGlbUrl"]"
+                             data-avatar-name="@ViewData["MainHeroAvatarName"]"
+                             data-avatars='@Html.Raw(JsonSerializer.Serialize(ViewData["MainHeroAvatars"] ?? new List<object>()))'
+                             title="Click and drag to spin 360° • Follows your cursor">
+                            <canvas id="banner-hero-3d-canvas" role="img" aria-label="Interactive 3D hero model preview"
+                                    class="w-full h-full object-contain cursor-grab active:cursor-grabbing">Your browser does not support HTML5 Canvas.</canvas>
+                            <button id="banner-hero-pause-btn" type="button" aria-label="Pause 3D hero animation"
+                                    class="absolute bottom-2 right-2 z-30 px-2.5 py-1 rounded-lg bg-slate-950/80 hover:bg-slate-900 border border-slate-700/70 text-[10px] font-bold text-slate-300 hover:text-white backdrop-blur-sm transition-colors cursor-pointer">⏸ Pause 3D</button>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            @if (liveHonStreams != null && liveHonStreams.Count > 0)
+            {
+                <!-- Live Streamer Spotlight Section (Only active when verified creators are streaming Heroes of Newerth) -->
+                <div
+                    class="glass-panel p-5 sm:p-6 rounded-3xl relative overflow-hidden glow-purple border border-purple-500/30">
+                    <div class="flex items-center justify-between gap-4 mb-4">
+                        <div class="flex items-center gap-3">
+                            <div
+                                class="w-9 h-9 rounded-xl bg-rose-600/30 border border-rose-500/50 flex items-center justify-center text-rose-400">
+                                <i class="fab fa-twitch text-lg"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-base sm:text-lg font-black text-white flex items-center gap-2">
+                                    <span>Community Live Streamers</span>
+                                    <span class="relative flex h-2.5 w-2.5">
+                                        <span
+                                            class="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75"></span>
+                                        <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-rose-500"></span>
+                                    </span>
+                                    <span
+                                        class="text-xs font-bold text-rose-300 uppercase tracking-wide px-2 py-0.5 rounded-full bg-rose-950/80 border border-rose-500/40">LIVE</span>
+                                </h3>
+                                <p class="text-xs text-slate-400">Verified creators currently broadcasting <strong>Heroes
+                                        of Newerth</strong></p>
+                            </div>
+                        </div>
+                        <a asp-controller="Home" asp-action="Stats"
+                           class="text-xs text-purple-400 hover:text-purple-300 font-semibold flex items-center gap-1">
+                            <span>Player Stats</span>
+                            <span>→</span>
+                        </a>
+                    </div>
+
+                    <!-- Live Streams Grid -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        @foreach (TwitchStreamInfo stream in liveHonStreams)
+                        {
+                            <div
+                                class="bg-slate-900/90 border border-purple-500/30 hover:border-purple-500/60 rounded-2xl p-3.5 space-y-3 transition-all group hover:scale-[1.02] flex flex-col justify-between">
+                                <div>
+                                    <!-- Stream Thumbnail & Live Overlay -->
+                                    <div
+                                        class="relative w-full aspect-video rounded-xl overflow-hidden bg-slate-950 mb-2.5">
+                                        @if (!string.IsNullOrEmpty(stream.ThumbnailUrl))
+                                        {
+                                            <img src="@stream.ThumbnailUrl" alt="@stream.TwitchUsername stream"
+                                                 class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"/>
+                                        }
+                                        else
+                                        {
+                                            <div
+                                                class="w-full h-full flex items-center justify-center text-slate-700 bg-slate-950">
+                                                <i class="fab fa-twitch text-4xl"></i>
+                                            </div>
+                                        }
+                                        <div
+                                            class="absolute top-2 left-2 px-2 py-0.5 rounded-md bg-rose-600 text-white text-[10px] font-black uppercase tracking-wider flex items-center gap-1 shadow-md">
+                                            <span class="w-1.5 h-1.5 rounded-full bg-white animate-pulse"></span>
+                                            <span>LIVE</span>
+                                        </div>
+                                        @if (stream.ViewerCount > 0)
+                                        {
+                                            <div
+                                                class="absolute bottom-2 left-2 px-2 py-0.5 rounded-md bg-black/80 backdrop-blur-md text-white text-[10px] font-mono font-bold flex items-center gap-1 shadow-md">
+                                                <i class="fas fa-user text-[9px] text-slate-300"></i>
+                                                <span>@stream.ViewerCount.ToString("N0") viewers</span>
+                                            </div>
+                                        }
+                                    </div>
+
+                                    <!-- Creator Info & Stream Title -->
+                                    <div class="flex items-center justify-between gap-2">
+                                        <span
+                                            class="text-xs font-bold text-white group-hover:text-purple-300 transition-colors truncate">
+                                            @@@stream.TwitchUsername
+                                        </span>
+                                        <span
+                                            class="text-[10px] font-semibold text-emerald-400 bg-emerald-950/60 border border-emerald-500/30 px-2 py-0.5 rounded-full flex-shrink-0">
+                                            Heroes of Newerth
+                                        </span>
+                                    </div>
+
+                                    <p class="text-[11px] text-slate-300 mt-1 line-clamp-2 leading-snug">
+                                        @(string.IsNullOrWhiteSpace(stream.StreamTitle) ? "Live Heroes of Newerth Stream" : stream.StreamTitle)
+                                    </p>
+                                </div>
+
+                                <a href="@stream.ChannelUrl" target="_blank" rel="noopener noreferrer"
+                                   class="w-full px-3 py-2 rounded-xl bg-[#9146FF] hover:bg-[#7C2DF0] text-white text-xs font-bold flex items-center justify-center gap-1.5 transition-all shadow-md cursor-pointer">
+                                    <i class="fab fa-twitch"></i>
+                                    <span>Watch on Twitch</span>
+                                    <span class="text-[10px]">↗</span>
+                                </a>
+                            </div>
+                        }
+                    </div>
+                </div>
+            }
+
+            <!-- Quick Action Grid -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+                <!-- Stats Tile -->
+                <a asp-controller="Home" asp-action="Stats"
+                   class="glass-card p-5 sm:p-6 rounded-2xl flex flex-col justify-between group hover:scale-[1.02] transition-all cursor-pointer">
+                    <div>
+                        <div
+                            class="w-12 h-12 rounded-xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center text-2xl mb-4 group-hover:scale-110 transition-transform">
+                            📊
+                        </div>
+                        <h3 class="text-lg sm:text-xl font-bold text-white mb-1">Player Stats</h3>
+                        <p class="text-slate-400 text-xs">View MMR, winrate, KDR, and hero combat breakdown.</p>
+                    </div>
+                    <div
+                        class="mt-6 flex items-center text-purple-400 font-semibold text-xs group-hover:translate-x-1 transition-transform">
+                        <span>View Analytics</span>
+                        <span class="ml-1">→</span>
+                    </div>
+                </a>
+
+                <!-- Matches Tile -->
+                <a asp-controller="Home" asp-action="Matches"
+                   class="glass-card p-5 sm:p-6 rounded-2xl flex flex-col justify-between group hover:scale-[1.02] transition-all cursor-pointer">
+                    <div>
+                        <div
+                            class="w-12 h-12 rounded-xl bg-pink-500/10 border border-pink-500/20 flex items-center justify-center text-2xl mb-4 group-hover:scale-110 transition-transform">
+                            ⚔️
+                        </div>
+                        <h3 class="text-lg sm:text-xl font-bold text-white mb-1">Match History</h3>
+                        <p class="text-slate-400 text-xs">Browse recent matches, scoreboards, and replay files.</p>
+                    </div>
+                    <div
+                        class="mt-6 flex items-center text-pink-400 font-semibold text-xs group-hover:translate-x-1 transition-transform">
+                        <span>Explore Matches</span>
+                        <span class="ml-1">→</span>
+                    </div>
+                </a>
+
+                <!-- Cloud Settings Tile -->
+                <a asp-controller="Home" asp-action="Cloud"
+                   class="glass-card p-5 sm:p-6 rounded-2xl flex flex-col justify-between group hover:scale-[1.02] transition-all cursor-pointer">
+                    <div>
+                        <div
+                            class="w-12 h-12 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-2xl mb-4 group-hover:scale-110 transition-transform">
+                            ☁️
+                        </div>
+                        <h3 class="text-lg sm:text-xl font-bold text-white mb-1">Cloud Sync</h3>
+                        <p class="text-slate-400 text-xs">Backup keybindings, macros, and configuration profiles.</p>
+                    </div>
+                    <div
+                        class="mt-6 flex items-center text-amber-400 font-semibold text-xs group-hover:translate-x-1 transition-transform">
+                        <span>Manage Backups</span>
+                        <span class="ml-1">→</span>
+                    </div>
+                </a>
+
+                <!-- Discord Community Tile -->
+                <a href="https://discord.com/invite/N6pKzGDqUH" target="_blank" rel="noopener noreferrer"
+                   class="glass-card p-5 sm:p-6 rounded-2xl flex flex-col justify-between group hover:scale-[1.02] transition-all cursor-pointer">
+                    <div>
+                        <div
+                            class="w-12 h-12 rounded-xl bg-[#5865F2]/10 border border-[#5865F2]/20 flex items-center justify-center text-2xl mb-4 group-hover:scale-110 transition-transform">
+                            💬
+                        </div>
+                        <h3 class="text-lg sm:text-xl font-bold text-white mb-1">Discord Community</h3>
+                        <p class="text-slate-400 text-xs">Join official Discord for tournaments, discussions, and live
+                            support.</p>
+                    </div>
+                    <div
+                        class="mt-6 flex items-center text-[#5865F2] font-semibold text-xs group-hover:translate-x-1 transition-transform">
+                        <span>Join Discord</span>
+                        <span class="ml-1">↗</span>
+                    </div>
+                </a>
+
+                <!-- Hero Codex Tile -->
+                <a asp-controller="Home" asp-action="Codex"
+                   class="glass-card p-5 sm:p-6 rounded-2xl flex flex-col justify-between group hover:scale-[1.02] transition-all cursor-pointer">
+                    <div>
+                        <div
+                            class="w-12 h-12 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-2xl mb-4 group-hover:scale-110 transition-transform">
+                            🛡️
+                        </div>
+                        <h3 class="text-lg sm:text-xl font-bold text-white mb-1">Hero Codex & Mastery</h3>
+                        <p class="text-slate-400 text-xs">Explore hero stats, combat mastery rewards, and strategy guides.</p>
+
+                    </div>
+                    <div
+                        class="mt-6 flex items-center text-emerald-400 font-semibold text-xs group-hover:translate-x-1 transition-transform">
+                        <span>View Codex</span>
+                        <span class="ml-1">→</span>
+                    </div>
+                </a>
+
+                <!-- Launcher & Setup Tile -->
+                <a asp-controller="Home" asp-action="Setup"
+                   class="glass-card p-5 sm:p-6 rounded-2xl flex flex-col justify-between group hover:scale-[1.02] transition-all cursor-pointer">
+                    <div>
+                        <div
+                            class="w-12 h-12 rounded-xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-2xl mb-4 group-hover:scale-110 transition-transform">
+                            🚀
+                        </div>
+                        <h3 class="text-lg sm:text-xl font-bold text-white mb-1">PKV App &amp; Setup</h3>
+                        <p class="text-slate-400 text-xs">Unified open-source Project KONGOR V app &amp; setup guide on GitHub.</p>
+
+                    </div>
+                    <div
+                        class="mt-6 flex items-center text-cyan-400 font-semibold text-xs group-hover:translate-x-1 transition-transform">
+                        <span>View Setup</span>
+                        <span class="ml-1">→</span>
+                    </div>
+                </a>
+            </div>
+        </div>
+    }
+    else
+    {
+        <!-- LOGGED-OUT HERO SECTION -->
+        <div class="text-center py-6 sm:py-12 space-y-8 sm:space-y-12">
+            <!-- Hero Header -->
+            <div class="max-w-3xl mx-auto space-y-4 sm:space-y-6">
+                <div
+                    class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-purple-500/10 border border-purple-500/20 text-purple-300 text-[11px] sm:text-xs font-bold uppercase tracking-wider backdrop-blur-md">
+                    <span class="w-2 h-2 rounded-full bg-purple-400 animate-ping"></span>
+                    PROJECT KONGOR ECOSYSTEM
+                </div>
+
+                <h1 class="text-3xl sm:text-5xl md:text-7xl font-black tracking-tight text-white leading-tight">
+                    DOMINATE THE BATTLEFIELD IN <br class="hidden sm:inline"/>
+                    <span
+                        class="bg-gradient-to-r from-purple-400 via-pink-500 to-amber-400 bg-clip-text text-transparent drop-shadow-2xl">
+                        PROJECT KONGOR
+                    </span>
+                </h1>
+
+                <p class="text-slate-300 text-sm sm:text-base md:text-lg max-w-2xl mx-auto leading-relaxed px-2">
+                    Experience the ultimate competitive Heroes of Newerth platform with modern matchmaking, live
+                    statistics, cloud synchronization, and instant Discord profile picture integration.
+                </p>
+
+                <!-- Call To Actions -->
+                @if (!string.IsNullOrWhiteSpace(flashError))
+                {
+                    <div class="max-w-xl mx-auto p-3.5 rounded-2xl bg-rose-950/60 border border-rose-500/40 text-rose-200 text-xs sm:text-sm font-medium shadow-lg">
+                        @flashError
+                    </div>
+                }
+                else if (string.Equals(discordError, "banned", StringComparison.OrdinalIgnoreCase))
+                {
+                    <div class="max-w-xl mx-auto p-3.5 rounded-2xl bg-rose-950/60 border border-rose-500/40 text-rose-200 text-xs sm:text-sm font-medium shadow-lg">
+                        This account is currently suspended or disabled from accessing Project KONGOR.
+                    </div>
+                }
+                else if (!string.IsNullOrEmpty(safeReturnUrl))
+                {
+                    <div class="max-w-xl mx-auto p-3 rounded-2xl bg-indigo-950/60 border border-[#5865F2]/40 text-indigo-200 text-xs sm:text-sm font-medium shadow-md">
+                        🔒 Connect with Discord to unlock the full Project KONGOR Web Portal, Free Store &amp; Compendium.
+                    </div>
+                }
+
+                <div class="flex flex-col sm:flex-row gap-4 justify-center items-center pt-2 sm:pt-4">
+                    <form asp-controller="Account" asp-action="LoginDiscord" method="post" class="w-full sm:w-auto">
+                        @if (!string.IsNullOrEmpty(safeReturnUrl))
+                        {
+                            <input type="hidden" name="returnUrl" value="@safeReturnUrl" />
+                        }
+                        @if (!string.IsNullOrWhiteSpace(rawInvite))
+                        {
+                            <input type="hidden" name="invite" value="@rawInvite.Trim()" />
+                        }
+                        <button type="submit"
+                                class="w-full sm:w-auto px-8 py-4 rounded-2xl bg-[#5865F2] hover:bg-[#4752C4] text-white font-bold text-base flex items-center justify-center gap-3 transition-all duration-300 transform hover:scale-[1.03] shadow-xl shadow-[#5865F2]/30 glow-discord cursor-pointer">
+                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 100 100">
+                                <path
+                                    d="M85.22,24.958c-11.459-8.575-22.438-8.334-22.438-8.334l-1.122,1.282c13.623,4.087,19.954,10.097,19.954,10.097c-19.491-10.731-44.317-10.654-64.59,0c0,0,6.571-6.331,20.996-10.418l-0.801-0.962c0,0-10.899-0.24-22.438,8.334c0,0-11.54,20.755-11.54,46.319c0,0,6.732,11.54,24.442,12.101c0,0,2.965-3.526,5.369-6.571c-10.177-3.045-14.024-9.376-14.024-9.376c6.394,4.001,12.859,6.505,20.916,8.094c13.108,2.698,29.413-0.076,41.591-8.094c0,0-4.007,6.491-14.505,9.456c2.404,2.965,5.289,6.411,5.289,6.411c17.71-0.561,24.441-12.101,24.441-12.02C96.759,45.713,85.22,24.958,85.22,24.958z M35.055,63.824c-4.488,0-8.174-3.927-8.174-8.815c0.328-11.707,16.102-11.671,16.348,0C43.229,59.897,39.622,63.824,35.055,63.824z M64.304,63.824c-4.488,0-8.174-3.927-8.174-8.815c0.36-11.684,15.937-11.689,16.348,0C72.478,59.897,68.872,63.824,64.304,63.824z"/>
+                            </svg>
+                            <span>Connect with Discord</span>
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Live Population & Matchmaking Status Card (Async Client-Hydrated, Zero SSR Latency) -->
+            <div id="public-population-card"
+                 data-population-card="auto"
+                 data-endpoint="/api/telemetry/population"
+                 data-poll-ms="30000"
+                 class="glass-card max-w-6xl mx-auto p-5 sm:p-6 rounded-3xl border border-emerald-500/25 bg-gradient-to-br from-emerald-950/30 via-slate-900/75 to-slate-950/85 text-left space-y-5 shadow-2xl">
+                <div class="flex flex-wrap items-center justify-between gap-3 pb-4 border-b border-emerald-500/15">
+                    <div class="flex items-center gap-3">
+                        <span data-pop-status-dot class="w-2.5 h-2.5 rounded-full bg-amber-400 animate-pulse shrink-0"></span>
+                        <span class="text-base sm:text-lg font-extrabold text-white tracking-tight">Players Online</span>
+                        <span data-pop-online-count
+                              class="px-2.5 py-0.5 rounded-lg bg-amber-500/15 border border-amber-500/30 text-amber-300 font-mono text-sm font-extrabold tabular-nums">—</span>
+                    </div>
+                    <div class="flex items-center gap-2.5 text-xs">
+                        <span data-pop-status-badge
+                              class="px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-amber-500/15 text-amber-300 border border-amber-500/30">LIVE TELEMETRY SYNCING</span>
+                        <span data-pop-updated-time class="text-slate-400 font-mono text-[11px]">Loading…</span>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                    <div class="lg:col-span-3 space-y-2">
+                        <h3 class="text-xs font-bold uppercase tracking-wider text-amber-300/90">Games in progress</h3>
+                        <div data-pop-games-list class="flex flex-col">
+                            <div class="py-2 text-xs text-slate-500 italic">Loading active games…</div>
+                        </div>
+                    </div>
+
+                    <div class="lg:col-span-3 space-y-2">
+                        <h3 class="text-xs font-bold uppercase tracking-wider text-amber-300/90">Servers available</h3>
+                        <div data-pop-servers-list class="flex flex-col">
+                            <div class="py-2 text-xs text-slate-500 italic">Loading server availability…</div>
+                        </div>
+                    </div>
+
+                    <div class="lg:col-span-6 space-y-2">
+                        <h3 class="text-xs font-bold uppercase tracking-wider text-amber-300/90">Players queued for TMM</h3>
+                        <div data-pop-tmm-grid class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div class="p-4 rounded-xl bg-slate-950/60 border border-emerald-500/15 text-xs text-slate-500 italic">
+                                Loading TMM queues…
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Features Showcase -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8 max-w-6xl mx-auto text-left pt-4 sm:pt-6">
+                <div class="glass-card p-6 sm:p-8 rounded-3xl space-y-4">
+                    <div
+                        class="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-2xl sm:text-3xl">
+                        🖼️
+                    </div>
+                    <h3 class="text-xl sm:text-2xl font-extrabold text-white">Discord Avatar Sync</h3>
+                    <p class="text-slate-400 text-xs sm:text-sm leading-relaxed">
+                        Log in with your Discord account to automatically save your avatar and set your in-game custom
+                        account icon across all matches and lobbies.
+                    </p>
+                </div>
+
+                <div class="glass-card p-6 sm:p-8 rounded-3xl space-y-4">
+                    <div
+                        class="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center text-2xl sm:text-3xl">
+                        📊
+                    </div>
+                    <h3 class="text-xl sm:text-2xl font-extrabold text-white">Combat Statistics</h3>
+                    <p class="text-slate-400 text-xs sm:text-sm leading-relaxed">
+                        Access deep performance telemetry, player ratings, winrates, hero mastery, and downloadable
+                        match replays directly from the web portal.
+                    </p>
+                </div>
+
+                <div class="glass-card p-6 sm:p-8 rounded-3xl space-y-4">
+                    <div
+                        class="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-pink-500/10 border border-pink-500/20 flex items-center justify-center text-2xl sm:text-3xl">
+                        ☁️
+                    </div>
+                    <h3 class="text-xl sm:text-2xl font-extrabold text-white">Cloud Backups</h3>
+                    <p class="text-slate-400 text-xs sm:text-sm leading-relaxed">
+                        Never lose your custom keybindings, client mods, or interface settings. Cloud backup features
+                        keep your setup synced anywhere.
+                    </p>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+<style>
+    @@keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(24px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .animate-fade-in-up {
+        animation: fadeInUp 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    /* Slot Machine & Winner Animations */
+    .slot-spinning {
+        filter: blur(0.6px);
+        transform: scale(0.98);
+        opacity: 0.9;
+        text-shadow: 0 0 8px rgba(168, 85, 247, 0.6);
+        transition: transform 0.05s ease, filter 0.05s ease;
+    }
+
+    .slot-winner-glow {
+        filter: drop-shadow(0 0 16px rgba(251, 191, 36, 0.95)) drop-shadow(0 0 30px rgba(245, 158, 11, 0.6));
+        animation: slotWinnerPulse 1.2s ease-in-out infinite alternate;
+    }
+
+    .slot-alt-glow {
+        filter: drop-shadow(0 0 12px rgba(168, 85, 247, 0.8)) drop-shadow(0 0 20px rgba(56, 189, 248, 0.5));
+        transition: filter 0.4s ease;
+    }
+
+    @@keyframes slotWinnerPulse {
+        0% {
+            transform: scale(1);
+            filter: drop-shadow(0 0 14px rgba(251, 191, 36, 0.9)) drop-shadow(0 0 25px rgba(245, 158, 11, 0.5));
+        }
+        100% {
+            transform: scale(1.03);
+            filter: drop-shadow(0 0 22px rgba(253, 224, 71, 1)) drop-shadow(0 0 40px rgba(251, 191, 36, 0.8));
+        }
+    }
+
+    .slot-spark-particle {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        pointer-events: none;
+        user-select: none;
+        font-size: 14px;
+        opacity: 0;
+        animation: slotParticleFlight ease-out forwards;
+    }
+
+    @@keyframes slotParticleFlight {
+        0% {
+            opacity: 1;
+            transform: translate(-50%, -50%) scale(0.2) rotate(0deg);
+        }
+        50% {
+            opacity: 1;
+            transform: translate(calc(-50% + var(--tx)), calc(-50% + var(--ty))) scale(var(--scale)) rotate(var(--rot));
+        }
+        100% {
+            opacity: 0;
+            transform: translate(calc(-50% + var(--tx) * 1.3), calc(-50% + var(--ty) * 1.3 + 15px)) scale(0.1) rotate(calc(var(--rot) + 90deg));
+        }
+    }
+
+    /* 3D Smoke & Portal Transition Effects */
+    .banner-3d-particle {
+        position: absolute;
+        pointer-events: none;
+        user-select: none;
+        opacity: 0;
+        animation: bannerParticlePuff ease-out forwards;
+    }
+
+    @@keyframes bannerParticlePuff {
+        0% {
+            opacity: 0.95;
+            transform: translate(-50%, -50%) scale(0.3) rotate(0deg);
+        }
+        50% {
+            opacity: 0.85;
+            transform: translate(calc(-50% + var(--px)), calc(-50% + var(--py))) scale(var(--pscale)) rotate(var(--prot));
+        }
+        100% {
+            opacity: 0;
+            transform: translate(calc(-50% + var(--px) * 1.5), calc(-50% + var(--py) * 1.5 - 10px)) scale(calc(var(--pscale) * 1.3)) rotate(calc(var(--prot) + 45deg));
+        }
+    }
+</style>
+
+@section Scripts {
+    @if (!isFullyOnboardedUser)
+    {
+        <script src="~/js/live-population-card.js" defer asp-append-version="true"></script>
+    }
+    @if (isFullyOnboardedUser && ViewData["MainHeroGlbUrl"] != null)
+    {
+        <script src="/lib/three/three.r16x.bundle.js" defer asp-append-version="true"></script>
+        <script src="~/js/banner-avatar-3d.js" defer asp-append-version="true"></script>
+    }
+    @if (isFullyOnboardedUser && hasMultipleAccounts)
+    {
+        <script src="~/js/slot-machine-banner.js" defer asp-append-version="true"></script>
+    }
+}

@@ -1,0 +1,9 @@
+- op: replace
+  path: /spec/policy/buffer/bufferSize
+  value: 5
+- op: replace
+  path: /spec/policy/buffer/minReplicas
+  value: 5
+- op: replace
+  path: /spec/policy/buffer/maxReplicas
+  value: 60

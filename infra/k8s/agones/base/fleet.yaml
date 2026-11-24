@@ -1,0 +1,139 @@
+apiVersion: "agones.dev/v1"
+kind: Fleet
+metadata:
+  name: kongor-dedicated-fleet
+  namespace: default
+spec:
+  # Base warm standby buffer size
+  replicas: 1
+  scheduling: Distributed
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: kongor-dedicated
+        agones.dev/fleet: kongor-dedicated-fleet
+    spec:
+      ports:
+        # Dedicated game server UDP port range (Offset 200: Game 11435-11436, Voice 11935-11936 via Agones Dynamic allocation)
+        - name: game-udp
+          container: compel-worker
+          protocol: UDP
+          portPolicy: Dynamic
+          containerPort: 11435
+        - name: voice-udp
+          container: compel-worker
+          protocol: UDP
+          portPolicy: Dynamic
+          containerPort: 11935
+      health:
+        disabled: false
+        initialDelaySeconds: 30
+        periodSeconds: 10
+        failureThreshold: 12
+      template:
+        spec:
+          containers:
+            - name: compel-worker
+              image: projectkongor/compel-dedicated:latest
+              imagePullPolicy: IfNotPresent
+              securityContext:
+                capabilities:
+                  add:
+                    - SYS_NICE
+              env:
+                - name: COMPEL_PREBAKED_IMAGE
+                  value: "true"
+                # Agones cloud-native lifecycle integration
+                - name: AGONES_ENABLED
+                  value: "true"
+                - name: AGONES_SDK_HTTP_PORT
+                  value: "9358"
+                - name: COMPEL_FLEET_TIER
+                  value: "K"
+                - name: Compel__FleetTier
+                  value: "K"
+                # Cloud-native fleet always runs in HighPriority mode pinned to best available processors
+                - name: COMPEL_PRIORITY_MODE
+                  value: "HighPriority"
+                - name: COMPEL_INSTANCES
+                  value: "1"
+                - name: COMPEL_USE_PROXY
+                  value: "false"
+                - name: Compel__UseProxy
+                  value: "false"
+                - name: COMPEL_LOCATION
+                  value: "USE"
+                - name: COMPEL_PORT_RANGE_OFFSET
+                  value: "200"
+                - name: Compel__PortRangeOffset
+                  value: "200"
+                - name: COMPEL_CONTROL_PLANE_PORT
+                  value: "11434"
+                - name: Compel__ControlPlanePort
+                  value: "11434"
+                - name: COMPEL_SERVER_NAME_PREFIX
+                  valueFrom:
+                    configMapKeyRef:
+                      name: kongor-fleet-config
+                      key: SERVER_NAME_PREFIX
+                - name: Compel__ServerNamePrefix
+                  valueFrom:
+                    configMapKeyRef:
+                      name: kongor-fleet-config
+                      key: SERVER_NAME_PREFIX
+                - name: Compel__MasterServerAddress
+                  valueFrom:
+                    configMapKeyRef:
+                      name: kongor-fleet-config
+                      key: MASTER_SERVER_HOST_PORT
+                - name: MASTER_SERVER_ADDRESS
+                  valueFrom:
+                    configMapKeyRef:
+                      name: kongor-fleet-config
+                      key: MASTER_SERVER_URL
+                - name: COMPEL_GATEWAY
+                  value: "127.0.0.1"
+                - name: Compel__Gateway
+                  value: "127.0.0.1"
+                - name: HOST_USERNAME
+                  valueFrom:
+                    secretKeyRef:
+                      name: kongor-host-credentials
+                      key: username
+                - name: HOST_PASSWORD
+                  valueFrom:
+                    secretKeyRef:
+                      name: kongor-host-credentials
+                      key: password
+                - name: COMPEL_AUTHENTICATION_TOKEN
+                  valueFrom:
+                    secretKeyRef:
+                      name: kongor-host-credentials
+                      key: token
+              resources:
+                requests:
+                  memory: "1000Mi"
+                  cpu: "500m"
+                limits:
+                  memory: "3500Mi"
+                  cpu: "4"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: kongor-dedicated-service
+  namespace: default
+  labels:
+    app: kongor-dedicated
+spec:
+  type: NodePort
+  selector:
+    agones.dev/role: gameserver
+  ports:
+    - name: control-plane
+      port: 11434
+      targetPort: 11434
+      nodePort: 31434
+      protocol: TCP

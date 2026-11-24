@@ -1,0 +1,54 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: compel-test-highpriority
+  labels:
+    app: compel-dedicated
+spec:
+  restartPolicy: Never
+  containers:
+    - name: compel-worker
+      image: projectkongor/compel-dedicated:latest
+      imagePullPolicy: IfNotPresent
+      securityContext:
+        capabilities:
+          add:
+            - SYS_NICE
+      env:
+        - name: COMPEL_PRIORITY_MODE
+          value: "HighPriority"
+        - name: COMPEL_INSTANCES
+          value: "1"
+        - name: COMPEL_USE_PROXY
+          value: "false"
+        - name: COMPEL_LOCATION
+          value: "NEWERTH"
+        - name: COMPEL_CONTROL_PLANE_PORT
+          value: "5555"
+        - name: HOST_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: kongor-host-credentials
+              key: username
+        - name: HOST_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: kongor-host-credentials
+              key: password
+        - name: COMPEL_AUTHENTICATION_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: kongor-host-credentials
+              key: token
+        - name: COMPEL_AUTO_START
+          value: "false" # Run supervisor in standby mode so it tests topology and container cgroups without needing game files
+      resources:
+        requests:
+          memory: "1Gi"
+          cpu: "1"
+        limits:
+          memory: "2Gi"
+          cpu: "2"
+      ports:
+        - containerPort: 5555
+          name: control-plane

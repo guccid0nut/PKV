@@ -1,0 +1,818 @@
+{
+  "valkyrie": {
+    "team": "Legion",
+    "attribute": "Agility",
+    "role": "Carry / Initiator",
+    "description": ""
+  },
+  "vanya": {
+    "team": "Hellbourne",
+    "attribute": "Agility",
+    "role": "Carry / Initiator",
+    "description": ""
+  },
+  "vindicator": {
+    "team": "Legion",
+    "attribute": "Intelligence",
+    "role": "Carry / Initiator",
+    "description": ""
+  },
+  "warchief": {
+    "team": "Legion",
+    "attribute": "Intelligence",
+    "role": "Carry / Initiator",
+    "description": ""
+  },
+  "witch_slayer": {
+    "team": "Legion",
+    "attribute": "Intelligence",
+    "role": "Carry / Initiator",
+    "description": ""
+  },
+  "wolfman": {
+    "team": "Hellbourne",
+    "attribute": "Strength",
+    "role": "Carry / Initiator",
+    "description": ""
+  },
+  "xalynx": {
+    "team": "Hellbourne",
+    "attribute": "Intelligence",
+    "role": "Carry / Initiator",
+    "description": ""
+  },
+  "yogi": {
+    "team": "Legion",
+    "attribute": "Agility",
+    "role": "Carry / Initiator",
+    "description": ""
+  },
+  "zephyr": {
+    "team": "Legion",
+    "attribute": "Agility",
+    "role": "Carry / Initiator",
+    "description": ""
+  },
+  "accursed": {
+    "team": "Hellbourne",
+    "attribute": "Strength",
+    "role": "Carry / Initiator",
+    "description": ""
+  },
+  "adrenaline": {
+    "team": "Hellbourne",
+    "attribute": "Strength",
+    "role": "Carry / Initiator",
+    "description": ""
+  },
+  "aluna": {
+    "team": "Legion",
+    "attribute": "Intelligence",
+    "role": "Carry / Initiator",
+    "description": ""
+  },
+  "andromeda": {
+    "team": "Legion",
+    "attribute": "Agility",
+    "role": "Carry / Initiator",
+    "description": ""
+  },
+  "apex": {
+    "team": "Hellbourne",
+    "attribute": "Strength",
+    "role": "Carry / Initiator",
+    "description": ""
+  },
+  "arachna": {
+    "team": "Hellbourne",
+    "attribute": "Agility",
+    "role": "Carry / Initiator",
+    "description": ""
+  },
+  "armadon": {
+    "team": "Legion",
+    "attribute": "Strength",
+    "role": "Carry / Initiator",
+    "description": ""
+  },
+  "artesia": {
+    "team": "Hellbourne",
+    "attribute": "Intelligence",
+    "role": "Carry / Initiator",
+    "description": ""
+  },
+  "artillery": {
+    "team": "Legion",
+    "attribute": "Agility",
+    "role": "Carry / Initiator",
+    "description": ""
+  },
+  "babayaga": {
+    "team": "Hellbourne",
+    "attribute": "Intelligence",
+    "role": "Carry / Initiator",
+    "description": ""
+  },
+  "behemoth": {
+    "team": "Legion",
+    "attribute": "Strength",
+    "role": "Carry / Initiator",
+    "description": ""
+  },
+  "bephelgor": {
+    "team": "Hellbourne",
+    "attribute": "Strength",
+    "role": "Carry / Initiator",
+    "description": ""
+  },
+  "berzerker": {
+    "team": "Legion",
+    "attribute": "Strength",
+    "role": "Carry / Initiator",
+    "description": ""
+  },
+  "blitz": {
+    "team": "Legion",
+    "attribute": "Agility",
+    "role": "Carry / Initiator",
+    "description": ""
+  },
+  "bomb": {
+    "team": "Legion",
+    "attribute": "Intelligence",
+    "role": "Carry / Initiator",
+    "description": ""
+  },
+  "bubbles": {
+    "team": "Legion",
+    "attribute": "Intelligence",
+    "role": "Carry / Initiator",
+    "description": ""
+  },
+  "bushwack": {
+    "team": "Hellbourne",
+    "attribute": "Agility",
+    "role": "Carry / Initiator",
+    "description": ""
+  },
+  "calamity": {
+    "team": "Hellbourne",
+    "attribute": "Agility",
+    "role": "Carry / Initiator",
+    "description": ""
+  },
+  "chi": {
+    "team": "Legion",
+    "attribute": "Intelligence",
+    "role": "Carry / Initiator",
+    "description": ""
+  },
+  "chipper": {
+    "team": "Legion",
+    "attribute": "Intelligence",
+    "role": "Carry / Initiator",
+    "description": ""
+  },
+  "chronos": {
+    "team": "Hellbourne",
+    "attribute": "Agility",
+    "role": "Carry / Initiator",
+    "description": ""
+  },
+  "circe": {
+    "team": "Hellbourne",
+    "attribute": "Intelligence",
+    "role": "Carry / Initiator",
+    "description": ""
+  },
+  "corrupted_disciple": {
+    "team": "Hellbourne",
+    "attribute": "Agility",
+    "role": "Carry / Initiator",
+    "description": ""
+  },
+  "cthulhuphant": {
+    "team": "Hellbourne",
+    "attribute": "Strength",
+    "role": "Carry / Initiator",
+    "description": ""
+  },
+  "dampeer": {
+    "team": "Hellbourne",
+    "attribute": "Agility",
+    "role": "Carry / Initiator",
+    "description": ""
+  },
+  "deadlift": {
+    "team": "Hellbourne",
+    "attribute": "Strength",
+    "role": "Carry / Initiator",
+    "description": ""
+  },
+  "deadwood": {
+    "team": "Hellbourne",
+    "attribute": "Strength",
+    "role": "Carry / Initiator",
+    "description": ""
+  },
+  "defiler": {
+    "team": "Hellbourne",
+    "attribute": "Intelligence",
+    "role": "Carry / Initiator",
+    "description": ""
+  },
+  "devourer": {
+    "team": "Hellbourne",
+    "attribute": "Strength",
+    "role": "Carry / Initiator",
+    "description": ""
+  },
+  "diseasedrider": {
+    "team": "Hellbourne",
+    "attribute": "Intelligence",
+    "role": "Carry / Initiator",
+    "description": ""
+  },
+  "doctor_repulsor": {
+    "team": "Hellbourne",
+    "attribute": "Intelligence",
+    "role": "Carry / Initiator",
+    "description": ""
+  },
+  "dreadknight": {
+    "team": "Hellbourne",
+    "attribute": "Strength",
+    "role": "Carry / Initiator",
+    "description": ""
+  },
+  "drunkenmaster": {
+    "team": "Legion",
+    "attribute": "Strength",
+    "role": "Carry / Initiator",
+    "description": ""
+  },
+  "dwarf_magi": {
+    "team": "Legion",
+    "attribute": "Intelligence",
+    "role": "Carry / Initiator",
+    "description": ""
+  },
+  "ebulus": {
+    "team": "Hellbourne",
+    "attribute": "Agility",
+    "role": "Carry / Initiator",
+    "description": ""
+  },
+  "electrician": {
+    "team": "Hellbourne",
+    "attribute": "Strength",
+    "role": "Carry / Initiator",
+    "description": ""
+  },
+  "ellonia": {
+    "team": "Legion",
+    "attribute": "Intelligence",
+    "role": "Carry / Initiator",
+    "description": ""
+  },
+  "emerald_warden": {
+    "team": "Legion",
+    "attribute": "Agility",
+    "role": "Carry / Initiator",
+    "description": ""
+  },
+  "empath": {
+    "team": "Legion",
+    "attribute": "Intelligence",
+    "role": "Carry / Initiator",
+    "description": ""
+  },
+  "engineer": {
+    "team": "Legion",
+    "attribute": "Intelligence",
+    "role": "Carry / Initiator",
+    "description": ""
+  },
+  "fade": {
+    "team": "Hellbourne",
+    "attribute": "Intelligence",
+    "role": "Carry / Initiator",
+    "description": ""
+  },
+  "fairy": {
+    "team": "Legion",
+    "attribute": "Intelligence",
+    "role": "Carry / Initiator",
+    "description": ""
+  },
+  "flamedragon": {
+    "team": "Hellbourne",
+    "attribute": "Strength",
+    "role": "Carry / Initiator",
+    "description": ""
+  },
+  "flint_beastwood": {
+    "team": "Hellbourne",
+    "attribute": "Agility",
+    "role": "Carry / Initiator",
+    "description": ""
+  },
+  "flux": {
+    "team": "Legion",
+    "attribute": "Strength",
+    "role": "Carry / Initiator",
+    "description": ""
+  },
+  "forsaken_archer": {
+    "team": "Hellbourne",
+    "attribute": "Agility",
+    "role": "Carry / Initiator",
+    "description": ""
+  },
+  "frosty": {
+    "team": "Hellbourne",
+    "attribute": "Intelligence",
+    "role": "Carry / Initiator",
+    "description": ""
+  },
+  "gauntlet": {
+    "team": "Hellbourne",
+    "attribute": "Strength",
+    "role": "Carry / Initiator",
+    "description": ""
+  },
+  "gemini": {
+    "team": "Hellbourne",
+    "attribute": "Agility",
+    "role": "Carry / Initiator",
+    "description": ""
+  },
+  "geomancer": {
+    "team": "Hellbourne",
+    "attribute": "Intelligence",
+    "role": "Carry / Initiator",
+    "description": ""
+  },
+  "gladiator": {
+    "team": "Legion",
+    "attribute": "Strength",
+    "role": "Carry / Initiator",
+    "description": ""
+  },
+  "goldenveil": {
+    "team": "Hellbourne",
+    "attribute": "Intelligence",
+    "role": "Carry / Initiator",
+    "description": ""
+  },
+  "grinex": {
+    "team": "Hellbourne",
+    "attribute": "Agility",
+    "role": "Carry / Initiator",
+    "description": ""
+  },
+  "gunblade": {
+    "team": "Hellbourne",
+    "attribute": "Agility",
+    "role": "Carry / Initiator",
+    "description": ""
+  },
+  "hammerstorm": {
+    "team": "Legion",
+    "attribute": "Strength",
+    "role": "Carry / Initiator",
+    "description": ""
+  },
+  "hellbringer": {
+    "team": "Hellbourne",
+    "attribute": "Intelligence",
+    "role": "Carry / Initiator",
+    "description": ""
+  },
+  "helldemon": {
+    "team": "Hellbourne",
+    "attribute": "Intelligence",
+    "role": "Carry / Initiator",
+    "description": ""
+  },
+  "hiro": {
+    "team": "Legion",
+    "attribute": "Agility",
+    "role": "Carry / Initiator",
+    "description": ""
+  },
+  "hunter": {
+    "team": "Hellbourne",
+    "attribute": "Agility",
+    "role": "Carry / Initiator",
+    "description": ""
+  },
+  "hydromancer": {
+    "team": "Hellbourne",
+    "attribute": "Intelligence",
+    "role": "Carry / Initiator",
+    "description": ""
+  },
+  "ichor": {
+    "team": "Legion",
+    "attribute": "Strength",
+    "role": "Carry / Initiator",
+    "description": ""
+  },
+  "javaras": {
+    "team": "Legion",
+    "attribute": "Strength",
+    "role": "Carry / Initiator",
+    "description": ""
+  },
+  "jereziah": {
+    "team": "Legion",
+    "attribute": "Strength",
+    "role": "Carry / Initiator",
+    "description": ""
+  },
+  "kane": {
+    "team": "Hellbourne",
+    "attribute": "Strength",
+    "role": "Carry / Initiator",
+    "description": ""
+  },
+  "kenisis": {
+    "team": "Legion",
+    "attribute": "Intelligence",
+    "role": "Carry / Initiator",
+    "description": ""
+  },
+  "king_klout": {
+    "team": "Hellbourne",
+    "attribute": "Strength",
+    "role": "Carry / Initiator",
+    "description": ""
+  },
+  "klanx": {
+    "team": "Hellbourne",
+    "attribute": "Agility",
+    "role": "Carry / Initiator",
+    "description": ""
+  },
+  "kraken": {
+    "team": "Hellbourne",
+    "attribute": "Strength",
+    "role": "Carry / Initiator",
+    "description": ""
+  },
+  "krixi": {
+    "team": "Legion",
+    "attribute": "Agility",
+    "role": "Carry / Initiator",
+    "description": ""
+  },
+  "kunas": {
+    "team": "Legion",
+    "attribute": "Intelligence",
+    "role": "Carry / Initiator",
+    "description": ""
+  },
+  "legionnaire": {
+    "team": "Legion",
+    "attribute": "Strength",
+    "role": "Carry / Initiator",
+    "description": ""
+  },
+  "lodestone": {
+    "team": "Hellbourne",
+    "attribute": "Strength",
+    "role": "Carry / Initiator",
+    "description": ""
+  },
+  "magmar": {
+    "team": "Hellbourne",
+    "attribute": "Strength",
+    "role": "Carry / Initiator",
+    "description": ""
+  },
+  "maliken": {
+    "team": "Hellbourne",
+    "attribute": "Strength",
+    "role": "Carry / Initiator",
+    "description": ""
+  },
+  "martyr": {
+    "team": "Legion",
+    "attribute": "Intelligence",
+    "role": "Carry / Initiator",
+    "description": ""
+  },
+  "master_of_arms": {
+    "team": "Legion",
+    "attribute": "Agility",
+    "role": "Carry / Initiator",
+    "description": ""
+  },
+  "midas": {
+    "team": "Legion",
+    "attribute": "Intelligence",
+    "role": "Carry / Initiator",
+    "description": ""
+  },
+  "mimix": {
+    "team": "Legion",
+    "attribute": "Strength",
+    "role": "Carry / Initiator",
+    "description": ""
+  },
+  "moira": {
+    "team": "Legion",
+    "attribute": "Agility",
+    "role": "Carry / Initiator",
+    "description": ""
+  },
+  "monarch": {
+    "team": "Legion",
+    "attribute": "Intelligence",
+    "role": "Carry / Initiator",
+    "description": ""
+  },
+  "monkey_king": {
+    "team": "Legion",
+    "attribute": "Agility",
+    "role": "Carry / Initiator",
+    "description": ""
+  },
+  "moraxus": {
+    "team": "Hellbourne",
+    "attribute": "Strength",
+    "role": "Carry / Initiator",
+    "description": ""
+  },
+  "mumra": {
+    "team": "Hellbourne",
+    "attribute": "Strength",
+    "role": "Carry / Initiator",
+    "description": ""
+  },
+  "nitro": {
+    "team": "Legion",
+    "attribute": "Agility",
+    "role": "Carry / Initiator",
+    "description": ""
+  },
+  "oogie": {
+    "team": "Legion",
+    "attribute": "Intelligence",
+    "role": "Carry / Initiator",
+    "description": ""
+  },
+  "ophelia": {
+    "team": "Legion",
+    "attribute": "Intelligence",
+    "role": "Carry / Initiator",
+    "description": ""
+  },
+  "panda": {
+    "team": "Legion",
+    "attribute": "Strength",
+    "role": "Carry / Initiator",
+    "description": ""
+  },
+  "parallax": {
+    "team": "Hellbourne",
+    "attribute": "Intelligence",
+    "role": "Carry / Initiator",
+    "description": ""
+  },
+  "parasite": {
+    "team": "Hellbourne",
+    "attribute": "Intelligence",
+    "role": "Carry / Initiator",
+    "description": ""
+  },
+  "pearl": {
+    "team": "Legion",
+    "attribute": "Intelligence",
+    "role": "Carry / Initiator",
+    "description": ""
+  },
+  "pestilence": {
+    "team": "Hellbourne",
+    "attribute": "Strength",
+    "role": "Carry / Initiator",
+    "description": ""
+  },
+  "plant": {
+    "team": "Legion",
+    "attribute": "Strength",
+    "role": "Carry / Initiator",
+    "description": ""
+  },
+  "predator": {
+    "team": "Legion",
+    "attribute": "Strength",
+    "role": "Carry / Initiator",
+    "description": ""
+  },
+  "prisoner": {
+    "team": "Legion",
+    "attribute": "Strength",
+    "role": "Carry / Initiator",
+    "description": ""
+  },
+  "prophet": {
+    "team": "Hellbourne",
+    "attribute": "Intelligence",
+    "role": "Carry / Initiator",
+    "description": ""
+  },
+  "puppetmaster": {
+    "team": "Hellbourne",
+    "attribute": "Intelligence",
+    "role": "Carry / Initiator",
+    "description": ""
+  },
+  "pyromancer": {
+    "team": "Legion",
+    "attribute": "Intelligence",
+    "role": "Carry / Initiator",
+    "description": ""
+  },
+  "ra": {
+    "team": "Hellbourne",
+    "attribute": "Strength",
+    "role": "Carry / Initiator",
+    "description": ""
+  },
+  "rally": {
+    "team": "Legion",
+    "attribute": "Strength",
+    "role": "Carry / Initiator",
+    "description": ""
+  },
+  "rampage": {
+    "team": "Legion",
+    "attribute": "Strength",
+    "role": "Carry / Initiator",
+    "description": ""
+  },
+  "ravenor": {
+    "team": "Hellbourne",
+    "attribute": "Strength",
+    "role": "Carry / Initiator",
+    "description": ""
+  },
+  "revenant": {
+    "team": "Hellbourne",
+    "attribute": "Intelligence",
+    "role": "Carry / Initiator",
+    "description": ""
+  },
+  "rhapsody": {
+    "team": "Legion",
+    "attribute": "Intelligence",
+    "role": "Carry / Initiator",
+    "description": ""
+  },
+  "riftmage": {
+    "team": "Hellbourne",
+    "attribute": "Intelligence",
+    "role": "Carry / Initiator",
+    "description": ""
+  },
+  "riptide": {
+    "team": "Hellbourne",
+    "attribute": "Agility",
+    "role": "Carry / Initiator",
+    "description": ""
+  },
+  "rocky": {
+    "team": "Legion",
+    "attribute": "Strength",
+    "role": "Carry / Initiator",
+    "description": ""
+  },
+  "salomon": {
+    "team": "Legion",
+    "attribute": "Strength",
+    "role": "Carry / Initiator",
+    "description": ""
+  },
+  "sand_wraith": {
+    "team": "Hellbourne",
+    "attribute": "Agility",
+    "role": "Carry / Initiator",
+    "description": ""
+  },
+  "sapphire": {
+    "team": "Legion",
+    "attribute": "Agility",
+    "role": "Carry / Initiator",
+    "description": ""
+  },
+  "scar": {
+    "team": "Hellbourne",
+    "attribute": "Agility",
+    "role": "Carry / Initiator",
+    "description": ""
+  },
+  "scout": {
+    "team": "Legion",
+    "attribute": "Agility",
+    "role": "Carry / Initiator",
+    "description": ""
+  },
+  "shadowblade": {
+    "team": "Hellbourne",
+    "attribute": "Agility",
+    "role": "Carry / Initiator",
+    "description": ""
+  },
+  "shaman": {
+    "team": "Hellbourne",
+    "attribute": "Intelligence",
+    "role": "Carry / Initiator",
+    "description": ""
+  },
+  "shellshock": {
+    "team": "Legion",
+    "attribute": "Strength",
+    "role": "Carry / Initiator",
+    "description": ""
+  },
+  "silhouette": {
+    "team": "Legion",
+    "attribute": "Agility",
+    "role": "Carry / Initiator",
+    "description": ""
+  },
+  "sir_benzington": {
+    "team": "Legion",
+    "attribute": "Agility",
+    "role": "Carry / Initiator",
+    "description": ""
+  },
+  "skrap": {
+    "team": "Legion",
+    "attribute": "Intelligence",
+    "role": "Carry / Initiator",
+    "description": ""
+  },
+  "solstice": {
+    "team": "Legion",
+    "attribute": "Strength",
+    "role": "Carry / Initiator",
+    "description": ""
+  },
+  "soulstealer": {
+    "team": "Hellbourne",
+    "attribute": "Agility",
+    "role": "Carry / Initiator",
+    "description": ""
+  },
+  "succubis": {
+    "team": "Hellbourne",
+    "attribute": "Intelligence",
+    "role": "Carry / Initiator",
+    "description": ""
+  },
+  "taint": {
+    "team": "Hellbourne",
+    "attribute": "Intelligence",
+    "role": "Carry / Initiator",
+    "description": ""
+  },
+  "tarot": {
+    "team": "Legion",
+    "attribute": "Agility",
+    "role": "Carry / Initiator",
+    "description": ""
+  },
+  "tempest": {
+    "team": "Legion",
+    "attribute": "Intelligence",
+    "role": "Carry / Initiator",
+    "description": ""
+  },
+  "treant": {
+    "team": "Legion",
+    "attribute": "Strength",
+    "role": "Carry / Initiator",
+    "description": ""
+  },
+  "tremble": {
+    "team": "Hellbourne",
+    "attribute": "Agility",
+    "role": "Carry / Initiator",
+    "description": ""
+  },
+  "tundra": {
+    "team": "Legion",
+    "attribute": "Strength",
+    "role": "Carry / Initiator",
+    "description": ""
+  },
+  "gwynplaine": {
+    "team": "Hellbourne",
+    "attribute": "Intelligence",
+    "role": "Carry / Initiator",
+    "description": "A macabre showman whose grotesque permanent grin conceals relentless, sadistic cunning."
+  }
+}

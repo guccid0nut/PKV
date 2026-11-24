@@ -1,0 +1,107 @@
+// SPDX-License-Identifier: MPL-2.0
+// SPDX-FileCopyrightText: 2026 guccidonut and Project KONGOR V Contributors
+// This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
+// If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
+
+#pragma once
+#include <windows.h>
+
+extern "C" {
+    extern FARPROC pfn_curl_easy_duphandle;
+    extern FARPROC pfn_curl_easy_escape;
+    extern FARPROC pfn_curl_easy_getinfo;
+    extern FARPROC pfn_curl_easy_header;
+    extern FARPROC pfn_curl_easy_init;
+    extern FARPROC pfn_curl_easy_nextheader;
+    extern FARPROC pfn_curl_easy_option_by_id;
+    extern FARPROC pfn_curl_easy_option_by_name;
+    extern FARPROC pfn_curl_easy_option_next;
+    extern FARPROC pfn_curl_easy_pause;
+    extern FARPROC pfn_curl_easy_perform;
+    extern FARPROC pfn_curl_easy_recv;
+    extern FARPROC pfn_curl_easy_reset;
+    extern FARPROC pfn_curl_easy_send;
+    extern FARPROC pfn_curl_easy_setopt;
+    extern FARPROC pfn_curl_easy_ssls_export;
+    extern FARPROC pfn_curl_easy_ssls_import;
+    extern FARPROC pfn_curl_easy_strerror;
+    extern FARPROC pfn_curl_easy_unescape;
+    extern FARPROC pfn_curl_easy_upkeep;
+    extern FARPROC pfn_curl_escape;
+    extern FARPROC pfn_curl_formadd;
+    extern FARPROC pfn_curl_formfree;
+    extern FARPROC pfn_curl_formget;
+    extern FARPROC pfn_curl_free;
+    extern FARPROC pfn_curl_getdate;
+    extern FARPROC pfn_curl_getenv;
+    extern FARPROC pfn_curl_global_init_mem;
+    extern FARPROC pfn_curl_global_sslset;
+    extern FARPROC pfn_curl_global_trace;
+    extern FARPROC pfn_curl_maprintf;
+    extern FARPROC pfn_curl_mfprintf;
+    extern FARPROC pfn_curl_mime_addpart;
+    extern FARPROC pfn_curl_mime_data;
+    extern FARPROC pfn_curl_mime_data_cb;
+    extern FARPROC pfn_curl_mime_encoder;
+    extern FARPROC pfn_curl_mime_filedata;
+    extern FARPROC pfn_curl_mime_filename;
+    extern FARPROC pfn_curl_mime_free;
+    extern FARPROC pfn_curl_mime_headers;
+    extern FARPROC pfn_curl_mime_init;
+    extern FARPROC pfn_curl_mime_name;
+    extern FARPROC pfn_curl_mime_subparts;
+    extern FARPROC pfn_curl_mime_type;
+    extern FARPROC pfn_curl_mprintf;
+    extern FARPROC pfn_curl_msnprintf;
+    extern FARPROC pfn_curl_msprintf;
+    extern FARPROC pfn_curl_multi_add_handle;
+    extern FARPROC pfn_curl_multi_assign;
+    extern FARPROC pfn_curl_multi_cleanup;
+    extern FARPROC pfn_curl_multi_fdset;
+    extern FARPROC pfn_curl_multi_get_handles;
+    extern FARPROC pfn_curl_multi_get_offt;
+    extern FARPROC pfn_curl_multi_info_read;
+    extern FARPROC pfn_curl_multi_init;
+    extern FARPROC pfn_curl_multi_notify_disable;
+    extern FARPROC pfn_curl_multi_notify_enable;
+    extern FARPROC pfn_curl_multi_perform;
+    extern FARPROC pfn_curl_multi_poll;
+    extern FARPROC pfn_curl_multi_remove_handle;
+    extern FARPROC pfn_curl_multi_setopt;
+    extern FARPROC pfn_curl_multi_socket;
+    extern FARPROC pfn_curl_multi_socket_action;
+    extern FARPROC pfn_curl_multi_socket_all;
+    extern FARPROC pfn_curl_multi_strerror;
+    extern FARPROC pfn_curl_multi_timeout;
+    extern FARPROC pfn_curl_multi_wait;
+    extern FARPROC pfn_curl_multi_waitfds;
+    extern FARPROC pfn_curl_multi_wakeup;
+    extern FARPROC pfn_curl_mvaprintf;
+    extern FARPROC pfn_curl_mvfprintf;
+    extern FARPROC pfn_curl_mvprintf;
+    extern FARPROC pfn_curl_mvsnprintf;
+    extern FARPROC pfn_curl_mvsprintf;
+    extern FARPROC pfn_curl_pushheader_byname;
+    extern FARPROC pfn_curl_pushheader_bynum;
+    extern FARPROC pfn_curl_share_cleanup;
+    extern FARPROC pfn_curl_share_init;
+    extern FARPROC pfn_curl_share_setopt;
+    extern FARPROC pfn_curl_share_strerror;
+    extern FARPROC pfn_curl_slist_append;
+    extern FARPROC pfn_curl_slist_free_all;
+    extern FARPROC pfn_curl_strequal;
+    extern FARPROC pfn_curl_strnequal;
+    extern FARPROC pfn_curl_unescape;
+    extern FARPROC pfn_curl_url;
+    extern FARPROC pfn_curl_url_cleanup;
+    extern FARPROC pfn_curl_url_dup;
+    extern FARPROC pfn_curl_url_get;
+    extern FARPROC pfn_curl_url_set;
+    extern FARPROC pfn_curl_url_strerror;
+    extern FARPROC pfn_curl_version;
+    extern FARPROC pfn_curl_version_info;
+    extern FARPROC pfn_curl_ws_meta;
+    extern FARPROC pfn_curl_ws_recv;
+    extern FARPROC pfn_curl_ws_send;
+    extern FARPROC pfn_curl_ws_start_frame;
+}

@@ -1,0 +1,374 @@
+@model DAWNBRINGER.WebPortal.UI.Models.ClanDetailViewModel
+@using NEXUS.Contracts.Domain
+@using NEXUS.Contracts.DTOs
+@{
+    ClanDetailDto? clan = Model.Clan;
+    ViewData["Title"] = clan is not null
+        ? $"[{clan.Summary.Tag}] {clan.Summary.Name} — Clan Roster"
+        : "Clan Not Found";
+    ViewData["Description"] = clan is not null
+        ? $"Inspect [{clan.Summary.Tag}] {clan.Summary.Name}: {clan.Summary.MemberCount} members, standings, and full roster on Project KONGOR."
+        : "The requested clan could not be found.";
+}
+
+<div class="w-full max-w-[1920px] mx-auto px-3 sm:px-6 lg:px-8 xl:px-10 py-6 space-y-6 pb-16">
+    <!-- Breadcrumb Bar -->
+    <div class="flex flex-wrap items-center justify-between gap-3">
+        <a asp-controller="Clans" asp-action="Index"
+           class="inline-flex items-center gap-1.5 text-xs font-bold text-indigo-300 hover:text-amber-300 transition-colors">
+            <span aria-hidden="true">&larr;</span>
+            <span>Back to Clans Directory</span>
+        </a>
+        @if (clan is not null)
+        {
+            <span class="text-xs font-mono px-2.5 py-1 rounded-lg bg-slate-900/90 border border-slate-800 text-slate-400">
+                Clan #@clan.Summary.Id &bull; [@clan.Summary.Tag]
+            </span>
+        }
+    </div>
+
+    @if (clan is null)
+    {
+        <section class="glass-card rounded-3xl border border-slate-800 p-12 text-center space-y-4 max-w-xl mx-auto">
+            <div class="text-5xl" aria-hidden="true">🛡️</div>
+            <h1 class="text-2xl font-black text-white">Clan Not Found</h1>
+            <p class="text-sm text-slate-400">
+                Clan #@Model.RequestedClanId does not exist or currently has no active members.
+            </p>
+            <div class="pt-2">
+                <a asp-controller="Clans" asp-action="Index"
+                   class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs transition-all">
+                    Browse Active Clans
+                </a>
+            </div>
+        </section>
+    }
+    else
+    {
+        ClanSummaryDto summary = clan.Summary;
+        IReadOnlyList<ClanMemberDto> members = clan.Members;
+        int leadershipCount = members.Count(m => m.Tier is ClanTier.Leader or ClanTier.Officer);
+        int regularMemberCount = members.Count - leadershipCount;
+
+        <!-- Clan Hero Header Banner -->
+        <section class="glass-card p-6 sm:p-8 rounded-3xl border @(Model.IsMyClan ? "border-amber-400/45" : "border-indigo-500/35") bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950/30 relative overflow-hidden shadow-2xl">
+            <div class="absolute -right-16 -top-16 w-72 h-72 bg-indigo-500/15 rounded-full blur-3xl pointer-events-none" aria-hidden="true"></div>
+
+            <div class="relative z-10 flex flex-col xl:flex-row xl:items-center justify-between gap-6">
+                <div class="flex items-start sm:items-center gap-4 sm:gap-5 min-w-0">
+                    <div class="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-indigo-950/90 border-2 border-indigo-400/50 text-indigo-200 flex items-center justify-center text-lg sm:text-xl font-black tracking-tight flex-shrink-0 shadow-xl">
+                        [@summary.Tag]
+                    </div>
+                    <div class="min-w-0 space-y-1.5">
+                        <div class="flex flex-wrap items-center gap-2">
+                            <span class="px-2.5 py-0.5 rounded-full bg-indigo-500/15 border border-indigo-400/40 text-indigo-300 text-[11px] font-bold uppercase tracking-wider">
+                                @summary.ActivityBucket
+                            </span>
+                            @if (!summary.IsCompetitiveQualified)
+                            {
+                                <span title="Requires at least 3 ranked members for competitive podium qualification"
+                                      class="px-2.5 py-0.5 rounded-full bg-slate-900 border border-slate-700 text-slate-300 text-[11px] font-bold">
+                                    Provisional (&lt;3 ranked)
+                                </span>
+                            }
+                            @if (Model.IsMyClan)
+                            {
+                                <span class="px-2.5 py-0.5 rounded-full bg-amber-500/20 border border-amber-400/50 text-amber-200 text-[11px] font-black uppercase">
+                                    Your Clan
+                                </span>
+                            }
+                        </div>
+
+                        <h1 class="text-2xl sm:text-4xl font-black text-white tracking-tight truncate">
+                            @summary.Name
+                        </h1>
+
+                        <p class="text-xs sm:text-sm text-slate-400">
+                            Founded <strong class="text-slate-200">@summary.TimestampCreated.ToString("MMMM d, yyyy")</strong>
+                            &bull; Leader: <strong class="text-amber-300">@(summary.LeaderName ?? "No Active Leader")</strong>
+                            &bull; @summary.OfficerCount @(summary.OfficerCount == 1 ? "Officer" : "Officers")
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Aggregate Competitive KPIs -->
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 w-full xl:w-auto flex-shrink-0">
+                    <div class="p-3.5 rounded-2xl bg-slate-900/85 border border-amber-500/30 text-center min-w-[110px]">
+                        <span class="block text-[10px] uppercase tracking-wider text-amber-400 font-semibold mb-1">Avg MMR</span>
+                        <span class="text-lg font-black text-amber-300 tabular-nums">
+                            @(summary.AverageMmr.HasValue ? $"{summary.AverageMmr.Value:F0}" : "Unranked")
+                        </span>
+                        <span class="block text-[10px] text-slate-400 mt-0.5">@summary.RankedMemberCount ranked</span>
+                    </div>
+                    <div class="p-3.5 rounded-2xl bg-slate-900/85 border border-slate-800 text-center min-w-[110px]">
+                        <span class="block text-[10px] uppercase tracking-wider text-slate-400 font-semibold mb-1">Combined Win Rate</span>
+                        <span class="text-lg font-black text-emerald-300 tabular-nums">
+                            @(summary.CombinedMemberMatches > 0 ? $"{summary.CombinedWinRate:F1}%" : "—")
+                        </span>
+                        <span class="block text-[10px] text-slate-400 mt-0.5">@summary.CombinedMemberWins.ToString("N0") wins</span>
+                    </div>
+                    <div class="p-3.5 rounded-2xl bg-slate-900/85 border border-slate-800 text-center min-w-[110px]">
+                        <span class="block text-[10px] uppercase tracking-wider text-slate-400 font-semibold mb-1">Member Games</span>
+                        <span class="text-lg font-black text-white tabular-nums">@summary.CombinedMemberMatches.ToString("N0")</span>
+                        <span class="block text-[10px] text-slate-400 mt-0.5">combined total</span>
+                    </div>
+                    <div class="p-3.5 rounded-2xl bg-slate-900/85 border border-slate-800 text-center min-w-[110px]">
+                        <span class="block text-[10px] uppercase tracking-wider text-slate-400 font-semibold mb-1">Active Roster</span>
+                        <span class="text-lg font-black text-indigo-300 tabular-nums">@summary.MemberCount</span>
+                        <span class="block text-[10px] text-slate-400 mt-0.5">@(summary.MemberCount == 1 ? "member" : "members")</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Roster Filter Toolbar -->
+        <section class="glass-card p-4 sm:p-5 rounded-2xl border border-slate-800 flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div class="flex flex-wrap items-center gap-2" role="group" aria-label="Filter roster by clan role">
+                <button type="button" data-role-filter="all" aria-pressed="true"
+                        class="clan-role-btn px-3.5 py-2 rounded-xl text-xs font-black bg-amber-500 text-slate-950 border border-amber-300 transition-all cursor-pointer min-h-[36px]">
+                    All Members (@members.Count)
+                </button>
+                <button type="button" data-role-filter="leadership" aria-pressed="false"
+                        class="clan-role-btn px-3.5 py-2 rounded-xl text-xs font-bold bg-slate-900 text-slate-300 border border-slate-800 hover:bg-slate-800 hover:text-white transition-all cursor-pointer min-h-[36px]">
+                    Leader &amp; Officers (@leadershipCount)
+                </button>
+                <button type="button" data-role-filter="member" aria-pressed="false"
+                        class="clan-role-btn px-3.5 py-2 rounded-xl text-xs font-bold bg-slate-900 text-slate-300 border border-slate-800 hover:bg-slate-800 hover:text-white transition-all cursor-pointer min-h-[36px]">
+                    Members (@regularMemberCount)
+                </button>
+            </div>
+
+            <div class="w-full md:w-72">
+                <label for="clanRosterSearch" class="sr-only">Filter roster by player nickname</label>
+                <input id="clanRosterSearch"
+                       type="search"
+                       placeholder="Filter roster by player IGN..."
+                       class="w-full px-3.5 py-2 rounded-xl bg-slate-900/90 border border-slate-700 text-white placeholder-slate-500 text-xs focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400 transition-all" />
+            </div>
+        </section>
+
+        <!-- Accessible Sortable & Container-Responsive Member Roster Table -->
+        <section class="glass-card rounded-3xl border border-slate-800 overflow-hidden shadow-xl">
+            <div id="clanRosterLiveStatus" role="status" class="sr-only"></div>
+
+            <div tabindex="0" role="region" aria-labelledby="clan-roster-caption" class="kongor-roster-wrapper">
+                <table id="clanRosterTable" class="kongor-roster-table w-full text-left border-collapse min-w-[680px]">
+                    <caption id="clan-roster-caption" class="px-5 py-3.5 text-left text-xs font-black uppercase tracking-widest text-slate-400 border-b border-slate-800/80 bg-slate-950/60">
+                        [@summary.Tag] @summary.Name Member Roster — click column headers to sort
+                    </caption>
+                    <thead class="bg-slate-900/90 border-b border-slate-800 text-xs text-slate-400">
+                        <tr>
+                            <th scope="col" data-type="text" class="p-0">
+                                <button type="button" data-sort-col="0"
+                                        class="w-full text-left px-4 py-3 font-bold hover:text-white transition-colors cursor-pointer flex items-center justify-between min-h-[40px]">
+                                    <span>Player</span>
+                                    <span class="kongor-sort-indicator" aria-hidden="true"></span>
+                                </button>
+                            </th>
+                            <th scope="col" data-type="number" aria-sort="ascending" class="p-0">
+                                <button type="button" data-sort-col="1"
+                                        class="w-full text-left px-4 py-3 font-bold hover:text-white transition-colors cursor-pointer flex items-center justify-between min-h-[40px]">
+                                    <span>Role</span>
+                                    <span class="kongor-sort-indicator" aria-hidden="true"></span>
+                                </button>
+                            </th>
+                            <th scope="col" data-type="number" class="p-0">
+                                <button type="button" data-sort-col="2"
+                                        class="w-full text-right px-4 py-3 font-bold hover:text-white transition-colors cursor-pointer flex items-center justify-end gap-1.5 min-h-[40px]">
+                                    <span>MMR / Rank</span>
+                                    <span class="kongor-sort-indicator" aria-hidden="true"></span>
+                                </button>
+                            </th>
+                            <th scope="col" data-type="number" class="p-0">
+                                <button type="button" data-sort-col="3"
+                                        class="w-full text-right px-4 py-3 font-bold hover:text-white transition-colors cursor-pointer flex items-center justify-end gap-1.5 min-h-[40px]">
+                                    <span>Win Rate</span>
+                                    <span class="kongor-sort-indicator" aria-hidden="true"></span>
+                                </button>
+                            </th>
+                            <th scope="col" data-type="number" class="p-0">
+                                <button type="button" data-sort-col="4"
+                                        class="w-full text-right px-4 py-3 font-bold hover:text-white transition-colors cursor-pointer flex items-center justify-end gap-1.5 min-h-[40px]">
+                                    <span>Games</span>
+                                    <span class="kongor-sort-indicator" aria-hidden="true"></span>
+                                </button>
+                            </th>
+                            <th scope="col" data-type="number" class="p-0">
+                                <button type="button" data-sort-col="5"
+                                        class="w-full text-right px-4 py-3 font-bold hover:text-white transition-colors cursor-pointer flex items-center justify-end gap-1.5 min-h-[40px]">
+                                    <span>Joined</span>
+                                    <span class="kongor-sort-indicator" aria-hidden="true"></span>
+                                </button>
+                            </th>
+                            <th scope="col" data-type="number" class="p-0">
+                                <button type="button" data-sort-col="6"
+                                        class="w-full text-right px-4 py-3 font-bold hover:text-white transition-colors cursor-pointer flex items-center justify-end gap-1.5 min-h-[40px]">
+                                    <span>Activity</span>
+                                    <span class="kongor-sort-indicator" aria-hidden="true"></span>
+                                </button>
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody id="clanRosterBody" class="divide-y divide-slate-800/70 text-xs sm:text-sm">
+                        @foreach (ClanMemberDto member in members)
+                        {
+                            int roleOrder = member.Tier == ClanTier.Leader ? 0 : member.Tier == ClanTier.Officer ? 1 : 2;
+                            string roleCategory = member.Tier is ClanTier.Leader or ClanTier.Officer ? "leadership" : "member";
+                            string roleBadgeClass = member.Tier == ClanTier.Leader
+                                ? "bg-amber-500/20 text-amber-300 border-amber-400/50 font-black"
+                                : member.Tier == ClanTier.Officer
+                                    ? "bg-indigo-500/20 text-indigo-300 border-indigo-400/40 font-bold"
+                                    : "bg-slate-800/80 text-slate-300 border-slate-700 font-semibold";
+                            string roleLabel = member.Tier == ClanTier.Leader ? "Leader" : member.Tier == ClanTier.Officer ? "Officer" : "Member";
+                            string roleEmoji = member.Tier == ClanTier.Leader ? "👑" : member.Tier == ClanTier.Officer ? "⭐" : "";
+                            long joinedEpoch = member.TimestampJoinedClan?.ToUnixTimeSeconds() ?? 0;
+
+                            <tr data-role-category="@roleCategory"
+                                data-player-name="@member.Name.ToLowerInvariant()"
+                                class="hover:bg-slate-800/40 transition-colors">
+                                <th scope="row" data-value="@member.Name" class="px-4 py-3 font-bold">
+                                    <a href="/player/@Uri.EscapeDataString(member.Name)"
+                                       class="inline-flex items-center gap-3 text-white hover:text-amber-300 transition-colors group">
+                                        <img src="@member.AvatarUrl"
+                                             alt=""
+                                             loading="lazy"
+                                             decoding="async"
+                                             onerror="this.onerror=null;this.src='/images/default-avatar.png';"
+                                             class="w-8 h-8 rounded-full object-cover bg-slate-800 border border-slate-700 group-hover:border-amber-400/60 flex-shrink-0" />
+                                        <span class="truncate">@member.Name</span>
+                                    </a>
+                                </th>
+                                <td data-label="Role" data-value="@roleOrder" class="px-4 py-3">
+                                    <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full border text-xs @roleBadgeClass">
+                                        @if (!string.IsNullOrEmpty(roleEmoji))
+                                        {
+                                            <span aria-hidden="true">@roleEmoji</span>
+                                        }
+                                        <span>@roleLabel</span>
+                                    </span>
+                                </td>
+                                <td data-label="MMR / Rank" data-value="@(member.SkillRating ?? -1)" class="px-4 py-3 text-right tabular-nums">
+                                    @if (member.SkillRating.HasValue)
+                                    {
+                                        <span class="font-black text-amber-300">@member.SkillRating.Value.ToString("F0")</span>
+                                        <span class="text-xs text-slate-400 ml-1">(@member.RankName)</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-xs text-slate-400 font-semibold">Unranked</span>
+                                    }
+                                </td>
+                                <td data-label="Win Rate" data-value="@member.WinRate.ToString(System.Globalization.CultureInfo.InvariantCulture)" class="px-4 py-3 text-right font-semibold tabular-nums @(member.MatchesPlayed > 0 ? "text-emerald-300" : "text-slate-500")">
+                                    @(member.MatchesPlayed > 0 ? $"{member.WinRate:F1}%" : "—")
+                                </td>
+                                <td data-label="Games" data-value="@member.MatchesPlayed" class="px-4 py-3 text-right tabular-nums text-slate-300">
+                                    @member.MatchesPlayed.ToString("N0")
+                                </td>
+                                <td data-label="Joined" data-value="@joinedEpoch" class="px-4 py-3 text-right tabular-nums text-slate-400 text-xs">
+                                    @(member.TimestampJoinedClan.HasValue ? member.TimestampJoinedClan.Value.ToString("yyyy-MM-dd") : "—")
+                                </td>
+                                <td data-label="Activity" data-value="@member.ActivitySortOrder" class="px-4 py-3 text-right text-xs text-slate-300">
+                                    @member.ActivityBucket
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            <div id="clanRosterEmptyFilter" class="hidden px-6 py-8 text-center text-xs text-slate-400">
+                No clan members match your current filter.
+            </div>
+        </section>
+    }
+</div>
+
+@if (clan is not null)
+{
+    <script>
+        (function () {
+            const table = document.getElementById("clanRosterTable");
+            const tbody = document.getElementById("clanRosterBody");
+            const liveStatus = document.getElementById("clanRosterLiveStatus");
+            const searchInput = document.getElementById("clanRosterSearch");
+            const emptyState = document.getElementById("clanRosterEmptyFilter");
+            const roleButtons = document.querySelectorAll(".clan-role-btn");
+            if (!table || !tbody) return;
+
+            const collator = new Intl.Collator(undefined, { numeric: true, sensitivity: "base" });
+            let activeRole = "all";
+
+            function announce(message) {
+                if (liveStatus) liveStatus.textContent = message;
+            }
+
+            function applyFilters() {
+                const query = (searchInput ? searchInput.value : "").trim().toLowerCase();
+                let visibleCount = 0;
+
+                for (const row of tbody.rows) {
+                    const roleMatch = activeRole === "all" || row.dataset.roleCategory === activeRole;
+                    const nameMatch = !query || (row.dataset.playerName || "").includes(query);
+                    const show = roleMatch && nameMatch;
+                    row.hidden = !show;
+                    if (show) visibleCount++;
+                }
+
+                if (emptyState) {
+                    emptyState.classList.toggle("hidden", visibleCount > 0);
+                }
+                announce(`Showing ${visibleCount} clan members`);
+            }
+
+            roleButtons.forEach(btn => {
+                btn.addEventListener("click", () => {
+                    activeRole = btn.dataset.roleFilter || "all";
+                    roleButtons.forEach(b => {
+                        const selected = b === btn;
+                        b.setAttribute("aria-pressed", String(selected));
+                        b.className = selected
+                            ? "clan-role-btn px-3.5 py-2 rounded-xl text-xs font-black bg-amber-500 text-slate-950 border border-amber-300 transition-all cursor-pointer min-h-[36px]"
+                            : "clan-role-btn px-3.5 py-2 rounded-xl text-xs font-bold bg-slate-900 text-slate-300 border border-slate-800 hover:bg-slate-800 hover:text-white transition-all cursor-pointer min-h-[36px]";
+                    });
+                    applyFilters();
+                });
+            });
+
+            if (searchInput) {
+                searchInput.addEventListener("input", applyFilters);
+            }
+
+            // Accessible sortable table: moves existing <tr> elements via moveBefore/appendChild without innerHTML
+            const headers = table.tHead ? [...table.tHead.rows[0].cells] : [];
+            table.querySelectorAll("thead button[data-sort-col]").forEach(btn => {
+                btn.addEventListener("click", () => {
+                    const th = btn.closest("th");
+                    if (!th) return;
+                    const colIndex = Number(btn.dataset.sortCol);
+                    const type = th.dataset.type || "text";
+                    const nextDir = th.getAttribute("aria-sort") === "ascending" ? "descending" : "ascending";
+
+                    for (const h of headers) h.removeAttribute("aria-sort");
+                    th.setAttribute("aria-sort", nextDir);
+
+                    const factor = nextDir === "ascending" ? 1 : -1;
+                    const rows = [...tbody.rows];
+                    const readVal = (row) => row.cells[colIndex]?.dataset.value ?? row.cells[colIndex]?.textContent.trim() ?? "";
+
+                    rows.sort((a, b) => {
+                        const av = readVal(a);
+                        const bv = readVal(b);
+                        return factor * (type === "number" ? Number(av) - Number(bv) : collator.compare(av, bv));
+                    });
+
+                    for (const row of rows) {
+                        if (typeof tbody.moveBefore === "function") tbody.moveBefore(row, null);
+                        else tbody.appendChild(row);
+                    }
+
+                    announce(`Sorted roster by ${btn.textContent.trim()}, ${nextDir}, ${rows.length} rows`);
+                });
+            });
+        })();
+    </script>
+}

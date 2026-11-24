@@ -1,0 +1,64 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net11.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <ApplicationIcon>Assets\nexus-icon.ico</ApplicationIcon>
+    <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <NoWarn>$(NoWarn);MSB3277;AVLN5001;CA1416</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <AvaloniaResource Include="Assets\**"/>
+    <None Update="Assets\**"
+          CopyToOutputDirectory="PreserveNewest"
+          CopyToPublishDirectory="PreserveNewest"
+          ExcludeFromSingleFile="true"/>
+    <None Include="$(MSBuildThisFileDirectory)..\..\services\web-ui\wwwroot\lib\three\**">
+      <Link>Assets\lib\three\%(RecursiveDir)%(Filename)%(Extension)</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+    </None>
+    <None Include="$(MSBuildThisFileDirectory)..\..\services\web-ui\wwwroot\js\kongor-viewer-core.js">
+      <Link>Assets\js\kongor-viewer-core.js</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Avalonia"/>
+    <PackageReference Include="Avalonia.Desktop"/>
+    <PackageReference Include="Avalonia.Themes.Fluent"/>
+    <PackageReference Include="Avalonia.Fonts.Inter"/>
+    <PackageReference Include="Avalonia.Diagnostics" Condition="'$(Configuration)' == 'Debug'"/>
+    <PackageReference Include="Avalonia.Svg.Skia"/>
+    <PackageReference Include="Avalonia.Xaml.Behaviors"/>
+    <PackageReference Include="CommunityToolkit.Mvvm"/>
+    <PackageReference Include="Tmds.DBus.Protocol"/>
+    <PackageReference Include="System.Windows.Extensions"/>
+    <PackageReference Include="Microsoft.Web.WebView2"/>
+    <PackageReference Include="Docker.DotNet"/>
+  </ItemGroup>
+
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\libs\protocol-core\Kongor.Core.csproj"/>
+    <ProjectReference Include="..\..\libs\contracts\NEXUS.Contracts.csproj"/>
+    <ProjectReference Include="..\..\libs\database-context\MERRICK.DatabaseContext.csproj"/>
+    <ProjectReference Include="..\..\extensions\vulkan-interop\NEXUS.VulkanInterop.csproj"/>
+    <ProjectReference Include="..\..\tools\kongor-cli\Kongor.Cli.csproj"/>
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="ASPIRE.Client.Integration.Tests"/>
+    <InternalsVisibleTo Include="ASPIRE.Client.Gui.Tests"/>
+    <InternalsVisibleTo Include="NEXUS.ControlPanel.Tests"/>
+  </ItemGroup>
+
+</Project>

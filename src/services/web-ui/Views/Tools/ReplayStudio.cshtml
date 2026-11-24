@@ -1,0 +1,51 @@
+@{
+    ViewData["Title"] = "NEXUS Replay Studio — Planned Future Work";
+}
+
+<div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 sm:pt-12 pb-16 space-y-6">
+
+    <!-- Staff-Only Deferred Banner -->
+    <div class="relative overflow-hidden rounded-3xl bg-gradient-to-br from-slate-900 via-purple-950/50 to-slate-950 border border-purple-500/35 p-6 sm:p-8 shadow-2xl space-y-5">
+        <div class="flex flex-wrap items-center justify-between gap-3">
+            <div class="flex flex-wrap items-center gap-2.5">
+                <span class="text-3xl opacity-75 grayscale">🎬</span>
+                <h1 class="text-2xl sm:text-3xl font-black tracking-tight text-white uppercase">
+                    NEXUS <span class="text-purple-300">Replay Studio</span>
+                </h1>
+                <span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-purple-950/90 text-purple-200 border border-purple-400/45 uppercase">
+                    🛡️ Staff Only
+                </span>
+                <span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-amber-500/15 text-amber-300 border border-amber-400/40 uppercase">
+                    Deferred · Future Work
+                </span>
+            </div>
+            <div class="flex flex-wrap items-center gap-2.5">
+                <a href="/matches"
+                   class="px-4 py-2 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs sm:text-sm transition-colors shadow-lg">
+                    ⚔️ Open 2D Match Replays
+                </a>
+                <a href="/staff"
+                   class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 font-bold text-xs sm:text-sm transition-colors">
+                    🛡️ Staff Portal
+                </a>
+            </div>
+        </div>
+
+        <p class="text-sm text-slate-300 leading-relaxed max-w-3xl">
+            Browser-side replay video synthesis has been retired and marked as <strong>future work</strong>. For tactical match timelines, minimap movement, item builds, and combat feeds, use the live <strong>2D Match Replay</strong> player on any match page (<code>/matches/{id}</code>).
+        </p>
+
+        <div class="rounded-2xl bg-slate-950/80 border border-slate-800 p-5 space-y-3">
+            <h2 class="text-xs font-extrabold uppercase tracking-wider text-purple-300">
+                Planned Architecture: Linux Docker K2 Game Client POV Recorder
+            </h2>
+            <p class="text-xs sm:text-sm text-slate-300 leading-relaxed">
+                This tool is reserved for occasional remote moderation scenarios when a Staff member is away from their home PC and cannot open a <code>.honreplay</code> archive locally. When implemented, a background worker will dispatch on-demand <strong>Linux Docker</strong> game client containers that load the match replay, lock the in-engine 3D camera and fog-of-war to the requested player's POV, record the video stream, and surface the finished clip in the Staff Portal once ready.
+            </p>
+            <div class="pt-1 text-xs text-slate-400 font-mono">
+                Architecture Blueprint: <code class="text-amber-300">docs/architecture/replay-studio-future-work.md</code>
+            </div>
+        </div>
+    </div>
+
+</div>

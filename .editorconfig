@@ -1,0 +1,98 @@
+root = true
+
+[*.cs]
+# Core formatting
+indent_style = space
+indent_size = 4
+end_of_line = crlf
+charset = utf-8
+trim_trailing_whitespace = true
+insert_final_newline = true
+
+# C# Language Standards
+file_header_template = SPDX-License-Identifier: AGPL-3.0-or-later\nSPDX-FileCopyrightText: 2026 guccidonut and Project KONGOR V Contributors\nProject KONGOR V (https://github.com/guccidonut/PKV)
+dotnet_diagnostic.IDE0073.severity = none
+csharp_style_namespace_declarations = file_scoped:suggestion
+csharp_style_prefer_collection_expression = true:suggestion
+csharp_style_prefer_readonly_struct = true:suggestion
+csharp_style_prefer_primary_constructors = true:suggestion
+csharp_style_unused_value_assignment_preference = discard_variable:suggestion
+
+# Performance Analyzers (Enforced)
+dotnet_diagnostic.CA1848.severity = none
+dotnet_diagnostic.CA1873.severity = none
+dotnet_diagnostic.IDE0130.severity = none
+dotnet_diagnostic.IDE0011.severity = suggestion
+dotnet_diagnostic.IDE0045.severity = suggestion
+dotnet_diagnostic.IDE0046.severity = suggestion
+dotnet_diagnostic.IDE0053.severity = suggestion
+dotnet_diagnostic.IDE0058.severity = none
+dotnet_diagnostic.IDE0059.severity = suggestion
+dotnet_diagnostic.IDE0060.severity = suggestion
+dotnet_diagnostic.IDE0063.severity = suggestion
+dotnet_diagnostic.IDE0290.severity = suggestion
+dotnet_diagnostic.IDE0028.severity = suggestion
+dotnet_diagnostic.IDE0300.severity = suggestion
+dotnet_diagnostic.IDE0305.severity = suggestion
+dotnet_diagnostic.CA2254.severity = warning
+dotnet_diagnostic.CA1869.severity = suggestion
+dotnet_diagnostic.CA1861.severity = warning
+dotnet_diagnostic.CA1825.severity = suggestion
+dotnet_diagnostic.CA1826.severity = suggestion
+dotnet_diagnostic.CA1854.severity = warning
+dotnet_diagnostic.CA1860.severity = warning
+dotnet_diagnostic.CA1862.severity = suggestion
+dotnet_diagnostic.CA1868.severity = warning
+dotnet_diagnostic.CA1870.severity = warning
+dotnet_diagnostic.CA1872.severity = warning
+dotnet_diagnostic.CA1510.severity = warning
+dotnet_diagnostic.CA1512.severity = warning
+dotnet_diagnostic.CA1513.severity = warning
+dotnet_diagnostic.CA1805.severity = suggestion
+dotnet_diagnostic.CA1859.severity = suggestion
+dotnet_diagnostic.CA1001.severity = suggestion
+
+# Game Engine & Protocol Compatibility (Relaxed for K2 C++ DTO parity and Invariant formatting)
+dotnet_diagnostic.CA1304.severity = none
+dotnet_diagnostic.CA1305.severity = none
+dotnet_diagnostic.CA1309.severity = none
+dotnet_diagnostic.CA1310.severity = none
+dotnet_diagnostic.CA1311.severity = none
+dotnet_diagnostic.CA1707.severity = none
+dotnet_diagnostic.CA1708.severity = none
+dotnet_diagnostic.CA1711.severity = none
+dotnet_diagnostic.CA1716.severity = none
+dotnet_diagnostic.CA1720.severity = none
+dotnet_diagnostic.CA1724.severity = none
+dotnet_diagnostic.CA1725.severity = none
+dotnet_diagnostic.CA1002.severity = none
+dotnet_diagnostic.CA1031.severity = none
+dotnet_diagnostic.CA1051.severity = none
+dotnet_diagnostic.CA1054.severity = none
+dotnet_diagnostic.CA1056.severity = none
+dotnet_diagnostic.CA2211.severity = none
+dotnet_diagnostic.CA1806.severity = none
+dotnet_diagnostic.CA1838.severity = none
+dotnet_diagnostic.CA2201.severity = none
+dotnet_diagnostic.CA2227.severity = none
+dotnet_diagnostic.CA5350.severity = none
+dotnet_diagnostic.CA5351.severity = none
+dotnet_diagnostic.CA5359.severity = none
+dotnet_diagnostic.CA1822.severity = none
+dotnet_diagnostic.CS1570.severity = none
+dotnet_diagnostic.CS1572.severity = none
+dotnet_diagnostic.CS1573.severity = none
+dotnet_diagnostic.CS1574.severity = none
+
+[src/**/Migrations/**.cs]
+dotnet_diagnostic.IDE0161.severity = none
+
+[tests/**.cs]
+dotnet_diagnostic.CA1001.severity = none
+dotnet_diagnostic.CA1816.severity = none
+dotnet_diagnostic.CA1852.severity = none
+dotnet_diagnostic.CA1826.severity = none
+dotnet_diagnostic.CA1869.severity = none
+dotnet_diagnostic.CA1861.severity = none
+dotnet_diagnostic.CA2000.severity = none
+dotnet_diagnostic.CA2007.severity = none

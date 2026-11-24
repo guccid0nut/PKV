@@ -1,0 +1,31 @@
+{
+  "schema_version": 1,
+  "three_revision": "168",
+  "phase": "6.5",
+  "deliverables": [
+    "#120 viewer-core-and-three-r16x-upgrade",
+    "#86 f3d-draco-meshopt-loader"
+  ],
+  "files": {
+    "three.r16x.bundle.js": {
+      "algorithm": "SHA384",
+      "hash": "28791173434C3C457044FFD3291B4BB3ACA3AE7FEF3ADF458775C1A75BB13289AF528CF3AD60DBE4E39E78BA7EBE2B29"
+    },
+    "three.module.min.js": {
+      "algorithm": "SHA384",
+      "hash": "0D9018B2A6185A8B0F9556D83CEF7723B35AF48B09D8061409293DB8455366A4605FBC3AB11B1EB190A3B2272837E8E8"
+    },
+    "draco/draco_decoder.js": {
+      "algorithm": "SHA384",
+      "hash": "D4E25D48B170211273C1D6AB0610542EA971ABF740FA1D03D935268D1054E3255FCECC4FACE572939A03443C4AD2240E"
+    },
+    "meshopt_decoder.module.js": {
+      "algorithm": "SHA384",
+      "hash": "CE16639F173EDE3D88797DA2B57B7EE429E70B462579546FBB910E6A3EF7DED469DFC13D8413E7663C1E1165F690DEF2"
+    },
+    "../../js/kongor-viewer-core.js": {
+      "algorithm": "SHA384",
+      "hash": "7DC182C27D7F8227D29BB0F38F7689FDD070C9236EE28DA6854BEF3BF1B836EB7AE54756C9FA79E837B93ACF3ABB5CE6"
+    }
+  }
+}

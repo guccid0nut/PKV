@@ -1,0 +1,61 @@
+name: Bug Report
+description: Report a reproducible defect in PKV services, launchers, native proxies, or TAO MCP
+title: "[Bug]: "
+labels: ["bug", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for reporting an issue in **Project KONGOR V (`PKV`)**.
+        Please **do not** attach proprietary game binaries, `.s2z` archives, user secrets, or unredacted personal paths.
+        For security vulnerabilities (auth bypass, remote packet parsing, memory corruption), use **GitHub Private Vulnerability Reporting** (`Security` tab -> **Report a vulnerability**).
+  - type: dropdown
+    id: subsystem
+    attributes:
+      label: Affected Subsystem
+      options:
+        - WILLOWMAKER (Client Launcher / EnginePatchService)
+        - COMPEL / COMPEL GUI (Dedicated Server Fleet)
+        - NEXUS Control Panel (Avalonia GUI)
+        - Master Server / Chat Server / Web API / Web UI
+        - Native C++ / Vulkan Layer / Proxies (native/)
+        - TAO MCP / Kongor CLI (src/tools/kongor-cli)
+        - Build / Cleanroom Tests / Documentation
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: OS, Architecture & .NET SDK
+      placeholder: "e.g., Windows 11 x64 / Ubuntu 24.04 x86_64, .NET 11.0.100"
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Steps to Reproduce
+      description: Provide exact commands (e.g., `./kongor.ps1 test unit`, `dotnet test ...`) or minimal reproduction steps.
+      placeholder: |
+        1. Run `...`
+        2. Observe `...`
+    validations:
+      required: true
+  - type: textarea
+    id: expected_actual
+    attributes:
+      label: Expected vs. Actual Behavior
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Scrubbed Log Excerpt / Test Output
+      description: Paste relevant scrubbed error lines (no secrets, passwords, or local usernames).
+      render: text
+  - type: checkboxes
+    id: cleanroom_check
+    attributes:
+      label: Cleanroom Verification
+      options:
+        - label: I removed any secrets, credentials, personal paths, and proprietary game assets from this report.
+          required: true

@@ -1,0 +1,1420 @@
+@* ReSharper disable All *@
+@using System.Text.Json
+@using System.Text.RegularExpressions
+@using DAWNBRINGER.WebPortal.UI.Controllers
+@using NEXUS.Contracts.Clients
+@{
+    string matchedId = ViewData["HeroIdentifier"] as string ?? "Hero_Taint";
+    string displayName = ViewData["DisplayName"] as string ?? "Gravekeeper";
+    string iconName = (ViewData["IconName"] as string) ?? matchedId.ToLowerInvariant();
+    string prevId = (ViewData["PrevHero"] as string) ?? (ViewData["PrevId"] as string) ?? "";
+    string nextId = (ViewData["NextHero"] as string) ?? (ViewData["NextId"] as string) ?? "";
+    string prevName = (ViewData["PrevName"] as string) ?? (string.IsNullOrEmpty(prevId) ? "" : prevId.Replace("Hero_", ""));
+    string nextName = (ViewData["NextName"] as string) ?? (string.IsNullOrEmpty(nextId) ? "" : nextId.Replace("Hero_", ""));
+
+    AccountDto? currentAccount = ViewBag.CurrentAccount as AccountDto;
+    string team = (ViewData["Team"] as string) ?? "Legion";
+    HomeController.HeroMetaDto? meta = ViewData["Meta"] as HomeController.HeroMetaDto;
+    HeroDetailDto? detailEntity = ViewData["HeroDetailEntity"] as HeroDetailDto;
+    HeroGuideDto? guide = (ViewData["Guide"] as HeroGuideDto) ?? (ViewBag.AllGuides as List<HeroGuideDto>)?.FirstOrDefault();
+
+    string heroAttribute = detailEntity?.PrimaryAttribute ?? meta?.PrimaryAttribute ?? (ViewData["Attribute"] as string) ?? "Strength";
+    string role = detailEntity?.Role ?? (meta?.Roles != null && meta.Roles.Count > 0 ? string.Join(" / ", meta.Roles) : (ViewData["Role"] as string) ?? "Carry / Initiator");
+    string intro = detailEntity?.Description ?? (ViewData["Intro"] as string) ?? "";
+    List<HomeController.AbilityDto> abilities = ViewData["Abilities"] as List<HomeController.AbilityDto> ?? [];
+
+    bool isHeroStr = heroAttribute.Equals("Strength", StringComparison.OrdinalIgnoreCase);
+    bool isHeroAgi = heroAttribute.Equals("Agility", StringComparison.OrdinalIgnoreCase);
+    bool isHeroInt = heroAttribute.Equals("Intelligence", StringComparison.OrdinalIgnoreCase);
+
+    string heroCardBorder = isHeroStr ? "border-red-500/30" : isHeroAgi ? "border-emerald-500/30" : "border-blue-500/30";
+    string heroAuraGlow = isHeroStr ? "bg-red-500/15" : isHeroAgi ? "bg-emerald-500/15" : "bg-blue-500/15";
+    string heroSocketBevel = isHeroStr ? "border-2 border-red-400/60 bg-gradient-to-b from-red-500/30 via-slate-800 to-red-950/60 shadow-red-950/70" :
+                             isHeroAgi ? "border-2 border-emerald-400/60 bg-gradient-to-b from-emerald-500/30 via-slate-800 to-emerald-950/60 shadow-emerald-950/70" :
+                             "border-2 border-blue-400/60 bg-gradient-to-b from-blue-500/30 via-slate-800 to-blue-950/60 shadow-blue-950/70";
+
+    string heroAttrBadge = isHeroStr ? "bg-red-500/15 border-red-500/40 text-red-300" :
+                           isHeroAgi ? "bg-emerald-500/15 border-emerald-500/40 text-emerald-300" :
+                           "bg-blue-500/15 border-blue-500/40 text-blue-300";
+
+    string heroAttrIcon = isHeroStr ? "💪" : isHeroAgi ? "⚡" : "✨";
+
+    double? communityAvg = (ViewData["CommunityDifficulty"] as double?) ?? (ViewData["CommunityAvgDifficulty"] as double?);
+    double communityRounded = Convert.ToDouble(ViewData["CommunityDifficulty"] ?? ViewData["CommunityRoundedAvg"] ?? 0.0);
+    int communityTotalVotes = Convert.ToInt32(ViewData["DifficultyVoteCount"] ?? ViewData["CommunityTotalVotes"] ?? 0);
+    int userVote = Convert.ToInt32(ViewData["UserDifficultyVote"] ?? ViewData["UserVote"] ?? 0);
+
+    int gamesPlayed = Convert.ToInt32(ViewData["GamesPlayed"] ?? 0);
+    int wins = Convert.ToInt32(ViewData["Wins"] ?? 0);
+    int kills = Convert.ToInt32(ViewData["Kills"] ?? 0);
+    int deaths = Convert.ToInt32(ViewData["Deaths"] ?? 0);
+    int assists = Convert.ToInt32(ViewData["Assists"] ?? 0);
+
+    double winrate = gamesPlayed > 0 ? wins * 100.0 / gamesPlayed : 54.8;
+    double kda = deaths > 0 ? (kills + assists) * 1.0 / deaths : gamesPlayed > 0 ? 2.85 : 3.20;
+
+    bool isLegion = team.Equals("Legion", StringComparison.OrdinalIgnoreCase);
+
+    ViewData["Title"] = $"{displayName} - Hero Codex";
+
+    List<string> ParseItems(string? raw)
+    {
+        if (string.IsNullOrWhiteSpace(raw)) return [];
+        return raw.Replace("[", "").Replace("]", "").Replace("\"", "")
+            .Split(['|', ','], StringSplitOptions.RemoveEmptyEntries)
+            .Select(i => i.Trim())
+            .Where(i => !string.IsNullOrEmpty(i))
+            .ToList();
+    }
+
+    string GetItemTitle(string item)
+    {
+        string clean = item.Replace("Item_", "");
+        return clean switch
+        {
+            "Immunity" => "Shrunken Head",
+            "Morph" => "Kuldra's Sheepstick",
+            "Silence" => "Hellflower",
+            "Protect" => "Null Stone",
+            "PushStaff" => "Tablet of Command",
+            "Pushstaff" => "Tablet of Command",
+            "Tabletofcommand" => "Tablet of Command",
+            "TabletOfCommand" => "Tablet of Command",
+            "SandScepter" => "Sand Scepter",
+            "Intelligence6" => "Stormspirit",
+            "Intelligence7" => "Staff of the Master",
+            "Critical1" => "Riftshards",
+            "Freeze" => "Frostwolf's Skull",
+            "Steamboots" => "Steamboots",
+            "ManaBurn1" => "Nullfire Blade",
+            "ManaBurn2" => "Geometer's Bane",
+            "Pierce" => "Shieldbreaker",
+            "Damage10" => "Mock of Brilliance",
+            "LifeSteal4" => "Symbol of Rage",
+            "LifeSteal5" => "Abyssal Skull",
+            "Nuke" => "Codex",
+            "Evasion" => "Wingbow",
+            "Weapon3" => "Savage Mace",
+            "Gloves3" => "Alchemist's Bones",
+            "HealthMana2" => "Icon of the Goddess",
+            "MagicArmor2" => "Shaman's Headdress",
+            "ManaRegen3" => "Ring of the Teacher",
+            "Replenish" => "Ring of Sorcery",
+            "Shield2" => "Helm of the Black Legion",
+            "Splash" => "Runed Cleaver",
+            "Stealth" => "Assassin's Shroud",
+            "Summon" => "Puzzlebox",
+            "SacrificialStone" => "Sacrificial Stone",
+            "Excruciator" => "Barbed Armor",
+            "Astrolabe" => "Astrolabe",
+            "BloodChalice" => "Blood Chalice",
+            "GraveLocket" => "Grave Locket",
+            "RunesOfTheBlight" => "Runes of the Blight",
+            "FlamingEye" => "Ward of Sight",
+            "GoldenApple" => "Golden Apple",
+            "SomazsSynchronizer" => "Orb of Zamos",
+            "Madfreds_BrassKnuckles" => "Madfred's Brass Knuckles",
+            "MadfredsBrassKnuckles" => "Madfred's Brass Knuckles",
+            "Sasuke" => "Genjuro",
+            "Genjuro" => "Genjuro",
+            "Lightning1" => "Thunderclaw",
+            "Lightning2" => "Charged Hammer",
+            "ManaPotion" => "Mana Potion",
+            "PowerSupply" => "Power Supply",
+            "Striders" => "Striders",
+            "PlatedGreaves" => "Plated Greaves",
+            "SpellShards" => "Spellshards",
+            "HarkonsBlade" => "Harkon's Blade",
+            "RestorationStone" => "Restoration Stone",
+            "VoidTalisman" => "Void Talisman",
+            "ArcaneBomb" => "Arcane Bomb",
+            "NomesWisdom" => "Nome's Wisdom",
+            "BarrierIdol" => "Barrier Idol",
+            "DaemonicBreastplate" => "Daemonic Breastplate",
+            "MastersLegacy" => "Master's Legacy",
+            "VeiledRot" => "Veiled Rot",
+            "JadeSpire" => "Jade Spire",
+            "PortalKey" => "Portal Key",
+            "OpheliasPact" => "Ophelia's Pact",
+            "PegasusBoots" => "Pegasus Boots",
+            "Gadget_FlamingEye" => "Ward of Sight",
+            "GroundFamiliar" => "Ground Courier",
+            "Item_GroundFamiliar" => "Ground Courier",
+            "FlyingCourier" => "Flying Courier",
+            "HealthMana3" => "Behemoth's Heart",
+            "State_PostHaste" => "Post Haste",
+            "Ultorsheavyplate" => "Ultor's Heavy Helm",
+            "UltorsHeavyPlate" => "Ultor's Heavy Helm",
+            "Weapon1" => "Arcana",
+            "GreatArcana" => "Arcana",
+            "BlessedArmband" => "Bolstering Armband",
+            "BolsteringHeadband" => "Bolstering Armband",
+            "Manaeye" => "Ward of Revelation",
+            "ManaEye" => "Ward of Revelation",
+            "Tokenofstealth" => "Token of Stealth",
+            "TokenOfStealth" => "Token of Stealth",
+            "Revive" => "Token of Life",
+            "Cheese" => "Kongor's Bananas",
+            "Intelligence5" => "Amulet of Exile",
+            "Voulge" => "Slayer",
+            "Stormspirit" => "Stormspirit",
+            "StormSpirit" => "Stormspirit",
+            "Fortunasdice" => "Fortuna's Dice",
+            "Ioynstone" => "Ioyn Stone",
+            "Elementuserstome" => "Tome of Elements",
+            "Dustofrevelation" => "Dust of Revelation",
+            "Homecomingstone" => "Homecoming Stone",
+            "Tokenofsight" => "Ward of Sight",
+            _ => Regex.Replace(clean, "(\\B[A-Z])", " $1")
+        };
+    }
+
+    string GetCanonicalItemCode(string item)
+    {
+        string clean = item.Replace("Item_", "", StringComparison.OrdinalIgnoreCase).Trim();
+        string cleanLower = clean.ToLowerInvariant();
+        string stripped = cleanLower.Replace("_", "").Replace(" ", "");
+        if (HomeController.LegacyItemAliases.TryGetValue(cleanLower, out string? directAlias))
+        {
+            return directAlias.ToLowerInvariant();
+        }
+        if (HomeController.LegacyItemAliases.TryGetValue(stripped, out string? strippedAlias))
+        {
+            return strippedAlias.ToLowerInvariant();
+        }
+        return stripped;
+    }
+}
+
+<div class="w-full max-w-6xl mx-auto py-4 sm:py-8 px-3 sm:px-4 space-y-6 sm:space-y-8 animate-fade-in-up">
+    <!-- Top Navigation Header -->
+    <div class="flex items-center justify-between">
+        <a asp-controller="Home" asp-action="Codex"
+           class="text-xs text-purple-400 hover:text-purple-300 font-semibold flex items-center gap-1.5 transition-colors">
+            <span>←</span> Back to Hero Codex Roster
+        </a>
+        <div class="flex items-center gap-4 text-xs font-medium text-slate-400">
+            @if (!string.IsNullOrEmpty(prevId))
+            {
+                string prevCleanId = prevId.Replace("Hero_", "");
+                <a href="/codex/@prevCleanId" class="hover:text-emerald-400 transition-colors flex items-center gap-1">
+                    <span>‹</span> @prevName
+                </a>
+            }
+            @if (!string.IsNullOrEmpty(prevId) && !string.IsNullOrEmpty(nextId))
+            {
+                <span class="text-slate-700">•</span>
+            }
+            @if (!string.IsNullOrEmpty(nextId))
+            {
+                string nextCleanId = nextId.Replace("Hero_", "");
+                <a href="/codex/@nextCleanId" class="hover:text-emerald-400 transition-colors flex items-center gap-1">
+                    @nextName <span>›</span>
+                </a>
+            }
+        </div>
+    </div>
+
+    <!-- Hero Header Banner Card -->
+    <div
+        class="glass-panel p-5 sm:p-8 rounded-3xl relative overflow-hidden border @heroCardBorder shadow-2xl backdrop-blur-xl bg-gradient-to-r from-slate-900/90 via-slate-900/80 to-purple-950/40">
+        <div
+            class="absolute -right-20 -top-20 w-80 h-80 @heroAuraGlow rounded-full blur-3xl pointer-events-none"></div>
+
+        <div class="flex flex-col md:flex-row items-center md:items-start gap-6 sm:gap-8 relative z-10">
+            <!-- Hero Icon Deluxe Socket -->
+            <div class="relative w-24 h-24 sm:w-32 sm:h-32 rounded-3xl p-1 @heroSocketBevel shadow-2xl flex-shrink-0">
+                <div class="relative w-full h-full rounded-2xl overflow-hidden bg-slate-950 ring-1 ring-white/15 ring-inset flex items-center justify-center">
+                    <img src="/images/heroes/@(iconName).png"
+                         onError="this.onerror=null;this.src='/images/heroes/default.png';"
+                         alt="@displayName"
+                         class="w-full h-full object-cover rounded-2xl"/>
+                    <div class="pointer-events-none absolute inset-0 bg-gradient-to-tr from-transparent via-white/15 to-transparent"></div>
+                </div>
+            </div>
+
+            <!-- Hero Info -->
+            <div class="space-y-4 text-center md:text-left flex-1">
+                <div class="flex flex-wrap items-center justify-center md:justify-start gap-2">
+                    <span
+                        class="px-3 py-1 rounded-full text-xs font-bold @heroAttrBadge border">
+                        ACTIVE CHAMPION
+                    </span>
+                    <span
+                        class="px-3 py-1 rounded-full text-xs font-mono bg-purple-500/10 border border-purple-500/30 text-purple-300">
+                        @matchedId
+                    </span>
+                    <button type="button" onclick="NexusSoundboard.openSoundboardModal()"
+                            class="px-3 py-1 rounded-full text-xs font-bold bg-amber-500/20 border border-amber-500/40 text-amber-300 hover:bg-amber-500/30 transition-all flex items-center gap-1.5 cursor-pointer">
+                        <span>🔊</span>
+                        <span>Soundboard</span>
+                    </button>
+                </div>
+
+                <h1 class="text-3xl sm:text-5xl font-black text-white tracking-tight">@displayName</h1>
+
+                <p class="text-slate-300 text-sm max-w-2xl leading-relaxed">
+                    @intro
+                </p>
+
+                <!-- Attributes & Role Badges & Community Difficulty -->
+                <div class="flex flex-wrap items-center justify-center md:justify-start gap-3 text-xs pt-2">
+                    <!-- Faction Tag -->
+                    @if (isLegion)
+                    {
+                        <div
+                            class="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-400 font-bold shadow-sm shadow-amber-950/40">
+                            <span>🛡️</span>
+                            <span>Legion</span>
+                        </div>
+                    }
+                    else
+                    {
+                        <div
+                            class="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 font-bold shadow-sm shadow-red-950/40">
+                            <span>💀</span>
+                            <span>Hellbourne</span>
+                        </div>
+                    }
+
+                    <!-- Primary Role Tag -->
+                    <div
+                        class="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-slate-800/80 border border-slate-700 text-slate-300">
+                        <span>⚔️</span>
+                        <span>Primary Role: <strong class="text-white">@role</strong></span>
+                    </div>
+
+                    <!-- Attribute Tag -->
+                    <div
+                        class="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl @heroAttrBadge font-bold shadow-sm border">
+                        <span>Attribute: <strong class="text-white">@heroAttribute</strong></span>
+                    </div>
+
+                    <!-- Community Difficulty Average Badge -->
+                    <div id="community-difficulty-badge">
+                        @if (!communityAvg.HasValue)
+                        {
+                            <div
+                                class="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-slate-800/80 border border-amber-500/30 text-amber-400 font-semibold">
+                                <span>⭐</span>
+                                <span>Unranked: Vote now to set a difficulty</span>
+                            </div>
+                        }
+                        else
+                        {
+                            <div
+                                class="flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-slate-800/80 border border-slate-700 text-slate-300">
+                                <span>🔥</span>
+                                <span>Difficulty: <strong class="text-white">@communityAvg.Value.ToString("F1")</strong></span>
+                                <div class="flex items-center gap-0.5 text-xs text-amber-400">
+                                    @for (int i = 1; i <= 5; i++)
+                                    {
+                                        if (communityRounded >= i)
+                                        {
+                                            <span>★</span>
+                                        }
+                                        else if (communityRounded >= i - 0.5)
+                                        {
+                                            <span class="text-amber-400/90 font-bold">½</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-slate-600/60">★</span>
+                                        }
+                                    }
+                                </div>
+                                <span
+                                    class="text-slate-500 font-mono text-[11px]">(@communityTotalVotes @(communityTotalVotes == 1 ? "vote" : "votes"))</span>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Detailed Hero Attributes & Combat Telemetry Panel -->
+    @if (detailEntity != null)
+    {
+        <div class="glass-panel p-6 rounded-3xl space-y-4 border border-slate-800">
+            <div class="flex items-center justify-between">
+                <h3 class="text-lg font-bold text-white flex items-center gap-2">
+                    <span>📊</span> Base Hero Attributes & Telemetry
+                </h3>
+                <span
+                    class="text-xs text-amber-400 font-semibold px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/30">
+                    Official In-Game Telemetry
+                </span>
+            </div>
+
+            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3">
+                <!-- Strength -->
+                <div class="p-3.5 rounded-2xl bg-red-950/30 border border-red-500/30 space-y-1">
+                    <div class="text-[10px] font-bold text-red-400 uppercase tracking-wider">Strength</div>
+                    <div class="text-lg font-black text-white">@detailEntity.BaseStrength <span
+                            class="text-xs text-red-300 font-normal">(+@detailEntity.StrengthGrowth/lvl)</span></div>
+                </div>
+
+                <!-- Agility -->
+                <div class="p-3.5 rounded-2xl bg-emerald-950/30 border border-emerald-500/30 space-y-1">
+                    <div class="text-[10px] font-bold text-emerald-400 uppercase tracking-wider">Agility</div>
+                    <div class="text-lg font-black text-white">@detailEntity.BaseAgility <span
+                            class="text-xs text-emerald-300 font-normal">(+@detailEntity.AgilityGrowth/lvl)</span></div>
+                </div>
+
+                <!-- Intelligence -->
+                <div class="p-3.5 rounded-2xl bg-blue-950/30 border border-blue-500/30 space-y-1">
+                    <div class="text-[10px] font-bold text-blue-400 uppercase tracking-wider">Intelligence</div>
+                    <div class="text-lg font-black text-white">@detailEntity.BaseIntelligence <span
+                            class="text-xs text-blue-300 font-normal">(+@detailEntity.IntelligenceGrowth/lvl)</span>
+                    </div>
+                </div>
+
+                <!-- Armor -->
+                <div class="p-3.5 rounded-2xl bg-slate-900/80 border border-slate-700 space-y-1">
+                    <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Armor</div>
+                    <div class="text-lg font-black text-white">@detailEntity.Armor.ToString("F2") <span
+                            class="text-xs text-slate-400 font-normal">(@detailEntity.ArmorMitigation)</span></div>
+                </div>
+
+                <!-- Atk Damage -->
+                <div class="p-3.5 rounded-2xl bg-amber-950/30 border border-amber-500/30 space-y-1">
+                    <div class="text-[10px] font-bold text-amber-400 uppercase tracking-wider">Attack Dmg</div>
+                    <div class="text-lg font-black text-white">@detailEntity.MinDamage - @detailEntity.MaxDamage</div>
+                </div>
+
+                <!-- Movement Speed & Type -->
+                <div class="p-3.5 rounded-2xl bg-purple-950/30 border border-purple-500/30 space-y-1">
+                    <div class="text-[10px] font-bold text-purple-400 uppercase tracking-wider">Speed</div>
+                    <div class="text-lg font-black text-white">@detailEntity.MovementSpeed <span
+                            class="text-xs text-purple-300 font-normal">(@detailEntity.AttackType)</span></div>
+                </div>
+            </div>
+        </div>
+    }
+
+    <!-- Stats & Combat Telemetry Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <!-- Win Rate Card -->
+        <div class="glass-card p-6 rounded-2xl flex flex-col justify-between border border-slate-800">
+            <div class="flex items-center justify-between mb-4">
+                <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Combat Win Rate</span>
+                <span class="text-xl">🏆</span>
+            </div>
+            <div class="space-y-1">
+                <div class="text-3xl font-black text-emerald-400">@winrate.ToString("F1")%</div>
+                <p class="text-xs text-slate-500">Based on recent Project KONGOR match telemetry</p>
+            </div>
+        </div>
+
+        <!-- KDA Ratio Card -->
+        <div class="glass-card p-6 rounded-2xl flex flex-col justify-between border border-slate-800">
+            <div class="flex items-center justify-between mb-4">
+                <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Average KDA Ratio</span>
+                <span class="text-xl">⚔️</span>
+            </div>
+            <div class="space-y-1">
+                <div class="text-3xl font-black text-purple-400">@kda.ToString("F2")</div>
+                <p class="text-xs text-slate-500">Kills + Assists per death ratio</p>
+            </div>
+        </div>
+
+        <!-- Personal Games Card -->
+        <div class="glass-card p-6 rounded-2xl flex flex-col justify-between border border-slate-800">
+            <div class="flex items-center justify-between mb-4">
+                <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Your Matches Played</span>
+                <span class="text-xl">🎮</span>
+            </div>
+            <div class="space-y-1">
+                <div class="text-3xl font-black text-cyan-400">@gamesPlayed</div>
+                <p class="text-xs text-slate-500">Recorded on your linked account</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Abilities & Official Hero Guide Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <!-- Core Combat Abilities with Icons -->
+        <div class="glass-panel p-6 rounded-3xl space-y-4 relative z-20 hover:z-30">
+            <h3 class="text-lg font-bold text-white flex items-center gap-2">
+                <span>✨</span> Core Combat Abilities
+            </h3>
+            <div class="space-y-3.5 relative">
+                @foreach (HomeController.AbilityDto ab in abilities)
+                {
+                    <div
+                        class="relative z-10 p-4 sm:p-5 rounded-2xl bg-slate-900/70 border border-slate-800 flex items-start gap-4 sm:gap-5 group hover:border-purple-400 md:hover:scale-[1.38] md:hover:translate-x-8 md:hover:z-50 md:hover:shadow-[0_25px_70px_rgba(168,85,247,0.45)] md:hover:bg-slate-950/98 backdrop-blur-2xl transition-all duration-300 ease-out cursor-pointer">
+                        <div class="relative flex-shrink-0">
+                            <div
+                                class="w-14 h-14 md:group-hover:w-24 md:group-hover:h-24 rounded-2xl overflow-hidden bg-slate-950 border border-purple-500/30 group-hover:border-purple-400 md:group-hover:shadow-[0_0_25px_rgba(168,85,247,0.6)] transition-all duration-300 ease-out shadow-xl">
+                                <img src="@ab.IconUrl"
+                                     onError="this.onerror=null;this.src='/images/heroes/@(iconName).png';"
+                                     alt="@ab.Name"
+                                     class="w-full h-full object-cover md:group-hover:scale-105 transition-transform duration-300 ease-out"/>
+                            </div>
+                            <span
+                                class="absolute -bottom-1 -right-1 w-5 h-5 md:group-hover:w-7 md:group-hover:h-7 rounded-lg bg-purple-600 text-white font-bold text-[10px] md:group-hover:text-xs flex items-center justify-center border border-purple-300 shadow-md transition-all duration-300">
+                                @ab.Key
+                            </span>
+                        </div>
+                        <div class="space-y-1.5 flex-1">
+                            <div class="flex items-center justify-between gap-2">
+                                <h4 class="font-extrabold text-white text-sm md:group-hover:text-xl group-hover:text-purple-300 transition-all duration-300">@ab.Name</h4>
+                                <span
+                                    class="hidden md:group-hover:inline-flex items-center gap-1.5 text-[10px] md:group-hover:text-xs font-bold text-purple-200 bg-purple-600/30 px-2.5 py-0.5 rounded-full border border-purple-400/50 shadow-md animate-pulse">
+                                    🔍 MAGNIFIED VIEW
+                                </span>
+                            </div>
+                            <p class="text-slate-400 text-xs md:group-hover:text-sm md:group-hover:text-slate-100 leading-relaxed md:group-hover:leading-normal font-normal md:group-hover:font-medium transition-all duration-300">@ab.Description</p>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <!-- Official Hero Strategy Guide with Clickable Item Icons -->
+        <div class="glass-panel p-6 rounded-3xl space-y-4 relative z-10">
+            <div class="flex items-center justify-between flex-wrap gap-2">
+                <h3 class="text-lg font-bold text-white flex items-center gap-2">
+                    <span>📖</span> Official Hero Guide
+                </h3>
+
+                <!-- Interactive Star Selection Widget -->
+                <div
+                    class="flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-slate-900/90 border border-slate-700/80 text-xs shadow-inner">
+                    <span class="text-slate-400 font-medium">Rate Difficulty:</span>
+                    <div id="star-rating-container" class="flex items-center gap-1 cursor-pointer">
+                        @for (int i = 1; i <= 5; i++)
+                        {
+                            bool isSelected = userVote >= i;
+                            <button type="button"
+                                    onclick="submitDifficultyVote(@i)"
+                                    onmouseenter="hoverStars(@i)"
+                                    onmouseleave="resetStars()"
+                                    data-star-idx="@i"
+                                    class="star-btn text-base transition-transform hover:scale-125 focus:outline-none @(isSelected ? "text-amber-400" : "text-slate-600/60")"
+                                    title="Rate @i Star@(i > 1 ? "s" : "")">
+                                ★
+                            </button>
+                        }
+                    </div>
+                    <span id="user-vote-status" class="text-[11px] text-slate-400 font-mono ml-1">
+                        @(userVote > 0 ? $"({userVote}★)" : "Vote")
+                    </span>
+                </div>
+            </div>
+
+            @if (guide != null)
+            {
+                List<HeroGuideDto> allGuidesList = ViewBag.AllGuides as List<HeroGuideDto> ?? (guide != null ? [guide] : []);
+
+                <div class="space-y-4">
+                    <div class="p-4 rounded-2xl bg-slate-900/90 border border-slate-800 space-y-2.5 shadow-lg">
+                        <div class="flex items-center justify-between">
+                            <div class="text-xs text-slate-400 font-mono">Guide Title</div>
+                            <div class="flex items-center gap-2">
+                                @if (User.Identity?.IsAuthenticated == true)
+                                {
+                                    <a href="/guides/builder?hero=@matchedId"
+                                       class="text-[11px] text-emerald-400 hover:text-emerald-300 font-bold flex items-center gap-1 hover:underline">
+                                        <span>➕</span> New Guide
+                                    </a>
+                                }
+                                @if (allGuidesList.Count > 1)
+                                {
+                                    <span
+                                        class="text-[11px] text-amber-400 font-mono bg-amber-500/10 px-2 py-0.5 rounded-full border border-amber-500/20">
+                                        @allGuidesList.Count Available Builds
+                                    </span>
+                                }
+                            </div>
+                        </div>
+
+                        <select id="guide-selector" onchange="switchHeroGuide(this.value)"
+                                class="w-full bg-slate-950 text-amber-400 font-bold text-sm border border-slate-700 rounded-xl px-3.5 py-2 focus:outline-none focus:border-amber-400 cursor-pointer shadow-inner hover:bg-slate-900 transition-all">
+                            <optgroup label="✨ Available Builds">
+                                @foreach (HeroGuideDto g in allGuidesList)
+                                {
+                                    string label = g.Featured ? $"★ {g.Name.Replace("\\'", "'")} (Official)" : $"{g.Name.Replace("\\'", "'")} (Community)";
+                                    <option value="@g.ID">@label</option>
+                                }
+                            </optgroup>
+                            <optgroup label="🛠️ Actions">
+                                <option value="create_new" class="text-emerald-400 font-black">➕ Create Guide
+                                    for @displayName...
+                                </option>
+                            </optgroup>
+                        </select>
+
+                        <!-- Author Quick Actions: Edit & Delete for user's own guides (Official guides protected) -->
+                        <div id="guide-author-actions"
+                             class="hidden items-center justify-between pt-1 border-t border-slate-800 text-xs">
+                            <span class="text-purple-300 font-mono text-[11px]">👤 Your Custom Guide</span>
+                            <div class="flex items-center gap-2">
+                                <a id="guide-edit-link" href="#"
+                                   class="px-2.5 py-1 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/30 text-[11px] font-bold transition-all">
+                                    ✏️ Edit
+                                </a>
+                                <button onclick="deleteActiveHeroGuide()" type="button"
+                                        class="px-2.5 py-1 rounded-lg bg-rose-500/10 hover:bg-rose-500 text-rose-400 hover:text-white border border-rose-500/20 text-[11px] font-bold transition-all">
+                                    🗑️ Delete
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Item Progression Categories -->
+                    <div id="guide-items-container" class="space-y-3">
+                        <!-- Starting Items -->
+                        <div class="space-y-1.5">
+                            <span
+                                class="text-[11px] font-bold uppercase tracking-wider text-amber-400">Starting Items</span>
+                            <div id="starting-items-container" class="flex flex-wrap gap-2">
+                                @foreach (string item in ParseItems(guide!.StartingItems))
+                                {
+                                    string itemTitle = GetItemTitle(item);
+                                    string iconItem = GetCanonicalItemCode(item);
+                                    <div onclick="openItemModal('@(iconItem)')"
+                                         data-item-code="@(iconItem)"
+                                         class="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-900/80 border border-amber-500/20 text-xs text-slate-200 cursor-pointer hover:border-amber-400 hover:scale-105 transition-all shadow-md active:scale-95 group">
+                                        <img src="/images/items/@(iconItem).png"
+                                             onError="this.onerror=null;this.src='/images/items/default.png';"
+                                             class="w-5 h-5 rounded-md object-cover border border-amber-500/30 group-hover:border-amber-400"
+                                             alt="@itemTitle"/>
+                                        <span class="item-pill-title group-hover:text-amber-300">@itemTitle</span>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+
+                        <!-- Early Game Items -->
+                        <div class="space-y-1.5">
+                            <span
+                                class="text-[11px] font-bold uppercase tracking-wider text-emerald-400">Early Game</span>
+                            <div id="early-game-items-container" class="flex flex-wrap gap-2">
+                                @foreach (string item in ParseItems(guide!.EarlyGameItems))
+                                {
+                                    string itemTitle = GetItemTitle(item);
+                                    string iconItem = GetCanonicalItemCode(item);
+                                    <div onclick="openItemModal('@(iconItem)')"
+                                         data-item-code="@(iconItem)"
+                                         class="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-900/80 border border-emerald-500/20 text-xs text-slate-200 cursor-pointer hover:border-emerald-400 hover:scale-105 transition-all shadow-md active:scale-95 group">
+                                        <img src="/images/items/@(iconItem).png"
+                                             onError="this.onerror=null;this.src='/images/items/default.png';"
+                                             class="w-5 h-5 rounded-md object-cover border border-emerald-500/30 group-hover:border-emerald-400"
+                                             alt="@itemTitle"/>
+                                        <span class="item-pill-title group-hover:text-emerald-300">@itemTitle</span>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+
+                        <!-- Core Items -->
+                        <div class="space-y-1.5">
+                            <span
+                                class="text-[11px] font-bold uppercase tracking-wider text-purple-400">Core Build</span>
+                            <div id="core-build-items-container" class="flex flex-wrap gap-2">
+                                @foreach (string item in ParseItems(guide!.CoreItems))
+                                {
+                                    string itemTitle = GetItemTitle(item);
+                                    string iconItem = GetCanonicalItemCode(item);
+                                    <div onclick="openItemModal('@(iconItem)')"
+                                         data-item-code="@(iconItem)"
+                                         class="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-900/80 border border-purple-500/20 text-xs text-slate-200 font-semibold cursor-pointer hover:border-purple-400 hover:scale-105 transition-all shadow-md active:scale-95 group">
+                                        <img src="/images/items/@(iconItem).png"
+                                             onError="this.onerror=null;this.src='/images/items/default.png';"
+                                             class="w-5 h-5 rounded-md object-cover border border-purple-500/30 group-hover:border-purple-400"
+                                             alt="@itemTitle"/>
+                                        <span class="item-pill-title group-hover:text-purple-300">@itemTitle</span>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+
+                        <!-- Luxury Items -->
+                        <div class="space-y-1.5">
+                            <span class="text-[11px] font-bold uppercase tracking-wider text-pink-400">Luxury / Situational</span>
+                            <div id="luxury-items-container" class="flex flex-wrap gap-2">
+                                @foreach (string item in ParseItems(guide!.LuxuryItems))
+                                {
+                                    string itemTitle = GetItemTitle(item);
+                                    string iconItem = GetCanonicalItemCode(item);
+                                    <div onclick="openItemModal('@(iconItem)')"
+                                         data-item-code="@(iconItem)"
+                                         class="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-900/80 border border-pink-500/20 text-xs text-slate-200 cursor-pointer hover:border-pink-400 hover:scale-105 transition-all shadow-md active:scale-95 group">
+                                        <img src="/images/items/@(iconItem).png"
+                                             onError="this.onerror=null;this.src='/images/items/default.png';"
+                                             class="w-5 h-5 rounded-md object-cover border border-pink-500/30 group-hover:border-pink-400"
+                                             alt="@itemTitle"/>
+                                        <span class="item-pill-title group-hover:text-pink-300">@itemTitle</span>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+            else
+            {
+                <div class="space-y-4">
+                    <div class="p-4 rounded-2xl bg-slate-900/60 border border-slate-800 space-y-1">
+                        <div class="text-xs text-slate-400 font-mono">Community Guide</div>
+                        <h4 class="font-bold text-white text-sm">Default Recommended Build</h4>
+                    </div>
+
+                    <div class="space-y-3">
+                        <div class="space-y-1.5">
+                            <span
+                                class="text-[11px] font-bold uppercase tracking-wider text-amber-400">Starting Items</span>
+                            <div class="flex flex-wrap gap-2">
+                                <div onclick="openItemModal('runesoftheblight')"
+                                     class="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-900/80 border border-amber-500/20 text-xs text-slate-200 cursor-pointer hover:border-amber-400 transition-all">
+                                    <img src="/images/items/runesoftheblight.png"
+                                         onError="this.onerror=null;this.src='/images/items/default.png';"
+                                         class="w-5 h-5 rounded-md object-cover" alt=""/>
+                                    <span>Runes of the Blight</span>
+                                </div>
+                                <div onclick="openItemModal('loggershatchet')"
+                                     class="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-900/80 border border-amber-500/20 text-xs text-slate-200 cursor-pointer hover:border-amber-400 transition-all">
+                                    <img src="/images/items/loggershatchet.png"
+                                         onError="this.onerror=null;this.src='/images/items/default.png';"
+                                         class="w-5 h-5 rounded-md object-cover" alt=""/>
+                                    <span>Logger's Hatchet</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="space-y-1.5">
+                            <span
+                                class="text-[11px] font-bold uppercase tracking-wider text-purple-400">Core Build</span>
+                            <div class="flex flex-wrap gap-2">
+                                <div onclick="openItemModal('portalkey')"
+                                     class="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-900/80 border border-purple-500/20 text-xs text-slate-200 font-semibold cursor-pointer hover:border-purple-400 transition-all">
+                                    <img src="/images/items/portalkey.png"
+                                         onError="this.onerror=null;this.src='/images/items/default.png';"
+                                         class="w-5 h-5 rounded-md object-cover" alt=""/>
+                                    <span>Portal Key</span>
+                                </div>
+                                <div onclick="openItemModal('shrunkenhead')"
+                                     class="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-900/80 border border-purple-500/20 text-xs text-slate-200 font-semibold cursor-pointer hover:border-purple-400 transition-all">
+                                    <img src="/images/items/shrunkenhead.png"
+                                         onError="this.onerror=null;this.src='/images/items/default.png';"
+                                         class="w-5 h-5 rounded-md object-cover" alt=""/>
+                                    <span>Shrunken Head</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<!-- Glassmorphic Item Details Modal Synchronized with Item Detail Page -->
+<div id="item-detail-modal"
+     class="fixed inset-0 z-50 hidden bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4 animate-fade-in">
+    <div
+        class="glass-panel max-w-lg w-full p-6 sm:p-7 rounded-3xl border border-slate-700/80 shadow-2xl space-y-5 relative overflow-hidden bg-slate-900/95 max-h-[90vh] overflow-y-auto">
+        <button onclick="closeItemModal()" type="button"
+                class="absolute top-4 right-4 text-slate-400 hover:text-white text-lg font-bold p-1 transition-colors z-10">
+            ✕
+        </button>
+
+        <!-- Modal Header Card -->
+        <div class="flex flex-col sm:flex-row items-start sm:items-center gap-5 relative z-10 pr-6">
+            <div
+                class="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl overflow-hidden bg-slate-950 border-2 border-amber-400/40 p-1 flex-shrink-0 shadow-xl">
+                <img id="modal-item-icon" src="" class="w-full h-full object-cover rounded-xl" alt="Item Icon"/>
+            </div>
+            <div class="space-y-2 flex-1 min-w-0">
+                <div class="flex items-center justify-between gap-2 flex-wrap">
+                    <h3 id="modal-item-name"
+                        class="text-2xl sm:text-3xl font-extrabold text-white tracking-tight truncate">Item Name</h3>
+                    <span id="modal-status-badge"
+                          class="px-3 py-1 rounded-full text-xs font-bold tracking-wider uppercase bg-emerald-500/10 border border-emerald-500/30 text-emerald-400">
+                        ACTIVE
+                    </span>
+                </div>
+                <p id="modal-item-code" class="text-xs font-mono text-amber-400/80">Item Code: <span
+                        id="modal-item-code-val" class="font-bold text-white">code</span></p>
+
+                <div class="flex flex-wrap items-center gap-2 text-xs" id="modal-item-cost-container">
+                    <!-- Dynamic pills for Category, Total Cost, Recipe Scroll Cost -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Disabled Warning Banner if applicable -->
+        <div id="modal-disabled-warning"
+             class="hidden p-3.5 rounded-2xl bg-red-950/40 border border-red-500/40 text-red-300 text-xs flex items-center gap-2.5">
+            <span class="text-lg">⚠️</span>
+            <span>This item is currently disabled in active competitive matchmaking modes.</span>
+        </div>
+
+        <!-- Embedded Item Description / Effects & Stats -->
+        <div class="p-4 sm:p-5 rounded-2xl bg-slate-950/70 border border-slate-800/80 space-y-1.5">
+            <div class="text-[11px] font-bold text-amber-400 uppercase tracking-widest flex items-center gap-1.5">
+                <span>✨</span> ITEM EFFECTS & STATS
+            </div>
+            <p id="modal-item-desc" class="text-xs sm:text-sm text-slate-200 leading-relaxed">
+                Item description details...
+            </p>
+        </div>
+
+        <!-- Recipe Components Section -->
+        <div id="modal-item-comps-container"
+             class="p-4 sm:p-5 rounded-2xl bg-slate-950/60 border border-slate-800 space-y-3">
+            <h3 class="text-xs font-bold text-slate-300 uppercase tracking-widest flex items-center gap-2">
+                <span>🔨</span> RECIPE COMPONENTS
+            </h3>
+            <div id="modal-item-comps-list" class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                <!-- Component Cards dynamically populated -->
+            </div>
+        </div>
+
+        <!-- Builds Into Upgrades Section -->
+        <div id="modal-item-builds-into-container"
+             class="hidden p-4 sm:p-5 rounded-2xl bg-slate-950/60 border border-slate-800 space-y-3">
+            <h3 class="text-xs font-bold text-cyan-400 uppercase tracking-widest flex items-center gap-2">
+                <span>⚡</span> BUILDS INTO
+            </h3>
+            <div id="modal-item-builds-into-list" class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                <!-- Builds Into Cards dynamically populated -->
+            </div>
+        </div>
+
+        <!-- Upgrade Path Note -->
+        <div id="modal-item-upgrade-container"
+             class="p-4 rounded-2xl bg-cyan-950/40 border border-cyan-500/40 text-cyan-300 text-xs sm:text-sm flex items-center gap-3 hidden">
+            <span class="text-xl">🛡️</span>
+            <div>
+                <strong class="font-bold">Upgrade Path:</strong> <span id="modal-item-upgrade-text">Upgrade Note</span>
+            </div>
+        </div>
+
+        <!-- Level Upgrade Tier Pricing Section -->
+        <div id="modal-item-levels-container"
+             class="hidden p-4 sm:p-5 rounded-2xl bg-slate-950/60 border border-amber-500/30 space-y-3">
+            <div class="flex items-center justify-between">
+                <h3 class="text-xs font-bold text-amber-400 uppercase tracking-widest flex items-center gap-2">
+                    <span>📈</span> LEVEL UPGRADE & PRICING BREAKDOWN
+                </h3>
+                <span id="modal-item-levels-count" class="text-[11px] font-medium text-slate-400 font-mono">Upgradable Tiers</span>
+            </div>
+            <div id="modal-item-levels-list" class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                <!-- Level Tiers Cards dynamically populated -->
+            </div>
+        </div>
+
+        <!-- Shop Lore / Flavor -->
+        <div id="modal-item-flavor-container"
+             class="p-4 rounded-2xl bg-slate-950/40 border border-slate-800/80 space-y-1.5">
+            <h3 class="text-xs font-bold text-purple-400 uppercase tracking-widest flex items-center gap-2">
+                <span>📜</span> SHOP LORE
+            </h3>
+            <p id="modal-item-flavor" class="text-xs sm:text-sm italic text-slate-400 leading-relaxed font-serif">
+                "Shop flavor text..."
+            </p>
+        </div>
+
+        <div class="pt-2 flex items-center justify-between gap-3 flex-wrap">
+            <a id="modal-item-compendium-link" href="/items"
+               class="px-4 py-2.5 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/30 text-amber-300 text-xs font-bold transition-all">
+                View in Item Compendium ➔
+            </a>
+            <button onclick="closeItemModal()" type="button"
+                    class="px-5 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-white text-xs font-bold transition-all shadow-md">
+                Close
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+    let currentUserVote = @userVote;
+    const heroId = "@matchedId";
+    let itemCatalog = {};
+    let itemCatalogLoadPromise = null;
+    const legacyItemAliases = @Html.Raw(JsonSerializer.Serialize(
+                                  HomeController.LegacyItemAliases.ToDictionary(
+                                      k => k.Key.ToLowerInvariant(),
+                                      v => v.Value.ToLowerInvariant())));
+
+    const heroGuidesData = @Html.Raw(JsonSerializer.Serialize(
+                               (ViewBag.AllGuides as List<HeroGuideDto> ?? (guide != null ? [guide] : [])).Select(g => new
+                               {
+                                   id = g.ID,
+                                   name = g.Name.Replace("\\'", "'"),
+                                   startingItems = g.StartingItems,
+                                   earlyGameItems = g.EarlyGameItems,
+                                   coreItems = g.CoreItems,
+                                   luxuryItems = g.LuxuryItems,
+                                   featured = g.Featured,
+                                   isAuthor = (currentAccount != null && (g.AuthorAccountID == currentAccount.ID || (g.Author != null && g.Author.ID == currentAccount.ID) || string.Equals(g.AuthorAccountName, currentAccount.Name, StringComparison.OrdinalIgnoreCase)) && !g.Featured)
+                               })
+                           ));
+
+    let activeGuideId = heroGuidesData.length > 0 ? heroGuidesData[0].id : 0;
+
+    function switchHeroGuide(guideId) {
+        if (guideId === 'create_new') {
+            window.location.href = `/guides/builder?hero=${encodeURIComponent(heroId)}`;
+            return;
+        }
+
+        const selected = heroGuidesData.find(g => g.id == guideId);
+        if (!selected) return;
+
+        activeGuideId = selected.id;
+        const titleElem = document.getElementById('active-guide-title');
+        if (titleElem) titleElem.innerText = selected.name;
+
+        renderCategoryPills('starting-items-container', selected.startingItems, 'amber');
+        renderCategoryPills('early-game-items-container', selected.earlyGameItems, 'emerald');
+        renderCategoryPills('core-build-items-container', selected.coreItems, 'purple');
+        renderCategoryPills('luxury-items-container', selected.luxuryItems, 'pink');
+
+        const authorActions = document.getElementById('guide-author-actions');
+        const editLink = document.getElementById('guide-edit-link');
+        if (authorActions && editLink) {
+            if (selected.isAuthor) {
+                authorActions.classList.remove('hidden');
+                authorActions.classList.add('flex');
+                editLink.href = `/guides/builder?id=${selected.id}`;
+            } else {
+                authorActions.classList.add('hidden');
+                authorActions.classList.remove('flex');
+            }
+        }
+    }
+
+    async function deleteActiveHeroGuide() {
+        const selected = heroGuidesData.find(g => g.id == activeGuideId);
+        if (!selected) return;
+        if (!confirm(`Are you sure you want to delete "${selected.name}"? This action cannot be undone.`)) return;
+
+        try {
+            const res = await fetch(`/guides/delete/${activeGuideId}`, {method: 'POST'});
+            const data = await res.json();
+            if (data.success) {
+                alert("✓ Guide deleted successfully.");
+                window.location.reload();
+            } else {
+                alert("⚠️ " + (data.message || "Failed to delete guide."));
+            }
+        } catch (e) {
+            console.error(e);
+            alert("Error communicating with server.");
+        }
+    }
+
+    function getCanonicalItemCodeJs(code) {
+        const clean = (code || '').replace(/^Item_/i, '').trim().toLowerCase();
+        const stripped = clean.replace(/_/g, '').replace(/\s+/g, '');
+        return legacyItemAliases[clean] || legacyItemAliases[stripped] || stripped || clean;
+    }
+
+    function normalizeCatalogEntry(raw) {
+        if (!raw || typeof raw !== 'object') return null;
+        const rawCode = (raw.code || raw.itemIdentifier || raw.key || '').toString().trim();
+        const cleanCode = rawCode.replace(/^Item_/i, '').toLowerCase();
+        const strippedCode = cleanCode.replace(/_/g, '').replace(/\s+/g, '');
+        const canonicalCode = cleanCode || strippedCode;
+        const normalizeSubItem = sub => {
+            if (typeof sub === 'string') return {code: sub, name: sub};
+            if (!sub || typeof sub !== 'object') return {code: '', name: ''};
+            return {
+                ...sub,
+                code: sub.code || sub.Code || '',
+                name: sub.name || sub.Name || '',
+                cost: sub.cost ?? sub.Cost ?? 0,
+                icon: sub.icon || sub.Icon || '',
+                isRecipe: Boolean(sub.isRecipe ?? sub.IsRecipe)
+            };
+        };
+        let comps = Array.isArray(raw.components) ? raw.components.map(normalizeSubItem) : [];
+        if (comps.length === 0 && typeof raw.componentCodesJson === 'string' && raw.componentCodesJson.trim().startsWith('[')) {
+            try {
+                const parsed = JSON.parse(raw.componentCodesJson);
+                if (Array.isArray(parsed)) {
+                    comps = parsed.map(normalizeSubItem);
+                }
+            } catch (_) {
+            }
+        }
+        return {
+            ...raw,
+            code: canonicalCode,
+            name: raw.name || raw.displayName || canonicalCode.toUpperCase(),
+            icon: raw.icon || raw.iconPath || `/images/items/${strippedCode || 'default'}.png`,
+            cost: raw.cost ?? 0,
+            recipeCost: raw.recipeCost ?? 0,
+            category: raw.category || '',
+            description: raw.description || '',
+            flavor: raw.flavor || '',
+            upgrade: raw.upgrade || '',
+            isActive: raw.isActive !== false,
+            components: comps,
+            buildsInto: Array.isArray(raw.buildsInto) ? raw.buildsInto.map(normalizeSubItem) : []
+        };
+    }
+
+    function indexItemCatalog(rawPayload) {
+        const map = {};
+        const list = Array.isArray(rawPayload)
+            ? rawPayload
+            : (rawPayload && typeof rawPayload === 'object' ? Object.values(rawPayload) : []);
+
+        list.forEach(entry => {
+            const norm = normalizeCatalogEntry(entry);
+            if (!norm || !norm.code) return;
+            const c = norm.code.toLowerCase();
+            const stripped = c.replace(/_/g, '').replace(/\s+/g, '');
+            map[c] = norm;
+            map['item_' + c] = norm;
+            if (stripped) {
+                map[stripped] = norm;
+                map['item_' + stripped] = norm;
+            }
+            if (entry.itemIdentifier) {
+                const ident = String(entry.itemIdentifier).trim().toLowerCase();
+                const cleanIdent = ident.replace(/^item_/, '').replace(/_/g, '');
+                map[ident] = norm;
+                if (cleanIdent) map[cleanIdent] = norm;
+            }
+            if (norm.name) {
+                const normName = String(norm.name).toLowerCase().replace(/[^a-z0-9]/g, '');
+                if (normName && !map[normName]) {
+                    map[normName] = norm;
+                }
+            }
+        });
+
+        Object.keys(legacyItemAliases).forEach(aliasKey => {
+            const targetKey = legacyItemAliases[aliasKey];
+            const target = map[targetKey] || map[targetKey.replace(/_/g, '')];
+            if (target) {
+                if (!map[aliasKey]) map[aliasKey] = target;
+                if (!map['item_' + aliasKey]) map['item_' + aliasKey] = target;
+            }
+        });
+
+        return map;
+    }
+
+    function resolveCatalogItem(rawCode) {
+        if (!rawCode) return null;
+        const rawLower = String(rawCode).trim().toLowerCase();
+        const clean = rawLower.replace(/^item_/, '');
+        const canonical = getCanonicalItemCodeJs(clean);
+        const stripped = canonical.replace(/_/g, '').replace(/\s+/g, '');
+        const alphaNum = clean.replace(/[^a-z0-9]/g, '');
+        return itemCatalog[canonical]
+            || itemCatalog['item_' + canonical]
+            || itemCatalog[stripped]
+            || itemCatalog['item_' + stripped]
+            || itemCatalog[clean]
+            || itemCatalog[rawLower]
+            || itemCatalog[alphaNum]
+            || null;
+    }
+
+    function syncRenderedGuidePills() {
+        document.querySelectorAll('[data-item-code]').forEach(el => {
+            const code = (el.getAttribute('data-item-code') || '').toLowerCase().trim();
+            const item = resolveCatalogItem(code);
+            if (!item) return;
+            const span = el.querySelector('.item-pill-title');
+            if (span && item.name && code !== 'blightstones') {
+                span.innerText = item.name;
+            }
+            const img = el.querySelector('img');
+            if (img && item.icon) {
+                img.src = item.icon;
+            }
+        });
+    }
+
+    function ensureItemCatalogLoaded() {
+        if (itemCatalog && Object.keys(itemCatalog).length > 0) {
+            return Promise.resolve(itemCatalog);
+        }
+        if (!itemCatalogLoadPromise) {
+            itemCatalogLoadPromise = fetch('/api/items', {headers: {'Accept': 'application/json'}})
+                .then(r => r.ok ? r.json() : [])
+                .then(data => {
+                    itemCatalog = indexItemCatalog(data);
+                    console.debug(`[HeroDetail] Indexed ${Object.keys(itemCatalog).length} item lookup keys from /api/items.`);
+                    syncRenderedGuidePills();
+                    return itemCatalog;
+                })
+                .catch(e => {
+                    console.error('[HeroDetail] Failed to load /api/items catalog:', e);
+                    itemCatalogLoadPromise = null;
+                    return itemCatalog;
+                });
+        }
+        return itemCatalogLoadPromise;
+    }
+
+    function renderCategoryPills(containerId, rawItems, colorTheme) {
+        const container = document.getElementById(containerId);
+        if (!container) return;
+        container.innerHTML = '';
+
+        const items = (rawItems || '').replace(/[\[\]"]/g, '').split(/[|,;]/).map(s => s.trim()).filter(s => s.length > 0);
+        items.forEach(itemCode => {
+            const rawClean = itemCode.replace(/^Item_/i, '').toLowerCase().trim();
+            const cleanCode = getCanonicalItemCodeJs(rawClean);
+            const matched = resolveCatalogItem(cleanCode);
+
+            const title = matched ? matched.name : itemCode.replace(/^Item_/i, '');
+            const icon = matched ? matched.icon : `/images/items/${cleanCode}.png`;
+
+            const div = document.createElement('div');
+            div.className = `flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-900/80 border border-${colorTheme}-500/20 text-xs text-slate-200 cursor-pointer hover:border-${colorTheme}-400 hover:scale-105 transition-all shadow-md active:scale-95 group`;
+            const targetCode = cleanCode;
+            div.addEventListener('click', function () {
+                openItemModal(targetCode);
+            });
+            div.setAttribute('data-item-code', cleanCode);
+            div.innerHTML = `
+                <img src="${icon}" onError="this.onerror=null;this.src='/images/items/default.png';" class="w-5 h-5 rounded-md object-cover border border-${colorTheme}-500/30 group-hover:border-${colorTheme}-400" alt="${title}"/>
+                <span class="item-pill-title group-hover:text-${colorTheme}-300">${title}</span>
+            `;
+            container.appendChild(div);
+        });
+    }
+
+    // Preload item metadata catalog on initial page load
+    ensureItemCatalogLoaded();
+
+    async function openItemModal(cleanCode) {
+        await ensureItemCatalogLoaded();
+
+        const rawKey = (cleanCode || '').toLowerCase().trim();
+        const key = getCanonicalItemCodeJs(rawKey);
+        const item = resolveCatalogItem(rawKey) || {
+            code: key,
+            name: (cleanCode || '').replace(/^Item_/i, '').replace(/_/g, ' '),
+            cost: 0,
+            description: "No description available.",
+            flavor: "",
+            icon: `/images/items/${key || 'default'}.png`,
+            components: [],
+            buildsInto: [],
+            upgrade: "",
+            isActive: true
+        };
+
+        const iconEl = document.getElementById('modal-item-icon');
+        if (iconEl) {
+            iconEl.onerror = function () {
+                this.onerror = null;
+                this.src = '/images/items/default.png';
+            };
+            iconEl.src = item.icon || `/images/items/${key || 'default'}.png`;
+        }
+        document.getElementById('modal-item-name').innerText = item.name;
+
+        const canonicalCode = item.code || item.key || key;
+        const codeElem = document.getElementById('modal-item-code-val');
+        if (codeElem) codeElem.innerText = canonicalCode;
+
+        const compendiumLink = document.getElementById('modal-item-compendium-link');
+        if (compendiumLink) {
+            compendiumLink.href = canonicalCode ? `/item/${encodeURIComponent(canonicalCode)}` : '/items';
+        }
+
+        document.getElementById('modal-item-desc').innerText = item.description || "No description available.";
+
+        // Populate Active Status Badge & Warning Banner
+        const badge = document.getElementById('modal-status-badge');
+        const warning = document.getElementById('modal-disabled-warning');
+        if (item.isActive === false) {
+            badge.innerText = 'DISABLED';
+            badge.className = 'px-3 py-1 rounded-full text-xs font-bold tracking-wider uppercase bg-red-500/10 border border-red-500/30 text-red-400';
+            if (warning) warning.classList.remove('hidden');
+        } else {
+            badge.innerText = 'ACTIVE';
+            badge.className = 'px-3 py-1 rounded-full text-xs font-bold tracking-wider uppercase bg-emerald-500/10 border border-emerald-500/30 text-emerald-400';
+            if (warning) warning.classList.add('hidden');
+        }
+
+        // Header Metadata Pills
+        const costContainer = document.getElementById('modal-item-cost-container');
+        if (costContainer) {
+            let html = '';
+            if (item.category) {
+                html += `<span class="px-3 py-1 rounded-xl bg-slate-900 border border-slate-800 text-slate-300 font-medium">Category: <strong class="text-amber-300">${item.category}</strong></span>`;
+            }
+            html += `<span class="px-3 py-1 rounded-xl bg-slate-900 border border-slate-800 text-slate-300 font-medium">Cost: <strong class="text-amber-400 font-mono">💰 ${Number(item.cost || 0).toLocaleString()} Gold</strong></span>`;
+            if (item.recipeCost && Number(item.recipeCost) > 0) {
+                html += `<span class="px-3 py-1 rounded-xl bg-purple-500/10 border border-purple-500/30 text-purple-300 font-medium">Recipe Scroll Cost: <strong class="font-mono">${Number(item.recipeCost).toLocaleString()}g</strong></span>`;
+            }
+            costContainer.innerHTML = html;
+        }
+
+        // Component cards grid population
+        const compsContainer = document.getElementById('modal-item-comps-container');
+        const compsList = document.getElementById('modal-item-comps-list');
+        compsList.innerHTML = '';
+
+        const compsToRender = Array.isArray(item.components)
+            ? item.components.map(c => typeof c === 'string' ? {code: c, name: c} : c)
+            : [];
+        const realComps = compsToRender.filter(c => {
+            const token = String(c.code || c.name || '').toLowerCase();
+            return token !== 'recipe' && !token.endsWith('_recipe');
+        });
+        const hasRecipe = compsToRender.some(c => String(c.code || c.name || '').toLowerCase().includes('recipe')) || (item.recipeCost && Number(item.recipeCost) > 0);
+
+        if (realComps.length > 0 || hasRecipe) {
+            compsContainer.classList.remove('hidden');
+
+            realComps.forEach(c => {
+                const rawCompCode = String(c.code || c.icon || c.name || '').replace(/^\/images\/items\//i, '').replace(/\.png$/i, '').toLowerCase().trim();
+                const matchedComp = resolveCatalogItem(rawCompCode);
+                const targetCompCode = (matchedComp && matchedComp.code) ? matchedComp.code : getCanonicalItemCodeJs(rawCompCode);
+
+                const cIcon = (matchedComp && matchedComp.icon)
+                    ? matchedComp.icon
+                    : (c.icon ? (String(c.icon).startsWith('/') ? c.icon : `/images/items/${c.icon}.png`) : `/images/items/${targetCompCode || 'default'}.png`);
+                const cName = (matchedComp && matchedComp.name) ? matchedComp.name : (c.name || targetCompCode);
+                const cCost = (matchedComp && matchedComp.cost !== undefined) ? matchedComp.cost : (c.cost || 0);
+
+                const compCard = document.createElement('div');
+                compCard.className = 'flex items-center gap-3 p-3 rounded-2xl bg-slate-900 border border-slate-800 hover:border-amber-500/40 hover:bg-slate-800/80 transition-all text-slate-200 group cursor-pointer';
+                compCard.addEventListener('click', function () {
+                    openItemModal(targetCompCode);
+                });
+                compCard.innerHTML = `
+                    <img src="${cIcon}" onError="this.onerror=null;this.src='/images/items/default.png';" alt="${cName}" class="w-9 h-9 rounded-xl object-cover border border-slate-700 bg-slate-950 flex-shrink-0" />
+                    <div class="flex flex-col min-w-0">
+                        <span class="font-bold text-xs text-white group-hover:text-amber-300 transition-colors truncate">${cName}</span>
+                        <span class="text-[11px] text-amber-400 font-mono">💰 ${Number(cCost).toLocaleString()}g</span>
+                    </div>
+                `;
+                compsList.appendChild(compCard);
+            });
+
+            if (hasRecipe) {
+                const recipeCostVal = Number(item.recipeCost || 1000);
+                const recipeCard = document.createElement('div');
+                recipeCard.className = 'flex items-center gap-3 p-3 rounded-2xl bg-slate-900/60 border border-slate-800 text-slate-400';
+                recipeCard.innerHTML = `
+                    <div class="w-9 h-9 rounded-xl bg-slate-950 border border-slate-800 flex items-center justify-center text-base flex-shrink-0">📜</div>
+                    <div class="flex flex-col min-w-0">
+                        <span class="font-bold text-xs text-slate-300 truncate">Recipe Scroll</span>
+                        <span class="text-[11px] text-amber-400 font-mono">💰 ${recipeCostVal.toLocaleString()}g</span>
+                    </div>
+                `;
+                compsList.appendChild(recipeCard);
+            }
+        } else {
+            compsContainer.classList.add('hidden');
+        }
+
+        // Builds Into Grid
+        const buildsContainer = document.getElementById('modal-item-builds-into-container');
+        const buildsList = document.getElementById('modal-item-builds-into-list');
+        if (buildsList && buildsContainer) {
+            buildsList.innerHTML = '';
+            const buildsToRender = Array.isArray(item.buildsInto)
+                ? item.buildsInto.map(b => typeof b === 'string' ? {code: b, name: b} : b)
+                : [];
+
+            if (buildsToRender.length > 0) {
+                buildsContainer.classList.remove('hidden');
+                buildsToRender.forEach(b => {
+                    const rawBCode = String(b.code || b.name || '').toLowerCase().trim();
+                    const matchedTarget = resolveCatalogItem(rawBCode);
+                    const targetBCode = (matchedTarget && matchedTarget.code) ? matchedTarget.code : getCanonicalItemCodeJs(rawBCode);
+                    const bIcon = (matchedTarget && matchedTarget.icon) ? matchedTarget.icon : (b.icon || `/images/items/${targetBCode || 'default'}.png`);
+                    const bName = (matchedTarget && matchedTarget.name) ? matchedTarget.name : (b.name || targetBCode);
+                    const bCost = (matchedTarget && matchedTarget.cost !== undefined) ? matchedTarget.cost : (b.cost || 0);
+
+                    const bCard = document.createElement('div');
+                    bCard.className = 'flex items-center gap-3 p-3 rounded-2xl bg-slate-900 border border-cyan-500/30 hover:border-cyan-400 hover:bg-slate-800/80 transition-all text-slate-200 group cursor-pointer';
+                    bCard.addEventListener('click', function () {
+                        openItemModal(targetBCode);
+                    });
+                    bCard.innerHTML = `
+                        <img src="${bIcon}" onError="this.onerror=null;this.src='/images/items/default.png';" alt="${bName}" class="w-9 h-9 rounded-xl object-cover border border-slate-700 bg-slate-950 flex-shrink-0" />
+                        <div class="flex flex-col min-w-0">
+                            <span class="font-bold text-xs text-white group-hover:text-cyan-300 transition-colors truncate">${bName}</span>
+                            <span class="text-[11px] text-amber-400 font-mono">💰 ${Number(bCost || 0).toLocaleString()}g</span>
+                        </div>
+                    `;
+                    buildsList.appendChild(bCard);
+                });
+            } else {
+                buildsContainer.classList.add('hidden');
+            }
+        }
+
+        // Upgrade Path Note
+        const upgradeContainer = document.getElementById('modal-item-upgrade-container');
+        const upgradeText = document.getElementById('modal-item-upgrade-text');
+        if (item.upgrade && item.upgrade.trim().length > 0) {
+            upgradeText.innerText = item.upgrade;
+            upgradeContainer.classList.remove('hidden');
+        } else {
+            upgradeContainer.classList.add('hidden');
+        }
+
+        // Populate Level Upgrade Breakdown
+        const levelsContainer = document.getElementById('modal-item-levels-container');
+        const levelsList = document.getElementById('modal-item-levels-list');
+        const levelsCount = document.getElementById('modal-item-levels-count');
+
+        if (levelsContainer && levelsList) {
+            levelsList.innerHTML = '';
+            const upgText = item.upgrade || item.description || '';
+            const lvlMatch = upgText.match(/level\s*(\d+)/i) || upgText.match(/upgradable\s*to\s*level\s*(\d+)/i);
+            let maxLvl = lvlMatch ? parseInt(lvlMatch[1]) : 0;
+            if (maxLvl <= 1) {
+                const keyLower = (item.key || item.code || cleanCode || '').toLowerCase();
+                if (['shieldbreaker', 'pierce', 'spellshards', 'riftshards', 'puzzlebox', 'nullfireblade', 'manaburn1'].includes(keyLower)) {
+                    maxLvl = (keyLower === 'riftshards') ? 4 : 3;
+                }
+            }
+
+            if (maxLvl > 1) {
+                levelsContainer.classList.remove('hidden');
+                if (levelsCount) levelsCount.innerText = `${maxLvl} Upgradable Tiers`;
+
+                const baseCost = Number(item.cost || 0);
+                const scrollCost = Number(item.recipeCost || 1000);
+
+                for (let l = 1; l <= maxLvl; l++) {
+                    const totalCost = baseCost + (l - 1) * scrollCost;
+                    const tierCard = document.createElement('div');
+                    tierCard.className = 'p-3 rounded-2xl bg-slate-900 border border-slate-800 space-y-1.5 hover:border-slate-700 transition-colors';
+                    tierCard.innerHTML = `
+                        <div class="flex items-center justify-between">
+                            <span class="px-2.5 py-0.5 rounded-lg text-xs font-bold bg-slate-800 text-amber-300 border border-slate-700">
+                                LEVEL ${l}
+                            </span>
+                            <span class="text-xs font-bold text-amber-400 font-mono">
+                                💰 ${totalCost.toLocaleString()}g
+                            </span>
+                        </div>
+                        <div class="text-[11px] text-slate-400 font-mono pt-1 border-t border-slate-800/60">
+                            ${l === 1 ? 'Base Item Initial Cost' : `Recipe Scroll (+${scrollCost.toLocaleString()}g)`}
+                        </div>
+                    `;
+                    levelsList.appendChild(tierCard);
+                }
+            } else {
+                levelsContainer.classList.add('hidden');
+            }
+        }
+
+        // Shop Lore / Flavor
+        const flavorElem = document.getElementById('modal-item-flavor');
+        const flavorContainer = document.getElementById('modal-item-flavor-container');
+        if (item.flavor && item.flavor.trim().length > 0) {
+            flavorElem.innerText = `"${item.flavor}"`;
+            flavorContainer.classList.remove('hidden');
+        } else {
+            flavorContainer.classList.add('hidden');
+        }
+
+        document.getElementById('item-detail-modal').classList.remove('hidden');
+    }
+
+    function closeItemModal() {
+        const modal = document.getElementById('item-detail-modal');
+        if (modal) modal.classList.add('hidden');
+    }
+
+    // Close modal when clicking backdrop outside dialog card or pressing Escape key
+    const heroItemModalElem = document.getElementById('item-detail-modal');
+    if (heroItemModalElem) {
+        heroItemModalElem.addEventListener('click', function (e) {
+            if (e.target === this) {
+                closeItemModal();
+            }
+        });
+    }
+
+    document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape') {
+            closeItemModal();
+        }
+    });
+
+    function hoverStars(rating) {
+        document.querySelectorAll('.star-btn').forEach((btn, idx) => {
+            if (idx < rating) {
+                btn.classList.add('text-amber-400');
+                btn.classList.remove('text-slate-600/60');
+            } else {
+                btn.classList.remove('text-amber-400');
+                btn.classList.add('text-slate-600/60');
+            }
+        });
+    }
+
+    function resetStars() {
+        hoverStars(currentUserVote);
+    }
+
+    async function submitDifficultyVote(rating) {
+        try {
+            const res = await fetch('/hero/vote-difficulty', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({heroIdentifier: heroId, rating: rating})
+            });
+
+            if (res.status === 401) {
+                alert("Please log in with Discord to submit a hero difficulty rating.");
+                return;
+            }
+
+            const data = await res.json();
+            if (data.success) {
+                currentUserVote = data.userRating;
+                document.getElementById('user-vote-status').innerText = `(${currentUserVote}★)`;
+                resetStars();
+
+                const badgeContainer = document.getElementById('community-difficulty-badge');
+                if (badgeContainer) {
+                    const avg = data.average.toFixed(1);
+                    const rounded = data.roundedAverage;
+                    const votesCount = data.totalVotes;
+
+                    let starHtml = '';
+                    for (let i = 1; i <= 5; i++) {
+                        if (rounded >= i) {
+                            starHtml += '<span>★</span>';
+                        } else if (rounded >= i - 0.5) {
+                            starHtml += '<span class="text-amber-400/90 font-bold">½</span>';
+                        } else {
+                            starHtml += '<span class="text-slate-600/60">★</span>';
+                        }
+                    }
+
+                    badgeContainer.innerHTML = `
+                        <div class="flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-slate-800/80 border border-slate-700 text-slate-300 animate-pulse">
+                            <span>🔥</span>
+                            <span>Difficulty: <strong class="text-white">${avg}</strong></span>
+                            <div class="flex items-center gap-0.5 text-xs text-amber-400">
+                                ${starHtml}
+                            </div>
+                            <span class="text-slate-500 font-mono text-[11px]">(${votesCount} ${votesCount === 1 ? 'vote' : 'votes'})</span>
+                        </div>
+                    `;
+                }
+            } else {
+                alert(data.message || "Failed to submit difficulty rating.");
+            }
+        } catch (e) {
+            console.error(e);
+            alert("Error submitting vote.");
+        }
+    }
+</script>

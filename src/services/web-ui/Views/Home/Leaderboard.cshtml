@@ -1,0 +1,1085 @@
+@model List<DAWNBRINGER.WebPortal.UI.Controllers.LeaderboardEntryDto>
+@{
+    var isHostLeaderboard = Convert.ToBoolean(ViewData["IsHostLeaderboard"] ?? false);
+    var hostEntries = ViewData["HostLeaderboardEntries"] as List<HostLeaderboardEntryDto> ?? [];
+
+    var searchQuery = ViewData["SearchQuery"] as string ?? "";
+    var currentMode = ViewData["CurrentMode"] as string ?? (isHostLeaderboard ? "hosts" : "all");
+    var currentMap = ViewData["CurrentMap"] as string ?? "all";
+    var currentSort = ViewData["CurrentSort"] as string ?? "winrate";
+    var isMatchesSort = currentSort is "matches" or "activity";
+    var minMatches = ViewData["MinMatches"] is int mm ? mm : 0;
+    var totalCommunityHostedMatches = ViewData["TotalCommunityHostedMatches"] is int tch ? tch : hostEntries.Sum(h => h.GamesHosted);
+
+    ViewData["Title"] = isHostLeaderboard
+        ? "Volunteer Host Leaderboard - Project KONGOR"
+        : isMatchesSort
+            ? "Most Matches Played Leaderboard - Project KONGOR"
+            : "Win Rate Leaderboard - Project KONGOR";
+
+    var totalPlayers = isHostLeaderboard ? hostEntries.Count : ViewData["TotalRankedPlayers"] is int trp && trp > 0 ? trp : Model.Count;
+    var topWinRate = Model.FirstOrDefault()?.WinRate ?? 0.0;
+    var topMatchesPlayed = Model.FirstOrDefault()?.TotalMatches ?? 0;
+    var totalMatchesTracked = isHostLeaderboard ? totalCommunityHostedMatches : ViewData["TotalMatchesTracked"] is int tmt && tmt > 0 ? tmt : Model.Sum(m => m.TotalMatches);
+
+    var top1 = Model.FirstOrDefault();
+    var top2 = Model.Skip(1).FirstOrDefault();
+    var top3 = Model.Skip(2).FirstOrDefault();
+
+    var hostTop1 = hostEntries.FirstOrDefault();
+    var hostTop2 = hostEntries.Skip(1).FirstOrDefault();
+    var hostTop3 = hostEntries.Skip(2).FirstOrDefault();
+
+    var modeLabel = currentMode switch
+    {
+        "hosts" or "host" => "Volunteer Server Hosts",
+        "matchmaking" => "Matchmaking (Competitive)",
+        "public" => "Public Games",
+        _ => "All Game Modes"
+    };
+
+    var mapLabel = currentMap == "all" ? "All Maps" : MapCatalog.FormatMapName(currentMap);
+}
+
+<div class="w-full max-w-[1920px] mx-auto px-3 sm:px-6 lg:px-8 xl:px-10 space-y-8 animate-fade-in pb-16">
+    <!-- Hero Header Banner -->
+    <div
+        class="glass-card p-6 sm:p-10 rounded-3xl border @(isHostLeaderboard ? "border-purple-500/40 bg-gradient-to-br from-slate-950 via-slate-900 to-purple-950/30" : "border-amber-500/30 bg-gradient-to-br from-slate-950 via-slate-900 to-amber-950/20") relative overflow-hidden shadow-2xl">
+        <div
+            class="absolute -right-16 -top-16 w-80 h-80 @(isHostLeaderboard ? "bg-purple-500/15" : "bg-amber-500/10") rounded-full blur-3xl pointer-events-none"></div>
+        <div
+            class="absolute -left-16 -bottom-16 w-80 h-80 @(isHostLeaderboard ? "bg-pink-500/10" : "bg-purple-500/10") rounded-full blur-3xl pointer-events-none"></div>
+
+        <div class="relative z-10 space-y-6">
+            <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+                <div>
+                    <div class="flex flex-wrap items-center gap-2 mb-3">
+                        <span
+                            class="inline-flex items-center gap-2 px-3 py-1 rounded-full @(isHostLeaderboard ? "bg-purple-500/15 border border-purple-500/40 text-purple-300" : isMatchesSort ? "bg-amber-500/15 border border-amber-500/40 text-amber-300" : "bg-amber-500/10 border border-amber-500/30 text-amber-400") text-xs font-bold uppercase tracking-wider">
+                            @(isHostLeaderboard ? "⚡ COMMUNITY INFRASTRUCTURE" : isMatchesSort ? "🔥 VETERAN ACTIVITY" : "🏆 GLOBAL RANKINGS")
+                        </span>
+                        <span
+                            class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-900 border border-slate-800 text-slate-300 text-xs font-bold">
+                            @(isHostLeaderboard ? "🌐 Volunteer Hosts" : $"🎮 {modeLabel}")
+                        </span>
+                        @if (!isHostLeaderboard)
+                        {
+                            <span
+                                class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-purple-500/10 border border-purple-500/30 text-purple-300 text-xs font-bold">
+                                🗺️ @mapLabel
+                            </span>
+                        }
+                    </div>
+
+                    <h1 class="text-3xl sm:text-5xl font-black text-white tracking-tight">
+                        @if (isHostLeaderboard)
+                        {
+                            <span>HOST <span
+                                    class="bg-gradient-to-r from-purple-400 via-pink-400 to-amber-400 bg-clip-text text-transparent">LEADERBOARD</span></span>
+                        }
+                        else if (isMatchesSort)
+                        {
+                            <span>MOST MATCHES <span
+                                    class="bg-gradient-to-r from-amber-400 via-amber-200 to-amber-500 bg-clip-text text-transparent">PLAYED</span></span>
+                        }
+                        else
+                        {
+                            <span>WIN RATE <span
+                                    class="bg-gradient-to-r from-amber-400 via-amber-200 to-amber-500 bg-clip-text text-transparent">LEADERBOARD</span></span>
+                        }
+                    </h1>
+                    <p class="text-slate-400 text-xs sm:text-sm mt-2 max-w-xl leading-relaxed">
+                        @if (isHostLeaderboard)
+                        {
+                            <span>Community server hosts ranked by total <strong>Matches Hosted</strong> and <strong>Community Contribution %</strong>. Pillars of Newerth power the battlefields!</span>
+                        }
+                        else if (isMatchesSort)
+                        {
+                            <span>Most active, battle-tested warriors across Newerth sorted by total matches played in <strong>@modeLabel</strong> on <strong>@mapLabel</strong>.</span>
+                        }
+                        else
+                        {
+                            <span>Top ranked warriors across Newerth sorted by win rate in <strong>@modeLabel</strong> on <strong>@mapLabel</strong>.</span>
+                        }
+                    </p>
+                </div>
+
+                <!-- Stat Pills -->
+                <div class="grid grid-cols-3 gap-3 w-full md:w-auto">
+                    <div class="p-3.5 rounded-2xl bg-slate-900/80 border border-slate-800 text-center">
+                        <span class="text-[10px] text-slate-400 uppercase tracking-wider font-semibold block mb-1">
+                            @(isHostLeaderboard ? "Active Hosts" : "Ranked Players")
+                        </span>
+                        <span class="text-lg font-black text-white">@totalPlayers</span>
+                    </div>
+                    <div
+                        class="p-3.5 rounded-2xl bg-slate-900/80 border @(isHostLeaderboard ? "border-purple-500/30 bg-purple-500/5" : "border-amber-500/30 bg-amber-500/5") text-center">
+                        <span
+                            class="text-[10px] @(isHostLeaderboard ? "text-purple-400" : "text-amber-400") uppercase tracking-wider font-semibold block mb-1">
+                            @(isHostLeaderboard ? "Top Host Share" : isMatchesSort ? "Top Matches" : "Top Win Rate")
+                        </span>
+                        <span class="text-lg font-black @(isHostLeaderboard ? "text-purple-300" : "text-amber-400")">
+                            @(isHostLeaderboard ? $"{hostTop1?.CommunityContributionPercentage ?? 0.0:F1}%" : isMatchesSort ? $"{topMatchesPlayed:N0}" : $"{topWinRate:F1}%")
+                        </span>
+                    </div>
+                    <div class="p-3.5 rounded-2xl bg-slate-900/80 border border-slate-800 text-center">
+                        <span class="text-[10px] text-slate-400 uppercase tracking-wider font-semibold block mb-1">
+                            @(isHostLeaderboard ? "Games Hosted" : "Matches Tracked")
+                        </span>
+                        <span class="text-lg font-black text-slate-300">@totalMatchesTracked.ToString("N0")</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Controls Toolbar (Search, Filter, Modes) -->
+    <div class="glass-card p-5 sm:p-6 rounded-3xl border border-slate-800 shadow-xl space-y-5">
+        <!-- Leaderboard Ranking Type (Win Rate vs Most Matches Played vs Hosts) -->
+        <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-3">
+            <span class="text-xs font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                <span>🏆</span> RANKING TYPE:
+            </span>
+            <div class="flex flex-wrap items-center gap-2">
+                <a href="@Url.Action("Leaderboard", "Home", new { search = searchQuery, mode = isHostLeaderboard ? "all" : currentMode, map = currentMap, minMatches, sort = "winrate" })"
+                   class="px-4 py-2 rounded-xl text-xs font-bold transition-all border @(!isHostLeaderboard && !isMatchesSort ? "bg-amber-500 text-slate-950 border-amber-300 shadow-md shadow-amber-500/20 font-black" : "bg-slate-900 text-slate-400 border-slate-800 hover:bg-slate-800 hover:text-white") flex items-center gap-1.5">
+                    <span>🏆</span> Win Rate
+                </a>
+                <a href="@Url.Action("Leaderboard", "Home", new { search = searchQuery, mode = isHostLeaderboard ? "all" : currentMode, map = currentMap, minMatches, sort = "matches" })"
+                   class="px-4 py-2 rounded-xl text-xs font-bold transition-all border @(!isHostLeaderboard && isMatchesSort ? "bg-amber-500 text-slate-950 border-amber-300 shadow-md shadow-amber-500/20 font-black" : "bg-slate-900 text-slate-400 border-slate-800 hover:bg-slate-800 hover:text-white") flex items-center gap-1.5">
+                    <span>🔥</span> Most Matches Played
+                </a>
+                <a href="@Url.Action("Leaderboard", "Home", new { search = searchQuery, mode = "hosts", map = "all", minMatches })"
+                   class="px-4 py-2 rounded-xl text-xs font-bold transition-all border @(isHostLeaderboard ? "bg-gradient-to-r from-purple-600 to-pink-600 text-white border-purple-300 shadow-md shadow-purple-950 font-black" : "bg-slate-900 text-purple-300 border-purple-500/30 hover:bg-purple-950/40 hover:text-white") flex items-center gap-1.5">
+                    <span>⚡</span> Volunteer Hosts
+                </a>
+            </div>
+        </div>
+
+        @if (!isHostLeaderboard)
+        {
+            <div class="border-t border-slate-800/80"></div>
+
+            <!-- Game Mode Selection -->
+            <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-3">
+                <span class="text-xs font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                    <span>⚔️</span> GAME MODE:
+                </span>
+                <div class="flex flex-wrap items-center gap-2">
+                    <a href="@Url.Action("Leaderboard", "Home", new { search = searchQuery, mode = "all", map = currentMap, minMatches, sort = currentSort })"
+                       class="px-4 py-2 rounded-xl text-xs font-bold transition-all border @(currentMode == "all" ? "bg-slate-800 text-white border-slate-600 shadow-md font-black" : "bg-slate-900 text-slate-400 border-slate-800 hover:bg-slate-800 hover:text-white")">
+                        🌐 All Game Modes
+                    </a>
+                    <a href="@Url.Action("Leaderboard", "Home", new { search = searchQuery, mode = "matchmaking", map = currentMap, minMatches, sort = currentSort })"
+                       class="px-4 py-2 rounded-xl text-xs font-bold transition-all border @(currentMode == "matchmaking" ? "bg-slate-800 text-white border-slate-600 shadow-md font-black" : "bg-slate-900 text-slate-400 border-slate-800 hover:bg-slate-800 hover:text-white")">
+                        🏆 Matchmaking (Competitive)
+                    </a>
+                    <a href="@Url.Action("Leaderboard", "Home", new { search = searchQuery, mode = "public", map = currentMap, minMatches, sort = currentSort })"
+                       class="px-4 py-2 rounded-xl text-xs font-bold transition-all border @(currentMode == "public" ? "bg-slate-800 text-white border-slate-600 shadow-md font-black" : "bg-slate-900 text-slate-400 border-slate-800 hover:bg-slate-800 hover:text-white")">
+                        🎮 Public / Custom Games
+                    </a>
+                </div>
+            </div>
+
+            <div class="border-t border-slate-800/80"></div>
+
+            <!-- Map Selection -->
+            <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-3">
+                <span class="text-xs font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                    <span>🗺️</span> MAP FILTER:
+                </span>
+                <div class="flex flex-wrap items-center gap-2">
+                    <a href="@Url.Action("Leaderboard", "Home", new { search = searchQuery, mode = currentMode, map = "all", minMatches, sort = currentSort })"
+                       class="px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all border @(currentMap == "all" ? "bg-purple-500 text-white border-purple-300 shadow-md shadow-purple-500/20 font-black" : "bg-slate-900 text-slate-400 border-slate-800 hover:bg-slate-800 hover:text-white")">
+                        🗺️ All Maps
+                    </a>
+
+                    @{
+                        List<(string Key, string Label, string ActiveStyle)> mapOptions = [];
+                        if (currentMode == "all")
+                        {
+                            mapOptions.Add(("caldavar_ranked", "🌲 Forests of Caldavar (Ranked)", "bg-emerald-500 text-slate-950 border-emerald-300 shadow-md shadow-emerald-500/20 font-black"));
+                            mapOptions.Add(("caldavar_public", "🌲 Forests of Caldavar (Public)", "bg-emerald-600 text-white border-emerald-400 shadow-md shadow-emerald-600/20 font-black"));
+                            mapOptions.Add(("midwars_ranked", "⚔️ Mid Wars (Ranked)", "bg-cyan-500 text-slate-950 border-cyan-300 shadow-md shadow-cyan-500/20 font-black"));
+                            mapOptions.Add(("midwars_public", "⚔️ Mid Wars (Public)", "bg-cyan-600 text-white border-cyan-400 shadow-md shadow-cyan-600/20 font-black"));
+                            mapOptions.Add(("riftwars_ranked", "🌀 Rift Wars (Ranked)", "bg-pink-500 text-white border-pink-300 shadow-md shadow-pink-500/20 font-black"));
+                            mapOptions.Add(("riftwars_public", "🌀 Rift Wars (Public)", "bg-pink-600 text-white border-pink-400 shadow-md shadow-pink-600/20 font-black"));
+
+                            mapOptions.AddRange(from m in MapCatalog.AllMaps.Where(x => !x.IsMatchmaking)
+                                let style = m.Key switch
+                                {
+                                    "devowars" => "bg-amber-500 text-slate-950 border-amber-300 shadow-md shadow-amber-500/20 font-black",
+                                    "prophets" => "bg-indigo-500 text-white border-indigo-300 shadow-md shadow-indigo-500/20 font-black",
+                                    "strikers" => "bg-rose-500 text-white border-rose-300 shadow-md shadow-rose-500/20 font-black",
+                                    "grimmscrossing" => "bg-amber-700 text-white border-amber-500 shadow-md shadow-amber-700/20 font-black",
+                                    "watchtower" => "bg-blue-600 text-white border-blue-400 shadow-md shadow-blue-600/20 font-black",
+                                    _ => "bg-amber-500 text-slate-950 border-amber-300 shadow-md shadow-amber-500/20 font-black"
+                                }
+                                select (m.Key, $"{m.IconEmoji} {m.DisplayName}", style));
+                        }
+                        else if (currentMode == "matchmaking")
+                        {
+                            mapOptions.AddRange(from m in MapCatalog.AllMaps.Where(x => x.IsMatchmaking)
+                                let style = m.Key switch
+                                {
+                                    "caldavar" => "bg-emerald-500 text-slate-950 border-emerald-300 shadow-md shadow-emerald-500/20 font-black",
+                                    "midwars" => "bg-cyan-500 text-slate-950 border-cyan-300 shadow-md shadow-cyan-500/20 font-black",
+                                    "riftwars" => "bg-pink-500 text-white border-pink-300 shadow-md shadow-pink-500/20 font-black",
+                                    _ => "bg-amber-500 text-slate-950 border-amber-300 shadow-md shadow-amber-500/20 font-black"
+                                }
+                                select (m.Key, $"{m.IconEmoji} {m.DisplayName}", style));
+                        }
+                        else
+                        {
+                            mapOptions.AddRange(from m in MapCatalog.AllMaps
+                                let style = m.Key switch
+                                {
+                                    "caldavar" => "bg-emerald-500 text-slate-950 border-emerald-300 shadow-md shadow-emerald-500/20 font-black",
+                                    "midwars" => "bg-cyan-500 text-slate-950 border-cyan-300 shadow-md shadow-cyan-500/20 font-black",
+                                    "riftwars" => "bg-pink-500 text-white border-pink-300 shadow-md shadow-pink-500/20 font-black",
+                                    "devowars" => "bg-amber-500 text-slate-950 border-amber-300 shadow-md shadow-amber-500/20 font-black",
+                                    "prophets" => "bg-indigo-500 text-white border-indigo-300 shadow-md shadow-indigo-500/20 font-black",
+                                    "strikers" => "bg-rose-500 text-white border-rose-300 shadow-md shadow-rose-500/20 font-black",
+                                    "grimmscrossing" => "bg-amber-700 text-white border-amber-500 shadow-md shadow-amber-700/20 font-black",
+                                    "watchtower" => "bg-blue-600 text-white border-blue-400 shadow-md shadow-blue-600/20 font-black",
+                                    _ => "bg-amber-500 text-slate-950 border-amber-300 shadow-md shadow-amber-500/20 font-black"
+                                }
+                                select (m.Key, $"{m.IconEmoji} {m.DisplayName}", style));
+                        }
+                    }
+
+                    @foreach (var opt in mapOptions)
+                    {
+                        var isActive = currentMap == opt.Key;
+                        <a href="@Url.Action("Leaderboard", "Home", new { search = searchQuery, mode = currentMode, map = opt.Key, minMatches, sort = currentSort })"
+                           class="px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all border @(isActive ? opt.ActiveStyle : "bg-slate-900 text-slate-400 border-slate-800 hover:bg-slate-800 hover:text-white")">
+                            @opt.Label
+                        </a>
+                    }
+                </div>
+            </div>
+        }
+    </div>
+
+    <!-- HOST LEADERBOARD VIEW -->
+    @if (isHostLeaderboard)
+    {
+        <!-- Host Top 3 Podium Section -->
+        @if (hostTop1 != null && string.IsNullOrEmpty(searchQuery))
+        {
+            <div class="space-y-4 pt-2">
+                <h2 class="text-xs font-bold text-purple-400 uppercase tracking-widest flex items-center gap-2 px-1">
+                    <span>👑</span> TOP COMMUNITY HOST CHAMPIONS
+                </h2>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6 items-end">
+                    <!-- 2nd Place Silver Host Podium -->
+                    @if (hostTop2 != null)
+                    {
+                        <div
+                            class="order-2 md:order-1 glass-card p-6 rounded-3xl border border-slate-700/60 bg-gradient-to-b from-slate-900/90 to-slate-950/80 relative overflow-hidden shadow-xl space-y-4 text-center">
+                            <div class="flex justify-center">
+                                <span
+                                    class="inline-flex items-center gap-1.5 px-4 py-1 rounded-full bg-slate-700 text-slate-200 border border-slate-500 text-xs font-black tracking-wider uppercase shadow-md">
+                                    🥈 2nd Place Host
+                                </span>
+                            </div>
+
+                            <div class="flex justify-center pt-1">
+                                <div class="relative">
+                                    <img src="@hostTop2.AvatarUrl"
+                                         onError="this.onerror=null;this.src='/images/default-avatar.png';"
+                                         alt="@hostTop2.AccountName"
+                                         class="w-20 h-20 rounded-2xl object-cover border-2 border-slate-400 shadow-xl bg-slate-950"/>
+                                    <span
+                                        class="absolute -bottom-2 -right-2 px-2 py-0.5 rounded-lg bg-slate-800 text-slate-300 border border-slate-600 text-[11px] font-bold">#2</span>
+                                </div>
+                            </div>
+
+                            <div>
+                                <h3 class="text-lg font-extrabold text-white truncate">@hostTop2.AccountName</h3>
+                                <span class="text-xs text-purple-400 font-mono">@hostTop2.HostAccountName</span>
+                            </div>
+
+                            <div class="p-3.5 rounded-2xl bg-slate-950/70 border border-slate-800 space-y-2">
+                                <div class="text-2xl font-black text-purple-300 font-mono">
+                                    @hostTop2.GamesHosted.ToString("N0") @(hostTop2.GamesHosted == 1 ? "Match Hosted" : "Matches Hosted")
+                                </div>
+                                <div class="space-y-1">
+                                    <div class="flex items-center justify-between text-[11px] font-mono">
+                                        <span class="text-slate-400">Community Share</span>
+                                        <span
+                                            class="text-purple-300 font-bold">@hostTop2.CommunityContributionPercentage.ToString("F1")%</span>
+                                    </div>
+                                    <div
+                                        class="w-full h-1.5 rounded-full bg-slate-900 overflow-hidden border border-slate-800">
+                                        <div class="h-full rounded-full bg-gradient-to-r from-purple-500 to-pink-500"
+                                             style="width: @Math.Min(100.0, hostTop2.CommunityContributionPercentage)%"></div>
+                                    </div>
+                                </div>
+                                <div class="text-xs text-slate-400 flex items-center justify-center gap-2 pt-0.5">
+                                    <span
+                                        class="text-amber-400 font-bold">@hostTop2.HostingRatio.ToString("F2")x Ratio</span>
+                                    <span>•</span>
+                                    <span
+                                        class="text-slate-400">@hostTop2.GamesPlayed.ToString("N0") @(hostTop2.GamesPlayed == 1 ? "Match Played" : "Matches Played")</span>
+                                </div>
+                            </div>
+
+                            <a href="/stats?accountName=@Uri.EscapeDataString(hostTop2.AccountName)"
+                               class="inline-flex items-center justify-center gap-2 w-full py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-xs border border-slate-600 transition-all">
+                                <span>View Stats</span>
+                                <span>➔</span>
+                            </a>
+                        </div>
+                    }
+
+                    <!-- 1st Place Gold Host Podium (Center) -->
+                    <div
+                        class="order-1 md:order-2 glass-card p-7 sm:p-8 rounded-3xl border-2 border-purple-500/70 bg-gradient-to-b from-purple-950/50 via-slate-900/95 to-slate-950/90 relative overflow-hidden shadow-2xl shadow-purple-500/20 space-y-5 text-center transform md:-translate-y-2">
+                        <div class="flex justify-center">
+                            <span
+                                class="inline-flex items-center gap-1.5 px-5 py-1.5 rounded-full bg-gradient-to-r from-amber-500 to-yellow-400 text-slate-950 border border-amber-300 text-xs font-black tracking-widest uppercase shadow-lg shadow-amber-500/30">
+                                👑 #1 Community Pillar
+                            </span>
+                        </div>
+
+                        <div class="flex justify-center pt-1">
+                            <div class="relative">
+                                <div
+                                    class="absolute -inset-1 rounded-2xl bg-gradient-to-r from-purple-500 to-amber-400 opacity-75 blur-sm"></div>
+                                <img src="@hostTop1.AvatarUrl"
+                                     onError="this.onerror=null;this.src='/images/default-avatar.png';"
+                                     alt="@hostTop1.AccountName"
+                                     class="w-24 h-24 rounded-2xl object-cover border-2 border-amber-400 shadow-2xl bg-slate-950 relative z-10"/>
+                                <span
+                                    class="absolute -bottom-2 -right-2 px-2.5 py-0.5 rounded-lg bg-amber-500 text-slate-950 border border-amber-300 text-xs font-black shadow-md z-20">#1</span>
+                            </div>
+                        </div>
+
+                        <div>
+                            <h3 class="text-xl sm:text-2xl font-black text-white truncate">@hostTop1.AccountName</h3>
+                            <span class="text-xs text-purple-300 font-mono font-bold">@hostTop1.HostAccountName</span>
+                        </div>
+
+                        <div class="p-4 rounded-2xl bg-slate-950/80 border border-purple-500/40 space-y-2.5">
+                            <div class="text-3xl font-black text-purple-300 font-mono">
+                                @hostTop1.GamesHosted.ToString("N0") <span
+                                    class="text-sm font-bold text-slate-400">@(hostTop1.GamesHosted == 1 ? "Match Hosted" : "Matches Hosted")</span>
+                            </div>
+                            <div class="space-y-1">
+                                <div class="flex items-center justify-between text-xs font-mono">
+                                    <span class="text-slate-400">Community Impact Share</span>
+                                    <span
+                                        class="text-amber-300 font-extrabold">@hostTop1.CommunityContributionPercentage.ToString("F1")% of Server Traffic</span>
+                                </div>
+                                <div
+                                    class="w-full h-2 rounded-full bg-slate-900 overflow-hidden border border-slate-800">
+                                    <div
+                                        class="h-full rounded-full bg-gradient-to-r from-purple-500 via-pink-500 to-amber-400 shadow-sm shadow-purple-500"
+                                        style="width: @Math.Min(100.0, hostTop1.CommunityContributionPercentage)%"></div>
+                                </div>
+                            </div>
+                            <div class="text-xs text-slate-300 flex items-center justify-center gap-2 pt-1">
+                                <span
+                                    class="text-amber-400 font-bold">@hostTop1.HostingRatio.ToString("F2")x Ratio</span>
+                                <span class="text-slate-600">|</span>
+                                <span
+                                    class="text-slate-400">@hostTop1.GamesPlayed.ToString("N0") @(hostTop1.GamesPlayed == 1 ? "Match Played" : "Matches Played")</span>
+                            </div>
+                        </div>
+
+                        <a href="/stats?accountName=@Uri.EscapeDataString(hostTop1.AccountName)"
+                           class="inline-flex items-center justify-center gap-2 w-full py-3 rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white font-black text-xs border border-purple-400 transition-all shadow-md shadow-purple-950">
+                            <span>View Stats</span>
+                            <span>➔</span>
+                        </a>
+                    </div>
+
+                    <!-- 3rd Place Bronze Host Podium -->
+                    @if (hostTop3 != null)
+                    {
+                        <div
+                            class="order-3 glass-card p-6 rounded-3xl border border-amber-700/50 bg-gradient-to-b from-slate-900/90 to-slate-950/80 relative overflow-hidden shadow-xl space-y-4 text-center">
+                            <div class="flex justify-center">
+                                <span
+                                    class="inline-flex items-center gap-1.5 px-4 py-1 rounded-full bg-amber-900/80 text-amber-200 border border-amber-600 text-xs font-black tracking-wider uppercase shadow-md">
+                                    🥉 3rd Place Host
+                                </span>
+                            </div>
+
+                            <div class="flex justify-center pt-1">
+                                <div class="relative">
+                                    <img src="@hostTop3.AvatarUrl"
+                                         onError="this.onerror=null;this.src='/images/default-avatar.png';"
+                                         alt="@hostTop3.AccountName"
+                                         class="w-20 h-20 rounded-2xl object-cover border-2 border-amber-600 shadow-xl bg-slate-950"/>
+                                    <span
+                                        class="absolute -bottom-2 -right-2 px-2 py-0.5 rounded-lg bg-slate-800 text-amber-400 border border-amber-700 text-[11px] font-bold">#3</span>
+                                </div>
+                            </div>
+
+                            <div>
+                                <h3 class="text-lg font-extrabold text-white truncate">@hostTop3.AccountName</h3>
+                                <span class="text-xs text-purple-400 font-mono">@hostTop3.HostAccountName</span>
+                            </div>
+
+                            <div class="p-3.5 rounded-2xl bg-slate-950/70 border border-slate-800 space-y-2">
+                                <div class="text-2xl font-black text-purple-300 font-mono">
+                                    @hostTop3.GamesHosted.ToString("N0") @(hostTop3.GamesHosted == 1 ? "Match Hosted" : "Matches Hosted")
+                                </div>
+                                <div class="space-y-1">
+                                    <div class="flex items-center justify-between text-[11px] font-mono">
+                                        <span class="text-slate-400">Community Share</span>
+                                        <span
+                                            class="text-purple-300 font-bold">@hostTop3.CommunityContributionPercentage.ToString("F1")%</span>
+                                    </div>
+                                    <div
+                                        class="w-full h-1.5 rounded-full bg-slate-900 overflow-hidden border border-slate-800">
+                                        <div class="h-full rounded-full bg-gradient-to-r from-purple-500 to-pink-500"
+                                             style="width: @Math.Min(100.0, hostTop3.CommunityContributionPercentage)%"></div>
+                                    </div>
+                                </div>
+                                <div class="text-xs text-slate-400 flex items-center justify-center gap-2 pt-0.5">
+                                    <span
+                                        class="text-amber-400 font-bold">@hostTop3.HostingRatio.ToString("F2")x Ratio</span>
+                                    <span>•</span>
+                                    <span
+                                        class="text-slate-400">@hostTop3.GamesPlayed.ToString("N0") @(hostTop3.GamesPlayed == 1 ? "Match Played" : "Matches Played")</span>
+                                </div>
+                            </div>
+
+                            <a href="/stats?accountName=@Uri.EscapeDataString(hostTop3.AccountName)"
+                               class="inline-flex items-center justify-center gap-2 w-full py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-xs border border-slate-600 transition-all">
+                                <span>View Stats</span>
+                                <span>➔</span>
+                            </a>
+                        </div>
+                    }
+                </div>
+            </div>
+        }
+
+        <!-- Search Controls -->
+        <div
+            class="glass-card p-4 sm:p-5 rounded-3xl border border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <form method="get" asp-controller="Home" asp-action="Leaderboard"
+                  class="flex-1 w-full flex flex-col sm:flex-row items-center gap-3">
+                <input type="hidden" name="mode" value="hosts"/>
+                <input type="hidden" name="map" value="all"/>
+
+                <div class="relative flex-1 w-full">
+                    <input type="text" name="search" value="@searchQuery" placeholder="Search host by username..."
+                           class="w-full pl-10 pr-4 py-2.5 rounded-2xl bg-slate-900 border border-slate-800 focus:border-purple-500 focus:ring-1 focus:ring-purple-500 text-slate-200 placeholder-slate-500 text-xs font-medium transition-all"/>
+                    <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500 text-sm">🔍</span>
+                </div>
+
+                <button type="submit"
+                        class="px-4 py-2.5 rounded-2xl bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs border border-purple-400 transition-all">
+                    Search Hosts
+                </button>
+            </form>
+        </div>
+
+        <!-- Full Host Leaderboard Table -->
+        <div class="glass-card rounded-3xl border border-slate-800 overflow-hidden shadow-2xl">
+            @if (hostEntries.Count == 0)
+            {
+                <div class="p-12 text-center space-y-3">
+                    <div class="text-4xl">⚡</div>
+                    <h3 class="text-lg font-bold text-white">No Volunteer Hosts Found</h3>
+                    <p class="text-xs text-slate-400 max-w-sm mx-auto">No approved host accounts matching the active
+                        filter criteria were found.</p>
+                </div>
+            }
+            else
+            {
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-xs border-collapse">
+                        <thead>
+                        <tr class="bg-slate-900/90 border-b border-slate-800 text-slate-400 font-bold uppercase tracking-wider text-[11px]">
+                            <th class="py-4 px-5 text-center w-16">Rank</th>
+                            <th class="py-4 px-5">Host & Main Account</th>
+                            <th class="py-4 px-5">Host Badge Tier</th>
+                            <th class="py-4 px-5 text-center w-28">Region</th>
+                            <th class="py-4 px-5 text-center w-32">Matches Hosted</th>
+                            <th class="py-4 px-5 w-44">Community Share</th>
+                            <th class="py-4 px-5 text-center w-28">Played</th>
+                            <th class="py-4 px-5 text-center w-32">Ratio</th>
+                            <th class="py-4 px-5 text-right w-28">Action</th>
+                        </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-800/60 bg-slate-950/40">
+                        @foreach (var host in hostEntries)
+                        {
+                            var rankBadgeClass = host.Rank switch
+                            {
+                                1 => "bg-amber-500 text-slate-950 border-amber-300 font-black shadow-md shadow-amber-500/20",
+                                2 => "bg-slate-300 text-slate-950 border-white font-bold",
+                                3 => "bg-amber-800 text-amber-100 border-amber-600 font-bold",
+                                _ => "bg-slate-900 text-slate-400 border-slate-800 font-semibold"
+                            };
+
+                            <tr class="hover:bg-slate-900/70 transition-colors group">
+                                <td class="py-4 px-5 text-center">
+                                    <span
+                                        class="inline-flex items-center justify-center w-8 h-8 rounded-xl border text-xs font-mono @rankBadgeClass">
+                                        #@host.Rank
+                                    </span>
+                                </td>
+                                <td class="py-4 px-5">
+                                    <div class="flex items-center gap-3">
+                                        <img src="@host.AvatarUrl"
+                                             onError="this.onerror=null;this.src='/images/default-avatar.png';"
+                                             alt="@host.AccountName"
+                                             class="w-10 h-10 rounded-xl object-cover border border-slate-700 bg-slate-900 flex-shrink-0"/>
+                                        <div class="flex flex-col min-w-0">
+                                            <a href="/stats?accountName=@Uri.EscapeDataString(host.AccountName)"
+                                               class="font-bold text-white group-hover:text-purple-300 transition-colors text-sm truncate">
+                                                @host.AccountName
+                                            </a>
+                                            <span
+                                                class="text-[11px] text-purple-400 font-mono">@host.HostAccountName</span>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="py-4 px-5">
+                                    <span
+                                        class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold bg-amber-500/15 text-amber-300 border border-amber-500/30 font-mono">
+                                        ⚡ @host.HostBadgeTier
+                                    </span>
+                                </td>
+                                <td class="py-4 px-5 text-center font-bold text-slate-300">
+                                    @host.Location (@host.Instances nodes)
+                                </td>
+                                <td class="py-4 px-5 text-center font-mono font-bold text-purple-300">
+                                    <span
+                                        class="px-2.5 py-1 rounded-xl bg-purple-500/15 border border-purple-500/30 text-purple-300 font-black text-sm">
+                                        @host.GamesHosted.ToString("N0")
+                                    </span>
+                                </td>
+                                <td class="py-4 px-5">
+                                    <div class="space-y-1 font-mono">
+                                        <div class="flex items-center justify-between text-[11px]">
+                                            <span
+                                                class="font-bold text-slate-300">@host.CommunityContributionPercentage.ToString("F1")%</span>
+                                            <span class="text-[10px] text-slate-500">Share</span>
+                                        </div>
+                                        <div
+                                            class="w-full h-1.5 rounded-full bg-slate-900 overflow-hidden border border-slate-800">
+                                            <div
+                                                class="h-full rounded-full bg-gradient-to-r from-purple-500 to-pink-500"
+                                                style="width: @Math.Min(100.0, host.CommunityContributionPercentage)%"></div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="py-4 px-5 text-center font-mono text-slate-400">
+                                    @host.GamesPlayed.ToString("N0")
+                                </td>
+                                <td class="py-4 px-5 text-center font-mono">
+                                    <span
+                                        class="px-2.5 py-1 rounded-xl bg-slate-900 border border-slate-800 text-amber-300 font-bold text-xs">
+                                        @host.HostingRatio.ToString("F2")x
+                                    </span>
+                                </td>
+                                <td class="py-4 px-5 text-right">
+                                    <a href="/stats?accountName=@Uri.EscapeDataString(host.AccountName)"
+                                       class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-purple-600 hover:text-white text-slate-300 font-bold text-xs border border-slate-800 transition-all">
+                                        <span>Stats</span>
+                                        <span>➔</span>
+                                    </a>
+                                </td>
+                            </tr>
+                        }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <!-- PLAYER LEADERBOARD (WIN RATE OR MOST MATCHES PLAYED) -->
+        @if (top1 != null && string.IsNullOrEmpty(searchQuery))
+        {
+            <div class="space-y-4 pt-2">
+                <h2 class="text-xs font-bold text-amber-400 uppercase tracking-widest flex items-center gap-2 px-1">
+                    <span>👑</span> TOP PODIUM CHAMPIONS
+                </h2>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6 items-end">
+                    <!-- 2nd Place Silver Podium -->
+                    @if (top2 != null)
+                    {
+                        <div
+                            class="order-2 md:order-1 glass-card p-6 rounded-3xl border border-slate-700/60 bg-gradient-to-b from-slate-900/90 to-slate-950/80 relative overflow-hidden shadow-xl space-y-4 text-center">
+                            <div class="flex justify-center">
+                                <span
+                                    class="inline-flex items-center gap-1.5 px-4 py-1 rounded-full bg-slate-700 text-slate-200 border border-slate-500 text-xs font-black tracking-wider uppercase shadow-md">
+                                    🥈 2nd Place
+                                </span>
+                            </div>
+
+                            <div class="flex justify-center pt-1">
+                                <div class="relative">
+                                    <img src="@top2.AvatarUrl"
+                                         onError="this.onerror=null;this.src='/images/default-avatar.png';"
+                                         alt="@top2.AccountName"
+                                         class="w-20 h-20 rounded-2xl object-cover border-2 border-slate-400 shadow-xl bg-slate-950"/>
+                                    <span
+                                        class="absolute -bottom-2 -right-2 px-2 py-0.5 rounded-lg bg-slate-800 text-slate-300 border border-slate-600 text-[11px] font-bold">#2</span>
+                                </div>
+                            </div>
+
+                            <div>
+                                <h3 class="text-lg font-extrabold text-white truncate">@top2.AccountName</h3>
+                            </div>
+
+                            <div class="p-3.5 rounded-2xl bg-slate-950/70 border border-slate-800 space-y-1">
+                                @if (isMatchesSort)
+                                {
+                                    <div class="text-2xl font-black text-slate-200 font-mono">
+                                        @top2.TotalMatches.ToString("N0") @(top2.TotalMatches == 1 ? "Match" : "Matches")
+                                    </div>
+                                    <div class="text-xs text-slate-400 flex items-center justify-center gap-2">
+                                        <span class="text-emerald-400 font-bold">@top2.Wins W</span>
+                                        <span>-</span>
+                                        <span class="text-rose-400 font-bold">@top2.Losses L</span>
+                                        <span>(@top2.WinRate.ToString("F1")%)</span>
+                                    </div>
+                                }
+                                else
+                                {
+                                    <div
+                                        class="text-2xl font-black text-slate-200 font-mono">@top2.WinRate.ToString("F1")%
+                                    </div>
+                                    <div class="text-xs text-slate-400 flex items-center justify-center gap-2">
+                                        <span class="text-emerald-400 font-bold">@top2.Wins W</span>
+                                        <span>-</span>
+                                        <span class="text-rose-400 font-bold">@top2.Losses L</span>
+                                    </div>
+                                }
+                            </div>
+
+                            <a href="/stats?accountName=@Uri.EscapeDataString(top2.AccountName)"
+                               class="inline-flex items-center justify-center gap-2 w-full py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-xs border border-slate-600 transition-all">
+                                <span>View Profile</span>
+                                <span>➔</span>
+                            </a>
+                        </div>
+                    }
+
+                    <!-- 1st Place Gold Podium -->
+                    <div
+                        class="order-1 md:order-2 glass-card p-7 sm:p-8 rounded-3xl border-2 border-amber-500/70 bg-gradient-to-b from-amber-950/30 via-slate-900/95 to-slate-950/90 relative overflow-hidden shadow-2xl shadow-amber-500/10 space-y-5 text-center transform md:-translate-y-2">
+                        <div class="flex justify-center">
+                            <span
+                                class="inline-flex items-center gap-1.5 px-5 py-1.5 rounded-full bg-gradient-to-r from-amber-500 to-yellow-400 text-slate-950 border border-amber-300 text-xs font-black tracking-widest uppercase shadow-lg shadow-amber-500/30">
+                                👑 1st Place Champion
+                            </span>
+                        </div>
+
+                        <div class="flex justify-center pt-1">
+                            <div class="relative">
+                                <div
+                                    class="absolute -inset-1 rounded-2xl bg-gradient-to-r from-amber-500 to-yellow-400 opacity-75 blur-sm"></div>
+                                <img src="@top1.AvatarUrl"
+                                     onError="this.onerror=null;this.src='/images/default-avatar.png';"
+                                     alt="@top1.AccountName"
+                                     class="w-24 h-24 rounded-2xl object-cover border-2 border-amber-400 shadow-2xl bg-slate-950 relative z-10"/>
+                                <span
+                                    class="absolute -bottom-2 -right-2 px-2.5 py-0.5 rounded-lg bg-amber-500 text-slate-950 border border-amber-300 text-xs font-black shadow-md z-20">#1</span>
+                            </div>
+                        </div>
+
+                        <div>
+                            <h3 class="text-xl sm:text-2xl font-black text-white truncate">@top1.AccountName</h3>
+                        </div>
+
+                        <div class="p-4 rounded-2xl bg-slate-950/80 border border-amber-500/30 space-y-1">
+                            @if (isMatchesSort)
+                            {
+                                <div class="text-3xl font-black text-amber-400 font-mono">
+                                    @top1.TotalMatches.ToString("N0") <span
+                                        class="text-sm font-bold text-slate-400">@(top1.TotalMatches == 1 ? "Match Played" : "Matches Played")</span>
+                                </div>
+                                <div class="text-xs text-slate-300 flex items-center justify-center gap-2 pt-0.5">
+                                    <span class="text-emerald-400 font-bold">@top1.Wins W</span>
+                                    <span>-</span>
+                                    <span class="text-rose-400 font-bold">@top1.Losses L</span>
+                                    <span class="text-slate-500">|</span>
+                                    <span class="text-amber-300 font-mono font-bold">@top1.WinRate.ToString("F1")% Win Rate</span>
+                                </div>
+                            }
+                            else
+                            {
+                                <div
+                                    class="text-3xl font-black text-amber-400 font-mono">@top1.WinRate.ToString("F1")%
+                                </div>
+                                <div class="text-xs text-slate-300 flex items-center justify-center gap-2 pt-0.5">
+                                    <span class="text-emerald-400 font-bold">@top1.Wins W</span>
+                                    <span>-</span>
+                                    <span class="text-rose-400 font-bold">@top1.Losses L</span>
+                                    <span class="text-slate-500">|</span>
+                                    <span
+                                        class="text-amber-300 font-mono">@top1.TotalMatches @(top1.TotalMatches == 1 ? "Match" : "Matches")</span>
+                                </div>
+                            }
+                        </div>
+
+                        <a href="/stats?accountName=@Uri.EscapeDataString(top1.AccountName)"
+                           class="inline-flex items-center justify-center gap-2 w-full py-3 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs border border-amber-300 transition-all shadow-md shadow-amber-500/20">
+                            <span>View Profile</span>
+                            <span>➔</span>
+                        </a>
+                    </div>
+
+                    <!-- 3rd Place Bronze Podium -->
+                    @if (top3 != null)
+                    {
+                        <div
+                            class="order-3 glass-card p-6 rounded-3xl border border-amber-700/50 bg-gradient-to-b from-slate-900/90 to-slate-950/80 relative overflow-hidden shadow-xl space-y-4 text-center">
+                            <div class="flex justify-center">
+                                <span
+                                    class="inline-flex items-center gap-1.5 px-4 py-1 rounded-full bg-amber-900/80 text-amber-200 border border-amber-600 text-xs font-black tracking-wider uppercase shadow-md">
+                                    🥉 3rd Place
+                                </span>
+                            </div>
+
+                            <div class="flex justify-center pt-1">
+                                <div class="relative">
+                                    <img src="@top3.AvatarUrl"
+                                         onError="this.onerror=null;this.src='/images/default-avatar.png';"
+                                         alt="@top3.AccountName"
+                                         class="w-20 h-20 rounded-2xl object-cover border-2 border-amber-600 shadow-xl bg-slate-950"/>
+                                    <span
+                                        class="absolute -bottom-2 -right-2 px-2 py-0.5 rounded-lg bg-slate-800 text-amber-400 border border-amber-700 text-[11px] font-bold">#3</span>
+                                </div>
+                            </div>
+
+                            <div>
+                                <h3 class="text-lg font-extrabold text-white truncate">@top3.AccountName</h3>
+                            </div>
+
+                            <div class="p-3.5 rounded-2xl bg-slate-950/70 border border-slate-800 space-y-1">
+                                @if (isMatchesSort)
+                                {
+                                    <div class="text-2xl font-black text-amber-300 font-mono">
+                                        @top3.TotalMatches.ToString("N0") @(top3.TotalMatches == 1 ? "Match" : "Matches")
+                                    </div>
+                                    <div class="text-xs text-slate-400 flex items-center justify-center gap-2">
+                                        <span class="text-emerald-400 font-bold">@top3.Wins W</span>
+                                        <span>-</span>
+                                        <span class="text-rose-400 font-bold">@top3.Losses L</span>
+                                        <span>(@top3.WinRate.ToString("F1")%)</span>
+                                    </div>
+                                }
+                                else
+                                {
+                                    <div
+                                        class="text-2xl font-black text-amber-300 font-mono">@top3.WinRate.ToString("F1")%
+                                    </div>
+                                    <div class="text-xs text-slate-400 flex items-center justify-center gap-2">
+                                        <span class="text-emerald-400 font-bold">@top3.Wins W</span>
+                                        <span>-</span>
+                                        <span class="text-rose-400 font-bold">@top3.Losses L</span>
+                                    </div>
+                                }
+                            </div>
+
+                            <a href="/stats?accountName=@Uri.EscapeDataString(top3.AccountName)"
+                               class="inline-flex items-center justify-center gap-2 w-full py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-xs border border-slate-600 transition-all">
+                                <span>View Profile</span>
+                                <span>➔</span>
+                            </a>
+                        </div>
+                    }
+                </div>
+            </div>
+        }
+
+        <!-- Search & Filter Controls -->
+        <div
+            class="glass-card p-4 sm:p-5 rounded-3xl border border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <form method="get" asp-controller="Home" asp-action="Leaderboard"
+                  class="flex-1 w-full flex flex-col sm:flex-row items-center gap-3">
+                <input type="hidden" name="mode" value="@currentMode"/>
+                <input type="hidden" name="map" value="@currentMap"/>
+                <input type="hidden" name="sort" value="@currentSort"/>
+
+                <div class="relative flex-1 w-full">
+                    <input type="text" name="search" value="@searchQuery" placeholder="Search warrior by username..."
+                           class="w-full pl-10 pr-4 py-2.5 rounded-2xl bg-slate-900 border border-slate-800 focus:border-amber-500 focus:ring-1 focus:ring-amber-500/50 text-slate-200 placeholder-slate-500 text-xs font-medium transition-all"/>
+                    <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500 text-sm">🔍</span>
+                </div>
+
+                <div class="flex items-center gap-2 w-full sm:w-auto">
+                    <label class="text-xs text-slate-400 font-medium whitespace-nowrap">Min Matches:</label>
+                    <select name="minMatches" onchange="this.form.submit()"
+                            class="px-3 py-2 rounded-2xl bg-slate-900 border border-slate-800 text-amber-400 text-xs font-bold focus:outline-none cursor-pointer">
+                        <option value="0" selected="@(minMatches == 0 ? "selected" : null)">All Players</option>
+                        <option value="5" selected="@(minMatches == 5 ? "selected" : null)">5+ Matches</option>
+                        <option value="10" selected="@(minMatches == 10 ? "selected" : null)">10+ Matches</option>
+                        <option value="25" selected="@(minMatches == 25 ? "selected" : null)">25+ Matches</option>
+                    </select>
+
+                    <button type="submit"
+                            class="px-4 py-2.5 rounded-2xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs border border-amber-300 transition-all">
+                        Filter
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Full Leaderboard Table -->
+        <div class="glass-card rounded-3xl border border-slate-800 overflow-hidden shadow-2xl">
+            @if (isHostLeaderboard)
+            {
+                if (hostEntries.Count == 0)
+                {
+                    <div class="p-12 text-center space-y-3">
+                        <div class="text-4xl">🌐</div>
+                        <h3 class="text-lg font-bold text-white">No Server Hosts Found</h3>
+                        <p class="text-xs text-slate-400 max-w-sm mx-auto">No approved community server hosts are currently registered.</p>
+                    </div>
+                }
+                else
+                {
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-xs border-collapse">
+                            <thead>
+                            <tr class="bg-slate-900/90 border-b border-slate-800 text-slate-400 font-bold uppercase tracking-wider text-[11px]">
+                                <th class="py-4 px-5 text-center w-16">Rank</th>
+                                <th class="py-4 px-5">Host Operator</th>
+                                <th class="py-4 px-5 text-center w-36">Games Hosted</th>
+                                <th class="py-4 px-5 w-44">Contribution</th>
+                                <th class="py-4 px-5 text-center w-28">Region</th>
+                                <th class="py-4 px-5 text-center w-28">Instances</th>
+                                <th class="py-4 px-5 text-right w-32">Badge Tier</th>
+                            </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-800/60 bg-slate-950/40">
+                            @foreach (var host in hostEntries)
+                            {
+                                var rankBadgeClass = host.Rank switch
+                                {
+                                    1 => "bg-amber-500 text-slate-950 border-amber-300 font-black shadow-md shadow-amber-500/20",
+                                    2 => "bg-slate-300 text-slate-950 border-white font-bold",
+                                    3 => "bg-amber-800 text-amber-100 border-amber-600 font-bold",
+                                    _ => "bg-slate-900 text-slate-400 border-slate-800 font-semibold"
+                                };
+
+                                <tr class="hover:bg-slate-900/70 transition-colors group">
+                                    <td class="py-4 px-5 text-center">
+                                        <span class="inline-flex items-center justify-center w-8 h-8 rounded-xl border text-xs font-mono @rankBadgeClass">
+                                            #@host.Rank
+                                        </span>
+                                    </td>
+                                    <td class="py-4 px-5">
+                                        <div class="flex items-center gap-3">
+                                            <img src="@host.AvatarUrl"
+                                                 onError="this.onerror=null;this.src='/images/default-avatar.png';"
+                                                 alt="@host.AccountName"
+                                                 class="w-10 h-10 rounded-xl object-cover border border-slate-700 bg-slate-900 flex-shrink-0"/>
+                                            <div class="flex flex-col min-w-0">
+                                                <span class="font-bold text-white text-sm truncate">
+                                                    @host.AccountName
+                                                </span>
+                                                <span class="text-[11px] text-slate-400 font-mono">
+                                                    Host: @host.HostAccountName
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="py-4 px-5 text-center font-mono font-bold">
+                                        <span class="px-3 py-1 rounded-xl bg-purple-500/15 border border-purple-500/30 text-purple-300 font-black text-sm">
+                                            @host.GamesHosted.ToString("N0")
+                                        </span>
+                                    </td>
+                                    <td class="py-4 px-5">
+                                        <div class="space-y-1.5">
+                                            <div class="flex items-center justify-between font-mono">
+                                                <span class="font-extrabold text-xs text-purple-400">
+                                                    @host.CommunityContributionPercentage.ToString("F1")%
+                                                </span>
+                                                <span class="text-[10px] text-slate-500 font-normal">of community</span>
+                                            </div>
+                                            <div class="w-full h-1.5 rounded-full bg-slate-900 border border-slate-800 overflow-hidden">
+                                                <div class="h-full rounded-full bg-gradient-to-r from-purple-500 to-indigo-400"
+                                                     style="width: @Math.Min(100.0, Math.Max(0.0, host.CommunityContributionPercentage))%"></div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="py-4 px-5 text-center font-mono text-slate-300">
+                                        <span class="px-2.5 py-1 rounded-lg bg-slate-900 border border-slate-800 text-xs font-semibold">
+                                            @host.Location
+                                        </span>
+                                    </td>
+                                    <td class="py-4 px-5 text-center font-mono font-bold text-slate-300">
+                                        @host.Instances
+                                    </td>
+                                    <td class="py-4 px-5 text-right font-mono">
+                                        <span class="px-3 py-1 rounded-xl bg-slate-900 border border-slate-700 text-amber-300 font-bold text-xs">
+                                            @host.HostBadgeTier
+                                        </span>
+                                    </td>
+                                </tr>
+                            }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+            }
+            else if (Model.Count == 0)
+            {
+                <div class="p-12 text-center space-y-3">
+                    <div class="text-4xl">⚔️</div>
+                    <h3 class="text-lg font-bold text-white">No Warriors Found</h3>
+                    <p class="text-xs text-slate-400 max-w-sm mx-auto">No players matching the active filter criteria
+                        were found.</p>
+                    <a href="@Url.Action("Leaderboard", "Home")"
+                       class="inline-block px-4 py-2 rounded-xl bg-slate-800 text-amber-400 text-xs font-bold border border-slate-700 hover:bg-slate-700 transition-all">
+                        Reset All Filters
+                    </a>
+                </div>
+            }
+            else
+            {
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-xs border-collapse">
+                        <thead>
+                        <tr class="bg-slate-900/90 border-b border-slate-800 text-slate-400 font-bold uppercase tracking-wider text-[11px]">
+                            <th class="py-4 px-5 text-center w-16">Rank</th>
+                            <th class="py-4 px-5">Warrior</th>
+                            @if (isMatchesSort)
+                            {
+                                <th class="py-4 px-5 text-center w-36">Matches Played</th>
+                                <th class="py-4 px-5 w-44">Win Rate</th>
+                            }
+                            else
+                            {
+                                <th class="py-4 px-5 w-48">Win Rate</th>
+                                <th class="py-4 px-5 text-center w-28">Matches</th>
+                            }
+                            <th class="py-4 px-5 text-center w-32">Record (W-L)</th>
+                            <th class="py-4 px-5 w-40">Top Hero</th>
+                            <th class="py-4 px-5 text-right w-32">Action</th>
+                        </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-800/60 bg-slate-950/40">
+                        @foreach (var entry in Model)
+                        {
+                            var rankBadgeClass = entry.Rank switch
+                            {
+                                1 => "bg-amber-500 text-slate-950 border-amber-300 font-black shadow-md shadow-amber-500/20",
+                                2 => "bg-slate-300 text-slate-950 border-white font-bold",
+                                3 => "bg-amber-800 text-amber-100 border-amber-600 font-bold",
+                                _ => "bg-slate-900 text-slate-400 border-slate-800 font-semibold"
+                            };
+
+                            <tr class="hover:bg-slate-900/70 transition-colors group">
+                                <td class="py-4 px-5 text-center">
+                                    <span
+                                        class="inline-flex items-center justify-center w-8 h-8 rounded-xl border text-xs font-mono @rankBadgeClass">
+                                        #@entry.Rank
+                                    </span>
+                                </td>
+                                <td class="py-4 px-5">
+                                    <div class="flex items-center gap-3">
+                                        <img src="@entry.AvatarUrl"
+                                             onError="this.onerror=null;this.src='/images/default-avatar.png';"
+                                             alt="@entry.AccountName"
+                                             class="w-10 h-10 rounded-xl object-cover border border-slate-700 bg-slate-900 flex-shrink-0"/>
+                                        <div class="flex flex-col min-w-0">
+                                            <a href="/stats?accountName=@Uri.EscapeDataString(entry.AccountName)"
+                                               class="font-bold text-white group-hover:text-amber-300 transition-colors text-sm truncate">
+                                                @entry.AccountName
+                                            </a>
+                                        </div>
+                                    </div>
+                                </td>
+                                @if (isMatchesSort)
+                                {
+                                    <td class="py-4 px-5 text-center font-mono font-bold">
+                                        <span
+                                            class="px-3 py-1 rounded-xl bg-amber-500/15 border border-amber-500/30 text-amber-300 font-black text-sm">
+                                            @entry.TotalMatches.ToString("N0") @(entry.TotalMatches == 1 ? "Match" : "Matches")
+                                        </span>
+                                    </td>
+                                    <td class="py-4 px-5">
+                                        <div class="space-y-1.5">
+                                            <div class="flex items-center justify-between font-mono">
+                                                <span
+                                                    class="font-extrabold text-xs @(entry.WinRate >= 60.0 ? "text-amber-400" : entry.WinRate >= 50.0 ? "text-emerald-400" : "text-slate-300")">
+                                                    @entry.WinRate.ToString("F1")%
+                                                </span>
+                                                <span
+                                                    class="text-[10px] text-slate-500 font-normal">@entry.Wins W</span>
+                                            </div>
+                                            <div
+                                                class="w-full h-1.5 rounded-full bg-slate-900 border border-slate-800 overflow-hidden">
+                                                <div
+                                                    class="h-full rounded-full @(entry.WinRate >= 60.0 ? "bg-gradient-to-r from-amber-500 to-yellow-400" : entry.WinRate >= 50.0 ? "bg-gradient-to-r from-emerald-500 to-teal-400" : "bg-slate-700")"
+                                                    style="width: @Math.Min(100.0, Math.Max(0.0, entry.WinRate))%"></div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                }
+                                else
+                                {
+                                    <td class="py-4 px-5">
+                                        <div class="space-y-1.5">
+                                            <div class="flex items-center justify-between font-mono">
+                                                <span
+                                                    class="font-extrabold text-sm @(entry.WinRate >= 60.0 ? "text-amber-400" : entry.WinRate >= 50.0 ? "text-emerald-400" : "text-slate-300")">
+                                                    @entry.WinRate.ToString("F1")%
+                                                </span>
+                                                <span
+                                                    class="text-[10px] text-slate-500 font-normal">@entry.Wins / @entry.TotalMatches</span>
+                                            </div>
+                                            <div
+                                                class="w-full h-2 rounded-full bg-slate-900 border border-slate-800 overflow-hidden">
+                                                <div
+                                                    class="h-full rounded-full @(entry.WinRate >= 60.0 ? "bg-gradient-to-r from-amber-500 to-yellow-400" : entry.WinRate >= 50.0 ? "bg-gradient-to-r from-emerald-500 to-teal-400" : "bg-slate-700")"
+                                                    style="width: @Math.Min(100.0, Math.Max(0.0, entry.WinRate))%"></div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="py-4 px-5 text-center font-mono font-bold text-slate-300">
+                                        @entry.TotalMatches.ToString("N0") @(entry.TotalMatches == 1 ? "Match" : "Matches")
+                                    </td>
+                                }
+                                <td class="py-4 px-5 text-center">
+                                    <span
+                                        class="inline-flex items-center gap-1 px-3 py-1 rounded-xl bg-slate-900 border border-slate-800 font-mono font-bold text-xs">
+                                        <span class="text-emerald-400">@entry.Wins W</span>
+                                        <span class="text-slate-600">-</span>
+                                        <span class="text-rose-400">@entry.Losses L</span>
+                                    </span>
+                                </td>
+                                <td class="py-4 px-5">
+                                    <div class="flex items-center gap-2">
+                                        <img src="@entry.TopHeroIcon"
+                                             onError="this.onerror=null;this.src='/images/default-avatar.png';"
+                                             alt="@entry.TopHeroName"
+                                             class="w-7 h-7 rounded-lg object-cover border border-slate-700 bg-slate-900 flex-shrink-0"/>
+                                        <span
+                                            class="text-xs font-semibold text-slate-200 truncate">@entry.TopHeroName</span>
+                                    </div>
+                                </td>
+                                <td class="py-4 px-5 text-right">
+                                    <a href="/stats?accountName=@Uri.EscapeDataString(entry.AccountName)"
+                                       class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-amber-500 hover:text-slate-950 text-slate-300 font-bold text-xs border border-slate-800 hover:border-amber-400 transition-all">
+                                        <span>Stats</span>
+                                        <span>➔</span>
+                                    </a>
+                                </td>
+                            </tr>
+                        }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+    }
+</div>

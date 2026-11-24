@@ -1,0 +1,64 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+    <ServerGarbageCollection>true</ServerGarbageCollection>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <NoWarn>$(NoWarn);CA1873;SYSLIB1045;MSB3277</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Aspire.Hosting.Testing"/>
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing"/>
+    <PackageReference Include="Microsoft.Extensions.Caching.Hybrid"/>
+    <PackageReference Include="MemoryPack"/>
+    <PackageReference Include="Microsoft.NET.Test.Sdk"/>
+    <PackageReference Include="Moq"/>
+    <PackageReference Include="NLua"/>
+    <PackageReference Include="xunit"/>
+    <PackageReference Include="xunit.runner.visualstudio">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="FluentAssertions"/>
+    <PackageReference Include="SendGrid"/>
+    <PackageReference Include="Testcontainers.PostgreSql"/>
+    <PackageReference Include="Testcontainers.Redis"/>
+    <PackageReference Include="NetArchTest.eNhancedEdition"/>
+  </ItemGroup>
+
+
+  <ItemGroup>
+    <None Update="appsettings.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="appsettings.Development.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="xunit.runner.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Data\**\*">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Remove="Performance\**\*.cs"/>
+  </ItemGroup>
+
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\src\services\master-server\KONGOR.MasterServer.csproj"/>
+    <ProjectReference Include="..\..\..\src\services\chat-server\TRANSMUTANSTEIN.ChatServer.csproj"/>
+    <ProjectReference Include="..\..\..\src\services\web-api\ZORGATH.WebPortal.API.csproj"/>
+    <ProjectReference Include="..\..\..\src\services\web-ui\DAWNBRINGER.WebPortal.UI.csproj"/>
+    <ProjectReference Include="..\..\..\src\libs\database-context\MERRICK.DatabaseContext.csproj"/>
+    <ProjectReference Include="..\..\..\src\libs\service-defaults\ASPIRE.ServiceDefaults.csproj"/>
+    <ProjectReference Include="..\..\..\src\libs\protocol-core\Kongor.Core.csproj"/>
+    <ProjectReference Include="..\..\..\src\libs\contracts\NEXUS.Contracts.csproj"/>
+    <ProjectReference Include="..\..\..\src\libs\source-generators\ASPIRE.SourceGenerator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="true" GlobalPropertiesToRemove="TargetFramework"/>
+  </ItemGroup>
+
+</Project>

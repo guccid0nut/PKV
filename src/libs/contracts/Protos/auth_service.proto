@@ -1,0 +1,74 @@
+﻿syntax = "proto3";
+
+package nexus.contracts.auth.v1;
+option csharp_namespace = "NEXUS.Contracts.Auth.V1";
+
+service AuthService {
+  rpc PreAuth (PreAuthRequest) returns (PreAuthResponse);
+  rpc VerifySrpProof (SrpProofRequest) returns (SrpProofResponse);
+  rpc ExchangeDiscordCode (DiscordExchangeRequest) returns (DiscordExchangeResponse);
+  rpc ValidateSessionToken (ValidateTokenRequest) returns (ValidateTokenResponse);
+  rpc InvalidateSession (InvalidateSessionRequest) returns (InvalidateSessionResponse);
+}
+
+message PreAuthRequest {
+  string account_name = 1;
+  string client_version = 2;
+  string ip_address = 3;
+}
+
+message PreAuthResponse {
+  string salt = 1;
+  string server_ephemeral_b = 2;
+  string session_nonce = 3;
+}
+
+message SrpProofRequest {
+  string account_name = 1;
+  string client_ephemeral_a = 2;
+  string client_proof_m1 = 3;
+  string session_nonce = 4;
+}
+
+message SrpProofResponse {
+  bool success = 1;
+  string server_proof_m2 = 2;
+  string session_token = 3;
+  uint32 account_id = 4;
+  string nickname = 5;
+  int64 expires_at_unix_seconds = 6;
+}
+
+message DiscordExchangeRequest {
+  string authorization_code = 1;
+  string redirect_uri = 2;
+  string code_verifier = 3;
+}
+
+message DiscordExchangeResponse {
+  bool success = 1;
+  string session_token = 2;
+  uint32 account_id = 3;
+  string discord_user_id = 4;
+  string username = 5;
+}
+
+message ValidateTokenRequest {
+  string session_token = 1;
+  string required_permission = 2;
+}
+
+message ValidateTokenResponse {
+  bool is_valid = 1;
+  uint32 account_id = 2;
+  string nickname = 3;
+  repeated string roles = 4;
+}
+
+message InvalidateSessionRequest {
+  string session_token = 1;
+}
+
+message InvalidateSessionResponse {
+  bool success = 1;
+}

@@ -1,0 +1,3 @@
+LIBRARY avdevice-x64-58
+EXPORTS
+    avdevice_register_all

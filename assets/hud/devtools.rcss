@@ -1,0 +1,977 @@
+/* ============================================================================
+   File: devtools.rcss
+   System: ProjectKongor In-Game Developer and Spectator Cockpit (Ctrl+Shift+D)
+   Subsystem: RmlUi Vulkan Overlay UI - Full-Viewport Responsive Layout
+   Note: Strictly adheres to RmlUi LayoutEngine invariants (LayoutEngine.cpp):
+     1. #devtools-window is position: absolute + display: block (never flex).
+     2. Every flex container's direct children are display: block / inline
+        (flex -> block -> flex alternation, never direct flex-in-flex).
+   ============================================================================ */
+
+body {
+    display: block;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    pointer-events: none;
+    font-family: Arial, sans-serif;
+    font-size: 18px;
+    color: #e2e8f0;
+}
+
+#devtools-window {
+    pointer-events: auto;
+    position: absolute;
+    top: 2.5%;
+    left: 2.5%;
+    width: 95%;
+    height: 95%;
+    display: block;
+    box-sizing: border-box;
+    background-color: #070c18;
+    border-width: 2px;
+    border-color: #0284c7;
+    border-radius: 14px;
+    padding: 20px 28px;
+}
+
+.devtools-shell {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    width: 100%;
+    height: 100%;
+    box-sizing: border-box;
+}
+
+.clear-fix {
+    clear: both;
+    display: none;
+}
+
+/* ============================================================================
+   Header Bar (header-slot [block] -> devtools-header [flex] -> block children)
+   ============================================================================ */
+.header-slot {
+    display: block;
+    flex: 0 0 auto;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.devtools-header {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    border-bottom-width: 2px;
+    border-bottom-color: #1e293b;
+    padding-bottom: 14px;
+    margin-bottom: 14px;
+    box-sizing: border-box;
+}
+
+.header-left {
+    float: none;
+    display: block;
+}
+
+.devtools-title {
+    font-size: 28px;
+    font-weight: bold;
+    color: #38bdf8;
+    display: inline-block;
+    vertical-align: middle;
+    margin-right: 16px;
+}
+
+.header-badge {
+    font-size: 15px;
+    background-color: #0369a1;
+    color: #e0f2fe;
+    padding: 6px 14px;
+    border-radius: 6px;
+    font-weight: bold;
+    display: inline-block;
+    vertical-align: middle;
+    margin-left: 0;
+    margin-right: 10px;
+}
+
+.header-badge-vk {
+    font-size: 15px;
+    background-color: #065f46;
+    color: #d1fae5;
+    padding: 6px 14px;
+    border-radius: 6px;
+    font-weight: bold;
+    display: inline-block;
+    vertical-align: middle;
+    margin-left: 0;
+}
+
+.devtools-close {
+    float: none;
+    display: block;
+    text-align: center;
+    font-size: 18px;
+    font-weight: bold;
+    color: #ffffff;
+    cursor: pointer;
+    padding: 10px 24px;
+    border-radius: 8px;
+    background-color: #dc2626;
+    border-width: 1px;
+    border-color: #f87171;
+}
+
+.devtools-close:hover {
+    background-color: #b91c1c;
+    border-color: #fca5a5;
+}
+
+/* ============================================================================
+   Full-Width Segmented Navigation Tabs Bar
+   (tabs-slot [block] -> nav-tabs [flex] -> tab-btn [block])
+   ============================================================================ */
+.tabs-slot {
+    display: block;
+    flex: 0 0 auto;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.nav-tabs {
+    display: flex;
+    flex-direction: row;
+    align-items: stretch;
+    width: 100%;
+    border-bottom-width: 0;
+    margin-bottom: 16px;
+    box-sizing: border-box;
+}
+
+.tab-btn {
+    float: none;
+    display: block;
+    flex: 1;
+    padding: 14px 12px;
+    margin-right: 12px;
+    background-color: #0f172a;
+    border-width: 2px;
+    border-color: #1e293b;
+    border-radius: 10px;
+    font-size: 20px;
+    font-weight: bold;
+    color: #94a3b8;
+    text-align: center;
+    cursor: pointer;
+    box-sizing: border-box;
+}
+
+#devtab-btn-actions {
+    margin-right: 0;
+}
+
+.tab-btn-last {
+    margin-right: 0;
+}
+
+.tab-btn:hover {
+    background-color: #162238;
+    border-color: #0284c7;
+    color: #f1f5f9;
+}
+
+.tab-btn.active {
+    background-color: #0284c7;
+    border-color: #38bdf8;
+    color: #ffffff;
+}
+
+/* ============================================================================
+   Tab Panes and Full-Height Flex Stage
+   (tab-pane.active [block] -> pane-flex [flex] -> row-slot* / deck-slot [block])
+   ============================================================================ */
+.tab-pane {
+    display: none;
+}
+
+.tab-pane.active {
+    display: block;
+    flex: 1;
+    width: 100%;
+    height: auto;
+    overflow-y: auto;
+    box-sizing: border-box;
+}
+
+.pane-flex {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    width: 100%;
+    height: 100%;
+    box-sizing: border-box;
+}
+
+/* ============================================================================
+   Responsive Row Slots & Telemetry Cards
+   ============================================================================ */
+.row-slot {
+    display: block;
+    flex: 1;
+    width: 100%;
+    margin-bottom: 14px;
+    box-sizing: border-box;
+}
+
+.row-slot-hero {
+    display: block;
+    flex: 1.25;
+    width: 100%;
+    margin-bottom: 14px;
+    box-sizing: border-box;
+}
+
+.row-slot-actions {
+    display: block;
+    flex: 0.95;
+    width: 100%;
+    margin-bottom: 0;
+    box-sizing: border-box;
+}
+
+.row-slot-last {
+    margin-bottom: 0;
+}
+
+.deck-row {
+    display: flex;
+    flex-direction: row;
+    align-items: stretch;
+    width: 100%;
+    height: 100%;
+    box-sizing: border-box;
+}
+
+.hero-metric-card {
+    display: block;
+    flex: 1;
+    background-color: #0f1b31;
+    border-width: 2px;
+    border-color: #1e3a5f;
+    border-radius: 12px;
+    padding: 20px 28px;
+    margin-right: 16px;
+    box-sizing: border-box;
+}
+
+.hero-metric-card-last {
+    margin-right: 0;
+}
+
+.hero-metric-title {
+    display: block;
+    font-size: 16px;
+    font-weight: bold;
+    color: #94a3b8;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+}
+
+.hero-metric-val-green {
+    display: block;
+    font-size: 52px;
+    font-weight: bold;
+    color: #4ade80;
+    line-height: 1.1;
+    margin-bottom: 8px;
+}
+
+.hero-metric-val-cyan {
+    display: block;
+    font-size: 52px;
+    font-weight: bold;
+    color: #38bdf8;
+    line-height: 1.1;
+    margin-bottom: 8px;
+}
+
+.hero-metric-sub {
+    display: block;
+    font-size: 15px;
+    color: #64748b;
+}
+
+.metric-card {
+    display: block;
+    flex: 1;
+    background-color: #0c1425;
+    border-width: 1px;
+    border-color: #1e293b;
+    border-radius: 10px;
+    padding: 16px 24px;
+    margin-right: 16px;
+    box-sizing: border-box;
+}
+
+.metric-card-last {
+    margin-right: 0;
+}
+
+.card-label {
+    display: block;
+    font-size: 15px;
+    font-weight: bold;
+    color: #94a3b8;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+}
+
+.card-val {
+    display: block;
+    font-size: 26px;
+    font-weight: bold;
+    color: #f8fafc;
+}
+
+.card-val-green {
+    display: block;
+    font-size: 26px;
+    font-weight: bold;
+    color: #4ade80;
+}
+
+.card-val-cyan {
+    display: block;
+    font-size: 26px;
+    font-weight: bold;
+    color: #38bdf8;
+}
+
+.card-val-xl-cyan {
+    display: inline-block;
+    font-size: 32px;
+    font-weight: bold;
+    color: #38bdf8;
+}
+
+.card-val-xl-green {
+    display: inline-block;
+    font-size: 32px;
+    font-weight: bold;
+    color: #4ade80;
+}
+
+.font-mono {
+    font-family: Courier, monospace;
+}
+
+/* ============================================================================
+   High-Visibility Vital and Audio Resource Meters
+   ============================================================================ */
+.vital-header {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    margin-bottom: 10px;
+}
+
+.vital-label {
+    display: inline-block;
+    font-size: 16px;
+    font-weight: bold;
+    color: #94a3b8;
+    text-transform: uppercase;
+}
+
+.vital-val-green {
+    display: inline-block;
+    font-size: 26px;
+    font-weight: bold;
+    color: #4ade80;
+}
+
+.vital-val-cyan {
+    display: inline-block;
+    font-size: 26px;
+    font-weight: bold;
+    color: #38bdf8;
+}
+
+.meter-container {
+    display: block;
+    width: 100%;
+    background-color: #1e293b;
+    border-width: 1px;
+    border-color: #334155;
+    border-radius: 8px;
+    height: 26px;
+    margin: 6px 0;
+    overflow: hidden;
+}
+
+.meter-fill-audio {
+    display: block;
+    height: 26px;
+    background-color: #0284c7;
+    border-radius: 7px;
+    width: 15%;
+}
+
+.meter-fill-hp {
+    display: block;
+    height: 26px;
+    background-color: #22c55e;
+    border-radius: 7px;
+    width: 85%;
+}
+
+.meter-fill-mana {
+    display: block;
+    height: 26px;
+    background-color: #3b82f6;
+    border-radius: 7px;
+    width: 70%;
+}
+
+/* ============================================================================
+   Control Decks (Spectator Director and Quick Tools Stream Deck)
+   (deck-slot [block] -> control-deck-flex [flex] -> block slots -> flex rows)
+   ============================================================================ */
+.deck-slot {
+    display: block;
+    flex: 1;
+    width: 100%;
+    background-color: #0b1324;
+    border-width: 1px;
+    border-color: #1e293b;
+    border-radius: 12px;
+    padding: 14px 20px;
+    margin-bottom: 12px;
+    box-sizing: border-box;
+}
+
+.deck-slot-last {
+    margin-bottom: 0;
+}
+
+.control-deck-flex {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    width: 100%;
+    height: 100%;
+    box-sizing: border-box;
+}
+
+.deck-header-slot {
+    display: block;
+    flex: 0 0 auto;
+    width: 100%;
+    margin-bottom: 10px;
+}
+
+.deck-header {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+}
+
+.deck-title {
+    display: inline-block;
+    font-size: 18px;
+    font-weight: bold;
+    color: #38bdf8;
+    text-transform: uppercase;
+}
+
+.deck-hint {
+    display: inline-block;
+    font-size: 14px;
+    color: #64748b;
+}
+
+.deck-btns-slot {
+    display: block;
+    flex: 1;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.deck-btn-row {
+    display: flex;
+    flex-direction: row;
+    align-items: stretch;
+    width: 100%;
+    height: 100%;
+    box-sizing: border-box;
+}
+
+/* ============================================================================
+   Large Tactile Action Tile Buttons (display: block flex items)
+   ============================================================================ */
+.btn {
+    display: block;
+    flex: 1;
+    background-color: #0284c7;
+    border-width: 2px;
+    border-color: #38bdf8;
+    color: #ffffff;
+    text-align: center;
+    padding: 16px 18px;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 20px;
+    font-weight: bold;
+    margin-right: 14px;
+    margin-bottom: 0;
+    box-sizing: border-box;
+}
+
+.btn-last {
+    margin-right: 0;
+}
+
+.btn:hover {
+    background-color: #0369a1;
+    border-color: #7dd3fc;
+}
+
+.btn-secondary {
+    background-color: #1e293b;
+    border-color: #475569;
+    color: #f1f5f9;
+}
+
+.btn-secondary:hover {
+    background-color: #334155;
+    border-color: #94a3b8;
+}
+
+.btn-emerald {
+    background-color: #059669;
+    border-color: #34d399;
+    color: #ecfdf5;
+}
+
+.btn-emerald:hover {
+    background-color: #047857;
+    border-color: #6ee7b7;
+}
+
+.btn-amber {
+    background-color: #d97706;
+    border-color: #fbbf24;
+    color: #fffbeb;
+}
+
+.btn-amber:hover {
+    background-color: #b45309;
+    border-color: #fcd34d;
+}
+
+.btn-danger {
+    background-color: #dc2626;
+    border-color: #f87171;
+    color: #fef2f2;
+}
+
+.btn-danger:hover {
+    background-color: #b91c1c;
+    border-color: #fca5a5;
+}
+
+.btn-label {
+    display: block;
+    font-size: 22px;
+    font-weight: bold;
+    color: #ffffff;
+    pointer-events: none;
+    margin-bottom: 4px;
+}
+
+.btn-label-lg {
+    display: block;
+    font-size: 26px;
+    font-weight: bold;
+    color: #ffffff;
+    pointer-events: none;
+    margin-bottom: 6px;
+}
+
+.btn-sub {
+    display: block;
+    font-size: 14px;
+    font-weight: normal;
+    color: #e2e8f0;
+    pointer-events: none;
+}
+
+.btn-cmd {
+    display: block;
+    font-size: 13px;
+    font-weight: normal;
+    font-family: Courier, monospace;
+    color: #bae6fd;
+    pointer-events: none;
+    margin-top: 4px;
+}
+
+.btn-secondary .btn-cmd {
+    color: #94a3b8;
+}
+
+.btn-emerald .btn-cmd {
+    color: #a7f3d0;
+}
+
+.btn-amber .btn-cmd {
+    color: #fde68a;
+}
+
+/* ============================================================================
+   Cockpit Footer Bar (footer-slot [block] -> devtools-footer [flex] -> block)
+   ============================================================================ */
+.footer-slot {
+    display: block;
+    flex: 0 0 auto;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.devtools-footer {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    border-top-width: 2px;
+    border-top-color: #1e293b;
+    padding-top: 12px;
+    margin-top: 14px;
+    box-sizing: border-box;
+}
+
+.footer-left {
+    float: none;
+    display: block;
+    font-size: 16px;
+    color: #94a3b8;
+    padding-top: 0;
+}
+
+.footer-right {
+    float: none;
+    display: block;
+}
+
+.btn-footer {
+    display: block;
+    flex: 0 0 auto;
+    padding: 10px 28px;
+    font-size: 18px;
+    margin-right: 0;
+}
+
+/* ============================================================================
+   Responsive Scaling: QHD / 1440p and Ultrawide (min-width: 2200px)
+   ============================================================================ */
+@media (min-width: 2200px) {
+    #devtools-window {
+        padding: 26px 36px;
+        border-radius: 16px;
+    }
+
+    .devtools-title {
+        font-size: 34px;
+    }
+
+    .header-badge, .header-badge-vk {
+        font-size: 18px;
+        padding: 8px 18px;
+    }
+
+    .devtools-close {
+        font-size: 22px;
+        padding: 12px 28px;
+    }
+
+    .tab-btn {
+        font-size: 24px;
+        padding: 18px 16px;
+    }
+
+    .hero-metric-val-green, .hero-metric-val-cyan {
+        font-size: 64px;
+    }
+
+    .hero-metric-title, .card-label, .vital-label {
+        font-size: 18px;
+    }
+
+    .hero-metric-sub {
+        font-size: 17px;
+    }
+
+    .card-val, .card-val-green, .card-val-cyan, .vital-val-green, .vital-val-cyan {
+        font-size: 32px;
+    }
+
+    .card-val-xl-cyan, .card-val-xl-green {
+        font-size: 40px;
+    }
+
+    .meter-container, .meter-fill-audio, .meter-fill-hp, .meter-fill-mana {
+        height: 34px;
+    }
+
+    .deck-title {
+        font-size: 22px;
+    }
+
+    .deck-hint {
+        font-size: 16px;
+    }
+
+    .btn {
+        padding: 20px 22px;
+    }
+
+    .btn-label {
+        font-size: 26px;
+    }
+
+    .btn-label-lg {
+        font-size: 32px;
+    }
+
+    .btn-sub {
+        font-size: 17px;
+    }
+
+    .btn-cmd {
+        font-size: 15px;
+    }
+
+    .footer-left {
+        font-size: 18px;
+    }
+
+    .btn-footer {
+        font-size: 22px;
+        padding: 14px 34px;
+    }
+}
+
+/* ============================================================================
+   Responsive Scaling: 4K UHD (min-width: 3200px)
+   ============================================================================ */
+@media (min-width: 3200px) {
+    #devtools-window {
+        padding: 36px 48px;
+        border-radius: 20px;
+        border-width: 3px;
+    }
+
+    .devtools-title {
+        font-size: 44px;
+    }
+
+    .header-badge, .header-badge-vk {
+        font-size: 22px;
+        padding: 10px 22px;
+    }
+
+    .devtools-close {
+        font-size: 28px;
+        padding: 16px 36px;
+    }
+
+    .tab-btn {
+        font-size: 30px;
+        padding: 22px 20px;
+    }
+
+    .hero-metric-val-green, .hero-metric-val-cyan {
+        font-size: 72px;
+    }
+
+    .hero-metric-title, .card-label, .vital-label {
+        font-size: 22px;
+    }
+
+    .hero-metric-sub {
+        font-size: 20px;
+    }
+
+    .card-val, .card-val-green, .card-val-cyan, .vital-val-green, .vital-val-cyan {
+        font-size: 40px;
+    }
+
+    .card-val-xl-cyan, .card-val-xl-green {
+        font-size: 48px;
+    }
+
+    .meter-container, .meter-fill-audio, .meter-fill-hp, .meter-fill-mana {
+        height: 42px;
+    }
+
+    .deck-title {
+        font-size: 28px;
+    }
+
+    .deck-hint {
+        font-size: 20px;
+    }
+
+    .btn {
+        padding: 24px 26px;
+    }
+
+    .btn-label {
+        font-size: 32px;
+    }
+
+    .btn-label-lg {
+        font-size: 40px;
+    }
+
+    .btn-sub {
+        font-size: 20px;
+    }
+
+    .btn-cmd {
+        font-size: 18px;
+    }
+
+    .footer-left {
+        font-size: 22px;
+    }
+
+    .btn-footer {
+        font-size: 26px;
+        padding: 18px 42px;
+    }
+}
+
+/* ============================================================================
+   Responsive Scaling: Compact / 720p Windowed (max-height: 860px)
+   ============================================================================ */
+@media (max-height: 860px) {
+    #devtools-window {
+        padding: 12px 18px;
+    }
+
+    .devtools-header {
+        padding-bottom: 8px;
+        margin-bottom: 8px;
+    }
+
+    .devtools-title {
+        font-size: 20px;
+    }
+
+    .header-badge, .header-badge-vk {
+        font-size: 12px;
+        padding: 4px 10px;
+    }
+
+    .devtools-close {
+        font-size: 14px;
+        padding: 6px 16px;
+    }
+
+    .nav-tabs {
+        margin-bottom: 10px;
+    }
+
+    .tab-btn {
+        font-size: 15px;
+        padding: 8px 10px;
+    }
+
+    .row-slot, .row-slot-hero, .deck-slot {
+        margin-bottom: 8px;
+    }
+
+    .metric-card, .hero-metric-card, .deck-slot {
+        padding: 8px 14px;
+    }
+
+    .hero-metric-val-green, .hero-metric-val-cyan {
+        font-size: 34px;
+    }
+
+    .hero-metric-title, .card-label, .vital-label {
+        font-size: 12px;
+        margin-bottom: 3px;
+    }
+
+    .hero-metric-sub {
+        font-size: 12px;
+    }
+
+    .card-val, .card-val-green, .card-val-cyan, .vital-val-green, .vital-val-cyan {
+        font-size: 18px;
+    }
+
+    .card-val-xl-cyan, .card-val-xl-green {
+        font-size: 22px;
+    }
+
+    .meter-container, .meter-fill-audio, .meter-fill-hp, .meter-fill-mana {
+        height: 18px;
+    }
+
+    .deck-header-slot {
+        margin-bottom: 6px;
+    }
+
+    .deck-title {
+        font-size: 14px;
+    }
+
+    .deck-hint {
+        font-size: 12px;
+    }
+
+    .btn {
+        padding: 8px 10px;
+    }
+
+    .btn-label {
+        font-size: 16px;
+        margin-bottom: 2px;
+    }
+
+    .btn-label-lg {
+        font-size: 18px;
+        margin-bottom: 2px;
+    }
+
+    .btn-sub, .btn-cmd {
+        font-size: 11px;
+    }
+
+    .devtools-footer {
+        padding-top: 8px;
+        margin-top: 8px;
+    }
+
+    .footer-left {
+        font-size: 13px;
+    }
+
+    .btn-footer {
+        font-size: 14px;
+        padding: 6px 18px;
+    }
+}

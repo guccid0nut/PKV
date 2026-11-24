@@ -1,0 +1,120 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1150 780" width="100%" height="100%" style="background-color: #0d1117; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#161b22"/>
+      <stop offset="100%" stop-color="#0d1117"/>
+    </linearGradient>
+    <marker id="arrowBlue" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 8 5 L 0 9 z" fill="#58a6ff"/>
+    </marker>
+    <marker id="arrowGreen" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 8 5 L 0 9 z" fill="#3fb950"/>
+    </marker>
+    <marker id="arrowPurple" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 8 5 L 0 9 z" fill="#bc8cff"/>
+    </marker>
+    <marker id="arrowOrange" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 8 5 L 0 9 z" fill="#d29922"/>
+    </marker>
+    <filter id="shadow" x="-5%" y="-5%" width="110%" height="110%">
+      <feDropShadow dx="0" dy="4" stdDeviation="5" flood-color="#000000" flood-opacity="0.5"/>
+    </filter>
+  </defs>
+
+  <rect width="100%" height="100%" fill="url(#bgGrad)" rx="12"/>
+  <rect width="100%" height="100%" fill="none" stroke="#30363d" stroke-width="1.5" rx="12"/>
+
+  <!-- TITLE -->
+  <text x="575" y="40" text-anchor="middle" fill="#f0f6fc" font-size="18" font-weight="700">🎮 HoN High-Tickrate Game Loop &amp; Frame Pacing Architecture</text>
+
+  <!-- SUBGRAPH 1: ENGINE PACING & INVARIANT TIMER -->
+  <g filter="url(#shadow)">
+    <rect x="40" y="65" width="1070" height="205" rx="10" fill="#161b22" stroke="#388bfd" stroke-width="1.5"/>
+    <rect x="40" y="65" width="1070" height="30" rx="10" fill="#1f6feb" fill-opacity="0.25"/>
+    <text x="60" y="86" fill="#58a6ff" font-size="13" font-weight="700">⏱️ Engine Pacing &amp; Invariant Timer (1000 FPS Dynamic Loop)</text>
+
+    <!-- Node 1: TSC -->
+    <rect x="60" y="110" width="310" height="85" rx="8" fill="#21262d" stroke="#58a6ff" stroke-width="1.2"/>
+    <text x="215" y="138" text-anchor="middle" fill="#f0f6fc" font-size="13" font-weight="700">⏱️ Hardware TSC Calibrator</text>
+    <text x="215" y="160" text-anchor="middle" fill="#8b949e" font-size="11">RDTSC / QPC Sub-Microsecond Sync</text>
+    <text x="215" y="180" text-anchor="middle" fill="#79c0ff" font-size="10">1.0ms Invariant Timer Calibration</text>
+
+    <!-- Node 2: 1000 FPS Pacer -->
+    <rect x="420" y="110" width="310" height="85" rx="8" fill="#21262d" stroke="#58a6ff" stroke-width="1.2"/>
+    <text x="575" y="138" text-anchor="middle" fill="#f0f6fc" font-size="13" font-weight="700">🏎️ Dynamic Engine Patcher</text>
+    <text x="575" y="160" text-anchor="middle" fill="#8b949e" font-size="11">Replaces Legacy 250 FPS Sleep(1) Cap</text>
+    <text x="575" y="180" text-anchor="middle" fill="#79c0ff" font-size="10">High-Precision Spin-Wait &amp; Yield</text>
+
+    <!-- Node 3: Simulation Decoupling -->
+    <rect x="780" y="110" width="310" height="85" rx="8" fill="#21262d" stroke="#58a6ff" stroke-width="1.2"/>
+    <text x="935" y="138" text-anchor="middle" fill="#f0f6fc" font-size="13" font-weight="700">⚖️ Tick &amp; Render Decoupling</text>
+    <text x="935" y="160" text-anchor="middle" fill="#8b949e" font-size="11">Server Simulation: 20Hz / 50Hz Fixed</text>
+    <text x="935" y="180" text-anchor="middle" fill="#79c0ff" font-size="10">Smooth Hermite Frame Interpolation</text>
+
+    <text x="60" y="222" fill="#c9d1d9" font-size="11">• Eliminates Windows OS timer jitter using monotonic QPC invariant calibration</text>
+    <text x="60" y="244" fill="#c9d1d9" font-size="11">• Unlocks silky-smooth 144Hz–360Hz+ high-refresh-rate displays with sub-millisecond click-to-photon latency</text>
+  </g>
+
+  <!-- SUBGRAPH 2: RENDER PRESENTATION TRANSLATION (DX9 -> VULKAN 1.3) -->
+  <g filter="url(#shadow)">
+    <rect x="40" y="295" width="1070" height="235" rx="10" fill="#161b22" stroke="#2ea043" stroke-width="1.5"/>
+    <rect x="40" y="295" width="1070" height="30" rx="10" fill="#2ea043" fill-opacity="0.25"/>
+    <text x="60" y="316" fill="#56d364" font-size="13" font-weight="700">🌋 Modern Render Translation (DirectX 9 ➔ DXVK Vulkan 1.3 &amp; RTX Remix)</text>
+
+    <!-- Node 1: D3D9 Intercept -->
+    <rect x="60" y="340" width="230" height="90" rx="8" fill="#21262d" stroke="#3fb950" stroke-width="1.2"/>
+    <text x="175" y="368" text-anchor="middle" fill="#f0f6fc" font-size="12" font-weight="700">🎯 D3D9 Call Intercept</text>
+    <text x="175" y="390" text-anchor="middle" fill="#8b949e" font-size="11">d3d9.dll Proxy Wrapper</text>
+    <text x="175" y="410" text-anchor="middle" fill="#7ee787" font-size="10">Translates Legacy Draw Calls</text>
+
+    <!-- Node 2: DXVK Vulkan -->
+    <rect x="320" y="340" width="230" height="90" rx="8" fill="#21262d" stroke="#3fb950" stroke-width="1.2"/>
+    <text x="435" y="368" text-anchor="middle" fill="#f0f6fc" font-size="12" font-weight="700">🌋 DXVK 2.3+ Runtime</text>
+    <text x="435" y="390" text-anchor="middle" fill="#8b949e" font-size="11">Vulkan 1.3 Command Buffers</text>
+    <text x="435" y="410" text-anchor="middle" fill="#7ee787" font-size="10">Async Pipeline Caching (Zero Stutter)</text>
+
+    <!-- Node 3: Swapchain Mode -->
+    <rect x="580" y="340" width="230" height="90" rx="8" fill="#21262d" stroke="#3fb950" stroke-width="1.2"/>
+    <text x="695" y="368" text-anchor="middle" fill="#f0f6fc" font-size="12" font-weight="700">⚡ Mailbox Presentation</text>
+    <text x="695" y="390" text-anchor="middle" fill="#8b949e" font-size="11">VK_PRESENT_MODE_MAILBOX</text>
+    <text x="695" y="410" text-anchor="middle" fill="#7ee787" font-size="10">Tear-Free Minimum Input Latency</text>
+
+    <!-- Node 4: RTX Remix -->
+    <rect x="840" y="340" width="250" height="90" rx="8" fill="#21262d" stroke="#3fb950" stroke-width="1.2"/>
+    <text x="965" y="368" text-anchor="middle" fill="#f0f6fc" font-size="12" font-weight="700">✨ RTX Remix Path Tracing</text>
+    <text x="965" y="390" text-anchor="middle" fill="#8b949e" font-size="11">Full Real-Time Ray Tracing</text>
+    <text x="965" y="410" text-anchor="middle" fill="#7ee787" font-size="10">PBR Materials &amp; Volumetric Lighting</text>
+
+    <text x="60" y="460" fill="#c9d1d9" font-size="11">• Eliminates driver-level D3D9 overhead and enables full multi-threaded Vulkan command recording</text>
+    <text x="60" y="482" fill="#c9d1d9" font-size="11">• State Cache (`dxvk.conf`) stores compiled shader blobs for 0ms initial ability cast lag</text>
+    <text x="60" y="504" fill="#c9d1d9" font-size="11">• Direct hardware bridge to NVIDIA RTX Remix for modern photorealistic lighting overhaul</text>
+  </g>
+
+  <!-- SUBGRAPH 3: INPUT & MAILBOX IPC -->
+  <g filter="url(#shadow)">
+    <rect x="40" y="555" width="1070" height="195" rx="10" fill="#161b22" stroke="#a371f7" stroke-width="1.5"/>
+    <rect x="40" y="555" width="1070" height="30" rx="10" fill="#a371f7" fill-opacity="0.25"/>
+    <text x="60" y="576" fill="#bc8cff" font-size="13" font-weight="700">⚡ Low-Latency Input Polling &amp; Mailbox IPC Control</text>
+
+    <!-- Node 1: Raw Input -->
+    <rect x="60" y="600" width="310" height="85" rx="8" fill="#21262d" stroke="#a371f7" stroke-width="1.2"/>
+    <text x="215" y="628" text-anchor="middle" fill="#f0f6fc" font-size="12" font-weight="700">🖱️ Win32 Raw Input (WM_INPUT)</text>
+    <text x="215" y="650" text-anchor="middle" fill="#8b949e" font-size="11">Bypasses Standard Window Queue</text>
+    <text x="215" y="670" text-anchor="middle" fill="#d2a8ff" font-size="10">1000Hz+ Gaming Mouse Polling</text>
+
+    <!-- Node 2: Named Pipe IPC -->
+    <rect x="420" y="600" width="310" height="85" rx="8" fill="#21262d" stroke="#a371f7" stroke-width="1.2"/>
+    <text x="575" y="628" text-anchor="middle" fill="#f0f6fc" font-size="12" font-weight="700">📬 Named Pipe Mailbox IPC</text>
+    <text x="575" y="650" text-anchor="middle" fill="#8b949e" font-size="11">\\.\pipe\willowmaker-ipc</text>
+    <text x="575" y="670" text-anchor="middle" fill="#d2a8ff" font-size="10">Async CVar, Lua &amp; Command Injection</text>
+
+    <!-- Node 3: Headless Sandbox -->
+    <rect x="780" y="600" width="310" height="85" rx="8" fill="#21262d" stroke="#a371f7" stroke-width="1.2"/>
+    <text x="935" y="628" text-anchor="middle" fill="#f0f6fc" font-size="12" font-weight="700">👻 Headless Offscreen Sandbox</text>
+    <text x="935" y="650" text-anchor="middle" fill="#8b949e" font-size="11">Parked at vid_pos -32000 -32000</text>
+    <text x="935" y="670" text-anchor="middle" fill="#d2a8ff" font-size="10">0ms Dwell Direct Frame Capture</text>
+
+    <text x="60" y="715" fill="#c9d1d9" font-size="11">• Decoupled input polling guarantees zero skipped frames during intense 5v5 teamfight particle explosions</text>
+    <text x="60" y="735" fill="#c9d1d9" font-size="11">• Enables high-throughput automated CI/CD sweeps and AI bot testing without stealing desktop focus</text>
+  </g>
+</svg>

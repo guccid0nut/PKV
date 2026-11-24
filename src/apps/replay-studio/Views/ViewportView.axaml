@@ -1,0 +1,79 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="clr-namespace:ReplayStudio.GUI.ViewModels"
+             xmlns:ctrl="clr-namespace:ReplayStudio.GUI.Controls"
+             xmlns:m="clr-namespace:ReplayStudio.GUI.Models"
+             mc:Ignorable="d" d:DesignWidth="1000" d:DesignHeight="700"
+             x:Class="ReplayStudio.GUI.Views.ViewportView"
+             x:DataType="vm:ViewportViewModel">
+
+    <Grid>
+        <!-- 3D Vulkan Render Surface Control -->
+        <ctrl:VulkanViewportControl x:Name="ViewportHost" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />
+
+        <!-- ================= HUD OVERLAY ================= -->
+        <!-- Top HUD Bar: Camera Modalities & Lighting -->
+        <Grid VerticalAlignment="Top" Margin="12" ColumnDefinitions="Auto, *, Auto">
+            <!-- Camera Modality Selector -->
+            <Border Grid.Column="0" Classes="inset-card" Padding="4">
+                <StackPanel Orientation="Horizontal" Spacing="4">
+                    <TextBlock Text="🎥" FontSize="12" VerticalAlignment="Center" Margin="4, 0, 2, 0" />
+                    <RadioButton GroupName="CameraMode" Content="POV"
+                                 IsChecked="{Binding CurrentCameraMode, Converter={x:Null}, StringFormat='{}{0}'}"
+                                 Command="{Binding SetCameraModeCommand}"
+                                 CommandParameter="{x:Static m:CameraMode.PlayerPov}"
+                                 Classes="action-btn" FontSize="11" Padding="8, 4" />
+                    <RadioButton GroupName="CameraMode" Content="1st"
+                                 Command="{Binding SetCameraModeCommand}"
+                                 CommandParameter="{x:Static m:CameraMode.FirstPerson}"
+                                 Classes="action-btn" FontSize="11" Padding="8, 4" />
+                    <RadioButton GroupName="CameraMode" Content="RTS"
+                                 Command="{Binding SetCameraModeCommand}"
+                                 CommandParameter="{x:Static m:CameraMode.RtsIsometric}"
+                                 Classes="action-btn" FontSize="11" Padding="8, 4" />
+                    <RadioButton GroupName="CameraMode" Content="Free"
+                                 Command="{Binding SetCameraModeCommand}"
+                                 CommandParameter="{x:Static m:CameraMode.FreeSpectator}"
+                                 Classes="action-btn" FontSize="11" Padding="8, 4" />
+                    <RadioButton GroupName="CameraMode" Content="Spline"
+                                 Command="{Binding SetCameraModeCommand}"
+                                 CommandParameter="{x:Static m:CameraMode.CinematicSpline}"
+                                 Classes="action-btn" FontSize="11" Padding="8, 4" />
+                </StackPanel>
+            </Border>
+
+            <!-- Locked Target Banner (Center) -->
+            <Border Grid.Column="1" HorizontalAlignment="Center" Classes="inset-card" Padding="12, 4">
+                <StackPanel Orientation="Horizontal" Spacing="6">
+                    <TextBlock Text="🎯 TARGET:" Foreground="#94A3B8" FontSize="11" FontWeight="Bold" VerticalAlignment="Center" />
+                    <TextBlock Text="{Binding LockedHeroName}" Foreground="#38BDF8" FontSize="11" FontWeight="Bold" VerticalAlignment="Center" />
+                </StackPanel>
+            </Border>
+
+            <!-- Top-Right: Lighting & Coordinates Readout -->
+            <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="8">
+                <!-- Reset Camera Button -->
+                <Button Command="{Binding ResetCameraCommand}" Classes="action-btn" Padding="8, 4"
+                        ToolTip.Tip="Reset Camera to Default Viewpoint">
+                    <TextBlock Text="🎯 Reset" FontSize="11" Foreground="#94A3B8" />
+                </Button>
+
+                <!-- Coordinates Card -->
+                <Border Classes="inset-card" Padding="8, 4">
+                    <StackPanel Spacing="2">
+                        <TextBlock Text="{Binding CameraPositionReadout}" FontSize="10" Foreground="#F8FAFC" FontFamily="Cascadia Mono, Consolas, monospace" />
+                        <TextBlock Text="{Binding CameraHeadingReadout}" FontSize="9" Foreground="#94A3B8" FontFamily="Cascadia Mono, Consolas, monospace" />
+                    </StackPanel>
+                </Border>
+            </StackPanel>
+        </Grid>
+
+        <!-- Bottom Controls Hint Overlay -->
+        <Border VerticalAlignment="Bottom" HorizontalAlignment="Left" Margin="12" Classes="inset-card" Padding="8, 4" Opacity="0.8">
+            <TextBlock Text="Controls: WASD = Fly | Right-Drag = Look | Left-Drag = Pan | Scroll = Zoom"
+                       FontSize="10" Foreground="#64748B" FontFamily="Cascadia Mono, Consolas, monospace" />
+        </Border>
+    </Grid>
+</UserControl>

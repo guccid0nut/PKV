@@ -1,0 +1,81 @@
+{
+    "schemaVersion":  "1.0",
+    "generatedAt":  "2026-10-16T00:37:10Z",
+    "linkerUsed":  "%USERPROFILE%\\.rustup\\toolchains\\stable-x86_64-pc-windows-msvc\\lib\\rustlib\\x86_64-pc-windows-msvc\\bin\\gcc-ld\\lld-link.exe",
+    "totalBinaries":  6,
+    "totalSymbols":  6403,
+    "binaries":  [
+                     {
+                         "binaryPath":  "games/client/hon_x64.exe",
+                         "pdbFileName":  "hon_x64.pdb",
+                         "rsdsGuid":  "30d087c1-6d3a-47cb-a8b3-0f424074bb54",
+                         "rsdsAge":  1,
+                         "totalSymbols":  6,
+                         "peExports":  0,
+                         "rttiDescriptors":  5,
+                         "curatedRvas":  1,
+                         "pdbSizeBytes":  61440,
+                         "pdbSha256":  "221E77ACE4B8088182A000A978E6724CF2520505A8BAB479FA5E231FBEC73327"
+                     },
+                     {
+                         "binaryPath":  "games/client/k2_x64.dll",
+                         "pdbFileName":  "k2_x64.pdb",
+                         "rsdsGuid":  "fbe0fc92-1e5e-4fb5-9ae4-d3861247c9d1",
+                         "rsdsAge":  1,
+                         "totalSymbols":  5010,
+                         "peExports":  5117,
+                         "rttiDescriptors":  19,
+                         "curatedRvas":  33,
+                         "pdbSizeBytes":  503808,
+                         "pdbSha256":  "7C266F724FF0FAE3969BE212AB5C8E93393BD7E48CAB01A8FDD297B4297A6446"
+                     },
+                     {
+                         "binaryPath":  "games/client/game_shared_x64.dll",
+                         "pdbFileName":  "game_shared_x64.pdb",
+                         "rsdsGuid":  "de5565af-0723-4bfd-a588-78b014c01a96",
+                         "rsdsAge":  1,
+                         "totalSymbols":  1359,
+                         "peExports":  1365,
+                         "rttiDescriptors":  5,
+                         "curatedRvas":  7,
+                         "pdbSizeBytes":  188416,
+                         "pdbSha256":  "130C73815817DA15CFF1923112FD9F4860902858400DAB3425C99571B34D647C"
+                     },
+                     {
+                         "binaryPath":  "games/client/vid_d3d9_x64.dll",
+                         "pdbFileName":  "vid_d3d9_x64.pdb",
+                         "rsdsGuid":  "7afd9129-8a08-4ec6-89b8-b7030f87895d",
+                         "rsdsAge":  1,
+                         "totalSymbols":  13,
+                         "peExports":  1,
+                         "rttiDescriptors":  5,
+                         "curatedRvas":  8,
+                         "pdbSizeBytes":  61440,
+                         "pdbSha256":  "545560FE42283710DD5A5FCFBDA6E00DE8D793660CAE83ABCE8E70D8BBF9E7C8"
+                     },
+                     {
+                         "binaryPath":  "games/client/game/cgame_x64.dll",
+                         "pdbFileName":  "game_client_x64.pdb",
+                         "rsdsGuid":  "3afed4ae-36d7-4404-830b-0078e6ce33ea",
+                         "rsdsAge":  1,
+                         "totalSymbols":  7,
+                         "peExports":  1,
+                         "rttiDescriptors":  5,
+                         "curatedRvas":  2,
+                         "pdbSizeBytes":  61440,
+                         "pdbSha256":  "CC53D20E76F6A9D895E5E4EEAEAFA6676463BCEA521060350FC03B1850D88C02"
+                     },
+                     {
+                         "binaryPath":  "games/client/game/game_x64.dll",
+                         "pdbFileName":  "game_server_x64.pdb",
+                         "rsdsGuid":  "7a4fc7d2-2e9f-4631-bad7-88e042004066",
+                         "rsdsAge":  1,
+                         "totalSymbols":  8,
+                         "peExports":  1,
+                         "rttiDescriptors":  5,
+                         "curatedRvas":  3,
+                         "pdbSizeBytes":  61440,
+                         "pdbSha256":  "73C0720F5B2FA52FED691DF7502D59756028FFDA98DFF4F6D40218EA348EA5C8"
+                     }
+                 ]
+}

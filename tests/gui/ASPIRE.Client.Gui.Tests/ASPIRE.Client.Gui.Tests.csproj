@@ -1,0 +1,43 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+    <ServerGarbageCollection>true</ServerGarbageCollection>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <NoWarn>$(NoWarn);CA1873;SYSLIB1045;MSB3277</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk"/>
+    <PackageReference Include="Moq"/>
+    <PackageReference Include="xunit"/>
+    <PackageReference Include="xunit.runner.visualstudio">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="FluentAssertions"/>
+    <PackageReference Include="Avalonia"/>
+    <PackageReference Include="Avalonia.Headless"/>
+    <PackageReference Include="Avalonia.Skia"/>
+    <PackageReference Include="Avalonia.Themes.Fluent"/>
+    <PackageReference Include="Silk.NET.Vulkan"/>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Include="NEXUS.Contracts.Configuration"/>
+    <Using Include="NEXUS.Contracts.ControlPlane"/>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\src\apps\control-panel\NEXUS.ControlPanel.GUI.csproj"/>
+    <ProjectReference Include="..\..\..\src\apps\willowmaker\WILLOWMAKER.csproj"/>
+    <ProjectReference Include="..\..\..\src\extensions\replay-renderer\ReplayRenderer.Service.csproj"/>
+    <ProjectReference Include="..\..\..\src\extensions\vulkan-interop\NEXUS.VulkanInterop.csproj"/>
+    <ProjectReference Include="..\..\..\src\libs\protocol-core\Kongor.Core.csproj"/>
+    <ProjectReference Include="..\..\..\src\libs\contracts\NEXUS.Contracts.csproj"/>
+    <ProjectReference Include="..\..\..\src\libs\database-context\MERRICK.DatabaseContext.csproj"/>
+    <ProjectReference Include="..\..\..\src\libs\service-defaults\ASPIRE.ServiceDefaults.csproj"/>
+  </ItemGroup>
+
+</Project>

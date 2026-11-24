@@ -1,0 +1,40 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Library</OutputType>
+    <AssemblyName>NEXUS.CdnBroker</AssemblyName>
+    <RootNamespace>NEXUS.CdnBroker</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.SignalR.Client"/>
+    <PackageReference Include="Microsoft.Extensions.FileSystemGlobbing"/>
+  </ItemGroup>
+
+
+  <!-- Generates A Version String Constant From The Project's Version -->
+  <Target Name="GenerateVersionSource" BeforeTargets="CoreCompile" DependsOnTargets="PrepareForBuild">
+    <PropertyGroup>
+      <_GeneratedVersionFile>$(IntermediateOutputPath)GeneratedVersionInformation.g.cs</_GeneratedVersionFile>
+    </PropertyGroup>
+    <WriteLinesToFile File="$(_GeneratedVersionFile)" Overwrite="true" WriteOnlyWhenDifferent="true" Lines="namespace WILLOWMAKER.Core { internal static class GeneratedVersionInformation { internal const string VersionString = &quot;$(Version)&quot;%3B } } namespace NEXUS.CdnBroker { internal static class GeneratedVersionInformation { internal const string VersionString = &quot;$(Version)&quot;%3B } }"/>
+    <ItemGroup>
+      <Compile Include="$(_GeneratedVersionFile)"/>
+    </ItemGroup>
+  </Target>
+
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\libs\protocol-core\Kongor.Core.csproj"/>
+    <ProjectReference Include="..\..\libs\contracts\NEXUS.Contracts.csproj"/>
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="WILLOWMAKER.Tests" />
+    <InternalsVisibleTo Include="NEXUS.CdnBroker.Tests" />
+    <InternalsVisibleTo Include="Kongor.Core.Tests" />
+    <InternalsVisibleTo Include="ASPIRE.Integration.Tests" />
+    <InternalsVisibleTo Include="Kongor.Mcp.Tests" />
+  </ItemGroup>
+
+</Project>

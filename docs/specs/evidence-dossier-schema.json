@@ -1,0 +1,208 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://projectkongor.org/schemas/evidence-dossier-v1.json",
+  "title": "ProjectKongorEvidenceDossier",
+  "description": "Standardized schema for reverse-engineered K2 engine functions and structures to enable clean-room reimplementation and sub-second offline verification.",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "dossier_id",
+    "status",
+    "target",
+    "interface",
+    "decompiled_c",
+    "dependencies"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "enum": ["1.0.0", "2.0.0"],
+      "description": "Semantic version of the dossier format specification."
+    },
+    "dossier_id": {
+      "type": "string",
+      "pattern": "^[a-zA-Z0-9_-]+$",
+      "description": "Unique identifier for this dossier (e.g. 'game_x64_0x35d40_packet_parser')."
+    },
+    "status": {
+      "type": "string",
+      "enum": ["draft", "reimplemented", "verified", "satisfied", "deprecated", "tombstoned"],
+      "description": "Workflow lifecycle state. CI only mandates cleanroom tests for 'reimplemented', 'verified', and 'satisfied' states."
+    },
+    "authority_scope": {
+      "type": "string",
+      "enum": ["server_authoritative", "client_cosmetic_only", "shared_simulation_desync_risk", "native_guard_fma"],
+      "description": "Runtime authority domain for obligation and triangulation verification."
+    },
+    "title": {
+      "type": "string",
+      "description": "Human-readable title describing the function or mechanic."
+    },
+    "target": {
+      "type": "object",
+      "required": ["binary_name", "rva", "sha256"],
+      "properties": {
+        "binary_name": {
+          "type": "string",
+          "description": "The normalized binary filename (e.g. 'k2_x64.dll', 'game_x64.dll')."
+        },
+        "base_address": {
+          "type": "string",
+          "description": "Ghidra or image base address in hex (e.g. '0x180000000')."
+        },
+        "rva": {
+          "type": "string",
+          "description": "Relative Virtual Address in hex (e.g. '0x35d40')."
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[a-fA-F0-9]{64}$",
+          "description": "SHA-256 hash of the target binary for deterministic provenance."
+        },
+        "signature_mask": {
+          "type": "string",
+          "description": "IDA-style hex pattern with ?? wildcards for resilient SigScan matching across patches."
+        },
+        "symbol_name": {
+          "type": "string",
+          "description": "Original or reconstructed symbol name (e.g. 'FUN_180035d40' or 'CGame::ProcessPacket')."
+        }
+      }
+    },
+    "interface": {
+      "type": "object",
+      "required": ["calling_convention", "return_type", "parameters"],
+      "properties": {
+        "calling_convention": {
+          "type": "string",
+          "enum": ["__fastcall", "__cdecl", "__stdcall", "__thiscall", "unknown"]
+        },
+        "class_name": {
+          "type": ["string", "null"],
+          "description": "Owning class name if this is a member method."
+        },
+        "vtable_index": {
+          "type": ["integer", "null"],
+          "description": "Zero-based index in the virtual method table (VTable slot), or null if non-virtual."
+        },
+        "return_type": {
+          "type": "string",
+          "description": "Return type (e.g. 'void', 'bool', 'uint32_t', 'CGameEntity*')."
+        },
+        "parameters": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["name", "type", "register_or_stack"],
+            "properties": {
+              "name": { "type": "string" },
+              "type": { "type": "string" },
+              "register_or_stack": {
+                "type": "string",
+                "description": "Hardware register or stack offset (e.g. 'RCX (this)', 'RDX', 'R8', 'R9', '[RSP+0x28]')."
+              }
+            }
+          }
+        }
+      }
+    },
+    "decompiled_c": {
+      "type": "string",
+      "description": "Canonical decompiled pseudo-C code extracted from Ghidra."
+    },
+    "hexrays_c": {
+      "type": ["string", "null"],
+      "description": "Optional IDA Pro 9.0 Hex-Rays decompiled C output for Dual-Oracle contradiction auditing (Option V)."
+    },
+    "branch_annotations": {
+      "type": "array",
+      "description": "Branch-to-RVA coverage ledger (Option G / Option O).",
+      "items": {
+        "type": "object",
+        "required": ["rva", "condition"],
+        "properties": {
+          "rva": { "type": "string" },
+          "condition": { "type": "string" },
+          "covered_by_obligation": { "type": ["string", "null"] }
+        }
+      }
+    },
+    "dependencies": {
+      "type": "object",
+      "properties": {
+        "callees": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Addresses or symbols called by this function."
+        },
+        "callers": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Known call sites and xrefs into this function."
+        },
+        "referenced_strings": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Literal strings referenced in this function's scope."
+        },
+        "struct_offsets": {
+          "type": "object",
+          "additionalProperties": { "type": "string" },
+          "description": "Key-value mapping of struct member offsets to member names (e.g. {'0x18': 'm_uiHealth'})."
+        },
+        "global_mutations": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Global singletons or memory regions mutated (e.g. 'g_EntityInventory', 'g_pSystem')."
+        }
+      }
+    },
+    "cleanroom_mapping": {
+      "type": "object",
+      "properties": {
+        "source_file": {
+          "type": "string",
+          "description": "Path to clean-room implementation source file (e.g. 'src/libs/protocol-core/PacketParser.cs')."
+        },
+        "symbol_name": {
+          "type": "string",
+          "description": "Name of the reimplemented class or method."
+        },
+        "test_file": {
+          "type": "string",
+          "description": "Path to unit test file validating the clean-room reimplementation."
+        },
+        "test_method": {
+          "type": "string",
+          "description": "Test method asserting behavioral equality."
+        }
+      }
+    },
+    "notes": {
+      "type": "string",
+      "description": "Analysis notes, algorithmic observations, or reverse-engineering context."
+    },
+    "created_at": {
+      "type": "string",
+      "description": "ISO-8601 creation timestamp."
+    },
+    "updated_at": {
+      "type": "string",
+      "description": "ISO-8601 update timestamp."
+    },
+    "capstone_prologue_analysis": {
+      "type": "object",
+      "description": "Static Capstone x86_64 prologue sizing, RIP-relative hazard, and register/group analysis."
+    },
+    "obligations": {
+      "type": "array",
+      "items": { "type": "object" },
+      "description": "Reconstruction obligations ledger (Evidence Dossier v2)."
+    },
+    "limitations_and_unknowns": {
+      "type": "object",
+      "description": "Static vs dynamic triangulation unknowns ledger (Evidence Dossier v2)."
+    }
+  },
+  "additionalProperties": false
+}

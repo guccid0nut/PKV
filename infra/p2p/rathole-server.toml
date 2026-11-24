@@ -1,0 +1,28 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# SPDX-FileCopyrightText: 2026 guccidonut and Project KONGOR V Contributors
+# Project KONGOR V (https://github.com/guccidonut/PKV)
+#
+# Project KONGOR DirectPlay rathole v0.5+ Server Configuration (CGNAT / Symmetric NAT UDP Tunnel)
+# Substitute ${KONGOR_RATHOLE_TOKEN} via envsubst into an untracked runtime config before starting rathole.
+# NEVER commit a real token into Git.
+
+[server]
+bind_addr = "0.0.0.0:2333"
+default_token = "${KONGOR_RATHOLE_TOKEN}"
+heartbeat_interval = 30
+
+[server.transport]
+type = "tcp"
+
+[server.transport.tcp]
+nodelay = true
+keepalive_secs = 20
+keepalive_interval = 8
+
+[server.services.kongor_directplay_udp]
+type = "udp"
+bind_addr = "0.0.0.0:20550"
+
+[server.services.kongor_directplay_udp_voice]
+type = "udp"
+bind_addr = "0.0.0.0:21050"

@@ -1,0 +1,49 @@
+# --- Deterministic Clocks & TimeProvider ---
+P:System.DateTime.Now;Use TimeProvider.System.GetLocalNow() or injected TimeProvider instead for deterministic testability.
+M:System.DateTime.get_Now;Use TimeProvider.System.GetLocalNow() or injected TimeProvider instead for deterministic testability.
+P:System.DateTime.UtcNow;Use TimeProvider.System.GetUtcNow() or injected TimeProvider instead for deterministic testability.
+M:System.DateTime.get_UtcNow;Use TimeProvider.System.GetUtcNow() instead for deterministic testability.
+P:System.DateTime.Today;Use TimeProvider.System.GetLocalNow().Date or injected TimeProvider instead for deterministic testability.
+M:System.DateTime.get_Today;Use TimeProvider.System.GetLocalNow().Date or injected TimeProvider instead for deterministic testability.
+P:System.DateTimeOffset.Now;Use TimeProvider.System.GetLocalNow() or injected TimeProvider instead for deterministic testability.
+M:System.DateTimeOffset.get_Now;Use TimeProvider.System.GetLocalNow() or injected TimeProvider instead for deterministic testability.
+P:System.DateTimeOffset.UtcNow;Use TimeProvider.System.GetUtcNow() or injected TimeProvider instead for deterministic testability.
+M:System.DateTimeOffset.get_UtcNow;Use TimeProvider.System.GetUtcNow() instead for deterministic testability.
+
+# --- Blocking Concurrency & Thread Termination Anti-Patterns ---
+M:System.Threading.Thread.Sleep(System.Int32);Do not block thread pool threads. Use Task.Delay(...) instead.
+M:System.Threading.Thread.Sleep(System.TimeSpan);Do not block thread pool threads. Use Task.Delay(...) instead.
+M:System.Threading.Tasks.Task.WaitAll(System.Threading.Tasks.Task[]);Blocking wait causes thread pool starvation. Use await Task.WhenAll(...) instead.
+M:System.Threading.Tasks.Task.WaitAll(System.ReadOnlySpan{System.Threading.Tasks.Task});Blocking wait causes thread pool starvation. Use await Task.WhenAll(...) instead.
+M:System.Threading.Tasks.Task.WaitAny(System.Threading.Tasks.Task[]);Blocking wait causes thread pool starvation. Use await Task.WhenAny(...) instead.
+M:System.Threading.Tasks.Task.WaitAny(System.ReadOnlySpan{System.Threading.Tasks.Task});Blocking wait causes thread pool starvation. Use await Task.WhenAny(...) instead.
+M:System.Threading.Thread.Abort;Thread.Abort is obsolete, dangerous, and throws PlatformNotSupportedException in modern .NET. Use CancellationToken instead.
+M:System.Threading.Thread.Suspend;Thread.Suspend is obsolete and dangerous. Use async synchronization primitives (e.g., SemaphoreSlim or Channel) instead.
+M:System.Threading.Thread.Resume;Thread.Resume is obsolete and dangerous. Use async synchronization primitives (e.g., SemaphoreSlim or Channel) instead.
+M:System.Threading.Tasks.Task.Wait;Do not synchronously block on Tasks. Use await instead to prevent thread pool starvation.
+M:System.Threading.Tasks.Task.Wait(System.Int32);Do not synchronously block on Tasks. Use await with CancellationToken or TimeProvider instead.
+M:System.Threading.Tasks.Task.Wait(System.TimeSpan);Do not synchronously block on Tasks. Use await with CancellationToken or TimeProvider instead.
+M:System.Threading.Tasks.Task.Wait(System.Threading.CancellationToken);Do not synchronously block on Tasks. Use await with CancellationToken instead.
+M:System.Threading.Tasks.Task.Wait(System.Int32,System.Threading.CancellationToken);Do not synchronously block on Tasks. Use await with CancellationToken instead.
+M:System.Threading.Tasks.Task.Wait(System.TimeSpan,System.Threading.CancellationToken);Do not synchronously block on Tasks. Use await with CancellationToken instead.
+P:System.Threading.Tasks.Task`1.Result;Do not call Task.Result. Use await instead to prevent thread pool starvation.
+M:System.Threading.Tasks.Task`1.get_Result;Do not call Task.Result. Use await instead to prevent thread pool starvation.
+M:System.Runtime.CompilerServices.TaskAwaiter.GetResult;Do not call GetAwaiter().GetResult(). Use await instead to prevent deadlocks and thread pool starvation.
+M:System.Runtime.CompilerServices.TaskAwaiter`1.GetResult;Do not call GetAwaiter().GetResult(). Use await instead to prevent deadlocks and thread pool starvation.
+M:System.Runtime.CompilerServices.ValueTaskAwaiter.GetResult;Do not call GetAwaiter().GetResult() on ValueTasks. Use await instead.
+M:System.Runtime.CompilerServices.ValueTaskAwaiter`1.GetResult;Do not call GetAwaiter().GetResult() on ValueTasks. Use await instead.
+
+# --- Cryptography & Randomness Primitives ---
+M:System.Random.#ctor;Use System.Security.Cryptography.RandomNumberGenerator or inject Random.Shared instead.
+M:System.Security.Cryptography.RNGCryptoServiceProvider.#ctor;RNGCryptoServiceProvider is obsolete in modern .NET. Use RandomNumberGenerator.GetBytes() or RandomNumberGenerator.Create() instead.
+M:System.Security.Cryptography.MD5.Create;Use SHA256.Create(), HMACSHA256, or Argon2 for secure cryptographic hashes. For legacy HoN protocol compatibility, use MD5.HashData in protocol isolation layers.
+M:System.Security.Cryptography.SHA1.Create;Use SHA256.Create() or SHA512.Create() for secure cryptographic hashes.
+
+# --- Obsolete Serialization & Legacy Networking ---
+T:System.Runtime.Serialization.Formatters.Binary.BinaryFormatter;BinaryFormatter is obsolete, insecure, and prohibited in .NET 10. Use MemoryPack, System.Text.Json, or Protobuf instead.
+M:System.Runtime.Serialization.Formatters.Binary.BinaryFormatter.#ctor;BinaryFormatter is obsolete, insecure, and prohibited in .NET 10. Use MemoryPack, System.Text.Json, or Protobuf instead.
+T:System.Net.WebClient;WebClient is obsolete. Use HttpClient via IHttpClientFactory or Microsoft.Extensions.Http.Resilience instead.
+M:System.Net.WebClient.#ctor;WebClient is obsolete. Use HttpClient via IHttpClientFactory or Microsoft.Extensions.Http.Resilience instead.
+M:System.Net.WebRequest.Create(System.String);WebRequest is obsolete. Use HttpClient via IHttpClientFactory instead.
+M:System.Net.WebRequest.Create(System.Uri);WebRequest is obsolete. Use HttpClient via IHttpClientFactory instead.
+M:System.Net.Http.HttpClient.#ctor;Use IHttpClientFactory or a shared static SocketsHttpHandler (with PooledConnectionLifetime and disposeHandler: false) to prevent socket exhaustion and DNS staleness.

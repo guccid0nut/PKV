@@ -1,0 +1,49 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// SPDX-FileCopyrightText: 2022-2026 [K]ONGOR and Contributors
+// SPDX-FileCopyrightText: 2026 guccidonut and Project KONGOR V Contributors
+// Project KONGOR V (https://github.com/guccidonut/PKV) -- Upstream lineage: https://github.com/Project-KONGOR-Open-Source
+
+namespace KONGOR.MasterServer.Models.RequestResponse.SRP;
+
+public partial class SRPAuthenticationFailureResponse(SRPAuthenticationFailureReason reason, string? accountName = null)
+{
+    /// <summary>
+    ///     A string of error output in the event of an authentication failure, e.g. "Invalid Nickname Or Password.".
+    /// </summary>
+    [PHPProperty("auth")]
+    public string AuthenticationOutcome { get; set; } = reason switch
+    {
+        SRPAuthenticationFailureReason.AccountIsDisabled => "Account" +
+                                                            (accountName is null ? " " : $@" ""{accountName}"" ") +
+                                                            "Is Disabled",
+        SRPAuthenticationFailureReason.AccountNotFound => "Account Not Found",
+        SRPAuthenticationFailureReason.IncorrectPassword => "Incorrect Password",
+        SRPAuthenticationFailureReason.IncorrectSystemInformationFormat => "Incorrect System Information Format",
+        SRPAuthenticationFailureReason.IsServerHostingAccount => "Is Server Hosting Account",
+        SRPAuthenticationFailureReason.MissingCachedSRPData => "Missing Cached SRP Data",
+        SRPAuthenticationFailureReason.MissingClientPublicEphemeral => "Missing Client Public Ephemeral",
+        SRPAuthenticationFailureReason.MissingIPAddress => "Missing IP Address",
+        SRPAuthenticationFailureReason.MissingLoginIdentifier => "Missing Login Identifier",
+        SRPAuthenticationFailureReason.MissingMajorVersion => "Missing Major Version",
+        SRPAuthenticationFailureReason.MissingMinorVersion => "Missing Minor Version",
+        SRPAuthenticationFailureReason.MissingMicroVersion => "Missing Micro Version",
+        SRPAuthenticationFailureReason.MissingOperatingSystemType => "Missing Operating System Type",
+        SRPAuthenticationFailureReason.MissingSRPClientProof => "Missing SRP Client Proof",
+        SRPAuthenticationFailureReason.MissingSystemInformation => "Missing System Information",
+        SRPAuthenticationFailureReason.SRPAuthenticationDisabled => "SRP Authentication Is Disabled" +
+                                                                    Environment.NewLine +
+                                                                    "1) Open The Console (CTRL + F8)" +
+                                                                    Environment.NewLine +
+                                                                    @"2) Execute ""SetSave login_useSRP true""",
+        SRPAuthenticationFailureReason.UnexpectedUserAgent => "Unexpected User Agent",
+        _ => "Unsupported Authentication Failure Reason" + " " + $@"""{nameof(reason)}"""
+    };
+
+    /// <summary>
+    ///     Unknown.
+    ///     <br />
+    ///     Seems to be set to "true" on a successful response, or to "false" if an error occurs.
+    /// </summary>
+    [PHPProperty(0)]
+    public bool Zero => false;
+}

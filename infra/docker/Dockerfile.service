@@ -1,0 +1,45 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# SPDX-FileCopyrightText: 2026 guccidonut and Project KONGOR V Contributors
+# Shared Runtime Container for ProjectKongor .NET 11.0 Microservices
+# Expects host-published self-contained linux-x64 output under ${SERVICE_PUBLISH_DIR}
+FROM debian:bookworm-slim AS runtime
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    ca-certificates \
+    curl \
+    libgcc-s1 \
+    libgssapi-krb5-2 \
+    libicu72 \
+    libssl3 \
+    libstdc++6 \
+    zlib1g \
+    && rm -rf /var/lib/apt/lists/*
+
+ARG SERVICE_PUBLISH_DIR
+ARG SERVICE_BINARY
+ARG HEALTHCHECK_PORT=55555
+ARG KONGOR_SOURCE_STAMP=dev
+
+LABEL org.opencontainers.image.title="ProjectKongor Service (${SERVICE_BINARY})" \
+      org.kongor.source-stamp="${KONGOR_SOURCE_STAMP}"
+
+WORKDIR /app
+
+COPY ${SERVICE_PUBLISH_DIR}/ /app/
+RUN groupadd --system --gid 10001 kongor && \
+    useradd --system --uid 10001 --gid 10001 --home-dir /app --no-create-home --shell /usr/sbin/nologin kongor && \
+    chmod +x "/app/${SERVICE_BINARY}" && \
+    ln -sf "/app/${SERVICE_BINARY}" /app/run-service && \
+    mkdir -p /app/logs /app/dataprotection-keys /app/replays && \
+    chown -R kongor:kongor /app
+
+USER kongor:kongor
+
+ENV DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=0 \
+    DOTNET_EnableDiagnostics=0 \
+    HEALTHCHECK_PORT=${HEALTHCHECK_PORT}
+
+HEALTHCHECK --interval=10s --timeout=5s --start-period=25s --retries=6 \
+    CMD curl -fsS "http://127.0.0.1:${HEALTHCHECK_PORT}/health/ready" >/dev/null || exit 1
+
+ENTRYPOINT ["/app/run-service"]

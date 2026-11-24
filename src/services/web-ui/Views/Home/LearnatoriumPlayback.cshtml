@@ -1,0 +1,1021 @@
+@using NEXUS.Contracts.Learnatorium
+@model LearnatoriumReplayPlaybackDto
+@{
+    ViewData["Title"] = $"Learnatorium Replay Viewer — Match #{Model.MatchID}";
+    Layout = "_Layout";
+}
+
+<div class="w-full max-w-7xl mx-auto px-3 sm:px-4 py-4 sm:py-6 space-y-5 animate-fade-in-up text-slate-100">
+    <!-- Top Header & Match Summary -->
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-slate-800">
+        <div>
+            <div class="flex items-center gap-2 mb-1.5 flex-wrap">
+                <span class="px-2.5 py-0.5 rounded-md bg-amber-500/20 text-amber-300 border border-amber-500/30 text-xs font-black uppercase tracking-wider">LEARNATORIUM 2D REPLAY</span>
+                <span class="px-2.5 py-0.5 rounded-md bg-purple-500/20 text-purple-300 border border-purple-500/30 text-xs font-bold">@Model.GameMode</span>
+                <span class="px-2.5 py-0.5 rounded-md bg-slate-800 text-slate-300 border border-slate-700 text-xs font-bold uppercase">@Model.Map</span>
+                <span id="learnatoriumTelemetryBadge" class="px-2.5 py-0.5 rounded-md bg-amber-500/15 text-amber-300 border border-amber-500/35 text-xs font-mono font-bold">Tactical Reconstruction</span>
+            </div>
+            <h1 class="text-2xl sm:text-3xl font-black text-white tracking-tight">Match #@Model.MatchID — Replay Theater</h1>
+            <div class="flex items-center gap-2 mt-2 flex-wrap">
+                @if (Model.MatchID != 15984210 && Model.MatchID != 2060568725)
+                {
+                    <a href="/matches/@Model.MatchID" class="px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 bg-slate-800 text-slate-200 hover:bg-slate-700 border border-slate-700">
+                        <span>←</span> Back to Match #@Model.MatchID Details
+                    </a>
+                }
+                <a href="/learnatorium/playback/15984210" class="px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 @(Model.Map == "caldavar" ? "bg-emerald-600 text-white shadow-md" : "bg-slate-800 text-slate-400 hover:text-white border border-slate-700")" id="btnMapCaldavar">
+                    <span>🌲</span> Forests of Caldavar (5v5)
+                </a>
+                <a href="/learnatorium/playback/2060568725" class="px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 @(Model.Map.Contains("midwars") ? "bg-amber-500 text-slate-950 font-black shadow-md" : "bg-slate-800 text-slate-400 hover:text-white border border-slate-700")" id="btnMapMidWars">
+                    <span>⚔️</span> Mid Wars (5v5)
+                </a>
+            </div>
+        </div>
+        <div class="flex items-center gap-5 bg-slate-900/90 border border-slate-800 px-5 py-3 rounded-2xl shadow-lg">
+            <div class="text-center">
+                <div class="text-2xl font-black text-emerald-400" id="legionScore">@Model.ScoreLegion</div>
+                <div class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Legion</div>
+            </div>
+            <div class="text-slate-600 font-bold text-xl">:</div>
+            <div class="text-center">
+                <div class="text-2xl font-black text-rose-400" id="hellbourneScore">@Model.ScoreHellbourne</div>
+                <div class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Hellbourne</div>
+            </div>
+            <div class="h-8 w-px bg-slate-800 mx-1"></div>
+            <div>
+                <span class="px-3.5 py-2 rounded-xl bg-slate-950 border border-slate-700 text-slate-200 font-mono text-sm font-bold shadow-inner" id="timeDisplay">00:00 / 23:31</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Workspace: Left Roster | Center Minimap Canvas & Scrubber | Right Roster & Highlights -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
+        <!-- Legion Team Roster (Left: 3 cols) -->
+        <div class="lg:col-span-3 rounded-2xl bg-slate-900/80 border border-emerald-500/30 overflow-hidden shadow-xl">
+            <div class="bg-emerald-950/40 border-b border-emerald-500/20 px-3.5 py-2.5 flex items-center justify-between">
+                <span class="font-bold text-emerald-400 text-xs uppercase tracking-wider flex items-center gap-1.5">
+                    <span>🛡️</span> The Legion
+                </span>
+                <span class="px-2 py-0.5 rounded-md @(Model.WinnerTeam == 1 ? "bg-emerald-500/20 text-emerald-300" : "bg-slate-800 text-slate-400") text-[10px] font-bold">@(Model.WinnerTeam == 1 ? "Winner" : "Defeat")</span>
+            </div>
+            <div class="p-2.5 space-y-2" id="legionRoster">
+                @foreach (var p in Model.Players.Where(pl => pl.Team == 1))
+                {
+                    var cleanHero = p.HeroIdentifier.ToLower().Replace("hero_", "").Replace("_", "");
+                    <div class="p-2 rounded-xl bg-slate-950/70 border border-slate-800 hover:border-slate-700 transition-all player-card" id="player-row-@p.Slot" data-slot="@p.Slot">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-2">
+                                <img src="@(DAWNBRINGER.WebPortal.UI.Services.HeroAndMapAssetResolver.ResolveHeroIconUrl(p.HeroIdentifier))" class="w-7 h-7 rounded-full border border-emerald-500/60 object-cover flex-shrink-0" alt="@p.HeroDisplayName" onerror="this.src='/images/heroes/default.png';" />
+                                <div>
+                                    <div class="flex items-center gap-1.5">
+                                        <span class="px-1.5 py-0.2 rounded bg-emerald-950/80 text-emerald-300 border border-emerald-500/30 text-[10px] font-bold">Lvl <span class="player-lvl">@p.Level</span></span>
+                                        <strong class="text-white text-xs player-hero">@p.HeroDisplayName</strong>
+                                    </div>
+                                    <div class="player-name text-slate-400 text-[11px] truncate max-w-[110px]">@p.AccountName</div>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <span class="px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 text-[10px] font-bold player-status">ALIVE</span>
+                                <div class="player-kda text-white font-mono font-bold text-xs mt-0.5">@p.Kills / @p.Deaths / @p.Assists</div>
+                            </div>
+                        </div>
+                        <div class="w-full bg-slate-800 rounded-full h-1 mt-1.5 overflow-hidden">
+                            <div class="bg-emerald-500 h-1 rounded-full player-hp-bar" style="width: 100%;"></div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <!-- Center Stage: 2D Minimap Canvas & Timeline Scrubber Controls (6 cols) -->
+        <div class="lg:col-span-6 flex flex-col items-center">
+            <div class="rounded-3xl bg-slate-950 border border-slate-800 shadow-2xl p-3 flex flex-col items-center w-full max-w-[624px]">
+                <div class="relative rounded-2xl overflow-hidden shadow-inner border border-slate-800">
+                    <canvas id="minimapCanvas" width="600" height="600" style="width: 600px; height: 600px; background-color: #0b1118; cursor: crosshair;" role="region" aria-label="Interactive 2D match replay minimap">Your browser does not support HTML5 Canvas.</canvas>
+                    <div id="canvasTooltip" class="absolute hidden bg-slate-900/95 text-white p-2.5 rounded-xl shadow-2xl border border-purple-500/40 text-xs backdrop-blur-md pointer-events-none z-50"></div>
+                </div>
+
+                <!-- Timeline Scrubber & Playback Controls Bar -->
+                <div class="w-full mt-3 px-1 space-y-2">
+                    <div id="scrubberPinsContainer" class="relative w-full h-3"></div>
+                    <input type="range" class="w-full h-2 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-purple-500 hover:accent-purple-400 transition-all" id="timeScrubber" min="0" max="@Model.TotalDurationSeconds" value="0" step="3">
+                    <div class="flex items-center justify-between text-xs pt-1 flex-wrap gap-2">
+                        <div class="flex items-center gap-2">
+                            <button class="px-3.5 py-1.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-bold transition-all shadow-md flex items-center gap-1" id="btnPlayPause">▶ Play</button>
+                            <button class="px-2.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold border border-slate-700" id="btnSpeed">1x</button>
+                            <button class="px-2.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold border border-slate-700" id="btnReset">⏮ Reset</button>
+                            <span class="text-slate-400 text-[11px] hidden sm:inline ml-2">⌨️ [Space] &bull; [&larr;/&rarr;] &plusmn;5s</span>
+                        </div>
+                        <div class="flex items-center gap-2 font-mono">
+                            <span class="px-2.5 py-1 rounded-lg bg-slate-900 text-slate-300 border border-slate-800 text-[11px]">Gold Adv: <span id="goldLead" class="font-bold">0</span></span>
+                            <span class="px-2.5 py-1 rounded-lg bg-cyan-950/80 text-cyan-300 border border-cyan-500/30 text-[11px]" id="fpsDisplay">60 FPS</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Hellbourne Team Roster & Combat Highlights Feed (Right: 3 cols) -->
+        <div class="lg:col-span-3 rounded-2xl bg-slate-900/80 border border-rose-500/30 overflow-hidden shadow-xl space-y-3">
+            <div class="bg-rose-950/40 border-b border-rose-500/20 px-3.5 py-2.5 flex items-center justify-between">
+                <span class="font-bold text-rose-400 text-xs uppercase tracking-wider flex items-center gap-1.5">
+                    <span>🔥</span> The Hellbourne
+                </span>
+                <span class="px-2 py-0.5 rounded-md @(Model.WinnerTeam == 2 ? "bg-rose-500/20 text-rose-300" : "bg-slate-800 text-slate-400") text-[10px] font-bold">@(Model.WinnerTeam == 2 ? "Winner" : "Defeat")</span>
+            </div>
+            <div class="p-2.5 space-y-2" id="hellbourneRoster">
+                @foreach (var p in Model.Players.Where(pl => pl.Team == 2))
+                {
+                    var cleanHero = p.HeroIdentifier.ToLower().Replace("hero_", "").Replace("_", "");
+                    <div class="p-2 rounded-xl bg-slate-950/70 border border-slate-800 hover:border-slate-700 transition-all player-card" id="player-row-@p.Slot" data-slot="@p.Slot">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-2">
+                                <img src="@(DAWNBRINGER.WebPortal.UI.Services.HeroAndMapAssetResolver.ResolveHeroIconUrl(p.HeroIdentifier))" class="w-7 h-7 rounded-full border border-rose-500/60 object-cover flex-shrink-0" alt="@p.HeroDisplayName" onerror="this.src='/images/heroes/default.png';" />
+                                <div>
+                                    <div class="flex items-center gap-1.5">
+                                        <span class="px-1.5 py-0.2 rounded bg-rose-950/80 text-rose-300 border border-rose-500/30 text-[10px] font-bold">Lvl <span class="player-lvl">@p.Level</span></span>
+                                        <strong class="text-white text-xs player-hero">@p.HeroDisplayName</strong>
+                                    </div>
+                                    <div class="player-name text-slate-400 text-[11px] truncate max-w-[110px]">@p.AccountName</div>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <span class="px-1.5 py-0.5 rounded bg-rose-500/20 text-rose-300 text-[10px] font-bold player-status">ALIVE</span>
+                                <div class="player-kda text-white font-mono font-bold text-xs mt-0.5">@p.Kills / @p.Deaths / @p.Assists</div>
+                            </div>
+                        </div>
+                        <div class="w-full bg-slate-800 rounded-full h-1 mt-1.5 overflow-hidden">
+                            <div class="bg-rose-500 h-1 rounded-full player-hp-bar" style="width: 100%;"></div>
+                        </div>
+                    </div>
+                }
+            </div>
+
+            <!-- Key Match Highlights Feed -->
+            <div class="p-3 pt-2 border-t border-slate-800">
+                <h4 class="text-amber-400 text-[11px] font-bold uppercase tracking-wider mb-2">⚡ Key Match Highlights</h4>
+                <div id="eventFeed" class="space-y-1.5 text-xs max-h-48 overflow-y-auto pr-1 font-mono">
+                    @foreach (var h in Model.Highlights)
+                    {
+                        <div class="p-1.5 rounded-lg bg-slate-950/80 border border-slate-800/80 text-slate-300 flex items-start gap-1.5 event-item hover:border-slate-700 transition-colors" data-time="@h.MatchTimeSeconds">
+                            <span class="px-1.5 py-0.2 rounded bg-amber-500/20 text-amber-300 text-[10px] font-bold flex-shrink-0">@($"{h.MatchTimeSeconds / 60:D2}:{h.MatchTimeSeconds % 60:D2}")</span>
+                            <span class="text-[11px] leading-tight">@h.Description</span>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    (function () {
+        const playbackData = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model));
+        const canvas = document.getElementById("minimapCanvas");
+        const ctx = canvas.getContext("2d");
+        const scrubber = document.getElementById("timeScrubber");
+        const timeDisplay = document.getElementById("timeDisplay");
+        const btnPlayPause = document.getElementById("btnPlayPause");
+        const btnSpeed = document.getElementById("btnSpeed");
+        const btnReset = document.getElementById("btnReset");
+        const legionScoreEl = document.getElementById("legionScore");
+        const hellbourneScoreEl = document.getElementById("hellbourneScore");
+        const goldLeadEl = document.getElementById("goldLead");
+        const tooltipEl = document.getElementById("canvasTooltip");
+        const pinsContainer = document.getElementById("scrubberPinsContainer");
+
+        let currentSecond = 0;
+        let isPlaying = false;
+        let playSpeed = 1;
+        let lastTimestamp = 0;
+        let selectedSlot = null;
+        let hoveredSlot = null;
+        let totalDuration = playbackData.TotalDurationSeconds || 1411;
+
+        // Map Detection: Mid Wars vs Forests of Caldavar
+        const isMidWars = (playbackData.Map && playbackData.Map.toLowerCase().includes("midwars")) || (playbackData.MatchID === 2060568725);
+
+        // Official HoN 10-Slot Player Colors Palette
+        const slotColors = [
+            '#0042FF', // Slot 0: Blue (Legion 1)
+            '#1CE6B9', // Slot 1: Teal (Legion 2)
+            '#9000C0', // Slot 2: Purple (Legion 3)
+            '#FFFC01', // Slot 3: Yellow (Legion 4)
+            '#FE8A0E', // Slot 4: Orange (Legion 5)
+            '#E55BB0', // Slot 5: Pink (Hellbourne 1)
+            '#959697', // Slot 6: Grey (Hellbourne 2)
+            '#7EBFF1', // Slot 7: Light Blue (Hellbourne 3)
+            '#106246', // Slot 8: Dark Green (Hellbourne 4)
+            '#8B4513'  // Slot 9: Brown (Hellbourne 5)
+        ];
+
+        // Style player cards with slot color indicators
+        document.querySelectorAll(".player-card").forEach(card => {
+            const slot = parseInt(card.dataset.slot, 10);
+            if (!isNaN(slot) && slot >= 0 && slot < slotColors.length) {
+                card.style.borderLeft = `4px solid ${slotColors[slot]}`;
+                card.style.cursor = "pointer";
+                card.addEventListener("click", () => {
+                    selectedSlot = (selectedSlot === slot) ? null : slot;
+                    updateSelectionUI();
+                    if (window.__learnatoriumState && window.__learnatoriumState.currentFrame) {
+                        renderFrame(window.__learnatoriumState.currentFrame);
+                    }
+                });
+            }
+        });
+
+        // Authentic Minimap Texture Image
+        const mapImage = new Image();
+        mapImage.src = "@(DAWNBRINGER.WebPortal.UI.Services.HeroAndMapAssetResolver.ResolveMinimapUrl(Model.Map))";
+        mapImage.onload = function () {
+            if (window.__learnatoriumState && window.__learnatoriumState.currentFrame) {
+                renderFrame(window.__learnatoriumState.currentFrame);
+            }
+        };
+
+        // Hero Portrait Preload Cache
+        const heroImages = {};
+        const heroAliases = {
+            'flameguard': 'pyromancer',
+            'hiro': 'swiftblade',
+            'frosty': 'glacius',
+            'hunter': 'bloodhunter',
+            'krixi': 'valkyrie',
+            'shaman': 'dementedshaman',
+            'dementedshaman': 'dementedshaman',
+            'flint': 'flintbeastwood',
+            'rocky': 'pebbles',
+            'babayaga': 'wretchedhag',
+            'baba_yaga': 'wretchedhag',
+            'armadon': 'armadon',
+            'bubbles': 'bubbles',
+            'devourer': 'devourer',
+            'deadwood': 'deadwood'
+        };
+
+        function getHeroIconPath(heroId) {
+            if (!heroId) return '/images/heroes/default.png';
+            let clean = heroId.toLowerCase().replace('hero_', '').replace(/_/g, '').trim();
+            if (heroAliases[clean]) clean = heroAliases[clean];
+            return '/images/heroes/' + clean + '.png';
+        }
+
+        // Preload hero images from match players
+        if (playbackData.Players) {
+            for (let i = 0; i < playbackData.Players.length; i++) {
+                const p = playbackData.Players[i];
+                const img = new Image();
+                img.src = getHeroIconPath(p.HeroIdentifier);
+                heroImages[p.HeroIdentifier] = img;
+            }
+        }
+
+        // Coordinate Mapping:
+        // World Bounds: X in [0.0, 1.0], Y in [0.0, 1.0]
+        // Bottom-Left is (0, 0), Top-Right is (1, 1)
+        function worldToCanvas(x, y) {
+            return {
+                x: x * canvas.width,
+                y: (1.0 - y) * canvas.height
+            };
+        }
+
+        function canvasToWorld(cx, cy) {
+            return {
+                x: cx / canvas.width,
+                y: 1.0 - (cy / canvas.height)
+            };
+        }
+
+        // Get keyframe nearest to given second
+        function getFrame(second) {
+            if (!playbackData.Frames || playbackData.Frames.length === 0) return null;
+            let closest = playbackData.Frames[0];
+            let minDiff = Math.abs(closest.Second - second);
+            for (let i = 1; i < playbackData.Frames.length; i++) {
+                const diff = Math.abs(playbackData.Frames[i].Second - second);
+                if (diff < minDiff) {
+                    minDiff = diff;
+                    closest = playbackData.Frames[i];
+                }
+            }
+            return closest;
+        }
+
+        // Render Scrubber Highlights Pins
+        function renderEventPins() {
+            if (!pinsContainer || !playbackData.Highlights) return;
+            pinsContainer.innerHTML = "";
+            playbackData.Highlights.forEach(h => {
+                const pct = Math.max(0, Math.min(100, (h.MatchTimeSeconds / totalDuration) * 100));
+                const pin = document.createElement("button");
+                pin.type = "button";
+                pin.className = "position-absolute rounded-circle border-0 d-flex align-items-center justify-content-center p-0";
+                pin.style.left = `${pct}%`;
+                pin.style.top = "0px";
+                pin.style.width = "14px";
+                pin.style.height = "14px";
+                pin.style.transform = "translateX(-50%)";
+                pin.style.fontSize = "8px";
+                pin.style.cursor = "pointer";
+                pin.style.zIndex = "10";
+
+                const desc = (h.Description || "").toLowerCase();
+                if (desc.includes("transmutenstein") || desc.includes("kongor")) {
+                    pin.style.backgroundColor = isMidWars ? "#84cc16" : "#eab308";
+                    pin.title = `[${Math.floor(h.MatchTimeSeconds / 60)}:${(h.MatchTimeSeconds % 60).toString().padStart(2, '0')}] 👑 ${h.Description}`;
+                    pin.textContent = "👑";
+                } else if (desc.includes("blood") || desc.includes("kill")) {
+                    pin.style.backgroundColor = "#ef4444";
+                    pin.title = `[${Math.floor(h.MatchTimeSeconds / 60)}:${(h.MatchTimeSeconds % 60).toString().padStart(2, '0')}] ⚔️ ${h.Description}`;
+                    pin.textContent = "⚔️";
+                } else if (desc.includes("tower") || desc.includes("shrine") || desc.includes("tree")) {
+                    pin.style.backgroundColor = "#3b82f6";
+                    pin.title = `[${Math.floor(h.MatchTimeSeconds / 60)}:${(h.MatchTimeSeconds % 60).toString().padStart(2, '0')}] 🏰 ${h.Description}`;
+                    pin.textContent = "🏰";
+                } else {
+                    pin.style.backgroundColor = "#f97316";
+                    pin.title = `[${Math.floor(h.MatchTimeSeconds / 60)}:${(h.MatchTimeSeconds % 60).toString().padStart(2, '0')}] 🔥 ${h.Description}`;
+                    pin.textContent = "🔥";
+                }
+
+                pin.addEventListener("click", () => {
+                    seekTo(h.MatchTimeSeconds);
+                });
+
+                pinsContainer.appendChild(pin);
+            });
+        }
+        renderEventPins();
+
+        function drawMapBackground() {
+            if (mapImage.complete && mapImage.naturalWidth > 0) {
+                // Authentic high-res minimap texture
+                ctx.drawImage(mapImage, 0, 0, canvas.width, canvas.height);
+                ctx.fillStyle = "rgba(10, 15, 25, 0.16)";
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+            } else {
+                // Dark tactical fallback
+                ctx.fillStyle = "#0c1219";
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                ctx.strokeStyle = "rgba(255, 255, 255, 0.04)";
+                ctx.lineWidth = 1;
+                for (let x = 60; x < canvas.width; x += 60) {
+                    ctx.beginPath();
+                    ctx.moveTo(x, 0);
+                    ctx.lineTo(x, canvas.height);
+                    ctx.stroke();
+                }
+                for (let y = 60; y < canvas.height; y += 60) {
+                    ctx.beginPath();
+                    ctx.moveTo(0, y);
+                    ctx.lineTo(canvas.width, y);
+                    ctx.stroke();
+                }
+            }
+
+            if (isMidWars) {
+                // ==========================================
+                // MID WARS REBORN AUTHENTIC LANDMARKS
+                // ==========================================
+
+                // 1. Transmutenstein Boss Pit (Canvas 315, 125) - Toxic Lime-Green Aura
+                const trans = { x: 315, y: 125 };
+                ctx.beginPath();
+                ctx.arc(trans.x, trans.y, 20, 0, Math.PI * 2);
+                ctx.fillStyle = "rgba(132, 204, 22, 0.35)";
+                ctx.fill();
+                ctx.strokeStyle = "#84cc16";
+                ctx.lineWidth = 2.5;
+                ctx.stroke();
+                ctx.fillStyle = "#bef264";
+                ctx.font = "bold 8px sans-serif";
+                ctx.textAlign = "center";
+                ctx.fillText("TRANSMUTENSTEIN", trans.x, trans.y + 3);
+
+                // 2. Mid Wars River Power-Up Runes
+                const mwRunes = [{ x: 270, y: 330 }, { x: 330, y: 270 }];
+                for (const r of mwRunes) {
+                    ctx.beginPath();
+                    ctx.arc(r.x, r.y, 6, 0, Math.PI * 2);
+                    ctx.fillStyle = "rgba(56, 189, 248, 0.4)";
+                    ctx.fill();
+                    ctx.strokeStyle = "#38bdf8";
+                    ctx.lineWidth = 1.5;
+                    ctx.stroke();
+                    ctx.fillStyle = "#7dd3fc";
+                    ctx.font = "bold 7px sans-serif";
+                    ctx.textAlign = "center";
+                    ctx.fillText("RUNE", r.x, r.y + 2.5);
+                }
+
+                // 3. Legion Tree of Life Well (Canvas 65, 540)
+                const legBase = { x: 65, y: 540 };
+                ctx.fillStyle = "rgba(34, 197, 94, 0.35)";
+                ctx.fillRect(legBase.x - 22, legBase.y - 22, 44, 44);
+                ctx.strokeStyle = "#22c55e";
+                ctx.lineWidth = 2;
+                ctx.strokeRect(legBase.x - 22, legBase.y - 22, 44, 44);
+                ctx.fillStyle = "#86efac";
+                ctx.font = "bold 10px sans-serif";
+                ctx.textAlign = "center";
+                ctx.fillText("TREE", legBase.x, legBase.y + 4);
+
+                // 4. Hellbourne Sacrificial Shrine (Canvas 520, 65)
+                const hbBase = { x: 520, y: 65 };
+                ctx.fillStyle = "rgba(239, 68, 68, 0.35)";
+                ctx.fillRect(hbBase.x - 22, hbBase.y - 22, 44, 44);
+                ctx.strokeStyle = "#ef4444";
+                ctx.lineWidth = 2;
+                ctx.strokeRect(hbBase.x - 22, hbBase.y - 22, 44, 44);
+                ctx.fillStyle = "#fca5a5";
+                ctx.font = "bold 10px sans-serif";
+                ctx.textAlign = "center";
+                ctx.fillText("SHRINE", hbBase.x, hbBase.y + 4);
+            } else {
+                // ==========================================
+                // FORESTS OF CALDAVAR AUTHENTIC LANDMARKS
+                // ==========================================
+
+                // Kongor Pit 1 (River Pit): Canvas (268, 220)
+                const kongor1 = { x: 268, y: 220 };
+                ctx.beginPath();
+                ctx.arc(kongor1.x, kongor1.y, 16, 0, Math.PI * 2);
+                ctx.fillStyle = "rgba(234, 179, 8, 0.35)";
+                ctx.fill();
+                ctx.strokeStyle = "#eab308";
+                ctx.lineWidth = 2;
+                ctx.stroke();
+                ctx.fillStyle = "#facc15";
+                ctx.font = "bold 9px sans-serif";
+                ctx.textAlign = "center";
+                ctx.fillText("KONGOR", kongor1.x, kongor1.y + 3);
+
+                // Kongor Pit 2 (Hellbourne Classic Pit): Canvas (442, 318)
+                const kongor2 = { x: 442, y: 318 };
+                ctx.beginPath();
+                ctx.arc(kongor2.x, kongor2.y, 16, 0, Math.PI * 2);
+                ctx.fillStyle = "rgba(245, 158, 11, 0.25)";
+                ctx.fill();
+                ctx.strokeStyle = "rgba(245, 158, 11, 0.8)";
+                ctx.lineWidth = 1.5;
+                ctx.stroke();
+                ctx.fillStyle = "#fbbf24";
+                ctx.font = "bold 8px sans-serif";
+                ctx.textAlign = "center";
+                ctx.fillText("KONGOR PIT", kongor2.x, kongor2.y + 3);
+
+                // Caldavar River Runes
+                const caldRunes = [{ x: 228, y: 372 }, { x: 372, y: 228 }];
+                for (const r of caldRunes) {
+                    ctx.beginPath();
+                    ctx.arc(r.x, r.y, 6, 0, Math.PI * 2);
+                    ctx.fillStyle = "rgba(56, 189, 248, 0.4)";
+                    ctx.fill();
+                    ctx.strokeStyle = "#38bdf8";
+                    ctx.lineWidth = 1.5;
+                    ctx.stroke();
+                }
+
+                // Legion Tree of Life: Canvas (65, 555)
+                const legBase = { x: 65, y: 555 };
+                ctx.fillStyle = "rgba(34, 197, 94, 0.35)";
+                ctx.fillRect(legBase.x - 22, legBase.y - 22, 44, 44);
+                ctx.strokeStyle = "#22c55e";
+                ctx.lineWidth = 2;
+                ctx.strokeRect(legBase.x - 22, legBase.y - 22, 44, 44);
+                ctx.fillStyle = "#86efac";
+                ctx.font = "bold 10px sans-serif";
+                ctx.textAlign = "center";
+                ctx.fillText("TREE", legBase.x, legBase.y + 4);
+
+                // Hellbourne Sacrificial Shrine: Canvas (525, 90)
+                const hbBase = { x: 525, y: 90 };
+                ctx.fillStyle = "rgba(239, 68, 68, 0.35)";
+                ctx.fillRect(hbBase.x - 22, hbBase.y - 22, 44, 44);
+                ctx.strokeStyle = "#ef4444";
+                ctx.lineWidth = 2;
+                ctx.strokeRect(hbBase.x - 22, hbBase.y - 22, 44, 44);
+                ctx.fillStyle = "#fca5a5";
+                ctx.font = "bold 10px sans-serif";
+                ctx.textAlign = "center";
+                ctx.fillText("SHRINE", hbBase.x, hbBase.y + 4);
+            }
+        }
+
+        function drawTowers(structures) {
+            let towers = [];
+            if (isMidWars) {
+                // Mid Wars Single-Lane Mid Towers
+                towers = [
+                    { id: "legion_t1_mid", team: 1, x: 0.38, y: 0.38 },
+                    { id: "legion_t2_mid", team: 1, x: 0.28, y: 0.28 },
+                    { id: "legion_base_mid", team: 1, x: 0.18, y: 0.18 },
+                    { id: "hb_t1_mid", team: 2, x: 0.62, y: 0.62 },
+                    { id: "hb_t2_mid", team: 2, x: 0.72, y: 0.72 },
+                    { id: "hb_base_mid", team: 2, x: 0.82, y: 0.82 }
+                ];
+            } else {
+                // Forests of Caldavar 3-Lane Towers
+                towers = [
+                    { id: "legion_t1_mid", team: 1, x: 0.38, y: 0.38 },
+                    { id: "legion_t2_mid", team: 1, x: 0.26, y: 0.26 },
+                    { id: "legion_t3_mid", team: 1, x: 0.18, y: 0.18 },
+                    { id: "hb_t1_mid", team: 2, x: 0.62, y: 0.62 },
+                    { id: "hb_t2_mid", team: 2, x: 0.74, y: 0.74 },
+                    { id: "hb_t3_mid", team: 2, x: 0.82, y: 0.82 },
+                    { id: "hb_t1_top", team: 2, x: 0.38, y: 0.85 },
+                    { id: "hb_t2_top", team: 2, x: 0.60, y: 0.85 },
+                    { id: "hb_t3_top", team: 2, x: 0.78, y: 0.82 }
+                ];
+            }
+
+            for (const t of towers) {
+                const alive = structures[t.id] !== false;
+                if (!alive) continue;
+                const pos = worldToCanvas(t.x, t.y);
+                ctx.fillStyle = t.team === 1 ? "#22c55e" : "#ef4444";
+                ctx.fillRect(pos.x - 5, pos.y - 5, 10, 10);
+                ctx.strokeStyle = "#ffffff";
+                ctx.lineWidth = 1;
+                ctx.strokeRect(pos.x - 5, pos.y - 5, 10, 10);
+            }
+        }
+
+        function updateSelectionUI() {
+            document.querySelectorAll(".player-card").forEach(card => {
+                const slot = parseInt(card.dataset.slot, 10);
+                if (slot === selectedSlot) {
+                    card.classList.add("border-warning", "shadow-lg");
+                    card.style.boxShadow = "0 0 12px rgba(250, 204, 21, 0.4)";
+                } else {
+                    card.classList.remove("border-warning", "shadow-lg");
+                    card.style.boxShadow = "none";
+                }
+            });
+        }
+
+        function renderFrame(frame) {
+            if (!frame) return;
+
+            // Clear & draw background
+            drawMapBackground();
+
+            // Draw towers
+            drawTowers(frame.Structures || {});
+
+            const heroes = frame.Heroes || [];
+
+            // If a hero is focused/selected, draw tactical vision cone
+            if (selectedSlot !== null) {
+                const focusedHero = heroes.find(x => x.Slot === selectedSlot);
+                if (focusedHero && focusedHero.IsAlive) {
+                    const pt = worldToCanvas(focusedHero.PositionX, focusedHero.PositionY);
+                    const rad = (focusedHero.HeadingAngle || 0) * (Math.PI / 180.0);
+                    const coneLen = 140;
+                    const fov = Math.PI * 0.4;
+
+                    ctx.save();
+                    const grad = ctx.createRadialGradient(pt.x, pt.y, 8, pt.x, pt.y, coneLen);
+                    grad.addColorStop(0, focusedHero.Team === 1 ? "rgba(34, 197, 94, 0.35)" : "rgba(239, 68, 68, 0.35)");
+                    grad.addColorStop(0.8, focusedHero.Team === 1 ? "rgba(34, 197, 94, 0.08)" : "rgba(239, 68, 68, 0.08)");
+                    grad.addColorStop(1.0, "rgba(0, 0, 0, 0)");
+
+                    ctx.beginPath();
+                    ctx.moveTo(pt.x, pt.y);
+                    ctx.arc(pt.x, pt.y, coneLen, -rad - fov / 2, -rad + fov / 2);
+                    ctx.closePath();
+                    ctx.fillStyle = grad;
+                    ctx.fill();
+                    ctx.restore();
+                }
+            }
+
+            // Draw Heroes
+            for (let i = 0; i < heroes.length; i++) {
+                const h = heroes[i];
+                const pt = worldToCanvas(h.PositionX, h.PositionY);
+                const isSelected = selectedSlot === h.Slot;
+                const slotColor = slotColors[h.Slot % 10] || "#ffffff";
+
+                if (!h.IsAlive) {
+                    // Dead hero marker: grey cross
+                    ctx.strokeStyle = "rgba(148, 163, 184, 0.6)";
+                    ctx.lineWidth = 2;
+                    ctx.beginPath();
+                    ctx.moveTo(pt.x - 6, pt.y - 6);
+                    ctx.lineTo(pt.x + 6, pt.y + 6);
+                    ctx.moveTo(pt.x + 6, pt.y - 6);
+                    ctx.lineTo(pt.x - 6, pt.y + 6);
+                    ctx.stroke();
+                    continue;
+                }
+
+                const isLegion = h.Team === 1;
+                const teamColor = isLegion ? "#22c55e" : "#ef4444";
+                const bgFill = isLegion ? "#14532d" : "#7f1d1d";
+
+                // Selected Reticle Halo
+                if (isSelected) {
+                    ctx.beginPath();
+                    ctx.arc(pt.x, pt.y, 20, 0, Math.PI * 2);
+                    ctx.strokeStyle = "#facc15";
+                    ctx.lineWidth = 2;
+                    ctx.setLineDash([4, 4]);
+                    ctx.stroke();
+                    ctx.setLineDash([]);
+                }
+
+                // Hero circular token with hero portrait
+                ctx.save();
+                ctx.beginPath();
+                ctx.arc(pt.x, pt.y, 13, 0, Math.PI * 2);
+                ctx.clip();
+
+                const hImg = heroImages[h.HeroIdentifier];
+                if (hImg && hImg.complete && hImg.naturalWidth > 0) {
+                    ctx.drawImage(hImg, pt.x - 13, pt.y - 13, 26, 26);
+                } else {
+                    ctx.fillStyle = bgFill;
+                    ctx.fill();
+                    const initial = (h.HeroDisplayName || "H").charAt(0).toUpperCase();
+                    ctx.fillStyle = "#ffffff";
+                    ctx.font = "bold 11px sans-serif";
+                    ctx.textAlign = "center";
+                    ctx.fillText(initial, pt.x, pt.y + 4);
+                }
+                ctx.restore();
+
+                // Inner Team Ring
+                ctx.beginPath();
+                ctx.arc(pt.x, pt.y, 13, 0, Math.PI * 2);
+                ctx.strokeStyle = teamColor;
+                ctx.lineWidth = 2;
+                ctx.stroke();
+
+                // Outer Slot-Color Halo
+                ctx.beginPath();
+                ctx.arc(pt.x, pt.y, 15.5, 0, Math.PI * 2);
+                ctx.strokeStyle = slotColor;
+                ctx.lineWidth = 2.5;
+                ctx.stroke();
+
+                // Facing angle direction pointer
+                const rad = (h.HeadingAngle || 0) * (Math.PI / 180.0);
+                ctx.beginPath();
+                ctx.moveTo(pt.x, pt.y);
+                ctx.lineTo(pt.x + Math.cos(rad) * 19, pt.y - Math.sin(rad) * 19);
+                ctx.strokeStyle = slotColor;
+                ctx.lineWidth = 2.5;
+                ctx.stroke();
+
+                // Health bar above token
+                const hpPct = Math.max(0, Math.min(100, h.HealthPercent || 100)) / 100.0;
+                ctx.fillStyle = "rgba(0, 0, 0, 0.85)";
+                ctx.fillRect(pt.x - 14, pt.y - 20, 28, 4);
+                ctx.fillStyle = isLegion ? "#4ade80" : "#f87171";
+                ctx.fillRect(pt.x - 14, pt.y - 20, 28 * hpPct, 4);
+
+                // Hero Name Label
+                ctx.fillStyle = "rgba(255, 255, 255, 0.95)";
+                ctx.font = "bold 9px sans-serif";
+                ctx.textAlign = "center";
+                ctx.shadowColor = "#000000";
+                ctx.shadowBlur = 4;
+                ctx.fillText(h.HeroDisplayName || "", pt.x, pt.y + 26);
+                ctx.shadowBlur = 0;
+            }
+
+            // Update DOM Stats HUD
+            legionScoreEl.textContent = frame.ScoreLegion;
+            hellbourneScoreEl.textContent = frame.ScoreHellbourne;
+            goldLeadEl.textContent = (frame.GoldLeadLegion >= 0 ? "+" : "") + frame.GoldLeadLegion;
+            timeDisplay.textContent = `${frame.ElapsedFormatted} / ${Math.floor(totalDuration / 60).toString().padStart(2, '0')}:${(totalDuration % 60).toString().padStart(2, '0')}`;
+            scrubber.value = frame.Second;
+
+            // Update Player Cards in DOM
+            for (let i = 0; i < heroes.length; i++) {
+                const h = heroes[i];
+                const card = document.getElementById("player-row-" + h.Slot);
+                if (card) {
+                    const lvl = card.querySelector(".player-lvl");
+                    if (lvl) lvl.textContent = h.Level;
+
+                    const kda = card.querySelector(".player-kda");
+                    if (kda) kda.textContent = `${h.Kills} / ${h.Deaths} / ${h.Assists}`;
+
+                    const status = card.querySelector(".player-status");
+                    if (status) {
+                        status.textContent = h.IsAlive ? "ALIVE" : "DEAD";
+                        status.className = h.IsAlive
+                            ? (h.Team === 1 ? "badge bg-success bg-opacity-75 player-status" : "badge bg-danger bg-opacity-75 player-status")
+                            : "badge bg-secondary player-status";
+                    }
+
+                    const hpBar = card.querySelector(".player-hp-bar");
+                    if (hpBar) {
+                        hpBar.style.width = (h.HealthPercent || 0) + "%";
+                    }
+                }
+            }
+
+            // Expose global state for Playwright testing verification
+            window.__learnatoriumState = {
+                currentSecond: frame.Second,
+                currentFrame: frame,
+                frames: playbackData.Frames,
+                highlights: playbackData.Highlights,
+                isReady: true,
+                isMidWars: isMidWars,
+                selectedSlot: selectedSlot,
+                getHeroPosition: function (slot) {
+                    const found = (frame.Heroes || []).find(x => x.Slot === slot);
+                    if (!found) return null;
+                    const canvasPt = worldToCanvas(found.PositionX, found.PositionY);
+                    return {
+                        slot: found.Slot,
+                        hero: found.HeroIdentifier,
+                        displayName: found.HeroDisplayName,
+                        team: found.Team,
+                        normX: found.PositionX,
+                        normY: found.PositionY,
+                        canvasX: canvasPt.x,
+                        canvasY: canvasPt.y,
+                        health: found.HealthPercent,
+                        isAlive: found.IsAlive,
+                        level: found.Level,
+                        kills: found.Kills,
+                        deaths: found.Deaths,
+                        assists: found.Assists
+                    };
+                },
+                seekTo: function (sec) {
+                    seekTo(sec);
+                },
+                selectHero: function (slot) {
+                    selectedSlot = slot;
+                    updateSelectionUI();
+                    renderFrame(window.__learnatoriumState.currentFrame);
+                }
+            };
+        }
+
+        function seekTo(sec) {
+            isPlaying = false;
+            btnPlayPause.textContent = "▶ Play";
+            btnPlayPause.className = "btn btn-primary btn-sm px-3";
+            currentSecond = Math.max(0, Math.min(totalDuration, sec));
+            renderFrame(getFrame(currentSecond));
+        }
+
+        // Animation Loop
+        let stepRafId = null;
+        function ensureStepRunning() {
+            if (isPlaying && !document.hidden && stepRafId === null) {
+                lastTimestamp = performance.now();
+                stepRafId = requestAnimationFrame(step);
+            }
+        }
+        document.addEventListener("visibilitychange", function () {
+            if (!document.hidden && isPlaying) ensureStepRunning();
+        });
+        function step(timestamp) {
+            stepRafId = null;
+            if (!isPlaying || document.hidden) return;
+            if (!lastTimestamp) lastTimestamp = timestamp;
+            const deltaMs = timestamp - lastTimestamp;
+            lastTimestamp = timestamp;
+
+            currentSecond += (deltaMs / 1000.0) * playSpeed * 4.0;
+            if (currentSecond >= totalDuration) {
+                currentSecond = totalDuration;
+                isPlaying = false;
+                btnPlayPause.textContent = "▶ Play";
+            }
+            renderFrame(getFrame(Math.floor(currentSecond)));
+            if (isPlaying && !document.hidden) {
+                stepRafId = requestAnimationFrame(step);
+            }
+        }
+
+        // Interactive Canvas Clicks & Tooltips
+        let cachedCanvasRect = canvas.getBoundingClientRect();
+        const refreshLearnatoriumRect = () => { cachedCanvasRect = canvas.getBoundingClientRect(); };
+        canvas.addEventListener("mouseenter", refreshLearnatoriumRect);
+        window.addEventListener("resize", refreshLearnatoriumRect, { passive: true });
+        window.addEventListener("scroll", refreshLearnatoriumRect, { passive: true });
+        canvas.addEventListener("mousemove", function (e) {
+            const rect = cachedCanvasRect;
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
+            const mx = (e.clientX - rect.left) * scaleX;
+            const my = (e.clientY - rect.top) * scaleY;
+
+            const frame = getFrame(currentSecond);
+            if (!frame) return;
+
+            let hovered = null;
+            for (const h of (frame.Heroes || [])) {
+                if (!h.IsAlive) continue;
+                const pt = worldToCanvas(h.PositionX, h.PositionY);
+                const dist = Math.hypot(mx - pt.x, my - pt.y);
+                if (dist <= 18) {
+                    hovered = h;
+                    break;
+                }
+            }
+
+            hoveredSlot = hovered ? hovered.Slot : null;
+            canvas.style.cursor = hovered ? "pointer" : "crosshair";
+
+            if (hovered && tooltipEl) {
+                tooltipEl.classList.remove("d-none");
+                tooltipEl.style.left = `${e.clientX - rect.left + 15}px`;
+                tooltipEl.style.top = `${e.clientY - rect.top - 20}px`;
+                const teamName = hovered.Team === 1 ? "The Legion" : "The Hellbourne";
+                tooltipEl.innerHTML = `
+                    <div class="fw-bold text-warning">${hovered.HeroDisplayName} (Lvl ${hovered.Level})</div>
+                    <div class="text-muted" style="font-size: 0.72rem;">${teamName} · Slot #${hovered.Slot + 1}</div>
+                    <div class="mt-1 d-flex gap-2">
+                        <span>HP: <strong>${Math.round(hovered.HealthPercent)}%</strong></span>
+                        <span>KDA: <strong>${hovered.Kills}/${hovered.Deaths}/${hovered.Assists}</strong></span>
+                    </div>
+                `;
+            } else if (tooltipEl) {
+                tooltipEl.classList.add("d-none");
+            }
+        });
+
+        canvas.addEventListener("mouseleave", function () {
+            if (tooltipEl) tooltipEl.classList.add("d-none");
+        });
+
+        canvas.addEventListener("click", function (e) {
+            if (hoveredSlot !== null) {
+                selectedSlot = (selectedSlot === hoveredSlot) ? null : hoveredSlot;
+            } else {
+                selectedSlot = null;
+            }
+            updateSelectionUI();
+            if (window.__learnatoriumState && window.__learnatoriumState.currentFrame) {
+                renderFrame(window.__learnatoriumState.currentFrame);
+            }
+        });
+
+        // Keyboard Shortcuts
+        window.addEventListener("keydown", function (e) {
+            if (e.target.tagName === "INPUT" || e.target.tagName === "SELECT" || e.target.tagName === "TEXTAREA") return;
+            if (e.code === "Space") {
+                e.preventDefault();
+                isPlaying = !isPlaying;
+                btnPlayPause.textContent = isPlaying ? "⏸ Pause" : "▶ Play";
+                btnPlayPause.className = isPlaying ? "btn btn-warning btn-sm px-3" : "btn btn-primary btn-sm px-3";
+                lastTimestamp = performance.now();
+                ensureStepRunning();
+            } else if (e.code === "ArrowRight") {
+                e.preventDefault();
+                seekTo(currentSecond + 5);
+            } else if (e.code === "ArrowLeft") {
+                e.preventDefault();
+                seekTo(currentSecond - 5);
+            } else if (e.code === "Escape") {
+                selectedSlot = null;
+                updateSelectionUI();
+                if (window.__learnatoriumState && window.__learnatoriumState.currentFrame) {
+                    renderFrame(window.__learnatoriumState.currentFrame);
+                }
+            }
+        });
+
+        // Event Listeners
+        scrubber.addEventListener("input", function (e) {
+            seekTo(parseInt(e.target.value, 10));
+        });
+
+        btnPlayPause.addEventListener("click", function () {
+            isPlaying = !isPlaying;
+            btnPlayPause.textContent = isPlaying ? "⏸ Pause" : "▶ Play";
+            btnPlayPause.className = isPlaying ? "btn btn-warning btn-sm px-3" : "btn btn-primary btn-sm px-3";
+            lastTimestamp = performance.now();
+            ensureStepRunning();
+        });
+
+        btnSpeed.addEventListener("click", function () {
+            if (playSpeed === 1) playSpeed = 2;
+            else if (playSpeed === 2) playSpeed = 4;
+            else playSpeed = 1;
+            btnSpeed.textContent = playSpeed + "x";
+        });
+
+        btnReset.addEventListener("click", function () {
+            seekTo(0);
+        });
+
+        // Initial Frame Render
+        renderFrame(getFrame(0));
+        ensureStepRunning();
+
+        // Synchronize verified K2 server log / .honreplay telemetry when viewing real matches
+        if (playbackData.MatchID !== 15984210 && playbackData.MatchID !== 2060568725) {
+            fetch(`/api/matches/${playbackData.MatchID}/replay`)
+                .then(r => r.ok ? r.json() : null)
+                .then(data => {
+                    if (!data || !Array.isArray(data.keyframes) || data.keyframes.length === 0) return;
+                    const badge = document.getElementById("learnatoriumTelemetryBadge");
+                    if (badge) {
+                        const verified = data.telemetrySource === "server_log" || data.telemetrySource === "honreplay";
+                        badge.textContent = data.telemetryLabel || (verified ? "Verified Server Telemetry" : "Tactical Reconstruction");
+                        badge.className = verified
+                            ? "px-2.5 py-0.5 rounded-md bg-emerald-500/15 text-emerald-300 border border-emerald-500/35 text-xs font-mono font-bold"
+                            : "px-2.5 py-0.5 rounded-md bg-amber-500/15 text-amber-300 border border-amber-500/35 text-xs font-mono font-bold";
+                    }
+
+                    const slotByAccount = new Map();
+                    (playbackData.Players || []).forEach(pl => {
+                        slotByAccount.set(`${pl.AccountID}:${(pl.AccountName || '').toLowerCase()}`, pl.Slot);
+                        if (pl.AccountID > 0) slotByAccount.set(String(pl.AccountID), pl.Slot);
+                    });
+
+                    totalDuration = Math.max(1, data.totalDurationSeconds || totalDuration);
+                    scrubber.max = totalDuration;
+
+                    playbackData.Frames = data.keyframes.map(kf => {
+                        const legionKills = (kf.players || []).filter(p => p.team === 1).reduce((s, p) => s + (p.kills || 0), 0);
+                        const hellKills = (kf.players || []).filter(p => p.team === 2).reduce((s, p) => s + (p.kills || 0), 0);
+                        const legionGold = (kf.players || []).filter(p => p.team === 1).reduce((s, p) => s + (p.gold || 0), 0);
+                        const hellGold = (kf.players || []).filter(p => p.team === 2).reduce((s, p) => s + (p.gold || 0), 0);
+                        return {
+                            Second: kf.second,
+                            ElapsedFormatted: kf.elapsedFormatted,
+                            ScoreLegion: legionKills,
+                            ScoreHellbourne: hellKills,
+                            GoldLeadLegion: legionGold - hellGold,
+                            Structures: kf.structures || {},
+                            Heroes: (kf.players || []).map((p, idx) => {
+                                const resolvedSlot = slotByAccount.get(`${p.accountID}:${(p.accountName || '').toLowerCase()}`)
+                                    ?? slotByAccount.get(String(p.accountID))
+                                    ?? (p.team === 2 ? 5 + idx : idx);
+                                return {
+                                    Slot: resolvedSlot,
+                                    AccountID: p.accountID,
+                                    AccountName: p.accountName,
+                                    HeroIdentifier: p.heroIdentifier,
+                                    HeroDisplayName: p.heroDisplayName,
+                                    Team: p.team,
+                                    Level: p.level,
+                                    Kills: p.kills,
+                                    Deaths: p.deaths,
+                                    Assists: p.assists,
+                                    Gold: p.gold,
+                                    Gpm: p.gpm,
+                                    Xpm: p.xpm,
+                                    PositionX: p.positionX,
+                                    PositionY: 1.0 - p.positionY,
+                                    HeadingAngle: -(p.headingAngle || 0) * (180.0 / Math.PI),
+                                    HealthPercent: p.healthPercent,
+                                    ManaPercent: p.manaPercent,
+                                    IsAlive: p.isAlive !== false && p.healthPercent > 0,
+                                    Items: p.items || []
+                                };
+                            })
+                        };
+                    });
+
+                    if (Array.isArray(data.eventPins) && data.eventPins.length > 0) {
+                        playbackData.Highlights = data.eventPins
+                            .filter(ep => ep.eventType !== "ABILITY")
+                            .slice(0, 60)
+                            .map(ep => ({
+                                MatchTimeSeconds: ep.matchTimeSeconds,
+                                EventType: ep.eventType,
+                                Description: ep.description,
+                                AttackerHero: ep.attackerHero,
+                                VictimHero: ep.victimHero,
+                                PositionX: ep.positionX,
+                                PositionY: 1.0 - ep.positionY
+                            }));
+                        renderEventPins();
+                        const feedEl = document.getElementById("eventFeed");
+                        if (feedEl) {
+                            feedEl.innerHTML = playbackData.Highlights.map(h => {
+                                const mm = String(Math.floor(h.MatchTimeSeconds / 60)).padStart(2, '0');
+                                const ss = String(h.MatchTimeSeconds % 60).padStart(2, '0');
+                                return `<div class="p-1.5 rounded-lg bg-slate-950/80 border border-slate-800/80 text-slate-300 flex items-start gap-1.5 event-item hover:border-slate-700 transition-colors cursor-pointer" data-time="${h.MatchTimeSeconds}">
+                                    <span class="px-1.5 py-0.2 rounded bg-amber-500/20 text-amber-300 text-[10px] font-bold flex-shrink-0">${mm}:${ss}</span>
+                                    <span class="text-[11px] leading-tight">${h.Description}</span>
+                                </div>`;
+                            }).join("");
+                            feedEl.querySelectorAll(".event-item").forEach(el => {
+                                el.addEventListener("click", () => seekTo(parseInt(el.dataset.time, 10) || 0));
+                            });
+                        }
+                    }
+
+                    renderFrame(getFrame(currentSecond));
+                })
+                .catch(err => console.debug("[Learnatorium] Replay telemetry sync skipped:", err));
+        }
+    })();
+</script>

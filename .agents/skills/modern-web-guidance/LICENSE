@@ -1,0 +1,10 @@
+Apache License
+Version 2.0, January 2004
+http://www.apache.org/licenses/
+
+Upstream guidance methodology and workflow adapted from Google Chrome's
+Modern Web Guidance project (https://github.com/GoogleChrome/modern-web-guidance),
+Copyright Google LLC and contributors, licensed under the Apache License, Version 2.0.
+
+Project Kongor integration, runtime routing, PowerShell offline wrapper, and
+RmlUi / FN-013 translation rules are part of Project KONGOR V.

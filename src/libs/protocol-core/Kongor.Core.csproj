@@ -1,0 +1,63 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Library</OutputType>
+    <AssemblyName>ASPIRE.Common</AssemblyName>
+    <RootNamespace>ASPIRE.Common</RootNamespace>
+    <IsAspireSharedProject>true</IsAspireSharedProject>
+    <IsAotCompatible>true</IsAotCompatible>
+    <EnableTrimAnalyzer>true</EnableTrimAnalyzer>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <Features>$(Features);runtime-async=on</Features>
+    <NoWarn>$(NoWarn);CA1416</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="OpenTelemetry.Api.ProviderBuilderExtensions"/>
+    <PackageReference Include="Microsoft.Extensions.Http.Resilience"/>
+    <PackageReference Include="Microsoft.Extensions.ServiceDiscovery"/>
+    <PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol"/>
+    <PackageReference Include="OpenTelemetry.Extensions.Hosting"/>
+    <PackageReference Include="OpenTelemetry.Instrumentation.Http"/>
+    <PackageReference Include="OpenTelemetry.Instrumentation.Process"/>
+    <PackageReference Include="Aspire.StackExchange.Redis.DistributedCaching"/>
+    <PackageReference Include="Microsoft.Extensions.Caching.Hybrid"/>
+    <PackageReference Include="ZiggyCreatures.FusionCache"/>
+    <PackageReference Include="ZiggyCreatures.FusionCache.Backplane.StackExchangeRedis"/>
+    <PackageReference Include="MemoryPack"/>
+    <PackageReference Include="OneOf"/>
+    <PackageReference Include="OpenTelemetry.Instrumentation.Runtime"/>
+    <PackageReference Include="Pyroscope"/>
+    <PackageReference Include="Pyroscope.OpenTelemetry"/>
+    <PackageReference Include="Microsoft.IO.RecyclableMemoryStream"/>
+    <PackageReference Include="Polly.Core"/>
+    <PackageReference Include="StackExchange.Redis"/>
+    <PackageReference Include="System.IO.Hashing"/>
+    <PackageReference Include="Microsoft.Extensions.ObjectPool"/>
+    <PackageReference Include="NLua"/>
+    <PackageReference Include="Concentus"/>
+    <PackageReference Include="MediatR"/>
+    <PackageReference Include="FluentValidation"/>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\contracts\NEXUS.Contracts.csproj"/>
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\hon_netcode.zstd.dict" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Kongor.Core.Tests" />
+    <InternalsVisibleTo Include="Kongor.Mcp.Tests" />
+    <InternalsVisibleTo Include="COMPEL.Tests" />
+    <InternalsVisibleTo Include="WILLOWMAKER.Tests" />
+    <InternalsVisibleTo Include="ReplayStudio.Tests" />
+    <InternalsVisibleTo Include="ASPIRE.Common.Tests" />
+    <InternalsVisibleTo Include="ASPIRE.Integration.Tests" />
+    <InternalsVisibleTo Include="ASPIRE.Prebaking.Tests" />
+    <InternalsVisibleTo Include="TRANSMUTANSTEIN.ChatServer.Tests" />
+  </ItemGroup>
+
+</Project>

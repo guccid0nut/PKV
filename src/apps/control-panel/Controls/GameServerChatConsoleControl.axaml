@@ -1,0 +1,589 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="using:NEXUS.ControlPanel.GUI.ViewModels"
+             xmlns:controls="using:NEXUS.ControlPanel.GUI.Controls"
+             mc:Ignorable="d" d:DesignWidth="1050" d:DesignHeight="680"
+             x:Name="ChatConsoleRoot"
+             x:Class="NEXUS.ControlPanel.GUI.Controls.GameServerChatConsoleControl"
+             x:DataType="vm:GameServersViewModel">
+
+    <Border Classes="card" Padding="0" ClipToBounds="True"
+            BorderBrush="#334155" BorderThickness="1" MinHeight="500">
+        <Grid ColumnDefinitions="300,*">
+
+            <!-- Left Column: Server Channels Sidebar -->
+            <Border Grid.Column="0" Background="#0B0F17" BorderBrush="#1E293B" BorderThickness="0,0,1,0">
+                <Grid RowDefinitions="Auto,Auto,*,Auto">
+
+                    <!-- Sidebar Header & Start Server Button -->
+                    <Border Grid.Row="0" Background="#0F172A" BorderBrush="#1E293B" BorderThickness="0,0,0,1"
+                            Padding="12,10">
+                        <Grid ColumnDefinitions="*,Auto">
+                            <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                                <TextBlock Text="CHANNELS / INSTANCES" FontSize="10" FontWeight="Bold"
+                                           Foreground="#00F0FF" LetterSpacing="1" />
+                                <TextBlock Text="Select a server to chat" FontSize="11" Foreground="#64748B" />
+                            </StackPanel>
+
+                            <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="4">
+                                <Button Classes="secondary" Command="{Binding CleanZombieWorkersCommand}"
+                                        Padding="6,4" ToolTip.Tip="Kill orphaned hon_x64 dedicated server processes">
+                                    <TextBlock Text="🧹" FontSize="11" />
+                                </Button>
+                                <Button Classes="success" Command="{Binding StartNewServerInstanceCommand}"
+                                        Padding="8,4" ToolTip.Tip="Spin up next stopped server instance">
+                                    <StackPanel Orientation="Horizontal" Spacing="4">
+                                        <TextBlock Text="➕" FontSize="10" />
+                                        <TextBlock Text="New" FontWeight="Bold" FontSize="11" />
+                                    </StackPanel>
+                                </Button>
+                            </StackPanel>
+                        </Grid>
+                    </Border>
+
+                    <!-- Search & Status Filter -->
+                    <StackPanel Grid.Row="1" Spacing="6" Margin="10,8,10,6">
+                        <TextBox Text="{Binding ChatSearchQuery}" Watermark="🔍 Search channels..." Padding="8,6" FontSize="11" />
+                        <ComboBox SelectedValue="{Binding SelectedChatStatusFilter}" SelectedValueBinding="{Binding}"
+                                  HorizontalAlignment="Stretch" FontSize="11">
+                            <x:String>ALL</x:String>
+                            <x:String>AVAILABLE</x:String>
+                            <x:String>IN MATCH</x:String>
+                            <x:String>STOPPED</x:String>
+                            <x:String>CRASHED</x:String>
+                        </ComboBox>
+                    </StackPanel>
+
+                    <!-- Channel List -->
+                    <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto">
+                        <StackPanel>
+                            <Border IsVisible="{Binding !HasActiveChatInstances}" Padding="16,24" HorizontalAlignment="Center">
+                                <StackPanel Spacing="8" HorizontalAlignment="Center">
+                                    <TextBlock Text="📡" FontSize="20" HorizontalAlignment="Center" />
+                                    <TextBlock Text="No active channels" FontSize="11" FontWeight="Bold" Foreground="#64748B" HorizontalAlignment="Center" />
+                                    <TextBlock Text="Servers must be running before chat channels become active." FontSize="9.5" Foreground="#475569" TextWrapping="Wrap" TextAlignment="Center" />
+                                </StackPanel>
+                            </Border>
+
+                            <ItemsControl ItemsSource="{Binding FilteredChatInstances}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate DataType="vm:GameServerInstanceDetailViewModel">
+                                        <Button AutomationProperties.AutomationId="{Binding InstanceTag}"
+                                                Command="{Binding #ChatConsoleRoot.((vm:GameServersViewModel)DataContext).SelectChatInstanceCommand}"
+                                                CommandParameter="{Binding}"
+                                                HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch"
+                                                Background="Transparent" BorderThickness="0" Padding="0" Margin="4,2">
+                                            <Border Background="{Binding CardBackground}" BorderBrush="{Binding CardBorderBrush}"
+                                                    BorderThickness="{Binding CardBorderThickness}"
+                                                    CornerRadius="8" Padding="10,8">
+                                                <Grid RowDefinitions="Auto,Auto,Auto" ColumnDefinitions="Auto,*,Auto">
+                                                    <!-- Status Circle Indicator -->
+                                                    <Border Grid.Row="0" Grid.Column="0" Width="9" Height="9" CornerRadius="4.5"
+                                                            Background="{Binding StatusDotColor}" Margin="0,0,8,0"
+                                                            VerticalAlignment="Center" />
+
+                                                    <!-- Channel Tag & Server Name -->
+                                                    <StackPanel Grid.Row="0" Grid.Column="1" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                                                        <TextBlock Text="{Binding InstanceTag}"
+                                                                   FontSize="11.5" FontWeight="Black" Foreground="#00F0FF"
+                                                                   ToolTip.Tip="{Binding GamePort, StringFormat='UDP Port: {0}'}" />
+                                                        <TextBlock controls:K2CaretText.Text="{Binding CleanServerName}" FontSize="11.5"
+                                                                   FontWeight="Bold" Foreground="#F8FAFC"
+                                                                   TextTrimming="CharacterEllipsis" MaxWidth="150" />
+                                                    </StackPanel>
+
+                                                    <!-- Close Tab (✕) -->
+                                                    <Button Grid.Row="0" Grid.Column="2" Classes="secondary"
+                                                            Command="{Binding #ChatConsoleRoot.((vm:GameServersViewModel)DataContext).CloseChatTabCommand}"
+                                                            CommandParameter="{Binding}"
+                                                            Padding="5,1" VerticalAlignment="Center"
+                                                            ToolTip.Tip="Close chat tab from sidebar">
+                                                        <TextBlock Text="✕" FontSize="9" FontWeight="Bold" Foreground="#64748B" />
+                                                    </Button>
+
+                                                    <!-- Row 1: Badges (Port, Status, Hosting, Errors) -->
+                                                    <WrapPanel Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2" Orientation="Horizontal" Margin="0,3,0,2">
+                                                        <Border Background="#1E293B" CornerRadius="4" Padding="5,1" Margin="0,0,4,2">
+                                                            <TextBlock Text="{Binding GamePort, StringFormat='UDP {0}'}" FontSize="9"
+                                                                       FontWeight="Bold" Foreground="#38BDF8" />
+                                                        </Border>
+                                                        <Border Background="{Binding StatusBadgeBackground}" BorderBrush="{Binding StatusColor}"
+                                                                BorderThickness="1" CornerRadius="4" Padding="5,1" Margin="0,0,4,2">
+                                                            <TextBlock Text="{Binding StatusShortText}" FontSize="8.5" FontWeight="Bold"
+                                                                       Foreground="{Binding StatusColor}" />
+                                                        </Border>
+                                                        <Border Background="{Binding HostingBadgeBackground}" BorderBrush="{Binding HostingBadgeColor}"
+                                                                BorderThickness="1" CornerRadius="4" Padding="5,1" Margin="0,0,4,2">
+                                                            <TextBlock Text="{Binding HostingBadgeText}" FontSize="8.5" FontWeight="Bold"
+                                                                       Foreground="{Binding HostingBadgeColor}" />
+                                                        </Border>
+                                                        <Border IsVisible="{Binding HasErrors}" Background="#450A0A" BorderBrush="#EF4444"
+                                                                BorderThickness="1" CornerRadius="4" Padding="5,1" Margin="0,0,4,2">
+                                                            <TextBlock Text="{Binding ErrorDisplay}" FontSize="8.5" FontWeight="Bold" Foreground="#FCA5A5" />
+                                                        </Border>
+                                                    </WrapPanel>
+
+                                                    <!-- Row 2: Last Message Snippet -->
+                                                    <TextBlock Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="2"
+                                                               Text="{Binding LastMessageSnippet}" FontSize="9.5"
+                                                               Foreground="#64748B" TextTrimming="CharacterEllipsis"
+                                                               MaxLines="1" Margin="0,2,0,0" />
+                                                </Grid>
+                                            </Border>
+                                        </Button>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </StackPanel>
+                    </ScrollViewer>
+
+                    <!-- Bottom Channel Count Footer -->
+                    <Border Grid.Row="3" Background="#0F172A" BorderBrush="#1E293B" BorderThickness="0,1,0,0"
+                            Padding="10,6">
+                        <TextBlock Text="{Binding FilteredChatInstances.Count, StringFormat='{}{0} channels available'}"
+                                   FontSize="10" Foreground="#64748B" HorizontalAlignment="Center" />
+                    </Border>
+
+                </Grid>
+            </Border>
+
+            <!-- Right Column: Active Server Chat Feed & Console Bar -->
+            <Grid Grid.Column="1" RowDefinitions="Auto,*,Auto,Auto" IsVisible="{Binding HasActiveChatInstances}">
+
+                <!-- Channel Top Header Bar -->
+                <Border Grid.Row="0" Background="#0F172A" BorderBrush="#1E293B" BorderThickness="0,0,0,1"
+                        Padding="16,10">
+                    <Grid RowDefinitions="Auto,Auto">
+
+                        <!-- Tier 1: Channel Title, Status Badges, and Core Lifecycle Actions -->
+                        <Grid Grid.Row="0" ColumnDefinitions="*,Auto">
+                            <!-- Left: Server Name, Port, and Status Badges -->
+                            <WrapPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,12,0">
+                                <Border Width="10" Height="10" CornerRadius="5"
+                                        Background="{Binding SelectedChatInstance.StatusDotColor}"
+                                        VerticalAlignment="Center" Margin="0,0,8,0" />
+
+                                <Border Background="#1E293B" BorderBrush="#00F0FF" BorderThickness="1"
+                                        CornerRadius="6" Padding="6,2" VerticalAlignment="Center" Margin="0,0,8,0">
+                                    <TextBlock Text="{Binding SelectedChatInstance.InstanceTag}"
+                                               FontSize="12" FontWeight="Black" Foreground="#00F0FF" />
+                                </Border>
+
+                                <TextBlock controls:K2CaretText.Text="{Binding SelectedChatInstance.CleanServerName}"
+                                           FontSize="15" FontWeight="Black" VerticalAlignment="Center" Margin="0,0,10,0" />
+
+                                <Border Background="#1E293B" BorderBrush="#00F0FF" BorderThickness="1"
+                                        CornerRadius="6" Padding="6,2" VerticalAlignment="Center" Margin="0,0,6,0">
+                                    <TextBlock Text="{Binding SelectedChatInstance.GamePort, StringFormat='UDP {0}'}"
+                                               FontSize="10.5" FontWeight="Bold" Foreground="#00F0FF" />
+                                </Border>
+
+                                <Border Background="{Binding SelectedChatInstance.HostingBadgeBackground}"
+                                        BorderBrush="{Binding SelectedChatInstance.HostingBadgeColor}" BorderThickness="1"
+                                        CornerRadius="6" Padding="6,2" VerticalAlignment="Center" Margin="0,0,6,0">
+                                    <TextBlock Text="{Binding SelectedChatInstance.HostingBadgeText}" FontSize="10"
+                                               FontWeight="Bold" Foreground="{Binding SelectedChatInstance.HostingBadgeColor}" />
+                                </Border>
+
+                                <Border Background="{Binding SelectedChatInstance.StatusBadgeBackground}"
+                                        BorderBrush="{Binding SelectedChatInstance.StatusColor}" BorderThickness="1"
+                                        CornerRadius="6" Padding="6,2" VerticalAlignment="Center" Margin="0,0,6,0">
+                                    <TextBlock Text="{Binding SelectedChatInstance.StatusShortText}" FontSize="10"
+                                               FontWeight="Bold" Foreground="{Binding SelectedChatInstance.StatusColor}" />
+                                </Border>
+
+                                <Border IsVisible="{Binding SelectedChatInstance.HasErrors}" Background="#450A0A"
+                                        BorderBrush="#EF4444" BorderThickness="1" CornerRadius="6" Padding="6,2"
+                                        VerticalAlignment="Center">
+                                    <TextBlock Text="{Binding SelectedChatInstance.ErrorDisplay}" FontSize="10"
+                                               FontWeight="Bold" Foreground="#FCA5A5" />
+                                </Border>
+                            </WrapPanel>
+
+                            <!-- Right: Core Lifecycle Buttons -->
+                            <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                                <!-- Start (if stopped) -->
+                                <Button Classes="success" Command="{Binding StartSelectedInstanceCommand}"
+                                        IsVisible="{Binding !SelectedChatInstance.IsRunning}" Padding="10,5">
+                                    <StackPanel Orientation="Horizontal" Spacing="5">
+                                        <TextBlock Text="▶" FontSize="11" />
+                                        <TextBlock Text="Start" FontWeight="Bold" FontSize="11" />
+                                    </StackPanel>
+                                </Button>
+
+                                <!-- Restart (if running) -->
+                                <Button Classes="secondary" Command="{Binding RestartSelectedInstanceCommand}"
+                                        IsVisible="{Binding SelectedChatInstance.IsRunning}" Padding="9,5"
+                                        ToolTip.Tip="Restart game server worker process">
+                                    <StackPanel Orientation="Horizontal" Spacing="4">
+                                        <TextBlock Text="🔄" FontSize="11" />
+                                        <TextBlock Text="Restart" FontWeight="SemiBold" FontSize="11" />
+                                    </StackPanel>
+                                </Button>
+
+                                <!-- Stop Server (if running) -->
+                                <Button Classes="danger" Command="{Binding StopInstanceCommand}"
+                                        CommandParameter="{Binding SelectedChatInstance}"
+                                        IsVisible="{Binding SelectedChatInstance.IsRunning}" Padding="9,5"
+                                        ToolTip.Tip="Permanently Stop Server (auto-relaunch disabled)">
+                                    <StackPanel Orientation="Horizontal" Spacing="4">
+                                        <TextBlock Text="⏹" FontSize="11" />
+                                        <TextBlock Text="Stop" FontWeight="SemiBold" FontSize="11" />
+                                    </StackPanel>
+                                </Button>
+
+                                <!-- Kill Server (if running) -->
+                                <Button Classes="danger" Command="{Binding KillInstanceCommand}"
+                                        CommandParameter="{Binding SelectedChatInstance}"
+                                        IsVisible="{Binding SelectedChatInstance.IsRunning}" Padding="8,5"
+                                        ToolTip.Tip="Force Kill Process Immediately (SIGKILL)">
+                                    <StackPanel Orientation="Horizontal" Spacing="4">
+                                        <TextBlock Text="💀" FontSize="11" />
+                                        <TextBlock Text="Kill" FontWeight="Bold" FontSize="11" />
+                                    </StackPanel>
+                                </Button>
+                            </StackPanel>
+                        </Grid>
+
+                        <!-- Tier 2: Connection Details & Connected-Only Per-Server Pipe Badge on Left, Utility Actions on Right -->
+                        <Grid Grid.Row="1" ColumnDefinitions="*,Auto" Margin="0,6,0,0">
+                            <WrapPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                                <TextBlock Text="{Binding SelectedChatInstance.Endpoint, StringFormat='Direct UDP: {0}'}"
+                                           FontSize="10.5" Foreground="#64748B" VerticalAlignment="Center" />
+                                <TextBlock Text=" • " FontSize="10.5" Foreground="#334155" VerticalAlignment="Center" />
+                                <TextBlock Text="{Binding SelectedChatInstance.HostingEnvironment}"
+                                           FontSize="10.5" FontWeight="SemiBold"
+                                           Foreground="{Binding SelectedChatInstance.HostingBadgeColor}" VerticalAlignment="Center" />
+
+                                <!-- Per-Server Connected IPC Pipe Pill (Hidden when disconnected/stopped) -->
+                                <Border IsVisible="{Binding SelectedChatInstance.IsPipeConnected}"
+                                        Background="#064E3B" BorderBrush="#10B981" BorderThickness="1"
+                                        CornerRadius="6" Padding="7,2" Margin="8,0,0,0" VerticalAlignment="Center"
+                                        ToolTip.Tip="{Binding SelectedChatInstance.ConnectedPipeToolTip}">
+                                    <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
+                                        <Ellipse Width="7" Height="7" Fill="#10B981" VerticalAlignment="Center" />
+                                        <TextBlock Text="{Binding SelectedChatInstance.ConnectedPipeBadgeText}"
+                                                   FontSize="10" FontWeight="Bold" Foreground="#A7F3D0" VerticalAlignment="Center" />
+                                    </StackPanel>
+                                </Border>
+                            </WrapPanel>
+
+                            <!-- Right: Utility Actions (Pop Out / Dock, Copy Logs, Clear Chat, Close Tab) -->
+                            <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                                <!-- Pop Out (when docked) -->
+                                <Button Classes="primary"
+                                        AutomationProperties.AutomationId="BtnChatConsolePopOut"
+                                        Command="{Binding PopOutChatCommand}"
+                                        IsVisible="{Binding !IsChatPoppedOut}" Padding="8,4"
+                                        ToolTip.Tip="Pop out Game Server Chat Manager into a separate window">
+                                    <StackPanel Orientation="Horizontal" Spacing="4">
+                                        <TextBlock Text="↗" FontSize="10.5" FontWeight="Bold" />
+                                        <TextBlock Text="Pop Out" FontWeight="Bold" FontSize="10.5" />
+                                    </StackPanel>
+                                </Button>
+
+                                <!-- Dock Back (when popped out) -->
+                                <Button Classes="secondary"
+                                        AutomationProperties.AutomationId="BtnChatConsoleDock"
+                                        Command="{Binding DockChatCommand}"
+                                        IsVisible="{Binding IsChatPoppedOut}" Padding="8,4"
+                                        ToolTip.Tip="Dock Game Server Chat Manager back into NEXUS Control Panel">
+                                    <StackPanel Orientation="Horizontal" Spacing="4">
+                                        <TextBlock Text="↙" FontSize="10.5" FontWeight="Bold" />
+                                        <TextBlock Text="Dock" FontWeight="SemiBold" FontSize="10.5" />
+                                    </StackPanel>
+                                </Button>
+
+                                <!-- Copy All Logs -->
+                                <Button Classes="secondary" Command="{Binding CopySelectedServerLogsCommand}" Padding="8,4"
+                                        ToolTip.Tip="Copy all raw logs and console history for this server to clipboard">
+                                    <StackPanel Orientation="Horizontal" Spacing="4">
+                                        <TextBlock Text="📋" FontSize="10" />
+                                        <TextBlock Text="Copy Logs" FontWeight="SemiBold" FontSize="10.5" />
+                                    </StackPanel>
+                                </Button>
+
+                                <!-- Clear Chat -->
+                                <Button Classes="secondary" Command="{Binding ClearSelectedChatCommand}" Padding="8,4"
+                                        ToolTip.Tip="Clear local chat and log stream view">
+                                    <StackPanel Orientation="Horizontal" Spacing="4">
+                                        <TextBlock Text="🧹" FontSize="10" />
+                                        <TextBlock Text="Clear" FontWeight="SemiBold" FontSize="10.5" />
+                                    </StackPanel>
+                                </Button>
+
+                                <!-- Close Tab -->
+                                <Button Classes="secondary" Command="{Binding CloseChatTabCommand}"
+                                        CommandParameter="{Binding SelectedChatInstance}" Padding="8,4"
+                                        ToolTip.Tip="Close chat tab from active view">
+                                    <StackPanel Orientation="Horizontal" Spacing="4">
+                                        <TextBlock Text="✕" FontSize="10" Foreground="#94A3B8" />
+                                        <TextBlock Text="Close Tab" FontWeight="SemiBold" FontSize="10.5" Foreground="#94A3B8" />
+                                    </StackPanel>
+                                </Button>
+                            </StackPanel>
+                        </Grid>
+
+                    </Grid>
+                </Border>
+
+                <!-- Center Chat Feed Stream -->
+                <ScrollViewer x:Name="ChatScrollViewer" Grid.Row="1" VerticalScrollBarVisibility="Auto" Background="#090D16">
+                    <ItemsControl ItemsSource="{Binding SelectedChatInstance.ChatMessages}" Margin="16,12">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate DataType="vm:GameServerChatMessageViewModel">
+                                <!-- Dynamic Alignment Container -->
+                                <Grid HorizontalAlignment="{Binding Alignment}" Margin="0,3">
+
+                                    <!-- CASE 1: System Announcement Pill -->
+                                    <Border IsVisible="{Binding IsSystem}" Background="#1E293B" BorderBrush="#334155"
+                                            BorderThickness="1" CornerRadius="12" Padding="12,4"
+                                            HorizontalAlignment="Center">
+                                        <TextBlock Text="{Binding Message}" FontSize="10.5" Foreground="#94A3B8" />
+                                    </Border>
+
+                                    <!-- CASE 2: User / Operator Outgoing Command Bubble -->
+                                    <Border IsVisible="{Binding IsOperator}" Background="#1E1B4B" BorderBrush="#6366F1"
+                                            BorderThickness="1" CornerRadius="12,12,2,12" Padding="12,8" MaxWidth="600">
+                                        <StackPanel Spacing="3">
+                                            <Grid ColumnDefinitions="*,Auto">
+                                                <TextBlock Grid.Column="0" Text="You (Operator)" FontSize="10.5"
+                                                           FontWeight="Bold" Foreground="#38BDF8" />
+                                                <TextBlock Grid.Column="1"
+                                                           Text="{Binding FormattedTime, StringFormat='{}{0}'}"
+                                                           FontSize="9.5" Foreground="#818CF8" Margin="8,0,0,0" />
+                                            </Grid>
+                                            <TextBlock Text="{Binding Message}" FontSize="12" FontWeight="SemiBold"
+                                                       Foreground="#F8FAFC" TextWrapping="Wrap" />
+                                            <TextBlock Text="{Binding DeliveryChannel, StringFormat='via {0}'}"
+                                                       FontSize="9" Foreground="#60A5FA" HorizontalAlignment="Right" />
+                                        </StackPanel>
+                                    </Border>
+
+                                    <!-- CASE 3: Server Incoming Log / Event Bubble -->
+                                    <Border IsVisible="{Binding IsServer}" Background="{Binding BubbleBackground}"
+                                            BorderBrush="{Binding BubbleBorder}" BorderThickness="1"
+                                            CornerRadius="12,12,12,2" Padding="12,8" MaxWidth="650">
+                                        <StackPanel Spacing="3">
+                                            <Grid ColumnDefinitions="*,Auto">
+                                                <TextBlock Grid.Column="0" Text="{Binding SenderDisplay}" FontSize="10.5"
+                                                           FontWeight="Bold" Foreground="{Binding SenderColor}" />
+                                                <TextBlock Grid.Column="1"
+                                                           Text="{Binding FormattedTime, StringFormat='{}{0}'}"
+                                                           FontSize="9.5" Foreground="#64748B" Margin="8,0,0,0" />
+                                            </Grid>
+                                            <TextBlock Text="{Binding Message}"
+                                                       FontFamily="Cascadia Mono, Consolas, Courier New, monospace"
+                                                       FontSize="11.5" Foreground="{Binding TextForeground}"
+                                                       TextWrapping="Wrap" />
+                                        </StackPanel>
+                                    </Border>
+
+                                    <!-- CASE 4: Incoming In-Game Player Chat Bubble ([ALL] / [TEAM]) -->
+                                    <Border IsVisible="{Binding IsPlayerChat}" Background="{Binding BubbleBackground}"
+                                            BorderBrush="{Binding BubbleBorder}" BorderThickness="1.5"
+                                            CornerRadius="12,12,12,2" Padding="12,8" MaxWidth="650">
+                                        <StackPanel Spacing="3">
+                                            <Grid ColumnDefinitions="*,Auto">
+                                                <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="6">
+                                                    <TextBlock Text="💬" FontSize="11" VerticalAlignment="Center" />
+                                                    <TextBlock Text="{Binding SenderDisplay}" FontSize="11"
+                                                               FontWeight="Bold" Foreground="{Binding SenderColor}" />
+                                                </StackPanel>
+                                                <TextBlock Grid.Column="1"
+                                                           Text="{Binding FormattedTime, StringFormat='{}{0}'}"
+                                                           FontSize="9.5" Foreground="#94A3B8" Margin="8,0,0,0" />
+                                            </Grid>
+                                            <TextBlock Text="{Binding Message}"
+                                                       FontSize="12.5" FontWeight="SemiBold"
+                                                       Foreground="{Binding TextForeground}"
+                                                       TextWrapping="Wrap" />
+                                        </StackPanel>
+                                    </Border>
+
+                                </Grid>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </ScrollViewer>
+
+                <!-- Quick Command Chips Toolbar -->
+                <Border Grid.Row="2" Background="#0B0F17" BorderBrush="#1E293B" BorderThickness="0,1,0,0"
+                        Padding="16,6">
+                    <WrapPanel Orientation="Horizontal" VerticalAlignment="Center">
+                        <TextBlock Text="QUICK COMMANDS:" FontSize="9.5" FontWeight="Bold" Foreground="#64748B"
+                                   VerticalAlignment="Center" Margin="0,0,10,4" LetterSpacing="0.5" />
+
+                        <Button Classes="secondary" AutomationProperties.AutomationId="QuickCmdLegionBot"
+                                Command="{Binding SendQuickCommandCommand}"
+                                CommandParameter="AddFakePlayer 1" Margin="0,0,6,4" Padding="8,4">
+                            <TextBlock Text="🤖 +Legion Bot" FontSize="10.5" FontWeight="SemiBold"
+                                       Foreground="#10B981" />
+                        </Button>
+
+                        <Button Classes="secondary" AutomationProperties.AutomationId="QuickCmdHellbourneBot"
+                                Command="{Binding SendQuickCommandCommand}"
+                                CommandParameter="AddFakePlayer 2" Margin="0,0,6,4" Padding="8,4">
+                            <TextBlock Text="🤖 +Hellbourne Bot" FontSize="10.5"
+                                       FontWeight="SemiBold" Foreground="#F59E0B" />
+                        </Button>
+
+                        <Button Classes="secondary" AutomationProperties.AutomationId="QuickCmdServerStatus"
+                                Command="{Binding SendQuickCommandCommand}"
+                                CommandParameter="ServerStatus" Margin="0,0,6,4" Padding="8,4">
+                            <TextBlock Text="📊 Server Status" FontSize="10.5" FontWeight="SemiBold"
+                                       Foreground="#38BDF8" />
+                        </Button>
+
+                        <Button Classes="secondary" AutomationProperties.AutomationId="QuickCmdListPlayers"
+                                Command="{Binding SendQuickCommandCommand}"
+                                CommandParameter="ListPlayers" Margin="0,0,6,4" Padding="8,4">
+                            <TextBlock Text="👥 List Players" FontSize="10.5" FontWeight="SemiBold"
+                                       Foreground="#A855F7" />
+                        </Button>
+
+                        <Button Classes="secondary" AutomationProperties.AutomationId="QuickCmdGiveGold55555"
+                                Command="{Binding SendQuickCommandCommand}"
+                                CommandParameter="GiveGold 55555" Margin="0,0,6,4" Padding="8,4">
+                            <TextBlock Text="💰 +55555 Gold" FontSize="10.5" FontWeight="SemiBold"
+                                       Foreground="#FACC15" />
+                        </Button>
+
+                        <Button Classes="secondary" Command="{Binding SendQuickCommandCommand}"
+                                CommandParameter="GiveGold " Margin="0,0,6,4" Padding="8,4">
+                            <TextBlock Text="🪙 GiveGold..." FontSize="10.5" FontWeight="SemiBold"
+                                       Foreground="#FBBF24" />
+                        </Button>
+
+                        <Button Classes="secondary" Command="{Binding SendQuickCommandCommand}"
+                                CommandParameter="announce " Margin="0,0,6,4" Padding="8,4">
+                            <TextBlock Text="📢 Announce" FontSize="10.5" FontWeight="SemiBold"
+                                       Foreground="#EC4899" />
+                        </Button>
+
+                        <Button Classes="secondary" AutomationProperties.AutomationId="QuickCmdSvrName"
+                                Command="{Binding SendQuickCommandCommand}"
+                                CommandParameter="svr_name" Margin="0,0,6,4" Padding="8,4">
+                            <TextBlock Text="🏷️ svr_name" FontSize="10.5" FontWeight="SemiBold" Foreground="#F43F5E" />
+                        </Button>
+
+                        <Button Classes="secondary" AutomationProperties.AutomationId="QuickCmdPing"
+                                Command="{Binding SendQuickCommandCommand}"
+                                CommandParameter="echo ping" Margin="0,0,6,4" Padding="8,4">
+                            <TextBlock Text="🏓 Ping" FontSize="10.5" FontWeight="SemiBold" Foreground="#E2E8F0" />
+                        </Button>
+                    </WrapPanel>
+                </Border>
+
+                <!-- Bottom Chat / Command Input Bar -->
+                <Border Grid.Row="3" Background="#0F172A" BorderBrush="#1E293B" BorderThickness="0,1,0,0"
+                        Padding="16,10">
+                    <StackPanel Spacing="4">
+                        <Grid ColumnDefinitions="*,Auto">
+                            <TextBox Grid.Column="0" x:Name="CommandTextBox"
+                                     AutomationProperties.AutomationId="ChatCommandTextBox"
+                                     Text="{Binding CommandInput}"
+                                     Watermark="Type chat message to players, or /command (e.g. /AddFakePlayer 2, /GiveGold 50000)... Press Enter ↵"
+                                     KeyDown="CommandTextBox_KeyDown" Margin="0,0,10,0" />
+
+                            <Button Grid.Column="1" Classes="primary"
+                                    AutomationProperties.AutomationId="ChatSendButton"
+                                    Command="{Binding SendCommandCommand}"
+                                    IsEnabled="{Binding !IsSendingCommand}" Padding="18,9">
+                                <StackPanel Orientation="Horizontal" Spacing="6">
+                                    <TextBlock Text="✈️" />
+                                    <TextBlock Text="Send" FontWeight="Bold" />
+                                </StackPanel>
+                            </Button>
+                        </Grid>
+
+                        <!-- Idle Server Active-Match Hint Banner -->
+                        <Border IsVisible="{Binding HasIdleCommandTargetWarning}"
+                                Background="#1F2937" BorderBrush="#F59E0B" BorderThickness="1"
+                                CornerRadius="6" Padding="10,6" Margin="0,2,0,2">
+                            <Grid ColumnDefinitions="*,Auto,Auto">
+                                <TextBlock Grid.Column="0" Text="{Binding IdleCommandTargetWarningText}"
+                                           FontSize="11" Foreground="#FDE68A" VerticalAlignment="Center"
+                                           TextWrapping="Wrap" Margin="0,0,8,0" />
+                                <Button Grid.Column="1" Classes="primary"
+                                        Command="{Binding SwitchAndSendToActiveServerCommand}"
+                                        Padding="10,4" Margin="0,0,6,0">
+                                    <TextBlock Text="{Binding SwitchAndSendButtonLabel}" FontSize="10.5"
+                                               FontWeight="Bold" />
+                                </Button>
+                                <Button Grid.Column="2" Classes="secondary"
+                                        Command="{Binding DismissIdleTargetWarningCommand}"
+                                        Padding="6,4" ToolTip.Tip="Dismiss warning">
+                                    <TextBlock Text="✕" FontSize="10" Foreground="#94A3B8" />
+                                </Button>
+                            </Grid>
+                        </Border>
+
+                        <!-- Command Dispatch Status Feedback -->
+                        <TextBlock Text="{Binding LastCommandStatus}" FontSize="10" Foreground="#38BDF8"
+                                   Margin="2,0,0,0" />
+                    </StackPanel>
+                </Border>
+
+            </Grid>
+
+            <!-- Empty State when no game servers are active / launched -->
+            <Border Grid.Column="1" IsVisible="{Binding !HasActiveChatInstances}" Background="#090D16" Padding="32">
+                <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="18" MaxWidth="540">
+                    <Border Width="72" Height="72" CornerRadius="36" Background="#1E293B" BorderBrush="#334155"
+                            BorderThickness="1" HorizontalAlignment="Center">
+                        <TextBlock Text="🎮" FontSize="34" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                    </Border>
+
+                    <StackPanel Spacing="6" HorizontalAlignment="Center">
+                        <TextBlock Text="No Active Game Servers Running" FontSize="18" FontWeight="Black"
+                                   Foreground="#F8FAFC" HorizontalAlignment="Center" />
+                        <TextBlock Text="Game server chat channels and console streams activate once an instance is launched locally or hosted in a container. Choose an option below to start your servers."
+                                   FontSize="12" Foreground="#94A3B8" TextWrapping="Wrap" TextAlignment="Center" />
+                    </StackPanel>
+
+                    <WrapPanel HorizontalAlignment="Center" Margin="0,8,0,0">
+                        <Button Classes="purple" Command="{Binding LaunchLocalServerFromChatCommand}" Padding="16,10"
+                                Margin="0,0,10,10"
+                                ToolTip.Tip="Launch local dedicated game server binary via orchestrator">
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <TextBlock Text="💻" FontSize="14" />
+                                <TextBlock Text="Launch Local Server" FontWeight="Bold" FontSize="12" />
+                            </StackPanel>
+                        </Button>
+
+                        <Button Classes="primary" Command="{Binding OpenContainerHubFromChatCommand}" Padding="16,10"
+                                Margin="0,0,10,10"
+                                ToolTip.Tip="Open Cloud-Native Container Hub to launch Docker, Minikube, or Kubernetes">
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <TextBlock Text="🐳" FontSize="14" />
+                                <TextBlock Text="Launch Docker Server" FontWeight="Bold" FontSize="12" />
+                            </StackPanel>
+                        </Button>
+
+                        <Button Classes="purple" Command="{Binding DeployK3sAgonesCommand}" Padding="16,10"
+                                Margin="0,0,10,10"
+                                ToolTip.Tip="Deploy or update dedicated game servers on K3s + Agones cluster">
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <TextBlock Text="☸️" FontSize="14" />
+                                <TextBlock Text="Launch K3s + Agones" FontWeight="Bold" FontSize="12" />
+                            </StackPanel>
+                        </Button>
+
+                        <Button Classes="secondary" Command="{Binding StartFirstAvailableHostFromChatCommand}" Padding="16,10"
+                                Margin="0,0,0,10"
+                                ToolTip.Tip="Start instances on first available configured host">
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <TextBlock Text="▶" FontSize="14" />
+                                <TextBlock Text="Start Host Instances" FontWeight="Bold" FontSize="12" />
+                            </StackPanel>
+                        </Button>
+                    </WrapPanel>
+                </StackPanel>
+            </Border>
+
+        </Grid>
+    </Border>
+</UserControl>

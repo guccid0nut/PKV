@@ -1,0 +1,120 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1150 780" width="100%" height="100%" style="background-color: #0d1117; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#161b22"/>
+      <stop offset="100%" stop-color="#0d1117"/>
+    </linearGradient>
+    <marker id="arrowGreen" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 8 5 L 0 9 z" fill="#3fb950"/>
+    </marker>
+    <marker id="arrowOrange" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 8 5 L 0 9 z" fill="#d29922"/>
+    </marker>
+    <marker id="arrowBlue" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 8 5 L 0 9 z" fill="#58a6ff"/>
+    </marker>
+    <marker id="arrowPurple" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 8 5 L 0 9 z" fill="#bc8cff"/>
+    </marker>
+    <filter id="shadow" x="-5%" y="-5%" width="110%" height="110%">
+      <feDropShadow dx="0" dy="4" stdDeviation="5" flood-color="#000000" flood-opacity="0.5"/>
+    </filter>
+  </defs>
+
+  <rect width="100%" height="100%" fill="url(#bgGrad)" rx="12"/>
+  <rect width="100%" height="100%" fill="none" stroke="#30363d" stroke-width="1.5" rx="12"/>
+
+  <!-- TITLE -->
+  <text x="575" y="40" text-anchor="middle" fill="#f0f6fc" font-size="18" font-weight="700">📦 KONGOR S2Z Modding Engine, AST Normalizer &amp; VFS Architecture</text>
+
+  <!-- SUBGRAPH 1: DISCOVERY & INGESTION -->
+  <g filter="url(#shadow)">
+    <rect x="40" y="65" width="1070" height="205" rx="10" fill="#161b22" stroke="#3fb950" stroke-width="1.5"/>
+    <rect x="40" y="65" width="1070" height="30" rx="10" fill="#2ea043" fill-opacity="0.25"/>
+    <text x="60" y="86" fill="#56d364" font-size="13" font-weight="700">🔍 Mod Package Discovery, Ingestion &amp; Manifest Parsing</text>
+
+    <!-- Node 1 -->
+    <rect x="60" y="110" width="310" height="85" rx="8" fill="#21262d" stroke="#3fb950" stroke-width="1.2"/>
+    <text x="215" y="138" text-anchor="middle" fill="#f0f6fc" font-size="13" font-weight="700">📦 Package Scanner</text>
+    <text x="215" y="160" text-anchor="middle" fill="#8b949e" font-size="11">Scans mods/ &amp; game/ Directory</text>
+    <text x="215" y="180" text-anchor="middle" fill="#7ee787" font-size="10">.honmod, .s2z &amp; Loose Folders</text>
+
+    <!-- Node 2 -->
+    <rect x="420" y="110" width="310" height="85" rx="8" fill="#21262d" stroke="#3fb950" stroke-width="1.2"/>
+    <text x="575" y="138" text-anchor="middle" fill="#f0f6fc" font-size="13" font-weight="700">📜 Manifest &amp; Schema Validator</text>
+    <text x="575" y="160" text-anchor="middle" fill="#8b949e" font-size="11">Parses mod.xml &amp; Metadata</text>
+    <text x="575" y="180" text-anchor="middle" fill="#7ee787" font-size="10">Target Engine Bounds &amp; Author Info</text>
+
+    <!-- Node 3 -->
+    <rect x="780" y="110" width="310" height="85" rx="8" fill="#21262d" stroke="#3fb950" stroke-width="1.2"/>
+    <text x="935" y="138" text-anchor="middle" fill="#f0f6fc" font-size="13" font-weight="700">🔒 Archive Header Parser</text>
+    <text x="935" y="160" text-anchor="middle" fill="#8b949e" font-size="11">Central Directory &amp; Checksums</text>
+    <text x="935" y="180" text-anchor="middle" fill="#7ee787" font-size="10">CRC32 &amp; Uncompressed Size Mapping</text>
+
+    <text x="60" y="222" fill="#c9d1d9" font-size="11">• Automatically indexes community mods, official balance patches, and custom UI skin packs</text>
+    <text x="60" y="244" fill="#c9d1d9" font-size="11">• Validates compatibility matrices against K2 Engine v5.0+ binary structures before applying</text>
+  </g>
+
+  <!-- SUBGRAPH 2: DAG RESOLUTION & AST MERGE -->
+  <g filter="url(#shadow)">
+    <rect x="40" y="295" width="1070" height="235" rx="10" fill="#161b22" stroke="#d29922" stroke-width="1.5"/>
+    <rect x="40" y="295" width="1070" height="30" rx="10" fill="#d29922" fill-opacity="0.25"/>
+    <text x="60" y="316" fill="#f0883e" font-size="13" font-weight="700">🔀 Topological DAG Resolution &amp; In-Memory AST Entity Merging</text>
+
+    <!-- Node 1 -->
+    <rect x="60" y="340" width="230" height="90" rx="8" fill="#21262d" stroke="#d29922" stroke-width="1.2"/>
+    <text x="175" y="368" text-anchor="middle" fill="#f0f6fc" font-size="12" font-weight="700">📊 DAG Dependency Resolver</text>
+    <text x="175" y="390" text-anchor="middle" fill="#8b949e" font-size="11">Topological Sort Ordering</text>
+    <text x="175" y="410" text-anchor="middle" fill="#ffab70" font-size="10">Prerequisite &amp; Cycle Resolution</text>
+
+    <!-- Node 2 -->
+    <rect x="320" y="340" width="230" height="90" rx="8" fill="#21262d" stroke="#d29922" stroke-width="1.2"/>
+    <text x="435" y="368" text-anchor="middle" fill="#f0f6fc" font-size="12" font-weight="700">⚠️ Conflict Detection Guard</text>
+    <text x="435" y="390" text-anchor="middle" fill="#8b949e" font-size="11">Collision Analysis</text>
+    <text x="435" y="410" text-anchor="middle" fill="#ffab70" font-size="10">Hero Entity &amp; String Clashes</text>
+
+    <!-- Node 3 -->
+    <rect x="580" y="340" width="230" height="90" rx="8" fill="#21262d" stroke="#d29922" stroke-width="1.2"/>
+    <text x="695" y="368" text-anchor="middle" fill="#f0f6fc" font-size="12" font-weight="700">🧬 AST XML Entity Merger</text>
+    <text x="695" y="390" text-anchor="middle" fill="#8b949e" font-size="11">Surgical In-Memory Splice</text>
+    <text x="695" y="410" text-anchor="middle" fill="#ffab70" font-size="10">Heroes, Abilities &amp; String Tables</text>
+
+    <!-- Node 4 -->
+    <rect x="840" y="340" width="250" height="90" rx="8" fill="#21262d" stroke="#d29922" stroke-width="1.2"/>
+    <text x="965" y="368" text-anchor="middle" fill="#f0f6fc" font-size="12" font-weight="700">🎨 Asset &amp; Texture Normalizer</text>
+    <text x="965" y="390" text-anchor="middle" fill="#8b949e" font-size="11">DDS / TGA Texture Conversion</text>
+    <text x="965" y="410" text-anchor="middle" fill="#ffab70" font-size="10">DXT5 Mipmaps &amp; Shader Descriptors</text>
+
+    <text x="60" y="460" fill="#c9d1d9" font-size="11">• In-memory AST surgery resolves entity attribute overrides without corrupting master XML databases</text>
+    <text x="60" y="482" fill="#c9d1d9" font-size="11">• Topological sorting guarantees child sub-mods load strictly after parent frameworks</text>
+    <text x="60" y="504" fill="#c9d1d9" font-size="11">• Automatic texture conversion standardizes legacy DDS formats into DXVK-compatible textures</text>
+  </g>
+
+  <!-- SUBGRAPH 3: VFS & PACKING -->
+  <g filter="url(#shadow)">
+    <rect x="40" y="555" width="1070" height="195" rx="10" fill="#161b22" stroke="#58a6ff" stroke-width="1.5"/>
+    <rect x="40" y="555" width="1070" height="30" rx="10" fill="#1f6feb" fill-opacity="0.25"/>
+    <text x="60" y="576" fill="#79c0ff" font-size="13" font-weight="700">📂 Virtual File System (VFS) Layering &amp; High-Speed S2Z Archiving</text>
+
+    <!-- Node 1 -->
+    <rect x="60" y="600" width="310" height="85" rx="8" fill="#21262d" stroke="#58a6ff" stroke-width="1.2"/>
+    <text x="215" y="628" text-anchor="middle" fill="#f0f6fc" font-size="12" font-weight="700">🏔️ Tiered VFS Priority Stack</text>
+    <text x="215" y="650" text-anchor="middle" fill="#8b949e" font-size="11">game/override/ ➔ mods/ ➔ resources0.s2z</text>
+    <text x="215" y="670" text-anchor="middle" fill="#79c0ff" font-size="10">Zero-File-Modification Overrides</text>
+
+    <!-- Node 2 -->
+    <rect x="420" y="600" width="310" height="85" rx="8" fill="#21262d" stroke="#58a6ff" stroke-width="1.2"/>
+    <text x="575" y="628" text-anchor="middle" fill="#f0f6fc" font-size="12" font-weight="700">🔗 NTFS Junction &amp; Symlink Injector</text>
+    <text x="575" y="650" text-anchor="middle" fill="#8b949e" font-size="11">Instant Zero-Copy Mod Activation</text>
+    <text x="575" y="670" text-anchor="middle" fill="#79c0ff" font-size="10">Atomic Enable / Disable Toggles</text>
+
+    <!-- Node 3 -->
+    <rect x="780" y="600" width="310" height="85" rx="8" fill="#21262d" stroke="#58a6ff" stroke-width="1.2"/>
+    <text x="935" y="628" text-anchor="middle" fill="#f0f6fc" font-size="12" font-weight="700">📦 High-Speed S2Z Pack &amp; Streamer</text>
+    <text x="935" y="650" text-anchor="middle" fill="#8b949e" font-size="11">Native Deflate Archive Compression</text>
+    <text x="935" y="670" text-anchor="middle" fill="#79c0ff" font-size="10">Optimized for Ultra-Fast VFS Mounts</text>
+
+    <text x="60" y="715" fill="#c9d1d9" font-size="11">• Loose file priority lets developers edit models and Lua scripts live without repackaging archives</text>
+    <text x="60" y="735" fill="#c9d1d9" font-size="11">• Supports single-click mod distribution packages with cryptographic manifest validation</text>
+  </g>
+</svg>

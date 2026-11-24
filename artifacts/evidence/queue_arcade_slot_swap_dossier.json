@@ -1,0 +1,112 @@
+{
+  "schema_version": "2.0.0",
+  "dossier_id": "DOSSIER-QUEUE-ARCADE-SLOT-SWAP",
+  "created_utc": "2026-11-08T03:40:00Z",
+  "authority_scope": "server_authoritative",
+  "target": {
+    "binary_name": "game_x64.dll",
+    "rva": "0x0006B430",
+    "symbol_name": "CGame::SetupClientConnection / CHostServer::GenerateClientID / CPlayer::RemoveBot / ReapConnectionlessBotsIfNoActiveHumans",
+    "calling_convention": "__fastcall (Win64 ABI)"
+  },
+  "triangulation": {
+    "static_source": "Ghidra ProjectKongor.rep (/game_x64.dll-a6da54 0x18006b430, /k2_x64.dll-64104e 0x1808ea4f0 & 0x180721e40, /game_shared_x64.dll-c34c36 0x1804f62e0) + server PE export byte verification (games/server/k2_x64.dll 0x8b9b80, games/server/game_shared_x64.dll 0x4f7010)",
+    "dynamic_source": "NativeGuard standalone C++ SEH/HDE64 unit suite (native_guard_unit_tests) + QueueArcadeSimulationTests protocol verification"
+  },
+  "counterevidence_searched": "Checked whether stamping CPlayer+0x2D0 (m_iAccountID) alone suffices for first-time connecting clients; falsified by Ghidra analysis of CHostServer::GenerateClientID (0x1808ea4f0) and FUN_180721e40, which showed new connections have unConnectionID == 0 and accountId == 0 before packet 'P' serialization, requiring GenerateClientID interception by player name/accountId so CClientConnection+0x10 matches CPlayer+0xA8 and avoids DISCONNECT_DUPLICATE_LOGIN (reason 4). Also checked server vs client k2_x64.dll GenerateClientID prologues and found 16-byte server prologue (0x8b9b80) vs 15-byte client prologue (0x8ea4f0).",
+  "negative_control": "Unmapped IGame* (0xDEAD0000ULL), null CPlayer*, terminated CPlayer (flags & 0x0080), unprivileged IPC 'kongor_arcade_reserve' command (blocked by CmdSanitizer), and non-arcade servers (zero hooks installed when QueueArcadeMode == 0).",
+  "obligations": [
+    {
+      "id": "OBL-QA-01",
+      "category": "lifecycle_isolation",
+      "description": "Gate ReapConnectionlessBotsIfNoActiveHumans() in dllmain.cpp when Kongor::IsQueueArcadeModeActive() is true so 0-human intervals on Queue Arcade servers never mark pre-allocated bot/placeholder CPlayer slots terminated (0x0080).",
+      "status": "satisfied",
+      "satisfied_in": "native/proxies/native_guard/vfs_and_hooks.cpp",
+      "verified_by_test": "native/proxies/native_guard/tests/native_guard_unit_tests.cpp"
+    },
+    {
+      "id": "OBL-QA-02",
+      "category": "slot_takeover_invariant",
+      "description": "Under SEH guard, Kongor::ArcadeReserveSlot traverses IGame+0x1E8 (m_mapClients), selects an active non-terminated connectionless CPlayer ((flags & 0x0200) != 0 && (flags & 0x0080) == 0 && m_iAccountID <= 0) preferring preferredTeam (1 or 2), calls CPlayer::RemoveBot (?RemoveBot@CPlayer@@QEAAXXZ) if m_pBotBrain (+0x730) != nullptr, clears flag 0x0200 (+0x3DE) and override byte (+0x51A), stamps m_iAccountID (+0x2D0), and records (accountId, clientNum, playerName) in the reservation table.",
+      "status": "satisfied",
+      "satisfied_in": "native/proxies/native_guard/queue_arcade_hooks.cpp",
+      "verified_by_test": "native/proxies/native_guard/tests/native_guard_unit_tests.cpp"
+    },
+    {
+      "id": "OBL-QA-03",
+      "category": "handshake_clientnum_invariant",
+      "description": "Detour CHostServer::GenerateClientID (?GenerateClientID@CHostServer@@QEAAHAEAGH@Z, verified against 16-byte K2_SERVER prologue and 15-byte K2_CLIENT prologue) only when Queue Arcade mode is active, matching reserved accountId (> 0) or K2::wstring player name at (uint8_t*)pConnId + 0x08 (exact or clan-tag-stripped) and returning the reserved CPlayer::m_iClientNumber (+0xA8) before packet 'P' serialization so SetupClientConnection passes *(int*)(pPlayer+0xA8) == *(int*)(pConn+0x10).",
+      "status": "satisfied",
+      "satisfied_in": "native/proxies/native_guard/queue_arcade_hooks.cpp",
+      "verified_by_test": "native/proxies/native_guard/tests/native_guard_unit_tests.cpp"
+    },
+    {
+      "id": "OBL-QA-04",
+      "category": "slot_release_and_dormancy",
+      "description": "Under SEH guard, Kongor::ArcadeReleaseSlot clears m_iAccountID = 0 (+0x2D0) and restores connectionless bit 0x0200 (+0x3DE) without setting 0x0080 or deleting CPlayer, removes the reservation entry, and in Mode 2 (Party Dormant Slots) Kongor::ArcadeParkUnreservedBots removes CBotBrain from unreserved connectionless slots so custom maps keep placeholder seats stationary.",
+      "status": "satisfied",
+      "satisfied_in": "native/proxies/native_guard/queue_arcade_hooks.cpp",
+      "verified_by_test": "native/proxies/native_guard/tests/native_guard_unit_tests.cpp"
+    },
+    {
+      "id": "OBL-QA-05",
+      "category": "security_boundary",
+      "description": "Register kongor_arcade_mode, kongor_arcade_reserve, and kongor_arcade_release in Kongor::BaseCmdTable so ChatServer can execute them on the main server thread via NET_CHAT_GS_REMOTE_COMMAND while CmdSanitizer::ShouldAllowCommandW blocks unprivileged IPC callers via the 'kongor_' prefix firewall.",
+      "status": "satisfied",
+      "satisfied_in": "native/proxies/native_guard/kongor_base_cmd.h",
+      "verified_by_test": "native/proxies/native_guard/tests/native_guard_unit_tests.cpp"
+    },
+    {
+      "id": "OBL-QA-06",
+      "category": "bot_brain_uaf_prevention",
+      "description": "Unconditionally zero *(void**)(pPlayer + 0x730) = nullptr and clear bit 0x0048 on *(uint16_t*)(pPlayer + 0x3E0) immediately after CPlayer::RemoveBot (game_shared_x64.dll+0x4F62E0) in both ArcadeReserveSlotSeh and ArcadeParkUnreservedBotsSeh, because CPlayer::RemoveBot frees m_pBotBrain without nulling +0x730 and CGameServer::BotFrame (game_x64.dll+0x85980) collects every CPlayer with non-null +0x730 into CBotBrain::GenerateUnitCollections.",
+      "status": "satisfied",
+      "satisfied_in": "native/proxies/native_guard/queue_arcade_hooks.cpp",
+      "verified_by_test": "native/proxies/native_guard/tests/native_guard_unit_tests.cpp"
+    },
+    {
+      "id": "OBL-QA-07",
+      "category": "player_identity_and_safemode_fail_closed",
+      "description": "Clear m_bIsBot (*(uint8_t*)(pPlayer + 0x66B) = 0) and update CNetworkResourceManager strings (+0x2D8 clan-prefixed '[TAG]Name' matching CPlayer::Initialize at game_shared_x64.dll+0x4f6a40, +0x2DA/+0x2DC TSNULL empty strings) on slot reservation (restoring +0x66B = 1 and saved bot name on release), while failing closed (arcade_hooks_disarmed / clean Quit retirement without re-arming) if RuntimePatchController Safe Mode is active or CHostServer::GenerateClientID is disarmed.",
+      "status": "satisfied",
+      "satisfied_in": "native/proxies/native_guard/queue_arcade_hooks.cpp",
+      "verified_by_test": "native/proxies/native_guard/tests/native_guard_unit_tests.cpp"
+    },
+    {
+      "id": "OBL-QA-08",
+      "category": "disconnect_and_ping_state_hygiene",
+      "description": "Keep m_bMatchmakingPostInitialized (*(uint8_t*)(pPlayer + 0x668) = 1) in both ArcadeReserveSlotSeh and ArcadeReleaseSlotSeh so EndHeroLoading (game_x64.dll+0x7E530, Phase 4->5) never invokes CPlayer::Disconnected when sv_precreateArrangedPlayers == 0, while clearing 0x0101 (DISCONNECTED | WAS_DISCONNECTED) and 0x0040 (LOADING) on +0x3DE and resetting m_unPing (+0x420 = 0), m_uiDisconnectTime (+0x430 = 0xFFFFFFFF), m_uiTotalDisconnectedTime (+0x434 = 0), and m_uiDisconnectTerminalTime (+0x438 = 0xFFFFFFFF) on both reservation and release.",
+      "status": "satisfied",
+      "satisfied_in": "native/proxies/native_guard/queue_arcade_hooks.cpp",
+      "verified_by_test": "native/proxies/native_guard/tests/native_guard_unit_tests.cpp"
+    },
+    {
+      "id": "OBL-QA-09",
+      "category": "pre_phase5_duplicate_spawn_guard",
+      "description": "Suppress duplicate CPlayer::SpawnHero calls in Hooked_CPlayer_SpawnHero via Kongor::ShouldSuppressPreMatchDuplicateHeroSpawn when m_pGameInfo->m_eGamePhase (+0xB4) < 5 and CPlayer::m_uiHeroIndex (+0xB0) != 0xFFFFFFFFu resolves via IGame+0x28 vtable+0x10 (GetEntityFromIndex) and vtable+0x178 (GetAsUnit) to a live hero unit (preventing EndHeroLoading at game_x64.dll+0x7E530 from spawning a twin after Phase 3/4 CGameServer::AddBot at +0x69C10), while leaving Phase >= 5 repicks untouched and still invoking ArcadeParkUnreservedBots in Mode 2.",
+      "status": "satisfied",
+      "satisfied_in": "native/proxies/native_guard/queue_arcade_hooks.cpp",
+      "verified_by_test": "native/proxies/native_guard/tests/native_guard_unit_tests.cpp"
+    },
+    {
+      "id": "OBL-QA-10",
+      "category": "active_bot_brain_park_restore_and_safe_teardown",
+      "description": "In Mode 1 (ActiveBots), ArcadeReserveSlotSeh parks m_pBotBrain (+0x730) into ArcadeReservationEntry::parkedBotBrain (nulling +0x730 and clearing 0x0048 on +0x3E0 without calling CPlayer::RemoveBot), ArcadeReleaseSlotSeh restores +0x730, syncs CBotBrain::m_uiHeroIndex (+0x10) from CPlayer+0xB0, and sets +0x3E0 |= 0x0008 so vacated heroes immediately resume fighting, and Hooked_CPlayer_Terminate / ClearAllArcadeReservations re-docks and frees any parked CBotBrain via CPlayer::RemoveBot while IGame::s_pGame and CLuaScriptManager are still live (before UnloadWorld tears down the Lua VM queried by ~CBotBrain at game_shared_x64.dll+0x1B9280).",
+      "status": "satisfied",
+      "satisfied_in": "native/proxies/native_guard/queue_arcade_hooks.cpp",
+      "verified_by_test": "native/proxies/native_guard/tests/native_guard_unit_tests.cpp"
+    }
+  ],
+  "limitations_and_unknowns": {
+    "triangulation_status": "dynamically_confirmed",
+    "triangulation_notes": "Dynamically confirmed via native_guard_unit_tests.exe Win64 SEH/HDE64 inline trampoline execution (ArcadeReserveSlotSeh, ArcadeReleaseSlotSeh, Hooked_CPlayer_SpawnHero, CmdSanitizer) and QueueArcadeSimulationTests.",
+    "unknown_offsets": [
+      {
+        "offset": "CHostServer::m_vClientIDs (+0x270 server vs +0x250 client)",
+        "status": "waived",
+        "rationale": "Avoided direct CHostServer::m_vClientIDs struct offset access completely by detouring the exported CHostServer::GenerateClientID method and resolving reserved clientNum from NativeGuard's self-owned reservation table."
+      }
+    ],
+    "indirect_calls": []
+  }
+}

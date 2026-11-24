@@ -1,0 +1,628 @@
+@model AdminMetricsDTO
+@{
+    ViewData["Title"] = "PROJECT KONGOR Infrastructure & Telemetry";
+    var pop = Model.PopulationBreakdown ?? PopulationBreakdownDefaults.CreateUnavailable(Model.Timestamp);
+    var popStatus = string.IsNullOrWhiteSpace(pop.Status) ? PopulationTelemetryStatus.Unavailable : pop.Status.ToLowerInvariant();
+    var popIsUnavailable = popStatus == PopulationTelemetryStatus.Unavailable;
+    var popIsLive = popStatus == PopulationTelemetryStatus.Live;
+    string FormatMbOrNa(string key, string? fallbackKey = null)
+    {
+        long bytes = Model.ServiceMemoryBytes.GetValueOrDefault(key, 0);
+        if (bytes <= 0 && fallbackKey != null)
+        {
+            bytes = Model.ServiceMemoryBytes.GetValueOrDefault(fallbackKey, 0);
+        }
+        return bytes > 0 ? $"{Math.Round(bytes / (1024.0 * 1024.0))} MB" : "N/A";
+    }
+}
+
+<div class="max-w-6xl mx-auto px-4 py-8 space-y-8">
+    <!-- Header Section -->
+    <div
+        class="flex flex-col md:flex-row md:items-center justify-between gap-4 p-6 glass-panel rounded-2xl border border-slate-800/80 bg-slate-900/60 backdrop-blur-xl shadow-2xl">
+        <div class="space-y-1">
+            <div class="flex items-center gap-2">
+                <span class="w-3 h-3 rounded-full bg-emerald-500 animate-ping"></span>
+                <span class="text-xs font-bold uppercase tracking-widest text-emerald-400">Live Telemetry</span>
+            </div>
+            <h1 class="text-3xl font-extrabold text-white tracking-tight">PROJECT KONGOR Infrastructure</h1>
+            <p class="text-slate-400 text-sm">Real-time status metrics, server distribution, and matchmaking performance
+                across the NEXUS ecosystem.</p>
+        </div>
+        <div class="flex items-center gap-3">
+            <span
+                class="px-3 py-1.5 rounded-xl bg-emerald-500/10 text-emerald-400 text-xs font-semibold border border-emerald-500/30 flex items-center gap-2">
+                <span>⚡ SLA:</span>
+                <span id="p95-latency-value">@(Model.P95LatencyMs > 0 ? $"{Model.P95LatencyMs:F1}ms P95" : "N/A")</span>
+            </span>
+            <span
+                class="px-3 py-1.5 rounded-xl bg-slate-800/80 text-slate-300 text-xs font-semibold border border-slate-700/60 flex items-center gap-2">
+                <span>⏱️ Updated:</span>
+                <span id="last-updated-time">@Model.Timestamp.ToUniversalTime().ToString("HH:mm:ss UTC")</span>
+            </span>
+        </div>
+    </div>
+
+    <!-- Service Topology Node Health Panel -->
+    <div
+        class="p-4 glass-panel rounded-2xl border border-slate-800/80 bg-slate-900/60 backdrop-blur-xl shadow-xl flex flex-wrap items-center justify-between gap-4">
+        <div class="text-xs font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2">
+            <span>🔗</span>
+            <span>Microservice Topology Health &amp; Process RAM</span>
+        </div>
+        <div class="flex flex-wrap items-center gap-3">
+            <span
+                class="px-3 py-1 rounded-xl bg-slate-800/80 border border-emerald-500/30 text-emerald-400 text-xs font-semibold flex items-center gap-1.5">
+                <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> KONGOR <span id="mem-kongor"
+                                                                                                     class="text-[10px] text-slate-400 bg-slate-900 px-1.5 py-0.5 rounded">@FormatMbOrNa("KONGOR (Master)")</span>
+            </span>
+            <span
+                class="px-3 py-1 rounded-xl bg-slate-800/80 border border-emerald-500/30 text-emerald-400 text-xs font-semibold flex items-center gap-1.5">
+                <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> TRANSMUTANSTEIN <span
+                    id="mem-transmutanstein"
+                    class="text-[10px] text-slate-400 bg-slate-900 px-1.5 py-0.5 rounded">@FormatMbOrNa("TRANSMUTANSTEIN (Chat)")</span>
+            </span>
+            <span
+                class="px-3 py-1 rounded-xl bg-slate-800/80 border border-emerald-500/30 text-emerald-400 text-xs font-semibold flex items-center gap-1.5">
+                <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> ZORGATH <span id="mem-zorgath"
+                                                                                                      class="text-[10px] text-slate-400 bg-slate-900 px-1.5 py-0.5 rounded">@FormatMbOrNa("ZORGATH (Auth API)")</span>
+            </span>
+            <span
+                class="px-3 py-1 rounded-xl bg-slate-800/80 border border-blue-500/30 text-blue-400 text-xs font-semibold flex items-center gap-1.5"
+                title="ASP.NET Core Web Host &amp; MERRICK EF Core Data Layer Process Working Set RAM">
+                <span class="w-2 h-2 rounded-full bg-blue-500"></span> DAWNBRINGER / MERRICK <span id="mem-merrick"
+                                                                                                   class="text-[10px] text-slate-400 bg-slate-900 px-1.5 py-0.5 rounded">@FormatMbOrNa("DAWNBRINGER (Web Host)", "MERRICK (SQL DB)")</span>
+            </span>
+            <span
+                class="px-3 py-1 rounded-xl bg-slate-800/80 border border-purple-500/30 text-purple-400 text-xs font-semibold flex items-center gap-1.5">
+                <span class="w-2 h-2 rounded-full bg-purple-500"></span> Redis <span id="mem-redis"
+                                                                                     class="text-[10px] text-slate-400 bg-slate-900 px-1.5 py-0.5 rounded">@FormatMbOrNa("Redis (Pub/Sub)")</span>
+            </span>
+        </div>
+    </div>
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+        <!-- CCU Card -->
+        <div
+            class="p-5 glass-panel rounded-2xl border border-purple-500/20 bg-gradient-to-br from-purple-900/20 to-slate-900/80 backdrop-blur-xl shadow-xl flex flex-col justify-between">
+            <div class="flex items-center justify-between text-purple-400 mb-3">
+                <span class="text-xs font-bold uppercase tracking-wider">Concurrent Players</span>
+                <span class="text-xl">👥</span>
+            </div>
+            <div>
+                <div class="text-3xl font-black text-white tracking-tight"
+                     id="ccu-value">@Model.ConcurrentConnectedUsers</div>
+                <div class="text-[11px] text-slate-400 mt-1">Active sessions</div>
+            </div>
+        </div>
+
+        <!-- Active Match Servers -->
+        <div
+            class="p-5 glass-panel rounded-2xl border border-blue-500/20 bg-gradient-to-br from-blue-900/20 to-slate-900/80 backdrop-blur-xl shadow-xl flex flex-col justify-between">
+            <div class="flex items-center justify-between text-blue-400 mb-3">
+                <span class="text-xs font-bold uppercase tracking-wider">Match Servers</span>
+                <span class="text-xl">🖥️</span>
+            </div>
+            <div>
+                <div class="text-3xl font-black text-white tracking-tight"
+                     id="servers-value">@Model.ActiveMatchServers</div>
+                <div class="text-[11px] text-slate-400 mt-1">Active instances</div>
+            </div>
+        </div>
+
+        <!-- Active Queues -->
+        <div
+            class="p-5 glass-panel rounded-2xl border border-emerald-500/20 bg-gradient-to-br from-emerald-900/20 to-slate-900/80 backdrop-blur-xl shadow-xl flex flex-col justify-between">
+            <div class="flex items-center justify-between text-emerald-400 mb-3">
+                <span class="text-xs font-bold uppercase tracking-wider">Matchmaking Pools</span>
+                <span class="text-xl">⚔️</span>
+            </div>
+            <div>
+                <div class="text-3xl font-black text-white tracking-tight"
+                     id="queues-value">@Model.ActiveMatchmakingQueues</div>
+                <div class="text-[11px] text-slate-400 mt-1">Active pools</div>
+            </div>
+        </div>
+
+        <!-- Average Wait Time -->
+        <div
+            class="p-5 glass-panel rounded-2xl border border-amber-500/20 bg-gradient-to-br from-amber-900/20 to-slate-900/80 backdrop-blur-xl shadow-xl flex flex-col justify-between">
+            <div class="flex items-center justify-between text-amber-400 mb-3">
+                <span class="text-xs font-bold uppercase tracking-wider">Avg Wait Time</span>
+                <span class="text-xl">⏳</span>
+            </div>
+            <div>
+                <div class="text-3xl font-black text-white tracking-tight" id="wait-time-value">
+                    @if (Model is { ActiveMatchmakingQueues: > 0, AverageWaitTimeSeconds: > 0 })
+                    {
+                        @Model.AverageWaitTimeSeconds<span class="text-base font-bold text-slate-400 ml-1">s</span>
+                    }
+                    else
+                    {
+                        <span class="text-2xl text-slate-400 font-bold">N/A</span>
+                    }
+                </div>
+                <div class="text-[11px] text-slate-400 mt-1">Rolling avg wait</div>
+            </div>
+        </div>
+
+        <!-- Slow SQL Query Alert Card -->
+        <div
+            class="p-5 glass-panel rounded-2xl border border-rose-500/30 bg-gradient-to-br from-rose-950/30 to-slate-900/80 backdrop-blur-xl shadow-xl flex flex-col justify-between">
+            <div class="flex items-center justify-between text-rose-400 mb-3">
+                <span class="text-xs font-bold uppercase tracking-wider">Slow SQL (>50ms)</span>
+                <span class="text-xl animate-pulse">⚡</span>
+            </div>
+            <div>
+                <div class="text-3xl font-black text-rose-400 tracking-tight"
+                     id="slow-queries-value">@Model.SlowQueriesTotal</div>
+                <div class="text-[11px] text-slate-400 mt-1">Interceptor warnings</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Live Population & Matchmaking Breakdown Panel -->
+    <div id="infra-population-card"
+         data-pop-status="@popStatus"
+         class="p-6 glass-panel rounded-2xl border border-emerald-500/25 bg-gradient-to-br from-emerald-950/25 via-slate-900/75 to-slate-950/85 backdrop-blur-xl shadow-2xl space-y-5">
+        <div class="flex flex-wrap items-center justify-between gap-3 pb-4 border-b border-emerald-500/15">
+            <div class="flex items-center gap-3">
+                <span data-pop-status-dot class="w-2.5 h-2.5 rounded-full @(popIsLive ? "bg-emerald-400" : "bg-amber-400") animate-pulse shrink-0"></span>
+                <span class="text-base sm:text-lg font-extrabold text-white tracking-tight">Players Online</span>
+                <span data-pop-online-count
+                      class="px-2.5 py-0.5 rounded-lg @(popIsUnavailable ? "bg-amber-500/15 border border-amber-500/30 text-amber-300" : "bg-emerald-500/20 border border-emerald-400/40 text-emerald-300") font-mono text-sm font-extrabold tabular-nums">@(popIsUnavailable ? "—" : pop.OnlinePlayers.ToString())</span>
+            </div>
+            <div class="flex items-center gap-2.5 text-xs">
+                <span data-pop-status-badge
+                      class="px-2.5 py-0.5 rounded-full text-[11px] font-semibold @(popIsLive ? "bg-emerald-500/10 text-emerald-300 border border-emerald-500/30" : "bg-amber-500/15 text-amber-300 border border-amber-500/30")">@(popIsLive ? "LIVE" : (popIsUnavailable ? "LIVE TELEMETRY SYNCING" : "STALE SNAPSHOT"))</span>
+                <span data-pop-updated-time class="text-slate-400 font-mono text-[11px]">@(popIsUnavailable ? "Awaiting snapshot" : pop.UpdatedAtUtc.ToUniversalTime().ToString("HH:mm:ss UTC"))</span>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            <!-- Column 1: Games in progress -->
+            <div class="lg:col-span-3 space-y-2">
+                <h3 class="text-xs font-bold uppercase tracking-wider text-amber-300/90">Games in progress</h3>
+                <div data-pop-games-list class="flex flex-col">
+                    @if (popIsUnavailable)
+                    {
+                        <div class="flex items-center justify-between py-1.5 border-b border-slate-800/70 text-xs sm:text-sm gap-3">
+                            <span class="font-bold text-emerald-400">All locations</span>
+                            <span class="font-mono font-semibold text-slate-500 tabular-nums">—</span>
+                        </div>
+                        <div class="py-2 text-xs text-slate-500 italic">Live game telemetry temporarily unavailable</div>
+                    }
+                    else
+                    {
+                        @for (int i = 0; i < pop.GamesInProgressByRegion.Count; i++)
+                        {
+                            var entry = pop.GamesInProgressByRegion[i];
+                            bool isAll = i == 0 || string.Equals(entry.Region, PopulationBreakdownDefaults.AllLocationsLabel, StringComparison.OrdinalIgnoreCase);
+                            <div class="flex items-center justify-between py-1.5 border-b border-slate-800/70 last:border-b-0 text-xs sm:text-sm gap-3">
+                                <span class="@(isAll ? "font-bold text-emerald-400" : (entry.Count > 0 ? "text-slate-200" : "text-slate-400")) truncate">@entry.Region</span>
+                                <span class="font-mono @(isAll || entry.Count > 0 ? "font-bold text-emerald-400" : "font-semibold text-slate-400") tabular-nums shrink-0">@entry.Count</span>
+                            </div>
+                        }
+                    }
+                </div>
+            </div>
+
+            <!-- Column 2: Servers available -->
+            <div class="lg:col-span-3 space-y-2">
+                <h3 class="text-xs font-bold uppercase tracking-wider text-amber-300/90">Servers available</h3>
+                <div data-pop-servers-list class="flex flex-col">
+                    @if (popIsUnavailable)
+                    {
+                        <div class="py-2 text-xs text-slate-500 italic">Live server availability temporarily unavailable</div>
+                    }
+                    else if (pop.ServersAvailableByRegion.Count == 0)
+                    {
+                        <div class="py-2 text-xs text-slate-500 italic">No idle servers reported</div>
+                    }
+                    else
+                    {
+                        @foreach (var entry in pop.ServersAvailableByRegion)
+                        {
+                            <div class="flex items-center justify-between py-1.5 border-b border-slate-800/70 last:border-b-0 text-xs sm:text-sm gap-3">
+                                <span class="@(entry.Count > 0 ? "text-slate-200" : "text-slate-400") truncate">@entry.Region</span>
+                                <span class="font-mono @(entry.Count > 0 ? "font-bold text-emerald-400" : "font-semibold text-slate-400") tabular-nums shrink-0">@entry.Count</span>
+                            </div>
+                        }
+                    }
+                </div>
+            </div>
+
+            <!-- Column 3: Players queued for TMM -->
+            <div class="lg:col-span-6 space-y-2">
+                <h3 class="text-xs font-bold uppercase tracking-wider text-amber-300/90">Players queued for TMM</h3>
+                <div data-pop-tmm-grid class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    @foreach (var queue in pop.TmmQueues)
+                    {
+                        int pipeIdx = queue.Title.IndexOf('|');
+                        string primaryTitle = pipeIdx >= 0 ? queue.Title[..pipeIdx].Trim() : queue.Title;
+                        string subtitle = pipeIdx >= 0 ? queue.Title[(pipeIdx + 1)..].Trim() : string.Empty;
+                        <div class="p-4 rounded-xl bg-slate-950/60 border border-emerald-500/15 flex flex-col gap-2.5">
+                            <div class="flex items-start justify-between gap-2 pb-1.5 border-b border-slate-800/80">
+                                <div class="min-w-0">
+                                    <div class="text-sm font-bold text-white leading-tight truncate">@primaryTitle</div>
+                                    @if (!string.IsNullOrEmpty(subtitle))
+                                    {
+                                        <div class="text-[11px] font-semibold text-emerald-400/90 leading-tight mt-0.5 truncate">@subtitle</div>
+                                    }
+                                </div>
+                                @if (!popIsUnavailable && queue.TotalQueued > 0)
+                                {
+                                    <span class="px-2 py-0.5 rounded-md bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 text-[11px] font-mono font-bold shrink-0">@queue.TotalQueued</span>
+                                }
+                            </div>
+                            <div class="flex flex-col">
+                                @foreach (var reg in queue.Regions)
+                                {
+                                    <div class="flex items-center justify-between py-1.5 border-b border-slate-800/70 last:border-b-0 text-xs sm:text-sm gap-3">
+                                        <span class="@(!popIsUnavailable && reg.Count > 0 ? "text-slate-200" : "text-slate-400") truncate">@reg.Region</span>
+                                        @if (popIsUnavailable)
+                                        {
+                                            <span class="font-mono font-semibold text-slate-500 tabular-nums shrink-0">—</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="font-mono @(reg.Count > 0 ? "font-bold text-emerald-400" : "font-semibold text-slate-400") tabular-nums shrink-0">@reg.Count</span>
+                                        }
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Active Regions & Server Distribution -->
+    <div
+        class="p-6 glass-panel rounded-2xl border border-slate-800/80 bg-slate-900/60 backdrop-blur-xl shadow-xl space-y-4">
+        <div class="flex items-center justify-between">
+            <h2 class="text-lg font-bold text-white flex items-center gap-2">
+                <span>🌐</span>
+                <span>Active Server Regions</span>
+            </h2>
+            <span id="regions-count-badge"
+                  class="px-2.5 py-1 rounded-full bg-slate-800 text-slate-400 text-xs font-medium">@Model.ActiveGameRegions.Count Region(s) Online</span>
+        </div>
+        <div id="regions-container"
+             class="@(Model.ActiveGameRegions.Count > 0 ? "grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3" : "p-4 rounded-xl bg-slate-800/20 border border-slate-800 text-center text-slate-400 text-sm")">
+            @if (Model.ActiveGameRegions.Count > 0)
+            {
+                @foreach (var region in Model.ActiveGameRegions)
+                {
+                    <div class="p-4 rounded-xl bg-slate-800/40 border border-slate-700/50 flex items-center gap-3">
+                        <span class="w-2.5 h-2.5 rounded-full bg-emerald-400"></span>
+                        <div>
+                            <div class="text-sm font-semibold text-slate-200">@region</div>
+                            <div class="text-xs text-slate-400">Operational Node</div>
+                        </div>
+                    </div>
+                }
+            }
+            else
+            {
+                <span>No active server regions currently online</span>
+            }
+        </div>
+    </div>
+
+    <!-- OpenTelemetry Live Real-Time Trend Charts -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div
+            class="p-6 glass-panel rounded-2xl border border-slate-800/80 bg-slate-900/60 backdrop-blur-xl shadow-xl space-y-4">
+            <h3 class="text-md font-bold text-white flex items-center gap-2">
+                <span>📊</span>
+                <span>Connections & Servers</span>
+            </h3>
+            <div class="h-64 relative">
+                <canvas id="ccuTrendChart" class="w-full h-full block" role="img" aria-label="Concurrent users and active servers trend chart">Your browser does not support HTML5 Canvas.</canvas>
+            </div>
+        </div>
+        <div
+            class="p-6 glass-panel rounded-2xl border border-slate-800/80 bg-slate-900/60 backdrop-blur-xl shadow-xl space-y-4">
+            <h3 class="text-md font-bold text-white flex items-center gap-2">
+                <span>🚀</span>
+                <span>Throughput & Velocity</span>
+            </h3>
+            <div class="h-64 relative">
+                <canvas id="throughputChart" class="w-full h-full block" role="img" aria-label="Throughput and velocity metrics chart">Your browser does not support HTML5 Canvas.</canvas>
+            </div>
+        </div>
+        <div
+            class="p-6 glass-panel rounded-2xl border border-slate-800/80 bg-slate-900/60 backdrop-blur-xl shadow-xl space-y-4">
+            <h3 class="text-md font-bold text-white flex items-center gap-2">
+                <span>⏳</span>
+                <span>Matchmaking Wait (s)</span>
+            </h3>
+            <div class="h-64 relative">
+                <canvas id="waitDurationChart" class="w-full h-full block" role="img" aria-label="Matchmaking wait duration trend chart">Your browser does not support HTML5 Canvas.</canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.7/signalr.min.js"></script>
+<script src="~/js/live-population-card.js" asp-append-version="true"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const maxDataPoints = 20;
+        const labels = [];
+        const ccuData = [];
+        const serverData = [];
+        const waitData = [];
+        const masterReqData = [];
+        const chatCmdData = [];
+
+        const ctxCCU = document.getElementById('ccuTrendChart').getContext('2d');
+        const ccuChart = new Chart(ctxCCU, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [
+                    {
+                        label: 'CCU',
+                        data: ccuData,
+                        borderColor: '#a855f7',
+                        backgroundColor: 'rgba(168, 85, 247, 0.1)',
+                        fill: true,
+                        tension: 0.4
+                    },
+                    {
+                        label: 'Servers',
+                        data: serverData,
+                        borderColor: '#3b82f6',
+                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                        fill: true,
+                        tension: 0.4
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    x: {ticks: {color: '#64748b'}, grid: {color: '#1e293b'}},
+                    y: {ticks: {color: '#64748b'}, grid: {color: '#1e293b'}, beginAtZero: true}
+                },
+                plugins: {legend: {labels: {color: '#94a3b8'}}}
+            }
+        });
+
+        const ctxThroughput = document.getElementById('throughputChart').getContext('2d');
+        const throughputChart = new Chart(ctxThroughput, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [
+                    {
+                        label: 'Master (req/s)',
+                        data: masterReqData,
+                        borderColor: '#10b981',
+                        backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                        fill: true,
+                        tension: 0.4
+                    },
+                    {
+                        label: 'Chat (cmd/s)',
+                        data: chatCmdData,
+                        borderColor: '#06b6d4',
+                        backgroundColor: 'rgba(6, 182, 212, 0.1)',
+                        fill: true,
+                        tension: 0.4
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    x: {ticks: {color: '#64748b'}, grid: {color: '#1e293b'}},
+                    y: {ticks: {color: '#64748b'}, grid: {color: '#1e293b'}, beginAtZero: true}
+                },
+                plugins: {legend: {labels: {color: '#94a3b8'}}}
+            }
+        });
+
+        const ctxWait = document.getElementById('waitDurationChart').getContext('2d');
+        const waitChart = new Chart(ctxWait, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{label: 'Avg Wait (s)', data: waitData, backgroundColor: '#f59e0b', borderRadius: 6}]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    x: {ticks: {color: '#64748b'}, grid: {color: '#1e293b'}},
+                    y: {ticks: {color: '#64748b'}, grid: {color: '#1e293b'}, beginAtZero: true}
+                },
+                plugins: {legend: {labels: {color: '#94a3b8'}}}
+            }
+        });
+
+        let lastMasterTotal = null;
+        let lastChatTotal = null;
+        let lastTimestamp = null;
+        let fallbackPoller = null;
+
+        const popCardRoot = document.getElementById("infra-population-card");
+
+        function startFallbackPoll() {
+            if (fallbackPoller || !popCardRoot || !window.KongorPopulationCard) return;
+            fallbackPoller = window.KongorPopulationCard.startPolling(popCardRoot, {
+                endpoint: "/api/telemetry/population",
+                intervalMs: 15000,
+                jitterMs: 1500
+            });
+        }
+
+        function stopFallbackPoll() {
+            if (!fallbackPoller) return;
+            fallbackPoller.stop();
+            fallbackPoller = null;
+        }
+
+        function formatMbOrNa(bytes) {
+            return (bytes && bytes > 0) ? (Math.round(bytes / (1024 * 1024)) + " MB") : "N/A";
+        }
+
+        function renderActiveRegions(regions) {
+            const regionsContainer = document.getElementById("regions-container");
+            const countBadge = document.getElementById("regions-count-badge");
+            const list = Array.isArray(regions) ? regions : [];
+
+            if (countBadge) {
+                countBadge.textContent = list.length + " Region(s) Online";
+            }
+            if (!regionsContainer) return;
+
+            if (list.length > 0) {
+                regionsContainer.className = "grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3";
+                const nodes = list.map(function (region) {
+                    const card = document.createElement("div");
+                    card.className = "p-4 rounded-xl bg-slate-800/40 border border-slate-700/50 flex items-center gap-3";
+
+                    const dot = document.createElement("span");
+                    dot.className = "w-2.5 h-2.5 rounded-full bg-emerald-400";
+
+                    const info = document.createElement("div");
+                    const title = document.createElement("div");
+                    title.className = "text-sm font-semibold text-slate-200";
+                    title.textContent = String(region || "");
+
+                    const sub = document.createElement("div");
+                    sub.className = "text-xs text-slate-400";
+                    sub.textContent = "Operational Node";
+
+                    info.appendChild(title);
+                    info.appendChild(sub);
+                    card.appendChild(dot);
+                    card.appendChild(info);
+                    return card;
+                });
+                regionsContainer.replaceChildren.apply(regionsContainer, nodes);
+            } else {
+                regionsContainer.className = "p-4 rounded-xl bg-slate-800/20 border border-slate-800 text-center text-slate-400 text-sm";
+                const empty = document.createElement("span");
+                empty.textContent = "No active server regions currently online";
+                regionsContainer.replaceChildren(empty);
+            }
+        }
+
+        const connection = new signalR.HubConnectionBuilder()
+            .withUrl("/hubs/telemetry")
+            .withAutomaticReconnect()
+            .build();
+
+        connection.onreconnecting(function () {
+            startFallbackPoll();
+        });
+
+        connection.onreconnected(function () {
+            stopFallbackPoll();
+        });
+
+        connection.onclose(function () {
+            startFallbackPoll();
+        });
+
+        connection.on("ReceiveMetricsUpdate", function (metrics) {
+            if (!metrics) return;
+
+            document.getElementById("ccu-value").textContent = metrics.concurrentConnectedUsers ?? 0;
+            document.getElementById("servers-value").textContent = metrics.activeMatchServers ?? 0;
+            document.getElementById("queues-value").textContent = metrics.activeMatchmakingQueues ?? 0;
+            document.getElementById("slow-queries-value").textContent = metrics.slowQueriesTotal ?? 0;
+
+            const p95El = document.getElementById("p95-latency-value");
+            if (p95El) {
+                p95El.textContent = (metrics.p95LatencyMs && metrics.p95LatencyMs > 0)
+                    ? (metrics.p95LatencyMs.toFixed(1) + "ms P95")
+                    : "N/A";
+            }
+
+            const waitEl = document.getElementById("wait-time-value");
+            if (metrics.activeMatchmakingQueues > 0 && metrics.averageWaitTimeSeconds > 0) {
+                waitEl.innerHTML = metrics.averageWaitTimeSeconds.toFixed(1) + '<span class="text-base font-bold text-slate-400 ml-1">s</span>';
+            } else {
+                waitEl.innerHTML = '<span class="text-2xl text-slate-400 font-bold">N/A</span>';
+            }
+
+            const now = new Date();
+            const nowMs = now.getTime();
+            const utcHms = now.toISOString().substring(11, 19);
+            document.getElementById("last-updated-time").textContent = utcHms + " UTC";
+
+            // Rate Calculations
+            let masterRate = 0;
+            let chatRate = 0;
+            if (lastTimestamp !== null && nowMs > lastTimestamp) {
+                const elapsedSec = (nowMs - lastTimestamp) / 1000.0;
+                if (elapsedSec > 0) {
+                    if (lastMasterTotal !== null) {
+                        masterRate = Math.max(0, (metrics.masterServerRequestsTotal - lastMasterTotal) / elapsedSec);
+                    }
+                    if (lastChatTotal !== null) {
+                        chatRate = Math.max(0, (metrics.chatCommandsTotal - lastChatTotal) / elapsedSec);
+                    }
+                }
+            }
+            lastMasterTotal = metrics.masterServerRequestsTotal ?? 0;
+            lastChatTotal = metrics.chatCommandsTotal ?? 0;
+            lastTimestamp = nowMs;
+
+            // Memory Updates
+            if (metrics.serviceMemoryBytes) {
+                const mem = metrics.serviceMemoryBytes;
+                document.getElementById("mem-kongor").textContent = formatMbOrNa(mem["KONGOR (Master)"]);
+                document.getElementById("mem-transmutanstein").textContent = formatMbOrNa(mem["TRANSMUTANSTEIN (Chat)"]);
+                document.getElementById("mem-zorgath").textContent = formatMbOrNa(mem["ZORGATH (Auth API)"]);
+                const merrickBytes = mem["DAWNBRINGER (Web Host)"] || mem["MERRICK (SQL DB)"];
+                document.getElementById("mem-merrick").textContent = formatMbOrNa(merrickBytes);
+                document.getElementById("mem-redis").textContent = formatMbOrNa(mem["Redis (Pub/Sub)"]);
+            }
+
+            // Population Breakdown Update
+            if (popCardRoot && window.KongorPopulationCard && metrics.populationBreakdown) {
+                window.KongorPopulationCard.render(popCardRoot, metrics.populationBreakdown);
+            }
+
+            // Chart update
+            if (labels.length >= maxDataPoints) {
+                labels.shift();
+                ccuData.shift();
+                serverData.shift();
+                waitData.shift();
+                masterReqData.shift();
+                chatCmdData.shift();
+            }
+            labels.push(utcHms);
+            ccuData.push(metrics.concurrentConnectedUsers ?? 0);
+            serverData.push(metrics.activeMatchServers ?? 0);
+            waitData.push(metrics.averageWaitTimeSeconds ?? 0);
+            masterReqData.push(Math.round(masterRate * 10) / 10);
+            chatCmdData.push(Math.round(chatRate * 10) / 10);
+
+            ccuChart.update();
+            throughputChart.update();
+            waitChart.update();
+
+            renderActiveRegions(metrics.activeGameRegions);
+        });
+
+        connection.start()
+            .then(function () {
+                stopFallbackPoll();
+            })
+            .catch(function (err) {
+                console.warn("[SignalR] Connection fallback mode active:", err);
+                startFallbackPoll();
+            });
+    });
+</script>

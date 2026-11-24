@@ -1,0 +1,35 @@
+﻿syntax = "proto3";
+
+package nexus.contracts.cdn.v1;
+option csharp_namespace = "NEXUS.Contracts.Cdn.V1";
+
+service CdnService {
+  rpc GetManifest (GetManifestRequest) returns (GetManifestResponse);
+  rpc InquireDelta (InquireDeltaRequest) returns (InquireDeltaResponse);
+}
+
+message GetManifestRequest {
+  string variant = 1; // "client-win64", "client-linux64", "server-win64"
+  string channel = 2; // "release", "beta", "staging"
+}
+
+message GetManifestResponse {
+  string game_version = 1;
+  string manifest_json = 2;
+  string ed25519_signature = 3;
+  string signer_public_key = 4;
+}
+
+message InquireDeltaRequest {
+  string file_path = 1;
+  string source_file_sha256 = 2;
+  string target_file_sha256 = 3;
+}
+
+message InquireDeltaResponse {
+  bool delta_available = 1;
+  string delta_patch_url = 2;
+  int64 patch_size_bytes = 3;
+  string patch_sha256 = 4;
+  string compression_algorithm = 5; // "vcdiff", "zstd"
+}

@@ -1,0 +1,689 @@
+@{
+    ViewData["Title"] = "Empath Tabletop AR Companion";
+    Layout = "_Layout";
+}
+
+<div class="relative w-full h-[calc(100vh-4rem)] overflow-hidden bg-slate-950 select-none">
+    <!-- Camera Video Feed for Phone AR -->
+    <video id="cameraFeed" autoplay playsinline muted class="absolute inset-0 w-full h-full object-cover z-0 hidden pointer-events-none"></video>
+
+    <!-- ThreeJS WebGL Canvas Overlay -->
+    <div id="arCanvasContainer" class="absolute inset-0 z-10 w-full h-full cursor-pointer">
+        <canvas id="arCanvas" class="w-full h-full block" role="region" aria-label="Empath Tabletop AR 3D companion view">Your browser does not support HTML5 Canvas.</canvas>
+    </div>
+
+    <!-- Minimal Clean Header HUD -->
+    <div class="absolute top-4 left-4 right-4 z-20 flex items-center justify-between pointer-events-none">
+        <div class="flex items-center gap-2 pointer-events-auto bg-slate-900/80 backdrop-blur-xl px-3.5 py-1.5 rounded-2xl border border-sky-500/30 shadow-2xl">
+            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+            <span class="text-xs font-black text-white tracking-wider uppercase font-mono">Empath AR</span>
+        </div>
+
+        <div class="flex items-center gap-2 pointer-events-auto">
+            <!-- Size / Scale Controls -->
+            <div class="flex items-center gap-1 bg-slate-900/90 border border-slate-700/60 backdrop-blur-xl rounded-xl px-2 py-1 shadow-lg">
+                <button id="btnScaleDown" type="button"
+                        class="px-2 py-1 rounded-lg hover:bg-slate-800 text-slate-300 hover:text-white text-xs font-black transition-all active:scale-95"
+                        title="Shrink Empath (-)">
+                    <i class="fas fa-minus text-[10px]"></i>
+                </button>
+                <select id="empathScaleSelect"
+                        aria-label="Empath Model Size"
+                        class="bg-transparent text-slate-200 text-xs font-bold font-mono px-1.5 py-0.5 focus:outline-none cursor-pointer">
+                    <option value="0.6" class="bg-slate-900 text-slate-200">Mini (20cm)</option>
+                    <option value="1.0" selected class="bg-slate-900 text-slate-200">Desk (35cm)</option>
+                    <option value="1.7" class="bg-slate-900 text-slate-200">Statue (60cm)</option>
+                    <option value="3.1" class="bg-slate-900 text-slate-200">Heroic (1.1m)</option>
+                    <option value="5.1" class="bg-slate-900 text-slate-200">Life-Size (1.8m)</option>
+                </select>
+                <button id="btnScaleUp" type="button"
+                        class="px-2 py-1 rounded-lg hover:bg-slate-800 text-slate-300 hover:text-white text-xs font-black transition-all active:scale-95"
+                        title="Enlarge Empath (+)">
+                    <i class="fas fa-plus text-[10px]"></i>
+                </button>
+            </div>
+
+            <!-- Camera Toggle Button -->
+            <button id="btnToggleCamera" 
+                    class="px-3.5 py-2 rounded-xl bg-slate-900/90 hover:bg-slate-800 text-slate-200 border border-slate-700/60 backdrop-blur-xl text-xs font-bold transition-all flex items-center gap-2 shadow-lg hover:border-sky-500/50 active:scale-95">
+                <i class="fas fa-camera text-sky-400"></i>
+                <span id="btnCameraText">Enable Camera</span>
+            </button>
+
+            <!-- Audio Toggle -->
+            <button id="btnToggleAudio" type="button" aria-label="Toggle background audio" title="Toggle audio"
+                    class="p-2.5 rounded-xl bg-slate-900/90 hover:bg-slate-800 text-slate-200 border border-slate-700/60 backdrop-blur-xl text-xs font-bold transition-all flex items-center shadow-lg active:scale-95">
+                <i id="audioIcon" class="fas fa-volume-up text-emerald-400"></i>
+            </button>
+
+            <!-- Reset Table Center -->
+            <button id="btnResetPlacement" 
+                    class="p-2.5 rounded-xl bg-slate-900/90 hover:bg-slate-800 text-slate-200 border border-slate-700/60 backdrop-blur-xl text-xs font-bold transition-all flex items-center shadow-lg active:scale-95"
+                    title="Center Empath">
+                <i class="fas fa-crosshairs text-amber-400"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- Loading Spinner Overlay -->
+    <div id="loadingOverlay" class="absolute inset-0 bg-slate-950/90 backdrop-blur-md z-30 flex flex-col items-center justify-center space-y-4">
+        <div class="relative w-12 h-12">
+            <div class="absolute inset-0 border-4 border-sky-500/20 rounded-full"></div>
+            <div class="absolute inset-0 border-4 border-sky-400 border-t-transparent rounded-full animate-spin"></div>
+        </div>
+        <div class="flex flex-col items-center">
+            <span class="text-sm font-black text-white tracking-wide">Summoning Empath...</span>
+            <span id="loadingProgressMsg" class="text-xs text-slate-400 font-mono mt-1">Streaming 3D Mesh</span>
+        </div>
+    </div>
+</div>
+
+<!-- Three.js r16x Local Vendored ESM + Kongor Viewer Core (#120, #86) -->
+<!script type="importmap">
+{
+  "imports": {
+    "three": "/lib/three/three.module.min.js"
+  }
+}
+</!script>
+<script src="/lib/three/three.r16x.bundle.js" asp-append-version="true"></script>
+<script src="/js/kongor-viewer-core.js" asp-append-version="true"></script>
+
+<script>
+    (function () {
+        // --- Core Scene Variables ---
+        let scene, camera, renderer, controls, clock;
+        let empathModel = null, mixer = null;
+        let currentScaleMultiplier = 1.0;
+        let actions = {};
+        let activeAction = null;
+        let groundPlane = null;
+        let shadowPlane = null;
+        let studioGrid = null;
+        let pathLine = null;
+        let destinationDot = null;
+
+        // --- Walking State ---
+        let isMoving = false;
+        let targetPosition = new THREE.Vector3();
+        const walkSpeed = 2.0; // units per second
+        const arrivalDistance = 0.08;
+
+        // --- Audio System ---
+        let isAudioMuted = false;
+        let activeAudio = null;
+        const soundBank = {
+            move: [
+                { file: '/sounds/empath/move_1.ogg', text: "As you wish." },
+                { file: '/sounds/empath/move_2.ogg', text: "I walk beside you." },
+                { file: '/sounds/empath/move_3.ogg', text: "Guided by your intent." },
+                { file: '/sounds/empath/move_4.ogg', text: "At your side." },
+                { file: '/sounds/empath/move_5.ogg', text: "Moving forward." }
+            ],
+            select: [
+                { file: '/sounds/empath/select_1.ogg', text: "I sense your presence." },
+                { file: '/sounds/empath/select_2.ogg', text: "We are together." },
+                { file: '/sounds/empath/select_3.ogg', text: "Our minds align." },
+                { file: '/sounds/empath/select_4.ogg', text: "Speak to me." },
+                { file: '/sounds/empath/select_5.ogg', text: "I feel your spirit." }
+            ],
+            flavour: [
+                { file: '/sounds/empath/select_flavour_1.ogg', text: "Do you truly understand what it means to feel everything?" },
+                { file: '/sounds/empath/select_flavour_2.ogg', text: "Quiet your mind. The noise of battle is deafening." },
+                { file: '/sounds/empath/select_flavour_3.ogg', text: "Together, no wound is fatal." },
+                { file: '/sounds/empath/select_flavour_4.ogg', text: "Your resolve fortifies my strength." },
+                { file: '/sounds/empath/select_flavour_5.ogg', text: "Together As One, we cannot fall." }
+            ],
+            intro: [
+                { file: '/sounds/empath/hero_select.ogg', text: "Empath — Together As One!" }
+            ]
+        };
+
+        // --- Camera AR State ---
+        let isCameraActive = false;
+        let mediaStream = null;
+
+        // --- DOM Elements ---
+        const container = document.getElementById('arCanvasContainer');
+        const canvas = document.getElementById('arCanvas');
+        const video = document.getElementById('cameraFeed');
+        const loadingOverlay = document.getElementById('loadingOverlay');
+        const btnToggleCamera = document.getElementById('btnToggleCamera');
+        const btnCameraText = document.getElementById('btnCameraText');
+        const btnToggleAudio = document.getElementById('btnToggleAudio');
+        const audioIcon = document.getElementById('audioIcon');
+        const btnResetPlacement = document.getElementById('btnResetPlacement');
+        const empathScaleSelect = document.getElementById('empathScaleSelect');
+        const btnScaleDown = document.getElementById('btnScaleDown');
+        const btnScaleUp = document.getElementById('btnScaleUp');
+
+        function applyEmpathScale(multiplier) {
+            currentScaleMultiplier = Math.max(0.25, Math.min(8.0, Number(multiplier) || 1.0));
+            if (empathModel && KongorViewerCore.alignModelToCameraAndFloor) {
+                const currentPos = empathModel.position.clone();
+                const currentYaw = empathModel.rotation.y;
+                KongorViewerCore.alignModelToCameraAndFloor(
+                    empathModel,
+                    camera,
+                    new THREE.Vector3(currentPos.x, 0, currentPos.z),
+                    'tabletop',
+                    currentScaleMultiplier
+                );
+                empathModel.rotation.y = currentYaw;
+            }
+            if (controls) {
+                const targetHeight = 0.35 * currentScaleMultiplier;
+                controls.target.set(0, Math.max(0.15, targetHeight * 0.45), 0);
+                controls.update();
+            }
+        }
+
+        function init() {
+            clock = new THREE.Clock();
+
+            // 1. Scene
+            scene = new THREE.Scene();
+
+            // 2. Camera (Tilted at tabletop perspective ~45-50 degrees)
+            const aspect = container.clientWidth / container.clientHeight;
+            camera = new THREE.PerspectiveCamera(50, aspect, 0.05, 100);
+            resetCameraView();
+
+            // 3. WebGL Renderer
+            renderer = new THREE.WebGLRenderer({
+                canvas: canvas,
+                alpha: true,
+                antialias: true,
+                powerPreference: "high-performance"
+            });
+            renderer.setSize(container.clientWidth, container.clientHeight);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+            renderer.shadowMap.enabled = true;
+            renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+            KongorViewerCore.configureRendererColorSpace(renderer);
+
+            // 4. Orbit Controls (Anchored strictly to tabletop center, wide zoom range)
+            controls = new THREE.OrbitControls(camera, renderer.domElement);
+            controls.enableDamping = true;
+            controls.dampingFactor = 0.05;
+            controls.maxPolarAngle = Math.PI / 2 - 0.05;
+            controls.minDistance = 0.25;
+            controls.maxDistance = 16.0;
+            controls.enablePan = false; // Never pan away from tabletop
+            controls.target.set(0, 0.16, 0);
+
+            // 5. Lighting
+            const hemiLight = new THREE.HemisphereLight(0xffffff, 0x444455, KongorViewerCore.calibrateLightIntensity(1.0));
+            hemiLight.position.set(0, 10, 0);
+            scene.add(hemiLight);
+
+            const dirLight = new THREE.DirectionalLight(0xffffff, KongorViewerCore.calibrateLightIntensity(1.3));
+            dirLight.position.set(2, 5, 3);
+            dirLight.castShadow = true;
+            dirLight.shadow.mapSize.width = 1024;
+            dirLight.shadow.mapSize.height = 1024;
+            dirLight.shadow.camera.near = 0.1;
+            dirLight.shadow.camera.far = 12;
+            scene.add(dirLight);
+
+            const auraLight = new THREE.PointLight(0x38bdf8, KongorViewerCore.calibrateLightIntensity(1.4), 4);
+            auraLight.position.set(0, 0.8, 0);
+            scene.add(auraLight);
+
+            // 6. Ground Shadow Plane, Studio Grid, Path Line & Destination Marker
+            setupPlanes();
+            setupPathVisualizer();
+            setupDestinationDot();
+
+            // 7. Load Empath Model
+            loadHeroModel('/api/v1/assets/3d/hero/empath');
+
+            // 8. Event Listeners & Orientation Observers
+            setupInteractions();
+            window.addEventListener('resize', onWindowResize);
+            if (window.screen && window.screen.orientation) {
+                window.screen.orientation.addEventListener('change', onWindowResize);
+            }
+
+            // 9. Start Render Loop
+            renderer.setAnimationLoop(render);
+            document.addEventListener('visibilitychange', () => {
+                if (!renderer) return;
+                if (document.hidden && (!renderer.xr || !renderer.xr.isPresenting)) {
+                    renderer.setAnimationLoop(null);
+                } else if (!document.hidden) {
+                    if (clock) clock.getDelta();
+                    renderer.setAnimationLoop(render);
+                }
+            });
+        }
+
+        function resetCameraView() {
+            camera.position.set(0, 0.55, 0.92);
+            camera.lookAt(0, 0.16, 0);
+        }
+
+        function setupPlanes() {
+            // Invisible shadow receiver plane for contact shadows on real table
+            const shadowGeo = new THREE.PlaneGeometry(30, 30);
+            const shadowMat = new THREE.ShadowMaterial({ opacity: 0.35 });
+            shadowPlane = new THREE.Mesh(shadowGeo, shadowMat);
+            shadowPlane.rotation.x = -Math.PI / 2;
+            shadowPlane.receiveShadow = true;
+            scene.add(shadowPlane);
+
+            // Infinite raycast plane for tabletop taps
+            const groundGeo = new THREE.PlaneGeometry(50, 50);
+            const groundMat = new THREE.MeshBasicMaterial({ visible: false });
+            groundPlane = new THREE.Mesh(groundGeo, groundMat);
+            groundPlane.rotation.x = -Math.PI / 2;
+            scene.add(groundPlane);
+
+            // Studio Grid (Only shown in non-camera mode)
+            studioGrid = new THREE.GridHelper(5, 20, 0x0284c7, 0x1e293b);
+            studioGrid.position.y = -0.001;
+            scene.add(studioGrid);
+        }
+
+        // --- Glowing Waypoint Path Line ---
+        function setupPathVisualizer() {
+            const pathGeo = new THREE.BufferGeometry();
+            pathGeo.setFromPoints([new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 0)]);
+
+            const pathMat = new THREE.LineDashedMaterial({
+                color: 0x38bdf8,
+                dashSize: 0.08,
+                gapSize: 0.04,
+                linewidth: 3,
+                transparent: true,
+                opacity: 0.85
+            });
+
+            pathLine = new THREE.Line(pathGeo, pathMat);
+            pathLine.computeLineDistances();
+            pathLine.visible = false;
+            pathLine.position.y = 0.006;
+            scene.add(pathLine);
+        }
+
+        function updatePathVisualizer() {
+            if (!isMoving || !empathModel || !pathLine) {
+                if (pathLine) pathLine.visible = false;
+                if (destinationDot) destinationDot.visible = false;
+                return;
+            }
+
+            pathLine.visible = true;
+            if (destinationDot) destinationDot.visible = true;
+
+            const points = [
+                new THREE.Vector3(empathModel.position.x, 0, empathModel.position.z),
+                new THREE.Vector3(targetPosition.x, 0, targetPosition.z)
+            ];
+            pathLine.geometry.setFromPoints(points);
+            pathLine.computeLineDistances();
+        }
+
+        // --- Clean Destination Dot (No Large Circle) ---
+        function setupDestinationDot() {
+            const dotGeo = new THREE.CircleGeometry(0.04, 16);
+            const dotMat = new THREE.MeshBasicMaterial({
+                color: 0x38bdf8,
+                side: THREE.DoubleSide,
+                transparent: true,
+                opacity: 0.9
+            });
+            destinationDot = new THREE.Mesh(dotGeo, dotMat);
+            destinationDot.rotation.x = -Math.PI / 2;
+            destinationDot.position.y = 0.007;
+            destinationDot.visible = false;
+            scene.add(destinationDot);
+        }
+
+        // --- Robust 3D Model Loader ---
+        async function loadHeroModel(modelPath) {
+            loadingOverlay.classList.remove('hidden');
+            const progressMsg = document.getElementById('loadingProgressMsg');
+            progressMsg.innerText = "Streaming 3D Mesh...";
+
+            const candidateUrls = [
+                modelPath,
+                modelPath.includes('/api/v1/') ? '/assets/prebaked/models/empath_default.glb' : '/api/v1/assets/3d/hero/empath'
+            ];
+
+            let buffer = null;
+            let lastErr = null;
+
+            for (const url of candidateUrls) {
+                try {
+                    const resp = await fetch(url);
+                    if (resp.ok) {
+                        buffer = await resp.arrayBuffer();
+                        break;
+                    }
+                } catch (e) {
+                    lastErr = e;
+                }
+            }
+
+            if (!buffer || buffer.byteLength === 0) {
+                console.error("Failed to fetch model buffer:", lastErr);
+                progressMsg.innerHTML = `<span class="text-rose-400">Failed to load model.</span> <button onclick="window.location.reload()" class="underline ml-2 text-sky-400">Retry</button>`;
+                return;
+            }
+
+            try {
+                const loader = KongorViewerCore.createKongorGLTFLoader();
+                loader.parse(
+                    buffer,
+                    '',
+                    (gltf) => {
+                        if (empathModel) {
+                            KongorViewerCore.disposeObject3DResources(empathModel, renderer, mixer);
+                            scene.remove(empathModel);
+                        }
+
+                        empathModel = gltf.scene;
+
+                        empathModel.traverse((node) => {
+                            if (node.isMesh) {
+                                node.castShadow = true;
+                                node.receiveShadow = true;
+                                if (node.material) {
+                                    node.material.side = THREE.DoubleSide;
+                                    if (node.material.map) {
+                                        KongorViewerCore.configureTextureColorSpace(node.material.map);
+                                    }
+                                    node.material.roughness = 0.45;
+                                    node.material.metalness = 0.2;
+                                    node.material.needsUpdate = true;
+                                }
+                            }
+                        });
+
+                        // Phase 7 (#89 & #73): Apply Filament PBR shader upgrades and AR camera-facing yaw/floor alignment
+                        if (KongorViewerCore.applyFilamentPbrShaderUpgrades) {
+                            KongorViewerCore.applyFilamentPbrShaderUpgrades(empathModel, renderer);
+                        }
+
+                        // Animation Mixer: evaluate idle pose first so SkinnedMesh bones are in standing rest pose before measuring bounds
+                        mixer = new THREE.AnimationMixer(empathModel);
+                        actions = {};
+
+                        gltf.animations.forEach((clip) => {
+                            actions[clip.name] = mixer.clipAction(clip);
+                        });
+
+                        playAction('idle');
+                        mixer.update(0.001);
+
+                        // Desk-figurine scale (~35cm tall at 1.0x via KongorViewerCore.alignModelToCameraAndFloor)
+                        empathModel.position.set(0, 0, 0);
+                        resetCameraView();
+                        if (KongorViewerCore.alignModelToCameraAndFloor) {
+                            KongorViewerCore.alignModelToCameraAndFloor(empathModel, camera, new THREE.Vector3(0, 0, 0), 'tabletop', currentScaleMultiplier);
+                        }
+                        if (controls) {
+                            controls.target.set(0, 0.18, 0);
+                            controls.update();
+                        }
+                        scene.add(empathModel);
+
+                        loadingOverlay.classList.add('hidden');
+
+                        setTimeout(() => {
+                            playVoiceLine(soundBank.intro[0]);
+                        }, 600);
+                    },
+                    (parseErr) => {
+                        console.error("GLTF Parse error:", parseErr);
+                        progressMsg.innerHTML = `<span class="text-rose-400">Error parsing model.</span> <button onclick="window.location.reload()" class="underline ml-2 text-sky-400">Retry</button>`;
+                    }
+                );
+            } catch (err) {
+                console.error("Exception loading model:", err);
+                progressMsg.innerHTML = `<span class="text-rose-400">Error: ${err.message}</span> <button onclick="window.location.reload()" class="underline ml-2 text-sky-400">Retry</button>`;
+            }
+        }
+
+        function playAction(name, crossFadeDuration = 0.3, loop = true) {
+            if (!mixer || !actions[name]) return;
+            const newAction = actions[name];
+
+            if (activeAction === newAction) return;
+
+            newAction.reset();
+            newAction.setLoop(loop ? THREE.LoopRepeat : THREE.LoopOnce, loop ? Infinity : 1);
+            newAction.clampWhenFinished = !loop;
+
+            if (activeAction) {
+                newAction.crossFadeFrom(activeAction, crossFadeDuration, true);
+            }
+            newAction.play();
+            activeAction = newAction;
+        }
+
+        // --- Tap & Navigation ---
+        const raycaster = new THREE.Raycaster();
+        const mouse = new THREE.Vector2();
+
+        function setupInteractions() {
+            container.addEventListener('pointerdown', (e) => {
+                const rect = renderer.domElement.getBoundingClientRect();
+                mouse.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+                mouse.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+
+                raycaster.setFromCamera(mouse, camera);
+
+                // 1. Tapping Empath directly triggers voice line + animation
+                if (empathModel) {
+                    const heroHits = raycaster.intersectObject(empathModel, true);
+                    if (heroHits.length > 0) {
+                        onHeroTapped();
+                        return;
+                    }
+                }
+
+                // 2. Tapping tabletop directs her to walk along the path
+                const hits = raycaster.intersectObject(groundPlane);
+                if (hits.length > 0) {
+                    moveEmpathTo(hits[0].point);
+                }
+            });
+
+            btnToggleCamera.addEventListener('click', toggleCameraAR);
+            btnToggleAudio.addEventListener('click', toggleAudio);
+
+            if (empathScaleSelect) {
+                empathScaleSelect.addEventListener('change', (e) => {
+                    applyEmpathScale(parseFloat(e.target.value) || 1.0);
+                });
+            }
+
+            if (btnScaleDown) {
+                btnScaleDown.addEventListener('click', () => {
+                    applyEmpathScale(Math.max(0.25, +(currentScaleMultiplier * 0.8).toFixed(2)));
+                });
+            }
+
+            if (btnScaleUp) {
+                btnScaleUp.addEventListener('click', () => {
+                    applyEmpathScale(Math.min(8.0, +(currentScaleMultiplier * 1.25).toFixed(2)));
+                });
+            }
+
+            btnResetPlacement.addEventListener('click', () => {
+                if (empathModel) {
+                    empathModel.position.set(0, 0, 0);
+                    targetPosition.set(0, 0, 0);
+                    isMoving = false;
+                    if (destinationDot) destinationDot.visible = false;
+                    if (pathLine) pathLine.visible = false;
+                    playAction('idle');
+                    resetCameraView();
+                    applyEmpathScale(parseFloat(empathScaleSelect ? empathScaleSelect.value : '1.0') || 1.0);
+                }
+            });
+        }
+
+        function onHeroTapped() {
+            const pool = Math.random() > 0.4 ? soundBank.select : soundBank.flavour;
+            const line = pool[Math.floor(Math.random() * pool.length)];
+            playVoiceLine(line);
+
+            if (!isMoving) {
+                playAction('bored_1', 0.2, false);
+                setTimeout(() => {
+                    if (!isMoving) playAction('idle', 0.3);
+                }, 1800);
+            }
+        }
+
+        function moveEmpathTo(destination) {
+            if (!empathModel) return;
+
+            targetPosition.set(destination.x, 0, destination.z);
+            isMoving = true;
+
+            // Place destination dot
+            destinationDot.position.set(targetPosition.x, 0.007, targetPosition.z);
+            destinationDot.visible = true;
+
+            // Rotate smoothly toward destination
+            const dx = targetPosition.x - empathModel.position.x;
+            const dz = targetPosition.z - empathModel.position.z;
+            empathModel.rotation.y = Math.atan2(dx, dz);
+
+            // Start walking animation
+            playAction('walk_1', 0.15);
+
+            // Play movement line
+            const moveLine = soundBank.move[Math.floor(Math.random() * soundBank.move.length)];
+            playVoiceLine(moveLine);
+
+            updatePathVisualizer();
+        }
+
+        function updateMovement(delta) {
+            if (!isMoving || !empathModel) return;
+
+            const currentPos = empathModel.position;
+            const dist = currentPos.distanceTo(targetPosition);
+
+            if (dist <= arrivalDistance) {
+                // Arrived at destination
+                empathModel.position.copy(targetPosition);
+                isMoving = false;
+                if (destinationDot) destinationDot.visible = false;
+                if (pathLine) pathLine.visible = false;
+                playAction('idle', 0.3);
+                return;
+            }
+
+            // Step forward along table plane
+            const step = walkSpeed * delta;
+            const dir = new THREE.Vector3().subVectors(targetPosition, currentPos).normalize();
+            empathModel.position.addScaledVector(dir, Math.min(step, dist));
+
+            updatePathVisualizer();
+        }
+
+        // --- Audio Controller ---
+        function playVoiceLine(lineObj) {
+            if (isAudioMuted || !lineObj) return;
+
+            if (activeAudio) {
+                activeAudio.pause();
+                activeAudio = null;
+            }
+
+            const audio = new Audio(lineObj.file);
+            activeAudio = audio;
+            audio.play().catch(e => console.log("Audio playback blocked:", e));
+
+            audio.onended = () => {
+                activeAudio = null;
+            };
+        }
+
+        function toggleAudio() {
+            isAudioMuted = !isAudioMuted;
+            if (isAudioMuted && activeAudio) activeAudio.pause();
+            audioIcon.className = isAudioMuted ? "fas fa-volume-mute text-rose-400" : "fas fa-volume-up text-emerald-400";
+        }
+
+        // --- Phone Camera AR Passthrough ---
+        async function toggleCameraAR() {
+            if (isCameraActive) {
+                stopCamera();
+            } else {
+                await startCamera();
+            }
+        }
+
+        async function startCamera() {
+            try {
+                const constraints = {
+                    video: {
+                        facingMode: { ideal: "environment" },
+                        width: { ideal: 1920 },
+                        height: { ideal: 1080 }
+                    }
+                };
+
+                mediaStream = await navigator.mediaDevices.getUserMedia(constraints);
+                video.srcObject = mediaStream;
+                video.classList.remove('hidden');
+
+                if (studioGrid) studioGrid.visible = false;
+
+                // In camera mode: Disable orbit rotation so touch strictly commands walking without tilting the table
+                controls.enableRotate = false;
+                resetCameraView();
+
+                isCameraActive = true;
+                btnCameraText.innerText = "Stop Camera";
+                btnToggleCamera.classList.add('border-emerald-500', 'bg-emerald-950/40');
+            } catch (err) {
+                console.warn("Could not start camera:", err);
+                alert("Camera access denied or unavailable. You can still test in 3D Studio Desk mode!");
+            }
+        }
+
+        function stopCamera() {
+            if (mediaStream) {
+                mediaStream.getTracks().forEach(track => track.stop());
+                mediaStream = null;
+            }
+            video.classList.add('hidden');
+            if (studioGrid) studioGrid.visible = true;
+
+            controls.enableRotate = true;
+            isCameraActive = false;
+            btnCameraText.innerText = "Enable Camera";
+            btnToggleCamera.classList.remove('border-emerald-500', 'bg-emerald-950/40');
+        }
+
+        function onWindowResize() {
+            if (!container || !camera || !renderer) return;
+            const w = container.clientWidth;
+            const h = container.clientHeight;
+            camera.aspect = w / h;
+            camera.updateProjectionMatrix();
+            renderer.setSize(w, h);
+        }
+
+        // --- Main Animation & Render Loop ---
+        function render() {
+            const delta = clock.getDelta();
+
+            if (mixer) mixer.update(delta);
+            updateMovement(delta);
+
+            if (controls.enabled) controls.update();
+            renderer.render(scene, camera);
+        }
+
+        document.addEventListener('DOMContentLoaded', init);
+    })();
+</script>

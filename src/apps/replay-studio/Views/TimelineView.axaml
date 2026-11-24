@@ -1,0 +1,86 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="clr-namespace:ReplayStudio.GUI.ViewModels"
+             xmlns:ctrl="clr-namespace:ReplayStudio.GUI.Controls"
+             mc:Ignorable="d" d:DesignWidth="1200" d:DesignHeight="100"
+             x:Class="ReplayStudio.GUI.Views.TimelineView"
+             x:DataType="vm:TimelineViewModel">
+
+    <Border Classes="glass-card" Margin="8, 4, 8, 8" Padding="12, 8">
+        <Grid RowDefinitions="Auto, Auto">
+            <!-- Scrubber Track & Markers -->
+            <ctrl:TimelineScrubberControl Grid.Row="0" Margin="0, 0, 0, 8" DataContext="{Binding}" />
+
+            <!-- Playback Control Toolbar -->
+            <Grid Grid.Row="1" ColumnDefinitions="Auto, Auto, *, Auto">
+                <!-- Primary Playback Controls -->
+                <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                    <!-- Step Backward -->
+                    <Button Command="{Binding StepBackwardCommand}" Classes="action-btn" Width="40" Height="34"
+                            ToolTip.Tip="Step Backward 1 Tick (50ms)">
+                        <TextBlock Text="⏮" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                    </Button>
+
+                    <!-- Play / Pause Toggle -->
+                    <Button Command="{Binding TogglePlayPauseCommand}" Classes="btn-cyan" Width="50" Height="34"
+                            ToolTip.Tip="Play / Pause Playback (Space)">
+                        <TextBlock Text="{Binding PlayPauseIcon}"
+                                   FontSize="14" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                    </Button>
+
+                    <!-- Step Forward -->
+                    <Button Command="{Binding StepForwardCommand}" Classes="action-btn" Width="40" Height="34"
+                            ToolTip.Tip="Step Forward 1 Tick (50ms)">
+                        <TextBlock Text="⏭" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                    </Button>
+                </StackPanel>
+
+                <!-- Speed Multipliers -->
+                <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="4" Margin="16, 0, 0, 0" VerticalAlignment="Center">
+                    <TextBlock Text="Speed:" Foreground="#94A3B8" FontSize="11" FontWeight="SemiBold" VerticalAlignment="Center" Margin="0, 0, 4, 0" />
+                    <Button Command="{Binding SetSpeed025Command}" Classes="action-btn" Padding="6, 4" FontSize="10" Content="0.25x" />
+                    <Button Command="{Binding SetSpeed05Command}" Classes="action-btn" Padding="6, 4" FontSize="10" Content="0.5x" />
+                    <Button Command="{Binding SetSpeed1Command}" Classes="action-btn" Padding="6, 4" FontSize="10" Content="1.0x" />
+                    <Button Command="{Binding SetSpeed2Command}" Classes="action-btn" Padding="6, 4" FontSize="10" Content="2.0x" />
+                    <Button Command="{Binding SetSpeed4Command}" Classes="action-btn" Padding="6, 4" FontSize="10" Content="4.0x" />
+                    <Button Command="{Binding SetSpeed8Command}" Classes="action-btn" Padding="6, 4" FontSize="10" Content="8.0x" />
+                </StackPanel>
+
+                <!-- In/Out Markers & Loop Toggle -->
+                <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="6" HorizontalAlignment="Center" VerticalAlignment="Center">
+                    <Button Command="{Binding SetInMarkerCommand}" Classes="action-btn" Padding="8, 4" FontSize="11"
+                            ToolTip.Tip="Set In Trim Marker at Current Timestamp">
+                        <TextBlock Text="[ IN ]" FontSize="11" FontWeight="Bold" Foreground="#38BDF8" />
+                    </Button>
+                    <Button Command="{Binding SetOutMarkerCommand}" Classes="action-btn" Padding="8, 4" FontSize="11"
+                            ToolTip.Tip="Set Out Trim Marker at Current Timestamp">
+                        <TextBlock Text="[ OUT ]" FontSize="11" FontWeight="Bold" Foreground="#F87171" />
+                    </Button>
+                    <Button Command="{Binding ResetMarkersCommand}" Classes="action-btn" Padding="8, 4" FontSize="11"
+                            ToolTip.Tip="Reset Trim Markers to Full Match Duration">
+                        <TextBlock Text="Reset Range" FontSize="10" Foreground="#94A3B8" />
+                    </Button>
+
+                    <ToggleButton IsChecked="{Binding IsLooping}" Classes="pov-lock-btn" Margin="8, 0, 0, 0"
+                                  ToolTip.Tip="Toggle Seamless Range Looping">
+                        <StackPanel Orientation="Horizontal" Spacing="4">
+                            <TextBlock Text="🔁" FontSize="11" />
+                            <TextBlock Text="Loop" FontSize="11" />
+                        </StackPanel>
+                    </ToggleButton>
+                </StackPanel>
+
+                <!-- Export Video Button -->
+                <Button Grid.Column="3" Command="{Binding OpenExportModalCommand}" Classes="btn-emerald" Height="34"
+                        ToolTip.Tip="Open Hardware-Accelerated Video Export Dialog">
+                    <StackPanel Orientation="Horizontal" Spacing="6">
+                        <TextBlock Text="🎥" FontSize="13" VerticalAlignment="Center" />
+                        <TextBlock Text="Export Video" FontSize="12" FontWeight="Bold" VerticalAlignment="Center" />
+                    </StackPanel>
+                </Button>
+            </Grid>
+        </Grid>
+    </Border>
+</UserControl>

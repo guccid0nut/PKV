@@ -1,0 +1,3179 @@
+@{
+    Layout = null;
+    string initialRoom = (ViewData["InitialRoom"] as string) ?? "HOOK";
+    if (string.IsNullOrWhiteSpace(initialRoom)) initialRoom = "HOOK";
+}
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-slate-950">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    <title>DevoWarsAR - 1v1 Tabletop AR Hook Duel</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        hon: {
+                            gold: '#fbbf24',
+                            blood: '#ef4444',
+                            mana: '#0284c7',
+                            dark: '#090d16'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+
+    <style>
+        * {
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
+            -webkit-user-select: none;
+            touch-action: none;
+        }
+        body {
+            overflow: hidden;
+            background-color: #020617;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+        /* Mobile Safe Area Insets */
+        .safe-top { padding-top: max(0.75rem, env(safe-area-inset-top)); }
+        .safe-bottom { padding-bottom: max(0.75rem, env(safe-area-inset-bottom)); }
+
+        @@keyframes pulseGlow {
+            0%, 100% { opacity: 0.6; transform: scale(1); }
+            50% { opacity: 1.0; transform: scale(1.05); }
+        }
+        .glow-pulse { animation: pulseGlow 2s infinite ease-in-out; }
+
+        @@keyframes floatText {
+            0% { opacity: 1; transform: translateY(0) scale(1); }
+            100% { opacity: 0; transform: translateY(-70px) scale(1.3); }
+        }
+        .float-score {
+            animation: floatText 1.4s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+        }
+    </style>
+</head>
+<body class="h-full w-full relative select-none overflow-hidden bg-slate-950 text-slate-100">
+
+    <!-- CAMERA PASSTHROUGH (Underneath WebGL Canvas) -->
+    <video id="cameraFeed" autoplay playsinline webkit-playsinline="true" muted class="absolute inset-0 w-full h-full object-cover z-0 hidden pointer-events-none"></video>
+
+    <!-- THREE.JS WEBGL RENDER CANVAS -->
+    <div id="canvasContainer" class="absolute inset-0 z-10 w-full h-full cursor-crosshair">
+        <canvas id="gameCanvas" class="w-full h-full block" role="region" aria-label="Devo Wars 3D WebGL arena battlefield">Your browser does not support HTML5 Canvas.</canvas>
+    </div>
+
+    <!-- POV CENTER TARGETING CROSSHAIR (Active only in 3rd-Person Devo POV Mode) -->
+    <div id="povCrosshair" class="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-20 pointer-events-none hidden flex flex-col items-center justify-center">
+        <div class="relative w-12 h-12 flex items-center justify-center">
+            <div class="absolute w-12 h-12 rounded-full border border-sky-400/50 animate-pulse"></div>
+            <div class="w-2.5 h-2.5 rounded-full bg-rose-500 shadow-lg shadow-rose-500/80"></div>
+            <div class="absolute w-7 h-[1.5px] bg-sky-400/80"></div>
+            <div class="absolute h-7 w-[1.5px] bg-sky-400/80"></div>
+        </div>
+        <div class="mt-2 text-[10px] font-black uppercase tracking-widest text-sky-300 bg-slate-950/80 px-2.5 py-0.5 rounded-full border border-sky-500/30 whitespace-nowrap shadow-lg">
+            TAP SCREEN TO HOOK
+        </div>
+    </div>
+
+    <!-- FLOATING DAMAGE / HIT COMBAT TEXT LAYER -->
+    <div id="combatTextLayer" class="absolute inset-0 z-20 pointer-events-none overflow-hidden"></div>
+
+    <!-- MINIMAL SLEEK TOP HUD (NO BUTTONS AT BOTTOM!) -->
+    <div class="absolute top-0 left-0 right-0 z-30 safe-top px-3 py-2 flex items-center justify-between pointer-events-none">
+        <!-- Room Info Pill -->
+        <div class="flex items-center gap-1.5 pointer-events-auto bg-slate-900/85 backdrop-blur-md px-3 py-1.5 rounded-full border border-slate-700/60 shadow-xl">
+            <span id="roomStatusDot" class="w-2.5 h-2.5 rounded-full bg-amber-400 animate-pulse"></span>
+            <span id="roomCodeDisplay" class="text-xs font-black tracking-wider font-mono text-white">ROOM: ----</span>
+            <button id="btnCopyRoom" class="ml-1 text-slate-400 hover:text-white transition-colors p-1" title="Copy Room Link">
+                <i class="fas fa-copy text-xs"></i>
+            </button>
+        </div>
+
+        <!-- Central Scoreboard -->
+        <div id="scoreboardPill" class="flex items-center gap-3 pointer-events-auto bg-slate-900/90 backdrop-blur-xl px-4 py-1.5 rounded-full border border-slate-700/80 shadow-2xl">
+            <div class="flex items-center gap-2">
+                <span class="w-2 h-2 rounded-full bg-sky-400"></span>
+                <span id="scoreP1" class="text-lg font-black font-mono text-sky-400">0</span>
+            </div>
+            <div class="text-[11px] font-bold uppercase tracking-widest text-slate-500">VS</div>
+            <div class="flex items-center gap-2">
+                <span id="scoreP2" class="text-lg font-black font-mono text-rose-500">0</span>
+                <span class="w-2 h-2 rounded-full bg-rose-500"></span>
+            </div>
+        </div>
+
+        <!-- Top Right Share Button -->
+        <div class="flex items-center gap-1.5 pointer-events-auto">
+            <button id="btnCopyRoom" class="h-10 px-3 rounded-2xl bg-slate-900/90 hover:bg-slate-800 text-slate-200 border border-slate-700/70 backdrop-blur-xl text-xs font-bold transition-all flex items-center gap-1.5 shadow-lg active:scale-95 touch-manipulation cursor-pointer" title="Copy Room Invite Link">
+                <i class="fas fa-share-nodes text-xs text-sky-400"></i>
+                <span class="text-[11px] font-bold">Share</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- PC CONTROLS HINT (Desktop only) -->
+    <div id="desktopControlsHint" class="fixed bottom-4 left-4 z-20 hidden md:flex items-center gap-2.5 bg-slate-900/85 backdrop-blur-md px-3.5 py-1.5 rounded-full border border-slate-700/60 text-[11px] font-bold text-slate-300 shadow-xl pointer-events-none transition-opacity duration-300">
+        <span class="flex items-center gap-1.5"><kbd class="px-1.5 py-0.5 rounded bg-slate-800 border border-slate-600 text-sky-400 font-mono text-[10px]">WASD</kbd> or <span class="text-emerald-400">Right-Click</span> Move</span>
+        <span class="text-slate-600">|</span>
+        <span class="flex items-center gap-1.5"><span class="text-rose-400">Left-Click</span> or <kbd class="px-1.5 py-0.5 rounded bg-slate-800 border border-slate-600 text-sky-400 font-mono text-[10px]">Space</kbd> Hook</span>
+        <span class="text-slate-600">|</span>
+        <span class="text-slate-400">Middle-Drag Rotate</span>
+    </div>
+
+    <!-- HOOK COOLDOWN / AIM GUIDE BANNER (Appears only while aiming or reloading) -->
+    <div id="aimHintBanner" class="absolute top-16 left-1/2 -translate-x-1/2 z-20 pointer-events-none transition-opacity duration-300 opacity-0 bg-slate-900/90 backdrop-blur-md px-4 py-1 rounded-full border border-sky-500/40 text-xs font-bold text-sky-300 flex items-center gap-2 shadow-xl">
+        <i class="fas fa-crosshairs animate-spin text-[10px]"></i>
+        <span>RELEASE TO FLING HOOK!</span>
+    </div>
+
+    <div id="cooldownBanner" class="absolute top-16 left-1/2 -translate-x-1/2 z-20 pointer-events-none transition-opacity duration-200 opacity-0 bg-rose-950/80 backdrop-blur-md px-4 py-1 rounded-full border border-rose-500/40 text-xs font-bold text-rose-300 flex items-center gap-2 shadow-xl">
+        <i class="fas fa-hourglass-half text-[10px] animate-pulse"></i>
+        <span id="cooldownTimeText">RELOADING HOOK (1.5s)</span>
+    </div>
+
+    <!-- ROOM LOBBY / SETUP MODAL OVERLAY -->
+    <div id="lobbyModal" class="fixed inset-0 z-40 bg-slate-950/90 backdrop-blur-xl flex items-center justify-center p-4">
+        <div class="w-full max-w-sm bg-slate-900 border border-slate-700/80 rounded-3xl p-6 shadow-2xl flex flex-col space-y-5">
+            <!-- Header Title -->
+            <div class="text-center space-y-1">
+                <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-rose-500/10 border border-rose-500/30 text-rose-400 text-xs font-black tracking-widest uppercase">
+                    <i class="fas fa-skull"></i> 1v1 Tabletop AR Duel
+                </div>
+                <h1 class="text-2xl font-black tracking-wider text-white uppercase">DevoWarsAR</h1>
+                <p class="text-slate-400 text-xs">Fling Guttling Hooks across the river! First to 10 points wins.</p>
+            </div>
+
+            <!-- Form -->
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1">Your Name</label>
+                    <input id="inputPlayerName" type="text" maxlength="16" value="Devourer" class="w-full bg-slate-950 border border-slate-700 focus:border-sky-500 rounded-xl px-3.5 py-2.5 text-sm font-bold text-white outline-none transition-colors" placeholder="e.g. MoonMeander" />
+                </div>
+
+                <div>
+                    <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1">Room Code (4-8 chars)</label>
+                    <div class="flex items-center gap-2">
+                        <input id="inputRoomCode" type="text" maxlength="8" value="@initialRoom" class="w-full bg-slate-950 border border-slate-700 focus:border-sky-500 rounded-xl px-3.5 py-2.5 text-sm font-black tracking-widest uppercase font-mono text-white outline-none transition-colors" placeholder="HOOK" />
+                        <button id="btnRandomRoom" type="button" aria-label="Generate random room code" title="Random room code" class="px-3 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-xs font-bold transition-colors">
+                            <i class="fas fa-dice"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="pt-2 flex flex-col gap-2.5">
+                <button id="btnEnterGame" class="w-full py-3.5 rounded-2xl bg-gradient-to-r from-red-600 via-rose-600 to-amber-600 hover:from-red-500 hover:to-amber-500 text-white font-black text-sm uppercase tracking-wider shadow-lg shadow-rose-900/40 active:scale-95 transition-all flex items-center justify-center gap-2">
+                    <i class="fas fa-play"></i> Enter Arena
+                </button>
+                <button id="btnPracticeSolo" class="w-full py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs uppercase tracking-wider active:scale-95 transition-all">
+                    Practice Mode (Solo Target Dummy)
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- WAITING FOR OPPONENT OVERLAY -->
+    <div id="waitingOverlay" class="fixed inset-0 z-45 bg-slate-950/90 backdrop-blur-xl flex flex-col items-center justify-center p-6 text-center hidden pointer-events-auto" style="z-index: 45;">
+        <div class="w-16 h-16 mb-4 relative flex items-center justify-center">
+            <div class="absolute inset-0 border-4 border-sky-500/20 rounded-full"></div>
+            <div class="absolute inset-0 border-4 border-sky-400 border-t-transparent rounded-full animate-spin"></div>
+            <i class="fas fa-satellite-dish text-sky-400 text-lg"></i>
+        </div>
+        <h3 class="text-xl font-black text-white uppercase tracking-wider mb-1">Waiting for Opponent</h3>
+        <div class="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-sky-500/15 border border-sky-500/30 text-sky-400 font-mono text-xs font-black mb-3">
+            ROOM: <span id="waitingRoomCodeText">@initialRoom</span>
+        </div>
+        <p class="text-slate-400 text-xs max-w-xs mb-4">Share this link with your friend so they can join on their phone:</p>
+        
+        <div class="flex items-center gap-2 bg-slate-900 border border-slate-700 px-4 py-2.5 rounded-2xl text-xs font-mono text-amber-300 mb-4 shadow-xl">
+            <span id="shareUrlText">https://newbs.io/ar-mini-games/devo-wars?room=----</span>
+            <button id="btnShareCopy" type="button" aria-label="Copy room invite link" title="Copy link" class="p-1 text-slate-400 hover:text-white transition-colors">
+                <i class="fas fa-copy"></i>
+            </button>
+        </div>
+
+        <button id="btnCancelWaiting" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-400 text-xs font-bold rounded-xl transition-colors">
+            Cancel & Return
+        </button>
+    </div>
+
+    <!-- MATCH OVERLAY / VICTORY MODAL -->
+    <div id="matchOverModal" class="fixed inset-0 z-40 bg-slate-950/90 backdrop-blur-xl flex items-center justify-center p-6 hidden pointer-events-auto">
+        <div class="w-full max-w-sm bg-slate-900 border border-slate-700 rounded-3xl p-6 text-center space-y-4 shadow-2xl">
+            <div id="victoryIconWrap" class="w-20 h-20 mx-auto rounded-full flex items-center justify-center bg-amber-500/20 border-2 border-amber-400 text-amber-400 text-3xl glow-pulse">
+                <i id="victoryIcon" class="fas fa-trophy"></i>
+            </div>
+            <div>
+                <h2 id="victoryTitle" class="text-3xl font-black tracking-wider uppercase text-white">VICTORY!</h2>
+                <p id="victorySub" class="text-slate-400 text-xs mt-1">You hooked Devourer 10 times to claim supremacy.</p>
+            </div>
+            <div class="py-2 bg-slate-950/70 rounded-2xl border border-slate-800 font-mono text-2xl font-black flex items-center justify-center gap-3">
+                <span id="finalScoreP1" class="text-sky-400">10</span>
+                <span class="text-slate-600 text-lg">-</span>
+                <span id="finalScoreP2" class="text-rose-500">6</span>
+            </div>
+            <button id="btnPlayAgain" class="w-full py-3.5 rounded-2xl bg-gradient-to-r from-sky-500 to-indigo-600 text-white font-black text-sm uppercase tracking-wider active:scale-95 transition-transform shadow-xl">
+                Play Again (Rematch)
+            </button>
+        </div>
+    </div>
+
+    <!-- ROOM FULL REJECTION MODAL -->
+    <div id="roomFullModal" class="fixed inset-0 z-50 bg-slate-950/95 backdrop-blur-2xl flex items-center justify-center p-4 hidden pointer-events-auto">
+        <div class="w-full max-w-sm bg-slate-900 border border-rose-500/50 rounded-3xl p-6 shadow-2xl flex flex-col space-y-5 text-center">
+            <div class="w-16 h-16 mx-auto rounded-3xl bg-rose-500/20 border border-rose-500/50 flex items-center justify-center text-rose-400 text-2xl shadow-inner">
+                <i class="fas fa-users-slash"></i>
+            </div>
+            <div>
+                <h3 class="text-xl font-black uppercase tracking-wider text-white">Room Is Full (2/2)</h3>
+                <p id="roomFullDescription" class="text-slate-300 text-xs mt-2 leading-relaxed">
+                    Room <span id="fullRoomCodeText" class="font-mono font-bold text-rose-400">HOOK</span> already has 2 gladiators dueling. More than 2 players are not allowed in the same room.
+                </p>
+            </div>
+
+            <!-- New Room Suggestion Card -->
+            <div class="p-3 rounded-2xl bg-slate-950 border border-slate-800 flex flex-col gap-1.5">
+                <div class="text-[10px] uppercase font-bold text-slate-400">Create New Room Instead</div>
+                <div class="flex items-center justify-center gap-2">
+                    <span class="text-xs text-slate-400 font-semibold">Suggested Code:</span>
+                    <span id="suggestedNewRoomCode" class="font-mono font-black text-sm text-sky-400 px-2 py-0.5 rounded-lg bg-sky-950/60 border border-sky-500/40">WAR42</span>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="flex flex-col gap-2.5 pt-1">
+                <button id="btnCreateNewRoomFromFull" class="w-full py-3.5 rounded-2xl bg-gradient-to-r from-sky-500 to-indigo-600 hover:from-sky-400 hover:to-indigo-500 text-white font-black text-xs uppercase tracking-wider shadow-lg shadow-sky-900/40 active:scale-95 transition-all flex items-center justify-center gap-2 cursor-pointer">
+                    <i class="fas fa-plus-circle"></i> Create Room & Enter
+                </button>
+                <button id="btnCloseRoomFull" class="w-full py-3 rounded-2xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-black text-xs uppercase tracking-wider border border-slate-700 active:scale-95 transition-all flex items-center justify-center gap-2 cursor-pointer">
+                    <i class="fas fa-arrow-left"></i> Change Code in Lobby
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- PRE-MATCH AR PROMPT & READY CHECK MODAL -->
+    <div id="arReadyModal" class="fixed inset-0 z-40 bg-slate-950/90 backdrop-blur-xl flex items-center justify-center p-4 hidden pointer-events-auto">
+        <div class="w-full max-w-sm bg-slate-900 border border-slate-700/80 rounded-3xl p-6 shadow-2xl flex flex-col space-y-5 text-center">
+            <div class="w-16 h-16 mx-auto rounded-3xl bg-gradient-to-br from-sky-500/20 to-purple-500/20 border border-sky-500/40 flex items-center justify-center text-sky-400 text-2xl shadow-inner">
+                <i class="fas fa-vr-cardboard"></i>
+            </div>
+            <div>
+                <h3 class="text-xl font-black uppercase tracking-wider text-white">Play in Augmented Reality?</h3>
+                <p class="text-slate-400 text-xs mt-1">Enable your phone camera to battle Devourer in your room, or duel in the neon 3D stadium!</p>
+            </div>
+
+            <!-- Choices -->
+            <div class="flex flex-col gap-2.5 pt-1">
+                <button id="btnChooseArYes" class="w-full py-3.5 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-white font-black text-xs uppercase tracking-wider shadow-lg shadow-emerald-900/40 active:scale-95 transition-all flex items-center justify-center gap-2 cursor-pointer">
+                    <i class="fas fa-camera"></i> Yes - Turn On AR Camera
+                </button>
+                <button id="btnChooseArNo" class="w-full py-3 rounded-2xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-black text-xs uppercase tracking-wider border border-slate-700 active:scale-95 transition-all flex items-center justify-center gap-2 cursor-pointer">
+                    <i class="fas fa-cube"></i> No - 3D Stadium Mode
+                </button>
+            </div>
+
+            <!-- Multiplayer Ready Status Indicators -->
+            <div id="readyStatusContainer" class="pt-2 border-t border-slate-800 flex flex-col gap-2">
+                <div class="text-[11px] font-bold uppercase tracking-wider text-slate-400 flex items-center justify-between px-1">
+                    <span>Duel Readiness</span>
+                    <span id="readyCountText" class="text-sky-400 font-mono">0 / 2 Ready</span>
+                </div>
+                <div class="grid grid-cols-2 gap-2">
+                    <div id="p1ReadyBadge" class="p-2.5 rounded-xl bg-slate-950 border border-slate-800 flex items-center justify-center gap-1.5 text-xs font-bold text-slate-500">
+                        <i class="fas fa-clock text-xs"></i>
+                        <span id="p1ReadyName">Player 1</span>
+                    </div>
+                    <div id="p2ReadyBadge" class="p-2.5 rounded-xl bg-slate-950 border border-slate-800 flex items-center justify-center gap-1.5 text-xs font-bold text-slate-500">
+                        <i class="fas fa-clock text-xs"></i>
+                        <span id="p2ReadyName">Player 2</span>
+                    </div>
+                </div>
+                <div id="waitingForOpponentReadyText" class="text-[11px] text-amber-400/90 font-medium hidden">
+                    <i class="fas fa-spinner animate-spin mr-1"></i> Waiting for opponent to ready up...
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- FLOATING SETTINGS BUTTON (Bottom-Right, safe from phone swipe-down gestures) -->
+    <button id="btnOpenSettings" class="fixed bottom-4 right-4 z-30 w-12 h-12 rounded-full bg-slate-900/95 hover:bg-slate-800 text-amber-400 border border-slate-700/80 backdrop-blur-xl flex items-center justify-center shadow-2xl active:scale-90 transition-all touch-manipulation cursor-pointer pointer-events-auto" title="Open Settings">
+        <i class="fas fa-gear text-lg"></i>
+    </button>
+
+    <!-- SETTINGS MODAL (Centered popup) -->
+    <div id="settingsModal" class="fixed inset-0 z-40 bg-slate-950/80 backdrop-blur-xl flex items-center justify-center p-4 hidden pointer-events-auto">
+        <div class="w-full max-w-sm bg-slate-900 border border-slate-700/90 rounded-3xl p-6 shadow-2xl flex flex-col space-y-5">
+            <!-- Header -->
+            <div class="flex items-center justify-between pb-2 border-b border-slate-800">
+                <div class="flex items-center gap-2">
+                    <i class="fas fa-gear text-amber-400 text-base"></i>
+                    <h3 class="text-base font-black uppercase tracking-wider text-white">Match Settings</h3>
+                </div>
+                <button id="btnCloseSettings" type="button" aria-label="Close settings modal" title="Close" class="w-8 h-8 rounded-full bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white flex items-center justify-center transition-colors cursor-pointer">
+                    <i class="fas fa-times text-sm"></i>
+                </button>
+            </div>
+
+            <!-- Settings Options -->
+            <div class="space-y-3">
+                <!-- Camera View Mode Toggle -->
+                <div class="flex items-center justify-between p-3 rounded-2xl bg-slate-950/60 border border-slate-800">
+                    <div class="flex items-center gap-2.5">
+                        <i id="modalViewIcon" class="fas fa-eye text-amber-400 text-sm"></i>
+                        <div>
+                            <div class="text-xs font-bold text-white">Camera View</div>
+                            <div class="text-[10px] text-slate-400">Tabletop vs 3rd-Person POV</div>
+                        </div>
+                    </div>
+                    <button id="btnModalToggleView" class="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-xs font-bold text-amber-400 transition-colors cursor-pointer">
+                        <span id="btnModalViewText">Tabletop</span>
+                    </button>
+                </div>
+
+                <!-- Phone Camera AR Toggle -->
+                <div class="flex items-center justify-between p-3 rounded-2xl bg-slate-950/60 border border-slate-800">
+                    <div class="flex items-center gap-2.5">
+                        <i id="modalCameraIcon" class="fas fa-camera text-sky-400 text-sm"></i>
+                        <div>
+                            <div class="text-xs font-bold text-white">AR Camera Feed</div>
+                            <div class="text-[10px] text-slate-400">Real-world room background</div>
+                        </div>
+                    </div>
+                    <button id="btnModalToggleCamera" class="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-xs font-bold text-sky-400 transition-colors cursor-pointer">
+                        <span id="btnModalCameraText">AR: OFF</span>
+                    </button>
+                </div>
+
+                <!-- Phone Tilt Toggle -->
+                <div class="flex items-center justify-between p-3 rounded-2xl bg-slate-950/60 border border-slate-800">
+                    <div class="flex items-center gap-2.5">
+                        <i id="modalTiltIcon" class="fas fa-mobile-screen-button text-emerald-400 text-sm"></i>
+                        <div>
+                            <div class="text-xs font-bold text-white">Phone Tilt Steer</div>
+                            <div class="text-[10px] text-slate-400">Gyroscope dodging & movement</div>
+                        </div>
+                    </div>
+                    <button id="btnModalToggleTilt" class="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-xs font-bold text-emerald-400 transition-colors cursor-pointer">
+                        <span id="btnModalTiltText">Tilt: ON</span>
+                    </button>
+                </div>
+
+                <!-- Audio Toggle -->
+                <div class="flex items-center justify-between p-3 rounded-2xl bg-slate-950/60 border border-slate-800">
+                    <div class="flex items-center gap-2.5">
+                        <i id="modalAudioIcon" class="fas fa-volume-up text-emerald-400 text-sm"></i>
+                        <div>
+                            <div class="text-xs font-bold text-white">Audio & Voice</div>
+                            <div class="text-[10px] text-slate-400">In-game sounds & hooks</div>
+                        </div>
+                    </div>
+                    <button id="btnModalToggleAudio" class="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-xs font-bold text-emerald-400 transition-colors cursor-pointer">
+                        <span id="btnModalAudioText">Sound: ON</span>
+                    </button>
+                </div>
+
+                <!-- Recenter / Calibrate -->
+                <div class="flex items-center justify-between p-3 rounded-2xl bg-slate-950/60 border border-slate-800">
+                    <div class="flex items-center gap-2.5">
+                        <i class="fas fa-crosshairs text-amber-400 text-sm"></i>
+                        <div>
+                            <div class="text-xs font-bold text-white">Recenter & Level</div>
+                            <div class="text-[10px] text-slate-400">Reset view angle & tilt zero-point</div>
+                        </div>
+                    </div>
+                    <button id="btnModalResetCenter" class="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-xs font-bold text-amber-300 transition-colors cursor-pointer">
+                        Recenter
+                    </button>
+                </div>
+            </div>
+
+            <!-- Resume Button -->
+            <button id="btnResumeSettings" class="w-full py-3 rounded-2xl bg-gradient-to-r from-sky-500 to-indigo-600 hover:from-sky-400 hover:to-indigo-500 text-white font-black text-xs uppercase tracking-wider shadow-lg active:scale-95 transition-transform cursor-pointer">
+                Resume Match
+            </button>
+        </div>
+    </div>
+
+    <!-- TOAST NOTIFICATION POPUP -->
+    <div id="toastNotification" class="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-slate-900/95 border border-sky-500/40 backdrop-blur-xl px-4 py-2 rounded-full text-xs font-bold text-white shadow-2xl opacity-0 transition-opacity duration-300 pointer-events-none flex items-center gap-2">
+        <i id="toastIcon" class="fas fa-info-circle text-sky-400"></i>
+        <span id="toastText">Notification message</span>
+    </div>
+
+    <!-- EXTERNAL JS DEPENDENCIES -->
+    <script src="/lib/three/three.r16x.bundle.js" asp-append-version="true"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.7/signalr.min.js"></script>
+
+    <!-- CORE DEVOWARSAR REAL-TIME SCRIPT -->
+    <script>
+    (function () {
+        'use strict';
+
+        // --- Logging Utility ---
+        const log = (msg, ...args) => console.log(`[DevoWarsAR] ${msg}`, ...args);
+
+        // --- Game Arena Boundaries (Meters) ---
+        // Player 1 / Local is on South Bank (Z: +0.35 to +1.15)
+        // Opponent is on North Bank (Z: -1.15 to -0.35)
+        // River runs at Z: -0.25 to +0.25
+        const BOUNDS = {
+            minX: -1.35,
+            maxX: 1.35,
+            minZ: 0.38,
+            maxZ: 1.25,
+            defaultSpawnZ: 0.85,
+            oppSpawnZ: -0.85
+        };
+
+        // --- State Management ---
+        let roomCode = '@initialRoom'.trim().toUpperCase() || 'HOOK';
+        let playerName = 'Devourer';
+        let playerId = sessionStorage.getItem('devo_player_id');
+        if (!playerId) {
+            playerId = 'p_' + Math.random().toString(36).substring(2, 11) + Date.now().toString(36);
+            try { sessionStorage.setItem('devo_player_id', playerId); } catch (e) {}
+        }
+        let playerSlot = 1; // 1 = Host (South), 2 = Challenger (North, flipped)
+        let isSoloPractice = false;
+        let matchActive = false;
+        let scoreLocal = 0;
+        let scoreRemote = 0;
+
+        // Three.js Scene Variables
+        let scene, camera, renderer, controls, clock;
+        let groundPlane, shadowPlane, riverMesh, riverMaterial, studioGrid;
+        let riverBedMesh = null, riverStones = [], riverLilyPads = [];
+
+        // Devourer Character Meshes & Mixers
+        let localDevo = null, localMixer = null, localActions = {}, currentLocalAction = null;
+        let oppDevo = null, oppMixer = null, oppActions = {}, currentOppAction = null;
+        let currentLocalActionName = 'idle', currentOppActionName = 'idle';
+        let isLocalMoving = false, isLocalWalking = false;
+        let localTarget = new THREE.Vector3(0, 0, BOUNDS.defaultSpawnZ);
+        let oppTarget = new THREE.Vector3(0, 0, BOUNDS.oppSpawnZ);
+        let isOppMoving = false;
+
+        // Aiming & Hook Projectile System
+        let isAiming = false;
+        let aimStartTouch = new THREE.Vector2();
+        let aimWorldPoint = new THREE.Vector3();
+        let trajectoryLine = null;
+        let aimCrosshair = null;
+        let hookCooldown = false;
+        let hookCooldownTimer = 0;
+        const HOOK_COOLDOWN_SEC = 2.8;
+        const HOOK_SPEED = 6.2; // units per second
+        const HOOK_RANGE = 2.4; // Reach far across river
+
+        // Active Flying Hooks Collection
+        // hook = { mesh, chainMesh, startPos, dir, distTraveled, maxDist, state: 'flying'|'reeling', isLocal, targetDevo }
+        let activeHooks = [];
+
+        // Practice Mode Sparring Bot State
+        let dummyPatrolDir = 1; // 1 = right (+X), -1 = left (-X)
+        let dummyPatrolSpeed = 1.3;
+        let dummyPauseTimer = 0;
+        let dummyNextHookTimer = 3.5;
+        let isDummyRespawning = false;
+
+        // Audio System
+        let isAudioMuted = false;
+        const audioCache = {};
+        const SOUND_FILES = {
+            hookCast: '/sounds/devourer/hook_cast.ogg',
+            hookImpact: '/sounds/devourer/hook_impact.ogg',
+            hookAbility: '/sounds/devourer/hook_ability.ogg',
+            noMana: '/sounds/devourer/no_mana.ogg',
+            death: '/sounds/devourer/death.ogg',
+            fart: '/sounds/devourer/fart.ogg',
+            move1: '/sounds/devourer/move_1.ogg',
+            move2: '/sounds/devourer/move_2.ogg',
+            move3: '/sounds/devourer/move_3.ogg',
+            move4: '/sounds/devourer/move_4.ogg',
+            tauntPrior: '/sounds/devourer/taunt_prior.ogg',
+            tauntAfter: '/sounds/devourer/taunt_after.ogg',
+            select1: '/sounds/devourer/select_1.ogg',
+            heroSelect: '/sounds/devourer/hero_select.ogg'
+        };
+
+        // Camera Feed AR
+        let isCameraActive = false;
+        let mediaStream = null;
+
+        // Camera Perspective Mode: 'tabletop' | 'pov'
+        let cameraMode = 'tabletop';
+
+        // Input & Motion State (Phone Tilt & PC Keyboard)
+        let isTiltEnabled = true;
+        let hasDeviceOrientation = false; // Only true when genuine mobile hardware sensor sends non-zero pitch/roll
+        let tiltGamma = 0;
+        let tiltBeta = 0;
+        let neutralBeta = 45;
+        let isTiltCalibrated = false;
+        let keysDown = {};
+        let moveMarkerMesh = null; // Visual 3D pulse ring on Right-Click move
+        let isLocalHookStunned = false; // Incapacitated while being hooked and reeled across river
+        let localRespawnTimeout = null;
+        let oppRespawnTimeout = null;
+
+        // SignalR Hub Connection
+        let hub = null;
+        let lastSyncTime = 0;
+
+        // DOM Elements
+        const canvas = document.getElementById('gameCanvas');
+        const container = document.getElementById('canvasContainer');
+        const video = document.getElementById('cameraFeed');
+        const lobbyModal = document.getElementById('lobbyModal');
+        const waitingOverlay = document.getElementById('waitingOverlay');
+        const matchOverModal = document.getElementById('matchOverModal');
+        const arReadyModal = document.getElementById('arReadyModal');
+        const roomFullModal = document.getElementById('roomFullModal');
+        const settingsModal = document.getElementById('settingsModal');
+        const btnOpenSettings = document.getElementById('btnOpenSettings');
+        const btnCloseSettings = document.getElementById('btnCloseSettings');
+        const btnResumeSettings = document.getElementById('btnResumeSettings');
+        const aimHintBanner = document.getElementById('aimHintBanner');
+        const cooldownBanner = document.getElementById('cooldownBanner');
+        const cooldownTimeText = document.getElementById('cooldownTimeText');
+        const combatTextLayer = document.getElementById('combatTextLayer');
+        const scoreP1El = document.getElementById('scoreP1');
+        const scoreP2El = document.getElementById('scoreP2');
+        const roomCodeDisplay = document.getElementById('roomCodeDisplay');
+        const shareUrlText = document.getElementById('shareUrlText');
+        const toastEl = document.getElementById('toastNotification');
+        const toastText = document.getElementById('toastText');
+
+        // Preload Audio Buffers
+        function preloadSounds() {
+            Object.entries(SOUND_FILES).forEach(([key, path]) => {
+                const audio = new Audio(path);
+                audio.preload = 'auto';
+                audioCache[key] = audio;
+            });
+        }
+
+        function playSound(soundKey, volume = 0.8) {
+            if (isAudioMuted) return;
+            try {
+                const baseAudio = audioCache[soundKey];
+                if (baseAudio) {
+                    const clone = baseAudio.cloneNode();
+                    clone.volume = volume;
+                    clone.play().catch(() => {});
+                }
+            } catch (e) {
+                console.warn('Audio play error:', e);
+            }
+        }
+
+        function playRandomMoveSound() {
+            // Silenced per user request: camera rotation & movement should not play voicelines
+        }
+
+        function showToast(msg, iconClass = 'fa-info-circle') {
+            toastText.textContent = msg;
+            document.getElementById('toastIcon').className = `fas ${iconClass} text-sky-400`;
+            toastEl.classList.remove('opacity-0');
+            clearTimeout(toastEl._timer);
+            toastEl._timer = setTimeout(() => toastEl.classList.add('opacity-0'), 2600);
+        }
+
+        // --- Orientation Guard & Fullscreen (Orientation Restriction Lifted!) ---
+        function checkOrientation() {
+            // Unrestricted orientation: players can freely play in landscape or portrait!
+        }
+
+        function requestFullscreenIfNeeded() {
+            const el = document.documentElement;
+            if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+                if (el.requestFullscreen) {
+                    el.requestFullscreen().catch(() => {});
+                } else if (el.webkitRequestFullscreen) {
+                    el.webkitRequestFullscreen();
+                }
+            }
+        }
+
+        // --- 1. Three.js Engine Setup ---
+        function initThreeEngine() {
+            clock = new THREE.Clock();
+            scene = new THREE.Scene();
+
+            const aspect = container.clientWidth / container.clientHeight;
+            // 52-degree FOV tilted down at the table
+            camera = new THREE.PerspectiveCamera(52, aspect, 0.1, 100);
+            resetCamera();
+
+            renderer = new THREE.WebGLRenderer({
+                canvas: canvas,
+                alpha: true,
+                antialias: true,
+                powerPreference: 'high-performance'
+            });
+            renderer.setSize(container.clientWidth, container.clientHeight);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+            renderer.shadowMap.enabled = true;
+            renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+            if (window.KongorViewerCore) {
+                window.KongorViewerCore.configureRendererColorSpace(renderer);
+            } else if ('outputColorSpace' in renderer && THREE.SRGBColorSpace) {
+                renderer.outputColorSpace = THREE.SRGBColorSpace;
+            }
+
+            controls = new THREE.OrbitControls(camera, renderer.domElement);
+            controls.enableDamping = true;
+            controls.dampingFactor = 0.08;
+            controls.maxPolarAngle = Math.PI / 2 - 0.05;
+            controls.minDistance = 0.8;
+            controls.maxDistance = 5.0;
+            controls.enablePan = false;
+            controls.target.set(0, 0.25, 0); // Table origin
+
+            // Configure OrbitControls to avoid intercepting Left-Click Hook & Right-Click Move
+            controls.mouseButtons = {
+                LEFT: null, // Left click reserved for Hooking (or Alt/Shift + Left drag for camera orbit)
+                MIDDLE: THREE.MOUSE.ROTATE, // Middle click & drag rotates camera
+                RIGHT: null // Right click reserved for Movement
+            };
+            controls.touches = {
+                ONE: THREE.TOUCH.NONE, // Single touch reserved for in-game movement & hooking
+                TWO: THREE.TOUCH.DOLLY_ROTATE // Two-finger touch pinches & rotates
+            };
+
+            // Lighting Setup
+            const hemiLight = new THREE.HemisphereLight(0xffffff, 0x334155, 1.1);
+            hemiLight.position.set(0, 10, 0);
+            scene.add(hemiLight);
+
+            const sunLight = new THREE.DirectionalLight(0xffffff, 1.4);
+            sunLight.position.set(3, 7, 4);
+            sunLight.castShadow = true;
+            sunLight.shadow.mapSize.width = 1024;
+            sunLight.shadow.mapSize.height = 1024;
+            sunLight.shadow.camera.near = 0.2;
+            sunLight.shadow.camera.far = 15;
+            scene.add(sunLight);
+
+            // Ambient River Glow
+            const riverLight = new THREE.PointLight(0x0284c7, 1.5, 3);
+            riverLight.position.set(0, 0.3, 0);
+            scene.add(riverLight);
+
+            setupArenaEnvironment();
+            setupAimVisualizer();
+
+            window.addEventListener('resize', onWindowResize);
+            window.addEventListener('orientationchange', () => setTimeout(onWindowResize, 100));
+
+            renderer.setAnimationLoop(renderLoop);
+            document.addEventListener('visibilitychange', () => {
+                if (!renderer) return;
+                if (document.hidden && (!renderer.xr || !renderer.xr.isPresenting)) {
+                    renderer.setAnimationLoop(null);
+                } else if (!document.hidden) {
+                    if (clock) clock.getDelta();
+                    renderer.setAnimationLoop(renderLoop);
+                }
+            });
+        }
+
+        function resetCamera() {
+            if (cameraMode === 'pov') {
+                updatePovCamera();
+                return;
+            }
+            const isLandscape = window.innerWidth > window.innerHeight;
+            if (isLandscape) {
+                // Wider lateral stadium perspective for landscape
+                camera.position.set(0, 2.2, 2.0);
+            } else {
+                // High-angle portrait tabletop perspective looking directly across the river
+                camera.position.set(0, 2.7, 2.4);
+            }
+            camera.lookAt(0, 0.05, 0);
+            if (controls) {
+                controls.target.set(0, 0.05, 0);
+                controls.enabled = (cameraMode === 'tabletop' && !isCameraActive);
+            }
+        }
+
+        function updatePovCamera() {
+            if (!localDevo) return;
+            // Over-the-shoulder POV: Offsets camera over right shoulder with clear forward line of sight
+            camera.position.set(
+                localDevo.position.x + 0.36,
+                localDevo.position.y + 0.46,
+                localDevo.position.z + 0.72
+            );
+            camera.lookAt(
+                localDevo.position.x + 0.12,
+                0.16,
+                -1.2
+            );
+        }
+
+        // --- 2. Arena Environment (River + Banks) ---
+        function createRiverbedTexture() {
+            const cvs = document.createElement('canvas');
+            cvs.width = 512;
+            cvs.height = 128;
+            const ctx = cvs.getContext('2d');
+
+            // Dark aquatic sediment base with subtle channel depth gradient
+            const grad = ctx.createLinearGradient(0, 0, 0, 128);
+            grad.addColorStop(0.0, '#081e2b');
+            grad.addColorStop(0.5, '#030f17');
+            grad.addColorStop(1.0, '#081e2b');
+            ctx.fillStyle = grad;
+            ctx.fillRect(0, 0, 512, 128);
+
+            // Natural fine river pebbles, silt & gravel (400 fine stones)
+            const pebbleColors = [
+                '#0f2838', '#153549', '#1c425a', '#0b1d28', '#173630', 
+                '#253a4b', '#182f3d', '#1f3c4c', '#122623', '#234454'
+            ];
+            for (let i = 0; i < 400; i++) {
+                const px = Math.random() * 512;
+                const py = Math.random() * 128;
+                const rx = 1.2 + Math.random() * 3.2;
+                const ry = 0.9 + Math.random() * 2.2;
+                const rot = Math.random() * Math.PI;
+
+                ctx.save();
+                ctx.translate(px, py);
+                ctx.rotate(rot);
+                ctx.fillStyle = pebbleColors[Math.floor(Math.random() * pebbleColors.length)];
+                ctx.beginPath();
+                ctx.ellipse(0, 0, rx, ry, 0, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
+            }
+
+            const texture = new THREE.CanvasTexture(cvs);
+            texture.wrapS = THREE.RepeatWrapping;
+            texture.wrapT = THREE.RepeatWrapping;
+            texture.repeat.set(6, 1);
+            return texture;
+        }
+
+        function setupRiverBanksAndStones(targetScene) {
+            const stoneGeo = new THREE.DodecahedronGeometry(1, 1);
+            const slateMat = new THREE.MeshStandardMaterial({
+                color: 0x334155, // River slate
+                roughness: 0.8,
+                metalness: 0.1
+            });
+
+            const mossStoneMat = new THREE.MeshStandardMaterial({
+                color: 0x1e3a34, // Moss-covered river stone
+                roughness: 0.85,
+                metalness: 0.1
+            });
+
+            const graniteMat = new THREE.MeshStandardMaterial({
+                color: 0x475569, // Smooth granite boulder
+                roughness: 0.7,
+                metalness: 0.15
+            });
+
+            // Naturally clustered river rocks along South Bank (Z = +0.27)
+            for (let i = 0; i < 20; i++) {
+                const x = -1.65 + (i / 19) * 3.3 + (Math.random() - 0.5) * 0.08;
+                const z = 0.272 + (Math.random() - 0.5) * 0.02;
+                const s = 0.014 + Math.random() * 0.024;
+                const mat = (i % 3 === 0) ? mossStoneMat : ((i % 2 === 0) ? graniteMat : slateMat);
+                const stone = new THREE.Mesh(stoneGeo, mat);
+                stone.scale.set(s * (0.8 + Math.random() * 0.5), s * 0.5, s * (0.8 + Math.random() * 0.5));
+                stone.position.set(x, s * 0.3, z);
+                stone.rotation.set(Math.random() * Math.PI, Math.random() * Math.PI, 0);
+                stone.castShadow = false;
+                stone.receiveShadow = true;
+                targetScene.add(stone);
+                riverStones.push(stone);
+            }
+
+            // Naturally clustered river rocks along North Bank (Z = -0.27)
+            for (let i = 0; i < 20; i++) {
+                const x = -1.65 + (i / 19) * 3.3 + (Math.random() - 0.5) * 0.08;
+                const z = -0.272 + (Math.random() - 0.5) * 0.02;
+                const s = 0.014 + Math.random() * 0.024;
+                const mat = (i % 3 === 1) ? mossStoneMat : ((i % 2 === 1) ? graniteMat : slateMat);
+                const stone = new THREE.Mesh(stoneGeo, mat);
+                stone.scale.set(s * (0.8 + Math.random() * 0.5), s * 0.5, s * (0.8 + Math.random() * 0.5));
+                stone.position.set(x, s * 0.3, z);
+                stone.rotation.set(Math.random() * Math.PI, Math.random() * Math.PI, 0);
+                stone.castShadow = false;
+                stone.receiveShadow = true;
+                targetScene.add(stone);
+                riverStones.push(stone);
+            }
+        }
+
+        function setupLilyPads(targetScene) {
+            const padGeo = new THREE.CircleGeometry(0.04, 20);
+            const padMat = new THREE.MeshStandardMaterial({
+                color: 0x15803d, // Emerald river lily pad
+                roughness: 0.35,
+                metalness: 0.1,
+                side: THREE.DoubleSide
+            });
+
+            const budGeo = new THREE.ConeGeometry(0.009, 0.018, 6);
+            const budMat = new THREE.MeshStandardMaterial({
+                color: 0xf472b6, // Lotus blossom flower
+                roughness: 0.3
+            });
+
+            for (let i = 0; i < 6; i++) {
+                const padGroup = new THREE.Group();
+                const pad = new THREE.Mesh(padGeo, padMat);
+                pad.rotation.x = -Math.PI / 2;
+                pad.receiveShadow = true;
+                padGroup.add(pad);
+
+                if (i % 2 === 0) {
+                    const bud = new THREE.Mesh(budGeo, budMat);
+                    bud.position.set(0.01, 0.01, 0.01);
+                    padGroup.add(bud);
+                }
+
+                const startX = -1.5 + Math.random() * 3.0;
+                const startZ = -0.16 + Math.random() * 0.32;
+                padGroup.position.set(startX, 0.007, startZ);
+
+                padGroup.userData = {
+                    speed: 0.06 + Math.random() * 0.05,
+                    phase: Math.random() * Math.PI * 2
+                };
+
+                targetScene.add(padGroup);
+                riverLilyPads.push(padGroup);
+            }
+        }
+
+        function setupArenaEnvironment() {
+            // Invisible shadow receiver planes for camera passthrough (flanking the river)
+            const shadowMat = new THREE.ShadowMaterial({ opacity: 0.35 });
+            
+            // South Bank Shadow Receiver (Local Player side)
+            const shadowSouthGeo = new THREE.PlaneGeometry(12, 6);
+            const shadowSouth = new THREE.Mesh(shadowSouthGeo, shadowMat);
+            shadowSouth.rotation.x = -Math.PI / 2;
+            shadowSouth.position.set(0, -0.0005, 3.28);
+            shadowSouth.receiveShadow = true;
+            scene.add(shadowSouth);
+
+            // North Bank Shadow Receiver (Opponent side)
+            const shadowNorthGeo = new THREE.PlaneGeometry(12, 6);
+            const shadowNorth = new THREE.Mesh(shadowNorthGeo, shadowMat);
+            shadowNorth.rotation.x = -Math.PI / 2;
+            shadowNorth.position.set(0, -0.0005, -3.28);
+            shadowNorth.receiveShadow = true;
+            scene.add(shadowNorth);
+            shadowPlane = shadowSouth; // Maintain reference for camera toggle visibility
+
+            // Infinite raycast plane for touches
+            const rayGeo = new THREE.PlaneGeometry(50, 50);
+            const rayMat = new THREE.MeshBasicMaterial({ transparent: true, opacity: 0 });
+            groundPlane = new THREE.Mesh(rayGeo, rayMat);
+            groundPlane.rotation.x = -Math.PI / 2;
+            scene.add(groundPlane);
+
+            // Studio Neon Grid (shown when camera is off)
+            studioGrid = new THREE.GridHelper(4.5, 18, 0x0284c7, 0x1e293b);
+            studioGrid.position.y = -0.001;
+            scene.add(studioGrid);
+
+            // 1. Submerged Riverbed Depth Channel (with underwater gravel & pebbles)
+            const riverBedGeo = new THREE.PlaneGeometry(3.6, 0.52, 32, 8);
+            const riverBedTexture = createRiverbedTexture();
+            const riverBedMat = new THREE.MeshStandardMaterial({
+                map: riverBedTexture,
+                roughness: 0.9,
+                metalness: 0.1
+            });
+            riverBedMesh = new THREE.Mesh(riverBedGeo, riverBedMat);
+            riverBedMesh.rotation.x = -Math.PI / 2;
+            riverBedMesh.position.set(0, -0.012, 0);
+            scene.add(riverBedMesh);
+
+            // 2. Realistic Animated Water Surface (Physical Waves + Flowing Caustics + Shore Foam)
+            const riverGeo = new THREE.PlaneGeometry(3.6, 0.52, 128, 32);
+            riverMaterial = new THREE.ShaderMaterial({
+                uniforms: {
+                    uTime: { value: 0 }
+                },
+                vertexShader: `
+                    uniform float uTime;
+                    varying vec2 vUv;
+                    varying vec3 vWorldPos;
+                    varying vec3 vNormal;
+
+                    void main() {
+                        vUv = uv;
+                        vec3 pos = position;
+                        
+                        // Wave displacement in world units
+                        float w1 = sin(pos.x * 12.0 - uTime * 3.0) * 0.003;
+                        float w2 = cos(pos.y * 24.0 + uTime * 2.2) * 0.002;
+                        float w3 = sin((pos.x * 8.0 + pos.y * 14.0) - uTime * 2.5) * 0.0025;
+                        pos.z += (w1 + w2 + w3);
+                        
+                        vec4 worldPosition = modelMatrix * vec4(pos, 1.0);
+                        vWorldPos = worldPosition.xyz;
+                        
+                        // Analytical wave normal
+                        float dwdx = cos(pos.x * 12.0 - uTime * 3.0) * 0.036 + cos((pos.x * 8.0 + pos.y * 14.0) - uTime * 2.5) * 0.02;
+                        float dwdy = -sin(pos.y * 24.0 + uTime * 2.2) * 0.048 + cos((pos.x * 8.0 + pos.y * 14.0) - uTime * 2.5) * 0.035;
+                        vec3 displacedNormal = normalize(vec3(-dwdx, -dwdy, 1.0));
+                        vNormal = normalize((modelMatrix * vec4(displacedNormal, 0.0)).xyz);
+                        
+                        gl_Position = projectionMatrix * viewMatrix * worldPosition;
+                    }
+                `,
+                fragmentShader: `
+                    uniform float uTime;
+                    varying vec2 vUv;
+                    varying vec3 vWorldPos;
+                    varying vec3 vNormal;
+
+                    // Isotropic fine cellular caustic network
+                    float getCaustic(vec2 p, float t) {
+                        vec2 p1 = p * 18.0;
+                        float c1 = sin(p1.x * 1.5 + sin(p1.y * 1.3 + t * 2.8));
+                        float c2 = cos(p1.y * 1.5 + sin(p1.x * 1.3 - t * 2.8));
+                        float c3 = sin((p1.x + p1.y) * 1.3 + t * 3.2);
+                        float net = abs(c1 + c2 + c3);
+                        return pow(clamp(1.0 - net * 0.38, 0.0, 1.0), 3.5);
+                    }
+
+                    void main() {
+                        // Isotropic downstream water flow using world-space coordinates
+                        vec2 flow1 = vec2(vWorldPos.x - uTime * 0.16, vWorldPos.z);
+                        vec2 flow2 = vec2(vWorldPos.x * 1.25 - uTime * 0.22 + 0.35, vWorldPos.z * 1.2);
+
+                        float c1 = getCaustic(flow1, uTime);
+                        float c2 = getCaustic(flow2, uTime * 1.12);
+                        float caustics = clamp(c1 * 0.65 + c2 * 0.55, 0.0, 1.0);
+
+                        // River depth gradient (deep sapphire center, turquoise shores)
+                        float edgeDist = min(vUv.y, 1.0 - vUv.y) * 2.0;
+                        vec3 deepWater = vec3(0.012, 0.24, 0.44);
+                        vec3 shallowWater = vec3(0.05, 0.54, 0.70);
+                        vec3 waterColor = mix(shallowWater, deepWater, smoothstep(0.08, 0.65, edgeDist));
+
+                        // Dynamic shoreline lapping foam
+                        float foamWave = sin(vWorldPos.x * 22.0 - uTime * 3.8) * 0.5 + 0.5;
+                        float foamLimit = 0.05 + foamWave * 0.035;
+                        float foam = smoothstep(foamLimit, 0.005, edgeDist);
+                        vec3 foamColor = vec3(0.92, 0.97, 1.0);
+
+                        // Downstream current streaks in middle channel
+                        float currentStreak = pow(sin(vWorldPos.z * 40.0 + sin(vWorldPos.x * 14.0 - uTime * 4.2) * 1.6) * 0.5 + 0.5, 4.0);
+                        float centerMask = smoothstep(0.25, 0.8, edgeDist);
+                        vec3 currentGlint = vec3(0.2, 0.75, 0.95) * currentStreak * centerMask * 0.22;
+
+                        // Specular sunlight sparkle
+                        vec3 viewDir = normalize(cameraPosition - vWorldPos);
+                        vec3 lightDir = normalize(vec3(0.6, 1.4, 0.8));
+                        vec3 halfVec = normalize(lightDir + viewDir);
+                        float spec = pow(max(dot(vNormal, halfVec), 0.0), 36.0) * 0.85;
+
+                        // Fresnel reflection & gentle transparency
+                        float fresnel = pow(1.0 - max(dot(vNormal, viewDir), 0.0), 2.8);
+                        float alpha = mix(0.72, 0.94, fresnel + foam * 0.22);
+
+                        vec3 col = mix(waterColor, foamColor, foam * 0.75);
+                        col += caustics * vec3(0.32, 0.80, 0.96) * (1.0 - foam * 0.5);
+                        col += currentGlint;
+                        col += spec * vec3(1.0, 1.0, 0.92);
+
+                        gl_FragColor = vec4(col, alpha);
+                    }
+                `,
+                transparent: true,
+                side: THREE.DoubleSide,
+                depthWrite: false
+            });
+
+            riverMesh = new THREE.Mesh(riverGeo, riverMaterial);
+            riverMesh.rotation.x = -Math.PI / 2;
+            riverMesh.position.set(0, 0.005, 0);
+            scene.add(riverMesh);
+
+            // 3. Subtle Glowing River Shorelines (Blue South Shore, Red North Shore)
+            const shoreSouthGeo = new THREE.BoxGeometry(3.6, 0.006, 0.014);
+            const shoreSouthMat = new THREE.MeshStandardMaterial({
+                color: 0x0284c7,
+                emissive: 0x0369a1,
+                emissiveIntensity: 0.5,
+                roughness: 0.5
+            });
+            const shoreSouth = new THREE.Mesh(shoreSouthGeo, shoreSouthMat);
+            shoreSouth.position.set(0, 0.004, 0.262);
+            scene.add(shoreSouth);
+
+            const shoreNorthGeo = new THREE.BoxGeometry(3.6, 0.006, 0.014);
+            const shoreNorthMat = new THREE.MeshStandardMaterial({
+                color: 0xb91c1c,
+                emissive: 0x991b1b,
+                emissiveIntensity: 0.5,
+                roughness: 0.5
+            });
+            const shoreNorth = new THREE.Mesh(shoreNorthGeo, shoreNorthMat);
+            shoreNorth.position.set(0, 0.004, -0.262);
+            scene.add(shoreNorth);
+
+            // 4. Natural River Stones & Boulders along Banks
+            setupRiverBanksAndStones(scene);
+
+            // 5. Drifting River Lily Pads & Water Blossoms
+            setupLilyPads(scene);
+        }
+
+        // --- 3. Aiming Trajectory Visualizer ---
+        function setupAimVisualizer() {
+            const lineGeo = new THREE.BufferGeometry();
+            lineGeo.setFromPoints([new THREE.Vector3(), new THREE.Vector3()]);
+            const lineMat = new THREE.LineDashedMaterial({
+                color: 0x4ade80, // Neon Lime Green aiming line
+                dashSize: 0.08,
+                gapSize: 0.04,
+                linewidth: 4,
+                transparent: true,
+                opacity: 0.9
+            });
+            trajectoryLine = new THREE.Line(lineGeo, lineMat);
+            trajectoryLine.visible = false;
+            trajectoryLine.position.y = 0.08;
+            scene.add(trajectoryLine);
+
+            // Reticle Target Ring
+            const ringGeo = new THREE.RingGeometry(0.12, 0.16, 24);
+            const ringMat = new THREE.MeshBasicMaterial({
+                color: 0xef4444,
+                side: THREE.DoubleSide,
+                transparent: true,
+                opacity: 0.85
+            });
+            aimCrosshair = new THREE.Mesh(ringGeo, ringMat);
+            aimCrosshair.rotation.x = -Math.PI / 2;
+            aimCrosshair.visible = false;
+            aimCrosshair.position.y = 0.01;
+            scene.add(aimCrosshair);
+        }
+
+        function updateAimTrajectory(targetPoint) {
+            if (!localDevo || !isAiming) {
+                trajectoryLine.visible = false;
+                aimCrosshair.visible = false;
+                return;
+            }
+
+            const isCancelling = (targetPoint.z >= 0.05);
+
+            const origin = localDevo.position.clone();
+            origin.y = 0.25; // Hook hand height
+
+            // Calculate direction and clamp to max hook range
+            const dir = new THREE.Vector3().subVectors(targetPoint, localDevo.position);
+            dir.y = 0;
+            const dist = Math.min(dir.length(), HOOK_RANGE);
+            dir.normalize();
+
+            const endPoint = localDevo.position.clone().addScaledVector(dir, dist);
+            endPoint.y = 0.25;
+
+            const pts = [origin, endPoint];
+            trajectoryLine.geometry.setFromPoints(pts);
+            trajectoryLine.computeLineDistances();
+
+            if (isCancelling) {
+                trajectoryLine.material.color.setHex(0xef4444); // Red when cancelling
+                aimCrosshair.material.color.setHex(0xef4444);
+                aimHintBanner.innerHTML = '<i class="fas fa-ban text-[10px] text-rose-400"></i><span class="text-rose-300">RELEASE TO CANCEL HOOK</span>';
+            } else {
+                trajectoryLine.material.color.setHex(0x4ade80); // Neon Lime Green when aiming across river
+                aimCrosshair.material.color.setHex(0x38bdf8);
+                aimHintBanner.innerHTML = '<i class="fas fa-crosshairs animate-spin text-[10px] text-sky-400"></i><span>RELEASE TO FLING HOOK!</span>';
+            }
+
+            trajectoryLine.visible = true;
+            aimCrosshair.position.set(endPoint.x, 0.015, endPoint.z);
+            aimCrosshair.visible = true;
+        }
+
+        // --- 4. Devourer 3D Model Loading ---
+        async function loadDevourerModels() {
+            log("Streaming Oni Devourer 3D assets...");
+            const loader = new THREE.GLTFLoader();
+
+            let buffer = null;
+            const candidateUrls = [
+                '/assets/prebaked/models/devourer_oni.glb',
+                '/api/v1/assets/3d/hero/devourer/alt2'
+            ];
+
+            for (const url of candidateUrls) {
+                try {
+                    const res = await fetch(url);
+                    if (res.ok) {
+                        buffer = await res.arrayBuffer();
+                        log(`Loaded model buffer from ${url} (${buffer.byteLength} bytes)`);
+                        break;
+                    }
+                } catch (e) {
+                    console.warn(`Failed fetching ${url}:`, e);
+                }
+            }
+
+            if (!buffer) {
+                log("Failed to load model from any candidate URL.");
+                showToast("Failed to load 3D model. Check network.", "fa-triangle-exclamation");
+                return;
+            }
+
+            loader.parse(buffer, '', (gltf) => {
+                // Setup Local Devourer (Blue Team)
+                localDevo = gltf.scene;
+                setupDevoAppearance(localDevo, 0x0284c7);
+                localDevo.position.set(0, 0, BOUNDS.defaultSpawnZ);
+                localDevo.rotation.y = Math.PI; // Face North toward the river
+                scene.add(localDevo);
+
+                localMixer = new THREE.AnimationMixer(localDevo);
+                gltf.animations.forEach(clip => {
+                    localActions[clip.name] = localMixer.clipAction(clip);
+                });
+
+                // Auto return to idle/walk after one-shot action (ability_1, knock_1) finishes
+                localMixer.addEventListener('finished', (e) => {
+                    if (!isLocalHookStunned) {
+                        const isWalking = (isLocalMoving || isLocalWalking || (keysDown['KeyW'] || keysDown['KeyS'] || keysDown['KeyA'] || keysDown['KeyD']));
+                        playDevoAction(true, isWalking ? 'walk_1' : 'idle', 0.25, true);
+                        if (!isWalking && localDevo) localDevo.rotation.y = Math.PI;
+                    }
+                });
+
+                playDevoAction(true, 'idle');
+
+                // Parse fresh independent GLTF instance for Opponent Devourer (Red Team)
+                loader.parse(buffer.slice(0), '', (gltf2) => {
+                    oppDevo = gltf2.scene;
+                    setupDevoAppearance(oppDevo, 0xef4444);
+                    oppDevo.position.set(0, 0, BOUNDS.oppSpawnZ);
+                    oppDevo.rotation.y = 0; // Face South toward local player
+                    scene.add(oppDevo);
+
+                    oppMixer = new THREE.AnimationMixer(oppDevo);
+                    gltf2.animations.forEach(clip => {
+                        oppActions[clip.name] = oppMixer.clipAction(clip);
+                    });
+
+                    oppMixer.addEventListener('finished', (e) => {
+                        playDevoAction(false, isOppMoving ? 'walk_1' : 'idle', 0.25, true);
+                        if (!isOppMoving && oppDevo) oppDevo.rotation.y = 0;
+                    });
+
+                    playDevoAction(false, 'idle');
+
+                    // Expose debug handle
+                    window.__devo = {
+                        getLocal: () => localDevo,
+                        getOpp: () => oppDevo,
+                        playAction: (isLocal, name, loop) => playDevoAction(isLocal, name, 0.2, loop),
+                        launchHook: (tx = 0, tz = -0.85) => attemptLaunchHook(new THREE.Vector3(tx, 0, tz)),
+                        moveTo: (x, z) => moveLocalDevourerTo(x, z)
+                    };
+
+                    log("Both Oni Devourer gladiators placed with full morph target animations.");
+                });
+            });
+        }
+
+        function setupDevoAppearance(model, teamGlowColor) {
+            model.scale.set(0.007, 0.007, 0.007); // Figurine scale ~35cm tall
+            model.traverse((node) => {
+                if (node.isMesh) {
+                    node.castShadow = true;
+                    node.receiveShadow = true;
+                    if (node.material) {
+                        node.material.side = THREE.DoubleSide;
+                        node.material.roughness = 0.45;
+                        node.material.metalness = 0.25;
+                        node.material.morphTargets = true;
+                        if (node.material.map) {
+                            if (window.KongorViewerCore) {
+                                window.KongorViewerCore.configureTextureColorSpace(node.material.map);
+                            } else if ('colorSpace' in node.material.map && THREE.SRGBColorSpace) {
+                                node.material.map.colorSpace = THREE.SRGBColorSpace;
+                            }
+                            node.material.map.needsUpdate = true;
+                        }
+                        node.material.needsUpdate = true;
+                    }
+                }
+            });
+
+            // Glowing team ring pedestal under feet
+            const ringGeo = new THREE.RingGeometry(36, 44, 32);
+            const ringMat = new THREE.MeshBasicMaterial({
+                color: teamGlowColor,
+                side: THREE.DoubleSide,
+                transparent: true,
+                opacity: 0.85
+            });
+            const pedestal = new THREE.Mesh(ringGeo, ringMat);
+            pedestal.rotation.x = -Math.PI / 2;
+            pedestal.position.y = 0.5;
+            model.add(pedestal);
+        }
+
+        function playDevoAction(isLocal, name, crossFadeDuration = 0.2, loop = true) {
+            const actions = isLocal ? localActions : oppActions;
+            const mixer = isLocal ? localMixer : oppMixer;
+            const current = isLocal ? currentLocalAction : currentOppAction;
+
+            if (!mixer || !actions || !actions[name]) return;
+            const newAction = actions[name];
+
+            if (current === newAction && loop && newAction.isRunning()) return;
+
+            newAction.reset();
+            newAction.setLoop(loop ? THREE.LoopRepeat : THREE.LoopOnce, loop ? Infinity : 1);
+            newAction.clampWhenFinished = !loop;
+
+            if (current && current !== newAction) {
+                newAction.crossFadeFrom(current, crossFadeDuration, true);
+            }
+            newAction.play();
+
+            if (isLocal) {
+                currentLocalAction = newAction;
+                currentLocalActionName = name;
+            } else {
+                currentOppAction = newAction;
+                currentOppActionName = name;
+            }
+        }
+
+        function playAnim(actionMap, animName, loopOnce = false) {
+            const isLocal = (actionMap === localActions);
+            playDevoAction(isLocal, animName, 0.2, !loopOnce);
+        }
+
+        // --- 5. 3D Guttling Hook Creation & Chain Physics ---
+        function createHookHeadMesh(isLocal) {
+            const hookGroup = new THREE.Group();
+
+            // Authentic Guttling Talon & Barb (Forged Dark Iron)
+            const curve = new THREE.CatmullRomCurve3([
+                new THREE.Vector3(0, 0, 0),
+                new THREE.Vector3(0.04, 0.02, 0.08),
+                new THREE.Vector3(0.10, 0, 0.16),
+                new THREE.Vector3(0.06, -0.02, 0.24),
+                new THREE.Vector3(-0.02, 0, 0.22)
+            ]);
+            const tubeGeo = new THREE.TubeGeometry(curve, 16, 0.025, 8, false);
+            const hookMat = new THREE.MeshStandardMaterial({
+                color: 0x475569, // Heavy slate/iron
+                metalness: 0.85,
+                roughness: 0.35
+            });
+            const mainBlade = new THREE.Mesh(tubeGeo, hookMat);
+            hookGroup.add(mainBlade);
+
+            // Sharp Barb Tip
+            const coneGeo = new THREE.ConeGeometry(0.035, 0.1, 8);
+            const tipMesh = new THREE.Mesh(coneGeo, hookMat);
+            tipMesh.position.set(-0.02, 0, 0.25);
+            tipMesh.rotation.x = Math.PI / 2;
+            hookGroup.add(tipMesh);
+
+            // Base Chain Collar Ring
+            const torusGeo = new THREE.TorusGeometry(0.032, 0.012, 8, 16);
+            const ringMesh = new THREE.Mesh(torusGeo, hookMat);
+            ringMesh.position.set(0, 0, -0.01);
+            hookGroup.add(ringMesh);
+
+            hookGroup.userData = { isAuthentic: true };
+            return hookGroup;
+        }
+
+        function spawnHook(startX, startZ, dirX, dirZ, isLocal) {
+            const hookHead = createHookHeadMesh(isLocal);
+            hookHead.position.set(startX, 0.25, startZ);
+
+            const dir = new THREE.Vector3(dirX, 0, dirZ).normalize();
+            hookHead.quaternion.setFromUnitVectors(new THREE.Vector3(0, 0, 1), dir);
+            scene.add(hookHead);
+
+            // Chain visual line connecting Devourer's hand to hook
+            const chainGeo = new THREE.BufferGeometry();
+            chainGeo.setFromPoints([new THREE.Vector3(startX, 0.25, startZ), hookHead.position]);
+            const chainMat = new THREE.LineDashedMaterial({
+                color: 0x94a3b8,
+                dashSize: 0.05,
+                gapSize: 0.03,
+                linewidth: 3
+            });
+            const chainLine = new THREE.Line(chainGeo, chainMat);
+            scene.add(chainLine);
+
+            const targetDevo = isLocal ? oppDevo : localDevo;
+
+            const hookObj = {
+                mesh: hookHead,
+                chain: chainLine,
+                origin: new THREE.Vector3(startX, 0.25, startZ),
+                dir: dir,
+                distTraveled: 0,
+                maxDist: HOOK_RANGE,
+                speed: HOOK_SPEED,
+                state: 'flying', // 'flying' | 'reeling' | 'done'
+                isLocal: isLocal,
+                targetDevo: targetDevo,
+                caughtVictim: false
+            };
+
+            activeHooks.push(hookObj);
+            playSound('hookCast', 0.9);
+
+            if (isLocal) {
+                playDevoAction(true, 'ability_1', 0.1, false);
+            } else {
+                playDevoAction(false, 'ability_1', 0.1, false);
+            }
+        }
+
+        function distPointToSegment(px, pz, ax, az, bx, bz) {
+            const abx = bx - ax;
+            const abz = bz - az;
+            const apx = px - ax;
+            const apz = pz - az;
+            const ab2 = abx * abx + abz * abz;
+            let t = 0;
+            if (ab2 > 0.00001) {
+                t = Math.max(0, Math.min(1, (apx * abx + apz * abz) / ab2));
+            }
+            const closeX = ax + t * abx;
+            const closeZ = az + t * abz;
+            return Math.hypot(px - closeX, pz - closeZ);
+        }
+
+        function updateHooks(delta) {
+            for (let i = activeHooks.length - 1; i >= 0; i--) {
+                const h = activeHooks[i];
+                const casterPos = h.isLocal ? (localDevo ? localDevo.position : { x: 0, z: BOUNDS.defaultSpawnZ }) : (oppDevo ? oppDevo.position : { x: 0, z: BOUNDS.oppSpawnZ });
+                const handPos = new THREE.Vector3(casterPos.x, 0.25, casterPos.z);
+
+                if (h.state === 'flying') {
+                    const prevX = h.mesh.position.x;
+                    const prevZ = h.mesh.position.z;
+
+                    const step = h.speed * delta;
+                    h.mesh.position.addScaledVector(h.dir, step);
+                    h.distTraveled += step;
+
+                    const newX = h.mesh.position.x;
+                    const newZ = h.mesh.position.z;
+
+                    // Update chain geometry
+                    h.chain.geometry.setFromPoints([handPos, h.mesh.position]);
+                    h.chain.computeLineDistances();
+
+                    // Continuous swept-volume collision detection with target Devourer
+                    if (h.targetDevo) {
+                        const sweptDist = distPointToSegment(
+                            h.targetDevo.position.x, h.targetDevo.position.z,
+                            prevX, prevZ,
+                            newX, newZ
+                        );
+
+                        if (sweptDist < 0.40) {
+                            // HIT REGISTERED!
+                            log(`HOOK CONNECTED! Caster isLocal=${h.isLocal}, Swept dist=${sweptDist.toFixed(2)}`);
+                            h.mesh.position.x = h.targetDevo.position.x;
+                            h.mesh.position.z = h.targetDevo.position.z;
+                            h.state = 'reeling';
+                            h.caughtVictim = true;
+                            onHookHit(h);
+                        }
+                    }
+
+                    if (h.distTraveled >= h.maxDist && h.state === 'flying') {
+                        // Reached max range without hit -> Retract
+                        h.state = 'reeling';
+                        if (h.isLocal) playDevoAction(true, isLocalMoving ? 'walk_1' : 'idle', 0.2, true);
+                        else playDevoAction(false, isOppMoving ? 'walk_1' : 'idle', 0.2, true);
+                    }
+                } else if (h.state === 'reeling') {
+                    // Pull hook back toward caster
+                    const returnDir = new THREE.Vector3().subVectors(handPos, h.mesh.position);
+                    const distToHand = returnDir.length();
+
+                    if (distToHand < 0.15) {
+                        // Hook successfully reeled back in
+                        if (h.caughtVictim && h.targetDevo) {
+                            if (h.targetDevo === oppDevo) {
+                                oppDevo.position.set(0, 0, BOUNDS.oppSpawnZ);
+                                oppTarget.set(0, 0, BOUNDS.oppSpawnZ);
+                                oppDevo.rotation.y = 0;
+                                playDevoAction(false, 'idle', 0.2, true);
+                            } else if (h.targetDevo === localDevo) {
+                                localDevo.position.set(0, 0, BOUNDS.defaultSpawnZ);
+                                localTarget.set(0, 0, BOUNDS.defaultSpawnZ);
+                                localDevo.rotation.y = Math.PI;
+                                isLocalHookStunned = false;
+                                playDevoAction(true, 'idle', 0.2, true);
+                                showToast("Respawned on your bank!", "fa-shield-halved");
+                            }
+                        }
+
+                        scene.remove(h.mesh);
+                        scene.remove(h.chain);
+                        activeHooks.splice(i, 1);
+
+                        if (h.isLocal) playDevoAction(true, isLocalMoving ? 'walk_1' : 'idle', 0.2, true);
+                        else playDevoAction(false, isOppMoving ? 'walk_1' : 'idle', 0.2, true);
+                        continue;
+                    }
+
+                    returnDir.normalize();
+                    const returnStep = (HOOK_SPEED * 1.3) * delta;
+                    h.mesh.position.addScaledVector(returnDir, returnStep);
+
+                    // If victim was caught, drag victim across river toward caster!
+                    if (h.caughtVictim && h.targetDevo) {
+                        h.targetDevo.position.set(h.mesh.position.x, 0, h.mesh.position.z);
+                        if (h.targetDevo === localDevo) {
+                            localTarget.set(h.mesh.position.x, 0, h.mesh.position.z);
+                        } else if (h.targetDevo === oppDevo) {
+                            oppTarget.set(h.mesh.position.x, 0, h.mesh.position.z);
+                        }
+                    }
+
+                    h.chain.geometry.setFromPoints([handPos, h.mesh.position]);
+                    h.chain.computeLineDistances();
+                }
+            }
+        }
+
+        // --- 6. Hook Collision & Score Event ---
+        function onHookHit(hookObj) {
+            playSound('hookImpact', 1.0);
+            playSound('death', 0.9);
+
+            // Screen Shake Effect
+            triggerCameraShake();
+
+            // Victim animation & floating combat text
+            if (hookObj.targetDevo === oppDevo) {
+                playDevoAction(false, 'knock_1', 0.1, false);
+                spawnFloatingScore(oppDevo.position, "+1 HOOKED!", "text-amber-400");
+
+                if (isSoloPractice) {
+                    scoreLocal++;
+                    updateScoreboard();
+                    respawnDummy();
+                    if (scoreLocal >= 10) {
+                        showVictoryModal(true, scoreLocal, scoreRemote);
+                    }
+                } else if (hookObj.isLocal && hub) {
+                    // Send score update to SignalR hub with hit impact coordinates
+                    hub.invoke("ReportHit", roomCode, playerSlot, hookObj.mesh.position.x, hookObj.mesh.position.z)
+                        .catch(err => log("ReportHit error:", err));
+                }
+            } else {
+                playDevoAction(true, 'knock_1', 0.1, false);
+                spawnFloatingScore(localDevo.position, "HOOKED!", "text-rose-500");
+                isLocalHookStunned = true;
+
+                if (isSoloPractice) {
+                    scoreRemote++;
+                    updateScoreboard();
+                    setTimeout(() => {
+                        if (localDevo) {
+                            localDevo.position.set(0, 0, BOUNDS.defaultSpawnZ);
+                            localTarget.set(0, 0, BOUNDS.defaultSpawnZ);
+                            isLocalHookStunned = false;
+                            playDevoAction(true, 'idle', 0.2, true);
+                        }
+                    }, 1200);
+                    if (scoreRemote >= 10) {
+                        showVictoryModal(false, scoreLocal, scoreRemote);
+                    }
+                }
+            }
+        }
+
+        function triggerCameraShake() {
+            const originalPos = camera.position.clone();
+            let elapsed = 0;
+            const shakeInterval = setInterval(() => {
+                elapsed += 0.04;
+                if (elapsed > 0.25) {
+                    clearInterval(shakeInterval);
+                    camera.position.copy(originalPos);
+                    return;
+                }
+                const offset = (Math.random() - 0.5) * 0.06;
+                camera.position.x = originalPos.x + offset;
+                camera.position.y = originalPos.y + offset;
+            }, 30);
+        }
+
+        function spawnFloatingScore(worldPos, text, colorClass) {
+            // Project 3D coordinate to 2D screen coordinate
+            const pos = worldPos.clone();
+            pos.y += 0.5;
+            pos.project(camera);
+
+            const x = (pos.x * 0.5 + 0.5) * container.clientWidth;
+            const y = (-(pos.y * 0.5) + 0.5) * container.clientHeight;
+
+            const el = document.createElement('div');
+            el.className = `absolute text-xl font-black font-mono tracking-widest ${colorClass} float-score drop-shadow-lg`;
+            el.style.left = `${x}px`;
+            el.style.top = `${y}px`;
+            el.textContent = text;
+            combatTextLayer.appendChild(el);
+
+            setTimeout(() => el.remove(), 1400);
+        }
+
+        function respawnDummy() {
+            isDummyRespawning = true;
+            setTimeout(() => {
+                if (oppDevo) {
+                    oppDevo.position.set((Math.random() - 0.5) * 1.5, 0, BOUNDS.oppSpawnZ);
+                    playAnim(oppActions, 'idle');
+                    playSound('tauntPrior', 0.8);
+                }
+                dummyPatrolDir = Math.random() < 0.5 ? 1 : -1;
+                dummyPauseTimer = 0.5;
+                dummyNextHookTimer = 3.5 + Math.random() * 2.0;
+                isDummyRespawning = false;
+            }, 1200);
+        }
+
+        function showMoveMarker(x, z) {
+            if (!scene) return;
+            if (!moveMarkerMesh) {
+                const ringGeo = new THREE.RingGeometry(0.04, 0.09, 24);
+                ringGeo.rotateX(-Math.PI / 2);
+                const ringMat = new THREE.MeshBasicMaterial({
+                    color: 0x10b981, // Emerald green
+                    transparent: true,
+                    opacity: 0.9,
+                    side: THREE.DoubleSide,
+                    depthWrite: false
+                });
+                moveMarkerMesh = new THREE.Mesh(ringGeo, ringMat);
+                scene.add(moveMarkerMesh);
+            }
+            moveMarkerMesh.position.set(x, 0.02, z);
+            moveMarkerMesh.scale.set(1, 1, 1);
+            moveMarkerMesh.material.opacity = 0.9;
+            moveMarkerMesh.visible = true;
+            moveMarkerMesh._life = 0.35;
+        }
+
+        // --- 7. Multi-Input Controls (Right-Click Move, Left-Click Hook, WASD, Mobile Touch & Tilt) ---
+        function setupInteractionHandlers() {
+            let activeTouchMode = 'none'; // 'move' | 'aim_hook' | 'none'
+            const raycaster = new THREE.Raycaster();
+            const mouse = new THREE.Vector2();
+
+            function getIntersection(event) {
+                const rect = renderer.domElement.getBoundingClientRect();
+                const clientX = event.clientX !== undefined ? event.clientX : (event.touches && event.touches[0] ? event.touches[0].clientX : 0);
+                const clientY = event.clientY !== undefined ? event.clientY : (event.touches && event.touches[0] ? event.touches[0].clientY : 0);
+
+                mouse.x = ((clientX - rect.left) / rect.width) * 2 - 1;
+                mouse.y = -((clientY - rect.top) / rect.height) * 2 + 1;
+
+                raycaster.setFromCamera(mouse, camera);
+                const hits = raycaster.intersectObject(groundPlane);
+                return hits.length > 0 ? hits[0].point : null;
+            }
+
+            // Keyboard Controls (PC WASD / Arrow Keys + Space to Hook)
+            window.addEventListener('keydown', (e) => {
+                keysDown[e.code] = true;
+                if (e.key) {
+                    keysDown[e.key] = true;
+                    keysDown[e.key.toLowerCase()] = true;
+                }
+                if (e.code === 'Space') {
+                    e.preventDefault();
+                    if (localDevo) {
+                        const targetPoint = new THREE.Vector3(localDevo.position.x, 0, BOUNDS.oppSpawnZ);
+                        attemptLaunchHook(targetPoint);
+                    }
+                }
+            });
+
+            window.addEventListener('keyup', (e) => {
+                keysDown[e.code] = false;
+                if (e.key) {
+                    keysDown[e.key] = false;
+                    keysDown[e.key.toLowerCase()] = false;
+                }
+            });
+
+            window.addEventListener('blur', () => {
+                keysDown = {};
+            });
+
+            // Prevent default right-click context menu on arena
+            container.addEventListener('contextmenu', (e) => {
+                e.preventDefault();
+            });
+
+            // Helper to project a target point across the river when clicking near bank
+            function computeHookTarget(hitPoint) {
+                if (hitPoint.z < 0.05) {
+                    return hitPoint.clone();
+                }
+                const originX = localDevo ? localDevo.position.x : 0;
+                const originZ = localDevo ? localDevo.position.z : BOUNDS.defaultSpawnZ;
+                const dx = hitPoint.x - originX;
+                const dz = hitPoint.z - originZ;
+                let targetX = hitPoint.x;
+                if (dz < -0.01) {
+                    const scale = Math.abs((BOUNDS.oppSpawnZ - originZ) / dz);
+                    targetX = originX + dx * scale;
+                }
+                return new THREE.Vector3(Math.max(BOUNDS.minX, Math.min(BOUNDS.maxX, targetX)), 0, BOUNDS.oppSpawnZ);
+            }
+
+            // Pointer Down (Mouse & Touch)
+            container.addEventListener('pointerdown', (e) => {
+                requestFullscreenIfNeeded();
+                if (isLocalHookStunned) return;
+
+                // Camera Orbit: Allow Middle-Click or Alt/Shift+Left Click to orbit the camera freely
+                if (e.button === 1 || (e.button === 0 && (e.altKey || e.shiftKey))) {
+                    if (controls) controls.mouseButtons.LEFT = THREE.MOUSE.ROTATE;
+                    return;
+                } else if (controls) {
+                    controls.mouseButtons.LEFT = null;
+                }
+
+                // 1. RIGHT CLICK (Mouse button 2): MOVE TO TARGET
+                if (e.button === 2) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    const hitPoint = getIntersection(e);
+                    if (!hitPoint) return;
+
+                    const targetX = Math.max(BOUNDS.minX, Math.min(BOUNDS.maxX, hitPoint.x));
+                    const targetZ = Math.max(BOUNDS.minZ, Math.min(BOUNDS.maxZ, hitPoint.z));
+
+                    activeTouchMode = 'move';
+                    moveLocalDevourerTo(targetX, targetZ);
+                    showMoveMarker(targetX, targetZ);
+                    return;
+                }
+
+                // 2. POV MODE: Left click or touch flings hook down center crosshair!
+                if (cameraMode === 'pov') {
+                    if (hookCooldown) {
+                        playSound('noMana', 0.6);
+                        showToast(`Hook on cooldown (${Math.max(0, hookCooldownTimer).toFixed(1)}s remaining)`, "fa-clock");
+                        cooldownBanner.classList.remove('opacity-0');
+                        return;
+                    }
+                    const centerRay = new THREE.Raycaster();
+                    centerRay.setFromCamera(new THREE.Vector2(0, 0), camera);
+                    const hits = centerRay.intersectObject(groundPlane);
+                    const targetPoint = (hits.length > 0 && hits[0].point.z < 0.05)
+                        ? hits[0].point
+                        : new THREE.Vector3(localDevo ? localDevo.position.x : 0, 0, BOUNDS.oppSpawnZ);
+                    attemptLaunchHook(targetPoint);
+                    return;
+                }
+
+                const hitPoint = getIntersection(e);
+                if (!hitPoint) return;
+
+                // 3. DESKTOP MOUSE LEFT-CLICK: HOOK ONLY
+                if (e.pointerType === 'mouse' && e.button === 0) {
+                    e.stopPropagation();
+                    if (hookCooldown) {
+                        activeTouchMode = 'none';
+                        playSound('noMana', 0.6);
+                        showToast(`Hook on cooldown (${Math.max(0, hookCooldownTimer).toFixed(1)}s remaining)`, "fa-clock");
+                        cooldownBanner.classList.remove('opacity-0');
+                        return;
+                    }
+
+                    const targetPoint = computeHookTarget(hitPoint);
+                    activeTouchMode = 'aim_hook';
+                    isAiming = true;
+                    aimWorldPoint.copy(targetPoint);
+                    updateAimTrajectory(targetPoint);
+                    aimHintBanner.classList.remove('opacity-0');
+                    return;
+                }
+
+                // 4. MOBILE TOUCH: Bank Partition (Near Bank = Move, Across River = Hook)
+                if (hitPoint.z >= 0.0) {
+                    activeTouchMode = 'move';
+                    moveLocalDevourerTo(hitPoint.x, hitPoint.z);
+                    return;
+                }
+
+                // Across River on Touch -> Hook
+                if (hookCooldown) {
+                    activeTouchMode = 'none';
+                    playSound('noMana', 0.6);
+                    showToast(`Hook on cooldown (${Math.max(0, hookCooldownTimer).toFixed(1)}s remaining)`, "fa-clock");
+                    cooldownBanner.classList.remove('opacity-0');
+                    return;
+                }
+
+                activeTouchMode = 'aim_hook';
+                isAiming = true;
+                aimWorldPoint.copy(hitPoint);
+                updateAimTrajectory(hitPoint);
+                aimHintBanner.classList.remove('opacity-0');
+            });
+
+            // Pointer Move
+            container.addEventListener('pointermove', (e) => {
+                if (cameraMode === 'pov') return;
+
+                const hitPoint = getIntersection(e);
+                if (!hitPoint) return;
+
+                if (activeTouchMode === 'move') {
+                    // Continuous dodging follow: right mouse held OR mobile touch on near bank
+                    if ((e.buttons & 2) || (e.pointerType === 'touch' && hitPoint.z >= 0.0)) {
+                        const targetX = Math.max(BOUNDS.minX, Math.min(BOUNDS.maxX, hitPoint.x));
+                        const targetZ = Math.max(BOUNDS.minZ, Math.min(BOUNDS.maxZ, hitPoint.z));
+                        moveLocalDevourerTo(targetX, targetZ);
+                    }
+                } else if (activeTouchMode === 'aim_hook') {
+                    const targetPoint = (e.pointerType === 'mouse') ? computeHookTarget(hitPoint) : hitPoint;
+                    aimWorldPoint.copy(targetPoint);
+                    updateAimTrajectory(targetPoint);
+                }
+            });
+
+            // Pointer Up
+            container.addEventListener('pointerup', (e) => {
+                if (cameraMode === 'pov') return;
+
+                if (e.button === 2) {
+                    if (activeTouchMode === 'move') activeTouchMode = 'none';
+                    return;
+                }
+
+                aimHintBanner.classList.add('opacity-0');
+                if (trajectoryLine) trajectoryLine.visible = false;
+                if (aimCrosshair) aimCrosshair.visible = false;
+
+                if (activeTouchMode === 'aim_hook') {
+                    isAiming = false;
+                    const hitPoint = getIntersection(e);
+
+                    if (e.pointerType === 'mouse') {
+                        // Mouse left-click flings hook toward the targeted direction
+                        attemptLaunchHook(aimWorldPoint);
+                    } else {
+                        // Mobile touch: if released across river -> fling hook; if dragged back to own bank -> cancel
+                        const finalTarget = hitPoint || aimWorldPoint;
+                        if (finalTarget.z < 0.05) {
+                            attemptLaunchHook(finalTarget);
+                        } else {
+                            showToast("Hook cancelled", "fa-ban");
+                        }
+                    }
+                }
+
+                activeTouchMode = 'none';
+                isAiming = false;
+            });
+
+            container.addEventListener('pointercancel', () => {
+                activeTouchMode = 'none';
+                isAiming = false;
+                aimHintBanner.classList.add('opacity-0');
+                if (trajectoryLine) trajectoryLine.visible = false;
+                if (aimCrosshair) aimCrosshair.visible = false;
+            });
+        }
+
+        function attemptLaunchHook(targetWorldPos) {
+            if (isLocalHookStunned) return;
+
+            if (hookCooldown) {
+                playSound('noMana', 0.6);
+                showToast(`Hook on cooldown (${Math.max(0, hookCooldownTimer).toFixed(1)}s)`, "fa-clock");
+                cooldownBanner.classList.remove('opacity-0');
+                return;
+            }
+
+            if (!localDevo) return;
+
+            const originX = localDevo.position.x;
+            const originZ = localDevo.position.z;
+
+            // Calculate direction vector across river
+            const dirX = targetWorldPos.x - originX;
+            const dirZ = targetWorldPos.z - originZ;
+            const len = Math.hypot(dirX, dirZ);
+            if (len < 0.1) return;
+
+            const normDirX = dirX / len;
+            const normDirZ = dirZ / len;
+
+            // Trigger Cooldown
+            hookCooldown = true;
+            hookCooldownTimer = HOOK_COOLDOWN_SEC;
+            cooldownBanner.classList.remove('opacity-0');
+
+            // Spawn local hook projectile
+            spawnHook(originX, originZ, normDirX, normDirZ, true);
+
+            // Broadcast to SignalR if in multiplayer duel
+            if (!isSoloPractice && hub) {
+                hub.invoke("SendHook", roomCode, playerSlot, originX, originZ, normDirX, normDirZ, HOOK_SPEED)
+                    .catch(err => log("SendHook error:", err));
+            }
+        }
+
+        function moveLocalDevourerTo(x, z) {
+            if (isLocalHookStunned) return;
+
+            // Clamp within player's South bank (our side)
+            const clampedX = Math.max(BOUNDS.minX, Math.min(BOUNDS.maxX, x));
+            const clampedZ = Math.max(BOUNDS.minZ, Math.min(BOUNDS.maxZ, z));
+
+            localTarget.set(clampedX, 0, clampedZ);
+            isLocalMoving = true;
+            playDevoAction(true, 'walk_1', 0.15, true);
+
+            log(`Local Devourer moving to (${clampedX.toFixed(2)}, ${clampedZ.toFixed(2)})`);
+        }
+
+        // --- 8. SignalR Multiplayer Synchronization ---
+        async function connectSignalR() {
+            log("Connecting to SignalR hub /hubs/devo-wars...");
+            if (hub && hub.state === signalR.HubConnectionState.Connected) {
+                log(`Hub already connected. Invoking JoinRoom ${roomCode}...`);
+                await hub.invoke("JoinRoom", roomCode, playerName, playerId);
+                return;
+            }
+            if (hub) {
+                try { await hub.stop(); } catch (e) {}
+            }
+
+            hub = new signalR.HubConnectionBuilder()
+                .withUrl("/hubs/devo-wars")
+                .withAutomaticReconnect([0, 1000, 2500, 5000])
+                .configureLogging(signalR.LogLevel.Information)
+                .build();
+
+            // Client RPC Listeners
+            hub.onreconnected(async (connectionId) => {
+                log(`SignalR reconnected with ID ${connectionId}. Rejoining room ${roomCode}...`);
+                try {
+                    await hub.invoke("JoinRoom", roomCode, playerName, playerId);
+                    if (isLocalReady && !matchActive) {
+                        await hub.invoke("SetReady", roomCode, isCameraActive);
+                    }
+                } catch (e) {
+                    console.error("Rejoin on reconnect error:", e);
+                }
+            });
+
+            hub.on("OnRoomFull", (code, message) => {
+                log(`Room ${code} is full: ${message}`);
+                waitingOverlay.classList.add('hidden');
+                arReadyModal.classList.add('hidden');
+                matchActive = false;
+
+                const btnEnter = document.getElementById('btnEnterGame');
+                if (btnEnter) {
+                    btnEnter.disabled = false;
+                    btnEnter.innerHTML = '<i class="fas fa-play"></i> Enter Arena';
+                }
+
+                // Stop signalR connection for this rejected join attempt
+                try {
+                    hub.stop();
+                } catch (e) {}
+
+                // Generate fresh suggested code
+                const words = ['HOOK', 'PUDG', 'DEVO', 'GUTT', 'DUEL', 'WAR1', 'WAR2', 'BITE', 'ARENA'];
+                const randCode = words[Math.floor(Math.random() * words.length)] + Math.floor(10 + Math.random() * 89);
+
+                const fullRoomEl = document.getElementById('fullRoomCodeText');
+                if (fullRoomEl) fullRoomEl.textContent = code;
+
+                const suggestedEl = document.getElementById('suggestedNewRoomCode');
+                if (suggestedEl) suggestedEl.textContent = randCode;
+
+                const inputEl = document.getElementById('inputRoomCode');
+                if (inputEl) inputEl.value = randCode;
+
+                if (roomFullModal) roomFullModal.classList.remove('hidden');
+
+                showToast(`Room ${code} is full (2/2)! Please use another code.`, "fa-users-slash");
+
+                // Prominently alert the user per requirement
+                setTimeout(() => {
+                    alert(`Room "${code}" is currently FULL (2/2 players dueling)!\n\nPlease create another room with a new room code to duel.`);
+                }, 100);
+            });
+
+            hub.on("OnRoomJoined", (code, slot, p1, p2, score1, score2, status) => {
+                log(`Joined room ${code} as Slot ${slot}. Status: ${status}`);
+                playerSlot = slot;
+                roomCode = code;
+                roomCodeDisplay.textContent = `ROOM: ${code}`;
+                shareUrlText.textContent = `${window.location.origin}/ar-mini-games/devo-wars?room=${code}`;
+                const waitingRoomEl = document.getElementById('waitingRoomCodeText');
+                if (waitingRoomEl) waitingRoomEl.textContent = code;
+
+                scoreLocal = (slot === 1) ? score1 : score2;
+                scoreRemote = (slot === 1) ? score2 : score1;
+                updateScoreboard();
+
+                // Unconditionally dismiss lobby and restore Enter button
+                lobbyModal.classList.add('hidden');
+                const btnEnter = document.getElementById('btnEnterGame');
+                if (btnEnter) {
+                    btnEnter.disabled = false;
+                    btnEnter.innerHTML = '<i class="fas fa-play"></i> Enter Arena';
+                }
+
+                if (!p1 || !p2 || status === 'WaitingForOpponent') {
+                    waitingOverlay.classList.remove('hidden');
+                } else if (status === 'WaitingForReady') {
+                    waitingOverlay.classList.add('hidden');
+                    promptMatchReady();
+                } else {
+                    waitingOverlay.classList.add('hidden');
+                    startMatch();
+                }
+            });
+
+            hub.on("OnOpponentJoined", (slot, oppName) => {
+                log(`Opponent ${oppName} joined as Slot ${slot}!`);
+                waitingOverlay.classList.add('hidden');
+                showToast(`${oppName} entered the arena!`, "fa-swords");
+                playSound('heroSelect', 1.0);
+                promptMatchReady();
+            });
+
+            hub.on("OnMatchPromptReady", () => {
+                log("OnMatchPromptReady received from server.");
+                waitingOverlay.classList.add('hidden');
+                promptMatchReady();
+            });
+
+            hub.on("OnPlayerReadyStatus", (slot, isReady, wantsAr) => {
+                log(`OnPlayerReadyStatus received: Slot ${slot}, ready=${isReady}, wantsAr=${wantsAr}`);
+                if (slot === playerSlot && isReady) {
+                    isLocalReady = true;
+                    const btnYes = document.getElementById('btnChooseArYes');
+                    const btnNo = document.getElementById('btnChooseArNo');
+                    if (btnYes) {
+                        btnYes.disabled = true;
+                        btnYes.classList.add('opacity-50', 'pointer-events-none');
+                    }
+                    if (btnNo) {
+                        btnNo.disabled = true;
+                        btnNo.classList.add('opacity-50', 'pointer-events-none');
+                    }
+                }
+                updateReadyBadge(slot, isReady, wantsAr);
+            });
+
+            hub.on("OnOpponentLeft", (vacatedSlot) => {
+                log(`Opponent left (Slot ${vacatedSlot})`);
+                showToast("Opponent left the duel.", "fa-user-slash");
+                waitingOverlay.classList.remove('hidden');
+            });
+
+            hub.on("OnMatchStarted", (p1, p2) => {
+                log(`Match officially started between ${p1} and ${p2}!`);
+                waitingOverlay.classList.add('hidden');
+                arReadyModal.classList.add('hidden');
+                showToast("DUEL STARTED! First to 10 points wins!", "fa-play");
+                startMatch();
+            });
+
+            // Symmetric Remote Position Ingestion
+            hub.on("OnOpponentPosition", (x, z, rotY, isMoving) => {
+                if (!oppDevo) return;
+
+                // Symmetric coordinate transformation:
+                // Remote (x, z) mirrors to (-x, -z) on local screen!
+                const mirroredX = -x;
+                const mirroredZ = -z;
+
+                oppTarget.set(mirroredX, 0, mirroredZ);
+                isOppMoving = isMoving;
+
+                if (isMoving) playAnim(oppActions, 'walk_1');
+                else playAnim(oppActions, 'idle');
+            });
+
+            // Symmetric Remote Hook Ingestion
+            hub.on("OnHookThrown", (throwerSlot, startX, startZ, dirX, dirZ, speed) => {
+                if (throwerSlot === playerSlot) return; // Ignore own echoes
+
+                // Mirror hook start & direction
+                const mirroredStartX = -startX;
+                const mirroredStartZ = -startZ;
+                const mirroredDirX = -dirX;
+                const mirroredDirZ = -dirZ;
+
+                log(`Opponent flung hook from (${mirroredStartX.toFixed(2)}, ${mirroredStartZ.toFixed(2)}) dir (${mirroredDirX.toFixed(2)}, ${mirroredDirZ.toFixed(2)})`);
+                spawnHook(mirroredStartX, mirroredStartZ, mirroredDirX, mirroredDirZ, false);
+            });
+
+            // Synchronized Hook Hit & Victim Reel Event
+            hub.on("OnPlayerHooked", (throwerSlot, victimSlot, impactX, impactZ) => {
+                log(`OnPlayerHooked: Thrower Slot ${throwerSlot}, Victim Slot ${victimSlot} at (${impactX.toFixed(2)}, ${impactZ.toFixed(2)})`);
+
+                playSound('hookImpact', 1.0);
+                playSound('death', 0.9);
+                triggerCameraShake();
+
+                if (victimSlot === playerSlot) {
+                    // Local player is the victim!
+                    log("Local player hooked by opponent! Stunned and reeled in.");
+                    isLocalHookStunned = true;
+                    isLocalMoving = false;
+                    playDevoAction(true, 'knock_1', 0.1, false);
+                    if (localDevo) {
+                        spawnFloatingScore(localDevo.position, "HOOKED!", "text-rose-500");
+                    }
+
+                    // Attach to incoming remote hook if present
+                    let incomingHook = activeHooks.find(h => !h.isLocal);
+                    if (incomingHook) {
+                        incomingHook.state = 'reeling';
+                        incomingHook.caughtVictim = true;
+                        if (localDevo) {
+                            incomingHook.mesh.position.set(localDevo.position.x, 0.25, localDevo.position.z);
+                        }
+                    } else if (localDevo && oppDevo) {
+                        // Create immediate visual reel hook from opponent's hand
+                        const oppHand = new THREE.Vector3(oppDevo.position.x, 0.25, oppDevo.position.z);
+                        const hookHead = createHookHeadMesh(false);
+                        hookHead.position.set(localDevo.position.x, 0.25, localDevo.position.z);
+                        scene.add(hookHead);
+
+                        const chainGeo = new THREE.BufferGeometry();
+                        chainGeo.setFromPoints([oppHand, hookHead.position]);
+                        const chainMat = new THREE.LineDashedMaterial({
+                            color: 0x94a3b8,
+                            dashSize: 0.05,
+                            gapSize: 0.03,
+                            linewidth: 3
+                        });
+                        const chainLine = new THREE.Line(chainGeo, chainMat);
+                        scene.add(chainLine);
+
+                        activeHooks.push({
+                            mesh: hookHead,
+                            chain: chainLine,
+                            origin: oppHand,
+                            dir: new THREE.Vector3(0, 0, 1),
+                            distTraveled: 0,
+                            maxDist: HOOK_RANGE,
+                            speed: HOOK_SPEED,
+                            state: 'reeling',
+                            isLocal: false,
+                            targetDevo: localDevo,
+                            caughtVictim: true
+                        });
+                    }
+
+                    // Guaranteed respawn after reel
+                    if (localRespawnTimeout) clearTimeout(localRespawnTimeout);
+                    localRespawnTimeout = setTimeout(() => {
+                        if (localDevo) {
+                            localDevo.position.set(0, 0, BOUNDS.defaultSpawnZ);
+                            localTarget.set(0, 0, BOUNDS.defaultSpawnZ);
+                            localDevo.rotation.y = Math.PI;
+                            isLocalHookStunned = false;
+                            playDevoAction(true, 'idle', 0.2, true);
+                            showToast("Respawned on your bank!", "fa-shield-halved");
+                        }
+                    }, 1300);
+
+                } else {
+                    // Local player threw the hook and latched the opponent!
+                    log("Local player latched opponent!");
+                    playDevoAction(false, 'knock_1', 0.1, false);
+                    if (oppDevo) {
+                        spawnFloatingScore(oppDevo.position, "+1 HOOKED!", "text-amber-400");
+                    }
+
+                    let outgoingHook = activeHooks.find(h => h.isLocal);
+                    if (outgoingHook) {
+                        outgoingHook.state = 'reeling';
+                        outgoingHook.caughtVictim = true;
+                        if (oppDevo) {
+                            outgoingHook.mesh.position.set(oppDevo.position.x, 0.25, oppDevo.position.z);
+                        }
+                    }
+
+                    if (oppRespawnTimeout) clearTimeout(oppRespawnTimeout);
+                    oppRespawnTimeout = setTimeout(() => {
+                        if (oppDevo) {
+                            oppDevo.position.set(0, 0, BOUNDS.oppSpawnZ);
+                            oppTarget.set(0, 0, BOUNDS.oppSpawnZ);
+                            oppDevo.rotation.y = 0;
+                            playDevoAction(false, 'idle', 0.2, true);
+                        }
+                    }, 1300);
+                }
+            });
+
+            // Score Updates
+            hub.on("OnScoreUpdated", (score1, score2, scorerSlot) => {
+                log(`Score update: P1=${score1}, P2=${score2} (Scored by Slot ${scorerSlot})`);
+                scoreLocal = (playerSlot === 1) ? score1 : score2;
+                scoreRemote = (playerSlot === 1) ? score2 : score1;
+                updateScoreboard();
+
+                if (scorerSlot === playerSlot) {
+                    showToast("YOU SCORED A POINT!", "fa-trophy");
+                } else {
+                    showToast("OPPONENT SCORED!", "fa-skull");
+                }
+            });
+
+            // Match Won
+            hub.on("OnMatchWon", (winnerSlot, finalP1, finalP2) => {
+                log(`Match Won by Slot ${winnerSlot}!`);
+                const isLocalWinner = (winnerSlot === playerSlot);
+                const s1 = (playerSlot === 1) ? finalP1 : finalP2;
+                const s2 = (playerSlot === 1) ? finalP2 : finalP1;
+                showVictoryModal(isLocalWinner, s1, s2);
+            });
+
+            hub.on("OnMatchReset", () => {
+                matchOverModal.classList.add('hidden');
+                scoreLocal = 0;
+                scoreRemote = 0;
+                updateScoreboard();
+                showToast("Rematch requested! Set ready status.", "fa-rotate-right");
+            });
+
+            try {
+                await hub.start();
+                log("SignalR Connected!");
+                await hub.invoke("JoinRoom", roomCode, playerName, playerId);
+            } catch (err) {
+                console.error("SignalR Connection Failed:", err);
+                showToast("Connection failed. Playing in Solo mode.", "fa-wifi");
+                waitingOverlay.classList.add('hidden');
+                const btnEnter = document.getElementById('btnEnterGame');
+                if (btnEnter) {
+                    btnEnter.disabled = false;
+                    btnEnter.innerHTML = '<i class="fas fa-play"></i> Enter Arena';
+                }
+                isSoloPractice = true;
+                promptMatchReady();
+            }
+        }
+
+        function updateScoreboard() {
+            scoreP1El.textContent = scoreLocal;
+            scoreP2El.textContent = scoreRemote;
+        }
+
+        function showVictoryModal(isLocalWinner, s1, s2) {
+            matchActive = false;
+            document.getElementById('victoryTitle').textContent = isLocalWinner ? "VICTORY!" : "DEFEATED!";
+            document.getElementById('victoryTitle').className = `text-3xl font-black tracking-wider uppercase ${isLocalWinner ? 'text-amber-400' : 'text-rose-500'}`;
+            document.getElementById('victoryIcon').className = `fas ${isLocalWinner ? 'fa-trophy' : 'fa-skull'}`;
+            document.getElementById('finalScoreP1').textContent = s1;
+            document.getElementById('finalScoreP2').textContent = s2;
+            matchOverModal.classList.remove('hidden');
+
+            if (isLocalWinner) playSound('tauntAfter', 1.0);
+            else playSound('death', 1.0);
+        }
+
+        let isLocalReady = false;
+        let p1ReadyState = false;
+        let p1WantsAr = false;
+        let p2ReadyState = false;
+        let p2WantsAr = false;
+
+        function promptMatchReady() {
+            log("promptMatchReady called.");
+            isLocalReady = false;
+            p1ReadyState = false;
+            p2ReadyState = false;
+
+            arReadyModal.classList.remove('hidden');
+            waitingOverlay.classList.add('hidden');
+            lobbyModal.classList.add('hidden');
+
+            const btnYes = document.getElementById('btnChooseArYes');
+            const btnNo = document.getElementById('btnChooseArNo');
+            if (btnYes) {
+                btnYes.disabled = false;
+                btnYes.classList.remove('opacity-50', 'pointer-events-none');
+            }
+            if (btnNo) {
+                btnNo.disabled = false;
+                btnNo.classList.remove('opacity-50', 'pointer-events-none');
+            }
+
+            if (isSoloPractice) {
+                document.getElementById('readyStatusContainer').classList.add('hidden');
+            } else {
+                document.getElementById('readyStatusContainer').classList.remove('hidden');
+                updateReadyBadge(1, false, false);
+                updateReadyBadge(2, false, false);
+            }
+        }
+
+        async function handleReadyChoice(wantsAr) {
+            if (isLocalReady) return;
+            isLocalReady = true;
+
+            log(`handleReadyChoice: Local player (Slot ${playerSlot}) selected ${wantsAr ? 'AR Camera' : '3D Stadium'}`);
+
+            // 1. Optimistically update local ready badge immediately
+            updateReadyBadge(playerSlot, true, wantsAr);
+
+            // 2. Disable choice buttons immediately to prevent duplicate taps
+            const btnYes = document.getElementById('btnChooseArYes');
+            const btnNo = document.getElementById('btnChooseArNo');
+            if (btnYes) {
+                btnYes.disabled = true;
+                btnYes.classList.add('opacity-50', 'pointer-events-none');
+            }
+            if (btnNo) {
+                btnNo.disabled = true;
+                btnNo.classList.add('opacity-50', 'pointer-events-none');
+            }
+
+            // 3. If solo practice mode, start immediately
+            if (isSoloPractice) {
+                arReadyModal.classList.add('hidden');
+                startMatch();
+                enableCamera(wantsAr).catch(e => log("Practice camera error:", e));
+                return;
+            }
+
+            // 4. Send SetReady to SignalR IMMEDIATELY (NON-BLOCKING!)
+            if (hub) {
+                log(`Invoking SetReady for room ${roomCode}, wantsAr=${wantsAr}`);
+                hub.invoke("SetReady", roomCode, wantsAr)
+                    .then(() => log("SetReady invoked successfully"))
+                    .catch(err => {
+                        console.error("SetReady invoke error:", err);
+                        showToast("Registering ready status...", "fa-circle-notch");
+                        setTimeout(() => {
+                            if (hub && isLocalReady && !matchActive) {
+                                hub.invoke("SetReady", roomCode, wantsAr).catch(e => log("SetReady retry error:", e));
+                            }
+                        }, 1000);
+                    });
+            } else {
+                console.warn("handleReadyChoice: hub is null!");
+            }
+
+            // 5. Turn camera on or off asynchronously in background without blocking network or UI
+            enableCamera(wantsAr).catch(err => {
+                log("enableCamera error caught:", err);
+                showToast("Camera could not be activated. Playing in 3D Stadium.", "fa-camera");
+            });
+        }
+
+        function updateReadyBadge(slot, isReady, wantsAr) {
+            log(`updateReadyBadge: slot=${slot}, isReady=${isReady}, wantsAr=${wantsAr}, localSlot=${playerSlot}`);
+            if (slot === 1) {
+                p1ReadyState = isReady;
+                p1WantsAr = wantsAr;
+            } else if (slot === 2) {
+                p2ReadyState = isReady;
+                p2WantsAr = wantsAr;
+            }
+
+            const p1Badge = document.getElementById('p1ReadyBadge');
+            const p2Badge = document.getElementById('p2ReadyBadge');
+
+            if (p1Badge) {
+                const label1 = (playerSlot === 1) ? "You" : "Player 1";
+                if (p1ReadyState) {
+                    p1Badge.className = "p-2.5 rounded-xl bg-emerald-950/60 border border-emerald-500/80 flex items-center justify-center gap-1.5 text-xs font-bold text-emerald-400";
+                    p1Badge.innerHTML = `<i class="fas fa-check-circle text-xs text-emerald-400"></i><span>${label1}: ${p1WantsAr ? "AR Ready" : "3D Ready"}</span>`;
+                } else {
+                    p1Badge.className = "p-2.5 rounded-xl bg-slate-950 border border-slate-800 flex items-center justify-center gap-1.5 text-xs font-bold text-slate-500";
+                    p1Badge.innerHTML = `<i class="fas fa-clock text-xs"></i><span>${label1} (Waiting)</span>`;
+                }
+            }
+
+            if (p2Badge) {
+                const label2 = (playerSlot === 2) ? "You" : "Player 2";
+                if (p2ReadyState) {
+                    p2Badge.className = "p-2.5 rounded-xl bg-emerald-950/60 border border-emerald-500/80 flex items-center justify-center gap-1.5 text-xs font-bold text-emerald-400";
+                    p2Badge.innerHTML = `<i class="fas fa-check-circle text-xs text-emerald-400"></i><span>${label2}: ${p2WantsAr ? "AR Ready" : "3D Ready"}</span>`;
+                } else {
+                    p2Badge.className = "p-2.5 rounded-xl bg-slate-950 border border-slate-800 flex items-center justify-center gap-1.5 text-xs font-bold text-slate-500";
+                    p2Badge.innerHTML = `<i class="fas fa-clock text-xs"></i><span>${label2} (Waiting)</span>`;
+                }
+            }
+
+            const readyCount = (p1ReadyState ? 1 : 0) + (p2ReadyState ? 1 : 0);
+            const countEl = document.getElementById('readyCountText');
+            if (countEl) countEl.textContent = `${readyCount} / 2 Ready`;
+
+            const waitingText = document.getElementById('waitingForOpponentReadyText');
+            if (waitingText) {
+                if (readyCount === 2) {
+                    waitingText.className = "text-[11px] text-emerald-400 font-bold";
+                    waitingText.innerHTML = `<i class="fas fa-check-double mr-1"></i> Both gladiators ready! Starting duel...`;
+                    waitingText.classList.remove('hidden');
+                } else if (isLocalReady) {
+                    waitingText.className = "text-[11px] text-amber-400/90 font-medium";
+                    waitingText.innerHTML = `<i class="fas fa-spinner animate-spin mr-1"></i> Waiting for opponent to ready up...`;
+                    waitingText.classList.remove('hidden');
+                } else {
+                    waitingText.classList.add('hidden');
+                }
+            }
+        }
+
+        function startMatch() {
+            matchActive = true;
+            lobbyModal.classList.add('hidden');
+            waitingOverlay.classList.add('hidden');
+            arReadyModal.classList.add('hidden');
+            document.getElementById('roomStatusDot').className = "w-2.5 h-2.5 rounded-full bg-emerald-400";
+            showToast("BATTLE BEGINS! Aim by dragging across the river.", "fa-swords");
+        }
+
+        // --- 9. Camera Passthrough (AR Tabletop) ---
+        async function toggleCamera() {
+            log("toggleCamera requested. Current state:", isCameraActive);
+            if (isCameraActive) {
+                // Turn Off Camera
+                if (mediaStream) {
+                    mediaStream.getTracks().forEach(t => t.stop());
+                    mediaStream = null;
+                }
+                video.srcObject = null;
+                video.classList.add('hidden');
+                if (studioGrid) studioGrid.visible = true;
+                if (controls) controls.enableRotate = true;
+                isCameraActive = false;
+                updateCameraUi(false);
+                showToast("Camera disabled. 3D Studio active.");
+                return;
+            }
+
+            // Turn On Camera
+            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                log("navigator.mediaDevices.getUserMedia not available");
+                showToast("Camera access requires HTTPS. Playing in 3D Stadium.", "fa-triangle-exclamation");
+                return;
+            }
+
+            try {
+                showToast("Activating phone camera...", "fa-camera");
+                let stream = null;
+                try {
+                    // Try high-res rear environment camera first
+                    stream = await navigator.mediaDevices.getUserMedia({
+                        video: {
+                            facingMode: { ideal: 'environment' },
+                            width: { ideal: 1920 },
+                            height: { ideal: 1080 }
+                        },
+                        audio: false
+                    });
+                } catch (err1) {
+                    log("Ideal environment constraints failed, trying facingMode environment:", err1);
+                    try {
+                        stream = await navigator.mediaDevices.getUserMedia({
+                            video: { facingMode: 'environment' },
+                            audio: false
+                        });
+                    } catch (err2) {
+                        log("facingMode environment failed, trying fallback video:", err2);
+                        stream = await navigator.mediaDevices.getUserMedia({
+                            video: true,
+                            audio: false
+                        });
+                    }
+                }
+
+                if (!stream) throw new Error("Could not acquire video stream");
+
+                mediaStream = stream;
+                video.srcObject = stream;
+                video.classList.remove('hidden');
+
+                // Explicit play for iOS Safari and mobile Chrome
+                try {
+                    await video.play();
+                } catch (playErr) {
+                    console.warn("video.play() caught:", playErr);
+                }
+
+                if (studioGrid) studioGrid.visible = false;
+                if (controls) {
+                    controls.enableRotate = false; // Lock orbit rotation in AR mode so table stays flat
+                    resetCamera();
+                }
+
+                isCameraActive = true;
+                updateCameraUi(true);
+                showToast("AR Tabletop Active!", "fa-camera");
+            } catch (err) {
+                console.warn("Camera access denied or unavailable:", err);
+                showToast(`Camera unavailable (${err.name || 'Denied'}). Playing in 3D.`, "fa-triangle-exclamation");
+                updateCameraUi(false);
+            }
+        }
+
+        async function enableCamera(turnOn) {
+            if (turnOn && !isCameraActive) {
+                await toggleCamera();
+            } else if (!turnOn && isCameraActive) {
+                await toggleCamera();
+            }
+        }
+
+        function updateCameraUi(isActive) {
+            const icon = document.getElementById('cameraIcon');
+            const text = document.getElementById('btnCameraText');
+            const btn = document.getElementById('btnToggleCamera');
+            const modalIcon = document.getElementById('modalCameraIcon');
+            const modalText = document.getElementById('btnModalCameraText');
+
+            if (isActive) {
+                if (icon) icon.className = "fas fa-video-slash text-xs text-rose-400";
+                if (text) text.textContent = "Stop AR";
+                if (btn) btn.classList.add('border-emerald-500/80', 'bg-emerald-950/60');
+                if (modalIcon) modalIcon.className = "fas fa-video-slash text-sm text-rose-400";
+                if (modalText) {
+                    modalText.textContent = "AR: ON";
+                    modalText.parentElement.className = "px-3 py-1.5 rounded-xl bg-emerald-950/60 border border-emerald-500/80 text-xs font-bold text-emerald-400 transition-colors cursor-pointer";
+                }
+            } else {
+                if (icon) icon.className = "fas fa-camera text-xs text-sky-400";
+                if (text) text.textContent = "AR Camera";
+                if (btn) btn.classList.remove('border-emerald-500/80', 'bg-emerald-950/60');
+                if (modalIcon) modalIcon.className = "fas fa-camera text-sm text-sky-400";
+                if (modalText) {
+                    modalText.textContent = "AR: OFF";
+                    modalText.parentElement.className = "px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-xs font-bold text-sky-400 transition-colors cursor-pointer";
+                }
+            }
+        }
+
+        // --- 10. Main Animation Render Loop ---
+        function renderLoop() {
+            const delta = Math.min(clock.getDelta(), 0.05); // Cap to 50ms per frame to prevent tunneling
+            const time = clock.getElapsedTime();
+
+            // Animate Realistic River Surface & Caustics
+            if (riverMaterial && riverMaterial.uniforms && riverMaterial.uniforms.uTime) {
+                riverMaterial.uniforms.uTime.value = time;
+            }
+
+            // Animate Drifting River Lily Pads
+            if (riverLilyPads && riverLilyPads.length > 0) {
+                riverLilyPads.forEach(lp => {
+                    lp.position.x += lp.userData.speed * delta;
+                    if (lp.position.x > 1.8) lp.position.x = -1.8;
+                    lp.position.y = 0.007 + Math.sin(time * 3.0 + lp.userData.phase) * 0.002;
+                    lp.rotation.z = Math.sin(time * 1.5 + lp.userData.phase) * 0.04;
+                });
+            }
+
+            // Update Mixers
+            if (localMixer) localMixer.update(delta);
+            if (oppMixer) oppMixer.update(delta);
+
+            // Update Flying Hooks
+            updateHooks(delta);
+
+            // Update Cooldowns
+            if (hookCooldown) {
+                hookCooldownTimer -= delta;
+                cooldownTimeText.textContent = `RELOADING HOOK (${Math.max(0, hookCooldownTimer).toFixed(1)}s)`;
+                if (hookCooldownTimer <= 0) {
+                    hookCooldown = false;
+                    cooldownBanner.classList.add('opacity-0');
+                    // Sound removed per user request: only play noMana when trying to hook while on cooldown
+                }
+            }
+
+            // Update Move Click Marker
+            if (moveMarkerMesh && moveMarkerMesh.visible) {
+                moveMarkerMesh._life -= delta;
+                const progress = 1.0 - Math.max(0, moveMarkerMesh._life / 0.35);
+                moveMarkerMesh.scale.setScalar(1.0 + progress * 0.5);
+                moveMarkerMesh.material.opacity = Math.max(0, 0.9 * (1.0 - progress));
+                if (moveMarkerMesh._life <= 0) {
+                    moveMarkerMesh.visible = false;
+                }
+            }
+
+            // Local Devourer Multi-Input Movement (Keyboard WASD + Phone Tilt + Touch Waypoints)
+            if (localDevo && !isLocalHookStunned) {
+                let moveX = 0;
+                let moveZ = 0;
+
+                // A) Keyboard Input (PC WASD / Arrow Keys)
+                const isLeft = keysDown['KeyA'] || keysDown['ArrowLeft'] || keysDown['a'] || keysDown['A'];
+                const isRight = keysDown['KeyD'] || keysDown['ArrowRight'] || keysDown['d'] || keysDown['D'];
+                const isUp = keysDown['KeyW'] || keysDown['ArrowUp'] || keysDown['w'] || keysDown['W'];
+                const isDown = keysDown['KeyS'] || keysDown['ArrowDown'] || keysDown['s'] || keysDown['S'];
+
+                if (isLeft) moveX -= 1;
+                if (isRight) moveX += 1;
+                if (isUp) moveZ -= 1; // Forward toward river
+                if (isDown) moveZ += 1; // Back away from river
+
+                // B) Phone Gyroscope Tilt Input (Active strictly when mobile hardware sensor is confirmed & calibrated)
+                if (isTiltEnabled && hasDeviceOrientation && isTiltCalibrated) {
+                    // Roll: left / right (deadzone ±3.5 deg)
+                    if (tiltGamma < -3.5) moveX += Math.max(-1.0, (tiltGamma + 3.5) / 18.0);
+                    else if (tiltGamma > 3.5) moveX += Math.min(1.0, (tiltGamma - 3.5) / 18.0);
+
+                    // Pitch: forward / back relative to neutralBeta (deadzone ±5 deg)
+                    const pitchDiff = tiltBeta - neutralBeta;
+                    if (pitchDiff < -5.0) moveZ += Math.max(-1.0, (pitchDiff + 5.0) / 18.0);
+                    else if (pitchDiff > 5.0) moveZ += Math.min(1.0, (pitchDiff - 5.0) / 18.0);
+                }
+
+                const inputMag = Math.hypot(moveX, moveZ);
+                if (inputMag > 0.08) {
+                    // Direct analog control overrides waypoint pathing
+                    isLocalMoving = false;
+                    const speed = 2.4;
+                    const normFactor = Math.min(1.0, inputMag);
+                    const dirX = (moveX / inputMag) * normFactor;
+                    const dirZ = (moveZ / inputMag) * normFactor;
+
+                    const newX = Math.max(BOUNDS.minX, Math.min(BOUNDS.maxX, localDevo.position.x + dirX * speed * delta));
+                    const newZ = Math.max(BOUNDS.minZ, Math.min(BOUNDS.maxZ, localDevo.position.z + dirZ * speed * delta));
+                    localDevo.position.x = newX;
+                    localDevo.position.z = newZ;
+
+                    // Facing direction:
+                    if (cameraMode === 'pov') {
+                        localDevo.rotation.y = Math.PI; // In POV, always face forward across the river
+                    } else {
+                        // Subtle facing angle towards lateral movement
+                        localDevo.rotation.y = Math.PI + (dirX * 0.35);
+                    }
+
+                    isLocalWalking = true;
+                    playDevoAction(true, 'walk_1', 0.15, true);
+
+                    // Send 20Hz position update
+                    if (!isSoloPractice && hub && (time - lastSyncTime > 0.05)) {
+                        lastSyncTime = time;
+                        hub.invoke("SendPosition", roomCode, localDevo.position.x, localDevo.position.z, localDevo.rotation.y, true)
+                            .catch(() => {});
+                    }
+                } else if (isLocalMoving) {
+                    // C) Touch Waypoint Movement
+                    isLocalWalking = true;
+                    const step = 2.4 * delta;
+                    const toTarget = new THREE.Vector3().subVectors(localTarget, localDevo.position);
+                    toTarget.y = 0;
+                    const dist = toTarget.length();
+
+                    if (dist < 0.06) {
+                        localDevo.position.copy(localTarget);
+                        isLocalMoving = false;
+                        isLocalWalking = false;
+                        if (currentLocalActionName !== 'ability_1' && currentLocalActionName !== 'knock_1') {
+                            playDevoAction(true, 'idle', 0.2, true);
+                            localDevo.rotation.y = Math.PI; // Face back North across river
+                        }
+                    } else {
+                        toTarget.normalize();
+                        localDevo.position.addScaledVector(toTarget, step);
+                        const targetAngle = Math.atan2(toTarget.x, toTarget.z);
+                        localDevo.rotation.y = targetAngle;
+                    }
+
+                    if (!isSoloPractice && hub && (time - lastSyncTime > 0.05)) {
+                        lastSyncTime = time;
+                        hub.invoke("SendPosition", roomCode, localDevo.position.x, localDevo.position.z, localDevo.rotation.y, isLocalMoving)
+                            .catch(() => {});
+                    }
+                } else {
+                    // Standstill: only transition back to idle if we were walking, and not in the middle of casting ability_1 or knock_1
+                    if (isLocalWalking) {
+                        isLocalWalking = false;
+                        if (currentLocalActionName !== 'ability_1' && currentLocalActionName !== 'knock_1') {
+                            playDevoAction(true, 'idle', 0.2, true);
+                            localDevo.rotation.y = Math.PI;
+                        }
+                    }
+                }
+            }
+
+            // Update POV Camera tracking
+            if (cameraMode === 'pov') {
+                updatePovCamera();
+            }
+
+            // Opponent Devourer: Multiplayer Interpolation OR Practice Mode Sparring Bot
+            if (oppDevo) {
+                if (isSoloPractice && matchActive && !isDummyRespawning) {
+                    // 1. Sparring Bot Patrol Movement (North bank)
+                    if (dummyPauseTimer > 0) {
+                        dummyPauseTimer -= delta;
+                        playDevoAction(false, 'idle', 0.2, true);
+                        oppDevo.rotation.y = 0; // Face South toward player
+                    } else {
+                        oppDevo.position.x += dummyPatrolDir * dummyPatrolSpeed * delta;
+
+                        // Reverse direction at boundaries
+                        if (oppDevo.position.x >= BOUNDS.maxX - 0.2) {
+                            oppDevo.position.x = BOUNDS.maxX - 0.2;
+                            dummyPatrolDir = -1;
+                            if (Math.random() < 0.35) dummyPauseTimer = 0.5 + Math.random() * 0.7;
+                        } else if (oppDevo.position.x <= BOUNDS.minX + 0.2) {
+                            oppDevo.position.x = BOUNDS.minX + 0.2;
+                            dummyPatrolDir = 1;
+                            if (Math.random() < 0.35) dummyPauseTimer = 0.5 + Math.random() * 0.7;
+                        }
+
+                        // Tilt rotation slightly towards walking direction
+                        oppDevo.rotation.y = (dummyPatrolDir > 0) ? 0.35 : -0.35;
+                        playDevoAction(false, 'walk_1', 0.15, true);
+                    }
+
+                    // 2. Sparring Bot Automated Hook Flinging (Every 4.0 - 6.5s)
+                    dummyNextHookTimer -= delta;
+                    if (dummyNextHookTimer <= 0) {
+                        dummyNextHookTimer = 4.0 + Math.random() * 2.5;
+                        if (localDevo) {
+                            oppDevo.rotation.y = 0; // Face player
+                            const targetX = localDevo.position.x + (Math.random() - 0.5) * 0.18;
+                            const targetZ = localDevo.position.z;
+                            const dirX = targetX - oppDevo.position.x;
+                            const dirZ = targetZ - oppDevo.position.z;
+                            const len = Math.hypot(dirX, dirZ);
+                            if (len > 0.1) {
+                                const normDirX = dirX / len;
+                                const normDirZ = dirZ / len;
+                                log(`Sparring bot throwing hook towards (${targetX.toFixed(2)}, ${targetZ.toFixed(2)})`);
+                                spawnHook(oppDevo.position.x, oppDevo.position.z, normDirX, normDirZ, false);
+                            }
+                        }
+                    }
+                } else if (isOppMoving) {
+                    const step = 2.4 * delta;
+                    const toTarget = new THREE.Vector3().subVectors(oppTarget, oppDevo.position);
+                    toTarget.y = 0;
+                    const dist = toTarget.length();
+
+                    if (dist < 0.06) {
+                        oppDevo.position.copy(oppTarget);
+                        isOppMoving = false;
+                        if (currentOppActionName !== 'ability_1' && currentOppActionName !== 'knock_1') {
+                            playDevoAction(false, 'idle', 0.2, true);
+                            oppDevo.rotation.y = 0; // Face South toward local player
+                        }
+                    } else {
+                        toTarget.normalize();
+                        oppDevo.position.addScaledVector(toTarget, step);
+                        const targetAngle = Math.atan2(toTarget.x, toTarget.z);
+                        oppDevo.rotation.y = targetAngle;
+                    }
+                }
+            }
+
+            if (controls) controls.update();
+            renderer.render(scene, camera);
+        }
+
+        function onWindowResize() {
+            if (!camera || !renderer) return;
+            const w = container.clientWidth;
+            const h = container.clientHeight;
+            camera.aspect = w / h;
+            camera.updateProjectionMatrix();
+            renderer.setSize(w, h);
+            checkOrientation();
+        }
+
+        // --- 11. View & Tilt Control Helpers ---
+        function toggleViewMode() {
+            if (cameraMode === 'tabletop') {
+                cameraMode = 'pov';
+                if (controls) controls.enabled = false;
+                const crosshair = document.getElementById('povCrosshair');
+                if (crosshair) crosshair.classList.remove('hidden');
+                const viewIcon = document.getElementById('viewIcon');
+                if (viewIcon) viewIcon.className = "fas fa-street-view text-xs text-rose-400";
+                const btnViewText = document.getElementById('btnViewText');
+                if (btnViewText) btnViewText.textContent = "POV";
+                updateViewUi('pov');
+                updatePovCamera();
+                showToast("Devo POV Active! Align crosshair & tap to hook.", "fa-crosshairs");
+            } else {
+                cameraMode = 'tabletop';
+                if (controls && !isCameraActive) controls.enabled = true;
+                const crosshair = document.getElementById('povCrosshair');
+                if (crosshair) crosshair.classList.add('hidden');
+                const viewIcon = document.getElementById('viewIcon');
+                if (viewIcon) viewIcon.className = "fas fa-eye text-xs text-amber-400";
+                const btnViewText = document.getElementById('btnViewText');
+                if (btnViewText) btnViewText.textContent = "Tabletop";
+                updateViewUi('tabletop');
+                resetCamera();
+                showToast("Tabletop Stadium View", "fa-table-cells");
+            }
+        }
+
+        function updateViewUi(mode) {
+            const modalIcon = document.getElementById('modalViewIcon');
+            const modalText = document.getElementById('btnModalViewText');
+            if (mode === 'pov') {
+                if (modalIcon) modalIcon.className = "fas fa-street-view text-sm text-rose-400";
+                if (modalText) {
+                    modalText.textContent = "POV";
+                    modalText.parentElement.className = "px-3 py-1.5 rounded-xl bg-rose-950/60 border border-rose-500/80 text-xs font-bold text-rose-400 transition-colors cursor-pointer";
+                }
+            } else {
+                if (modalIcon) modalIcon.className = "fas fa-eye text-sm text-amber-400";
+                if (modalText) {
+                    modalText.textContent = "Tabletop";
+                    modalText.parentElement.className = "px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-xs font-bold text-amber-400 transition-colors cursor-pointer";
+                }
+            }
+        }
+
+        function updateAudioUi(muted) {
+            const audioIcon = document.getElementById('audioIcon');
+            const modalAudioIcon = document.getElementById('modalAudioIcon');
+            const btnModalAudioText = document.getElementById('btnModalAudioText');
+            if (muted) {
+                if (audioIcon) audioIcon.className = "fas fa-volume-xmark text-xs text-rose-400";
+                if (modalAudioIcon) modalAudioIcon.className = "fas fa-volume-xmark text-sm text-rose-400";
+                if (btnModalAudioText) {
+                    btnModalAudioText.textContent = "Muted";
+                    btnModalAudioText.parentElement.className = "px-3 py-1.5 rounded-xl bg-rose-950/60 border border-rose-500/80 text-xs font-bold text-rose-400 transition-colors cursor-pointer";
+                }
+            } else {
+                if (audioIcon) audioIcon.className = "fas fa-volume-up text-xs text-emerald-400";
+                if (modalAudioIcon) modalAudioIcon.className = "fas fa-volume-up text-sm text-emerald-400";
+                if (btnModalAudioText) {
+                    btnModalAudioText.textContent = "Sound: ON";
+                    btnModalAudioText.parentElement.className = "px-3 py-1.5 rounded-xl bg-emerald-950/60 border border-emerald-500/80 text-xs font-bold text-emerald-400 transition-colors cursor-pointer";
+                }
+            }
+        }
+
+        async function toggleTiltMode() {
+            if (isTiltEnabled) {
+                isTiltEnabled = false;
+                updateTiltUi(false);
+                showToast("Tilt Steer Disabled. Use touch or WASD.", "fa-mobile-screen");
+            } else {
+                await requestDeviceOrientationPermission();
+            }
+        }
+
+        function updateTiltUi(active) {
+            const icon = document.getElementById('tiltIcon');
+            const text = document.getElementById('btnTiltText');
+            const btn = document.getElementById('btnToggleTilt');
+            const modalIcon = document.getElementById('modalTiltIcon');
+            const modalText = document.getElementById('btnModalTiltText');
+
+            if (active) {
+                if (icon) icon.className = "fas fa-mobile-screen-button text-xs text-emerald-400";
+                if (text) text.textContent = "Tilt: ON";
+                if (btn) btn.classList.add('border-emerald-500/80', 'bg-emerald-950/60');
+                if (modalIcon) modalIcon.className = "fas fa-mobile-screen-button text-sm text-emerald-400";
+                if (modalText) {
+                    modalText.textContent = "Tilt: ON";
+                    modalText.parentElement.className = "px-3 py-1.5 rounded-xl bg-emerald-950/60 border border-emerald-500/80 text-xs font-bold text-emerald-400 transition-colors cursor-pointer";
+                }
+            } else {
+                if (icon) icon.className = "fas fa-mobile-screen-button text-xs text-slate-400";
+                if (text) text.textContent = "Tilt: OFF";
+                if (btn) btn.classList.remove('border-emerald-500/80', 'bg-emerald-950/60');
+                if (modalIcon) modalIcon.className = "fas fa-mobile-screen-button text-sm text-slate-400";
+                if (modalText) {
+                    modalText.textContent = "Tilt: OFF";
+                    modalText.parentElement.className = "px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-xs font-bold text-slate-400 transition-colors cursor-pointer";
+                }
+            }
+        }
+
+        function onDeviceOrientation(event) {
+            if (!isTiltEnabled) return;
+            if (event.gamma === null || event.beta === null) return;
+            if (event.gamma === undefined || event.beta === undefined) return;
+            // Ignore desktop browsers that fire empty 0,0 dummy events
+            if (event.gamma === 0 && event.beta === 0) return;
+
+            hasDeviceOrientation = true;
+            tiltGamma = event.gamma;
+            tiltBeta = event.beta;
+            if (!isTiltCalibrated && Math.abs(tiltBeta) > 10) {
+                neutralBeta = tiltBeta;
+                isTiltCalibrated = true;
+                log(`Calibrated neutral tilt pitch: ${neutralBeta.toFixed(1)}°`);
+            }
+        }
+
+        async function requestDeviceOrientationPermission() {
+            if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
+                try {
+                    const state = await DeviceOrientationEvent.requestPermission();
+                    if (state === 'granted') {
+                        window.addEventListener('deviceorientation', onDeviceOrientation, true);
+                        isTiltEnabled = true;
+                        updateTiltUi(true);
+                        showToast("Tilt steer active! Tilt phone to dodge.", "fa-mobile-screen");
+                    } else {
+                        isTiltEnabled = false;
+                        updateTiltUi(false);
+                        showToast("Tilt permission denied. Use touch/WASD.", "fa-ban");
+                    }
+                } catch (e) {
+                    console.warn("DeviceOrientation permission error:", e);
+                }
+            } else {
+                window.addEventListener('deviceorientation', onDeviceOrientation, true);
+                isTiltEnabled = true;
+                updateTiltUi(true);
+            }
+        }
+
+        // --- 12. UI Buttons & Event Bindings ---
+        function bindUiEvents() {
+            // Lobby: Enter Arena (Instant single-click response & debounce)
+            const btnEnterGame = document.getElementById('btnEnterGame');
+            btnEnterGame.addEventListener('click', () => {
+                if (btnEnterGame.disabled) return;
+                btnEnterGame.disabled = true;
+                btnEnterGame.innerHTML = '<i class="fas fa-spinner animate-spin"></i> Entering Arena...';
+
+                // Request orientation permissions non-blockingly without delaying network join
+                requestDeviceOrientationPermission().catch(e => console.warn("Orientation error:", e));
+
+                playerName = document.getElementById('inputPlayerName').value.trim() || 'Devourer';
+                const codeInput = document.getElementById('inputRoomCode').value.trim().toUpperCase();
+                roomCode = codeInput || 'HOOK';
+                isSoloPractice = false;
+
+                roomCodeDisplay.textContent = `ROOM: ${roomCode}`;
+                shareUrlText.textContent = `${window.location.origin}/ar-mini-games/devo-wars?room=${roomCode}`;
+                const waitingRoomEl = document.getElementById('waitingRoomCodeText');
+                if (waitingRoomEl) waitingRoomEl.textContent = roomCode;
+
+                // Instant UI feedback on single click: hide lobby, show waiting overlay
+                lobbyModal.classList.add('hidden');
+                waitingOverlay.classList.remove('hidden');
+
+                connectSignalR().catch(err => {
+                    console.error("connectSignalR error:", err);
+                    btnEnterGame.disabled = false;
+                    btnEnterGame.innerHTML = '<i class="fas fa-play"></i> Enter Arena';
+                });
+            });
+
+            // Lobby: Practice Mode (Instant single-click response)
+            const btnPracticeSolo = document.getElementById('btnPracticeSolo');
+            btnPracticeSolo.addEventListener('click', () => {
+                if (btnPracticeSolo.disabled) return;
+                btnPracticeSolo.disabled = true;
+                btnPracticeSolo.innerHTML = '<i class="fas fa-spinner animate-spin"></i> Starting Practice...';
+
+                // Request orientation permissions non-blockingly
+                requestDeviceOrientationPermission().catch(e => console.warn("Orientation error:", e));
+
+                playerName = document.getElementById('inputPlayerName').value.trim() || 'Devourer';
+                isSoloPractice = true;
+                roomCode = 'SOLO';
+                roomCodeDisplay.textContent = 'MODE: SOLO PRACTICE';
+
+                lobbyModal.classList.add('hidden');
+                promptMatchReady();
+
+                setTimeout(() => {
+                    btnPracticeSolo.disabled = false;
+                    btnPracticeSolo.innerHTML = 'Practice Mode (Solo Target Dummy)';
+                }, 500);
+            });
+
+            // Lobby: Random Room Generator
+            document.getElementById('btnRandomRoom').addEventListener('click', () => {
+                const words = ['HOOK', 'PUDG', 'DEVO', 'GUTT', 'DUEL', 'WAR1', 'WAR2', 'BITE'];
+                const rand = words[Math.floor(Math.random() * words.length)];
+                document.getElementById('inputRoomCode').value = rand;
+            });
+
+            // Copy Room Link
+            const copyHandler = () => {
+                const url = `${window.location.origin}/ar-mini-games/devo-wars?room=${roomCode}`;
+                navigator.clipboard.writeText(url).then(() => {
+                    showToast("Room link copied to clipboard!", "fa-check");
+                }).catch(() => {
+                    showToast(url);
+                });
+            };
+            document.getElementById('btnCopyRoom').addEventListener('click', copyHandler);
+            document.getElementById('btnShareCopy').addEventListener('click', copyHandler);
+
+            // Cancel Waiting: restore Enter button and re-show lobby
+            document.getElementById('btnCancelWaiting').addEventListener('click', () => {
+                waitingOverlay.classList.add('hidden');
+                lobbyModal.classList.remove('hidden');
+                if (btnEnterGame) {
+                    btnEnterGame.disabled = false;
+                    btnEnterGame.innerHTML = '<i class="fas fa-play"></i> Enter Arena';
+                }
+                if (hub) {
+                    try { hub.stop(); } catch (e) {}
+                }
+            });
+
+            // Play Again (Rematch)
+            document.getElementById('btnPlayAgain').addEventListener('click', () => {
+                matchOverModal.classList.add('hidden');
+                if (isSoloPractice) {
+                    scoreLocal = 0;
+                    scoreRemote = 0;
+                    updateScoreboard();
+                    promptMatchReady();
+                } else if (hub) {
+                    hub.invoke("ResetMatch", roomCode).catch(err => log("ResetMatch error:", err));
+                }
+            });
+
+            // AR Pre-Match Ready Prompt Choices
+            document.getElementById('btnChooseArYes').addEventListener('click', async () => {
+                await handleReadyChoice(true);
+            });
+            document.getElementById('btnChooseArNo').addEventListener('click', async () => {
+                await handleReadyChoice(false);
+            });
+
+            // Room Full: Create Suggested New Room & Enter
+            document.getElementById('btnCreateNewRoomFromFull')?.addEventListener('click', async () => {
+                const suggestedCode = document.getElementById('suggestedNewRoomCode')?.textContent.trim() || `WAR${Math.floor(10 + Math.random() * 89)}`;
+                if (roomFullModal) roomFullModal.classList.add('hidden');
+                const inputEl = document.getElementById('inputRoomCode');
+                if (inputEl) inputEl.value = suggestedCode;
+                roomCode = suggestedCode;
+
+                try {
+                    const newUrl = `${window.location.origin}/ar-mini-games/devo-wars?room=${suggestedCode}`;
+                    window.history.replaceState({ path: newUrl }, '', newUrl);
+                } catch (e) {}
+
+                isSoloPractice = false;
+                waitingOverlay.classList.remove('hidden');
+                lobbyModal.classList.add('hidden');
+                await connectSignalR();
+            });
+
+            // Room Full: Change Code in Lobby
+            document.getElementById('btnCloseRoomFull')?.addEventListener('click', () => {
+                if (roomFullModal) roomFullModal.classList.add('hidden');
+                if (lobbyModal) lobbyModal.classList.remove('hidden');
+                const inputEl = document.getElementById('inputRoomCode');
+                if (inputEl) {
+                    inputEl.focus();
+                    inputEl.select();
+                }
+            });
+
+            // Floating Settings Button & Modal
+            const openSettings = () => {
+                settingsModal.classList.remove('hidden');
+            };
+            const closeSettings = () => {
+                settingsModal.classList.add('hidden');
+            };
+
+            btnOpenSettings.addEventListener('click', (e) => {
+                e.stopPropagation();
+                openSettings();
+            });
+            btnCloseSettings.addEventListener('click', (e) => {
+                e.stopPropagation();
+                closeSettings();
+            });
+            btnResumeSettings.addEventListener('click', (e) => {
+                e.stopPropagation();
+                closeSettings();
+            });
+
+            // Modal: View Mode Toggle
+            document.getElementById('btnModalToggleView').addEventListener('click', (e) => {
+                e.stopPropagation();
+                toggleViewMode();
+            });
+
+            // Modal: Camera AR Toggle
+            document.getElementById('btnModalToggleCamera').addEventListener('click', async (e) => {
+                e.stopPropagation();
+                await toggleCamera();
+            });
+
+            // Modal: Tilt Steer Toggle
+            document.getElementById('btnModalToggleTilt').addEventListener('click', async (e) => {
+                e.stopPropagation();
+                await toggleTiltMode();
+            });
+
+            // Modal: Audio Toggle
+            document.getElementById('btnModalToggleAudio').addEventListener('click', (e) => {
+                e.stopPropagation();
+                isAudioMuted = !isAudioMuted;
+                updateAudioUi(isAudioMuted);
+                showToast(isAudioMuted ? "Audio Muted" : "Audio Active", isAudioMuted ? "fa-volume-xmark" : "fa-volume-up");
+            });
+
+            // Modal: Recenter & Calibrate
+            document.getElementById('btnModalResetCenter').addEventListener('click', (e) => {
+                e.stopPropagation();
+                neutralBeta = tiltBeta || 45;
+                isTiltCalibrated = true;
+                resetCamera();
+                showToast("View & Tilt Calibrated!", "fa-crosshairs");
+            });
+
+            // Legacy / Top Header buttons if present
+            const btnView = document.getElementById('btnToggleView');
+            if (btnView) {
+                ['pointerdown', 'touchstart', 'mousedown'].forEach(evt => {
+                    btnView.addEventListener(evt, (e) => e.stopPropagation(), { passive: false });
+                });
+                btnView.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    toggleViewMode();
+                });
+            }
+
+            const btnTilt = document.getElementById('btnToggleTilt');
+            if (btnTilt) {
+                ['pointerdown', 'touchstart', 'mousedown'].forEach(evt => {
+                    btnTilt.addEventListener(evt, (e) => e.stopPropagation(), { passive: false });
+                });
+                btnTilt.addEventListener('click', async (e) => {
+                    e.stopPropagation();
+                    await toggleTiltMode();
+                });
+            }
+
+            const btnCam = document.getElementById('btnToggleCamera');
+            if (btnCam) {
+                ['pointerdown', 'touchstart', 'mousedown'].forEach(evt => {
+                    btnCam.addEventListener(evt, (e) => e.stopPropagation(), { passive: false });
+                });
+                btnCam.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    toggleCamera();
+                });
+            }
+
+            const btnAud = document.getElementById('btnToggleAudio');
+            if (btnAud) {
+                ['pointerdown', 'touchstart', 'mousedown'].forEach(evt => {
+                    btnAud.addEventListener(evt, (e) => e.stopPropagation(), { passive: false });
+                });
+                btnAud.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    isAudioMuted = !isAudioMuted;
+                    updateAudioUi(isAudioMuted);
+                    showToast(isAudioMuted ? "Audio Muted" : "Audio Active", isAudioMuted ? "fa-volume-xmark" : "fa-volume-up");
+                });
+            }
+
+            const btnRst = document.getElementById('btnResetCenter');
+            if (btnRst) {
+                ['pointerdown', 'touchstart', 'mousedown'].forEach(evt => {
+                    btnRst.addEventListener(evt, (e) => e.stopPropagation(), { passive: false });
+                });
+                btnRst.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    neutralBeta = tiltBeta || 45;
+                    isTiltCalibrated = true;
+                    resetCamera();
+                    showToast("View & Tilt Calibrated!", "fa-crosshairs");
+                });
+            }
+
+            // Check Orientation on start
+            checkOrientation();
+        }
+
+        // --- Bootstrap Game ---
+        window.addEventListener('DOMContentLoaded', () => {
+            log("Initializing DevoWarsAR 1v1...");
+            if (video) {
+                video.setAttribute('autoplay', '');
+                video.setAttribute('muted', '');
+                video.setAttribute('playsinline', '');
+                video.setAttribute('webkit-playsinline', 'true');
+            }
+            preloadSounds();
+            initThreeEngine();
+            setupInteractionHandlers();
+            bindUiEvents();
+            loadDevourerModels();
+
+            // Auto-join if room param in URL
+            if (roomCode.length >= 2) {
+                document.getElementById('inputRoomCode').value = roomCode;
+            }
+        });
+
+        // Test & Inspection Interface
+        window.__devoWarsTest = {
+            getLocalDevo: () => localDevo,
+            getOppDevo: () => oppDevo,
+            getLocalTarget: () => localTarget,
+            getKeysDown: () => keysDown,
+            getActiveHooks: () => activeHooks,
+            getHookCooldown: () => ({ active: hookCooldown, timer: hookCooldownTimer }),
+            getMoveMarker: () => moveMarkerMesh,
+            getBounds: () => BOUNDS,
+            isMatchActive: () => matchActive,
+            isLocalMoving: () => isLocalMoving,
+            isStunned: () => isLocalHookStunned,
+            getCurrentLocalAction: () => currentLocalActionName
+        };
+
+    })();
+    </script>
+</body>
+</html>

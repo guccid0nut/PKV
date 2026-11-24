@@ -1,0 +1,73 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
+    <AssemblyName>WILLOWMAKER</AssemblyName>
+    <RootNamespace>WILLOWMAKER</RootNamespace>
+    <ApplicationIcon>Assets\willowmaker.ico</ApplicationIcon>
+    <IsAotCompatible>true</IsAotCompatible>
+    <EnableTrimAnalyzer>true</EnableTrimAnalyzer>
+    <EnableConfigurationBindingGenerator>true</EnableConfigurationBindingGenerator>
+    <DefineConstants Condition="'$(PlaytestBuild)' == 'true'">$(DefineConstants);PLAYTEST</DefineConstants>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="WILLOWMAKER.Tests" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <AvaloniaResource Include="Assets\**"/>
+    <None Update="Assets\**" CopyToOutputDirectory="PreserveNewest"/>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Avalonia"/>
+    <PackageReference Include="Avalonia.Desktop"/>
+    <PackageReference Include="Avalonia.Themes.Fluent"/>
+    <PackageReference Include="Avalonia.Fonts.Inter"/>
+    <PackageReference Include="Avalonia.Svg.Skia"/>
+    <PackageReference Include="CommunityToolkit.Mvvm"/>
+    <PackageReference Include="DiscordRichPresence"/>
+    <PackageReference Include="Microsoft.AspNetCore.SignalR.Client"/>
+    <PackageReference Include="Microsoft.Extensions.FileSystemGlobbing"/>
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions"/>
+    <PackageReference Include="MemoryPack"/>
+  </ItemGroup>
+
+
+  <ItemGroup>
+    <Content Include="Assets\willowmaker.ico"/>
+  </ItemGroup>
+
+  <!-- Generates A Version String Constant From The Project's Version -->
+  <Target Name="GenerateVersionSource" BeforeTargets="CoreCompile" DependsOnTargets="PrepareForBuild">
+    <PropertyGroup>
+      <_GeneratedVersionFile>$(IntermediateOutputPath)GeneratedVersionInformation.g.cs</_GeneratedVersionFile>
+    </PropertyGroup>
+    <WriteLinesToFile File="$(_GeneratedVersionFile)" Overwrite="true" WriteOnlyWhenDifferent="true" Lines="namespace WILLOWMAKER.Core%3B internal static class GeneratedVersionInformation { internal const string VersionString = &quot;$(Version)&quot;%3B }"/>
+    <ItemGroup>
+      <Compile Include="$(_GeneratedVersionFile)"/>
+    </ItemGroup>
+  </Target>
+
+
+  <ItemGroup Condition="'$(OS)' == 'Windows_NT' And Exists('$(MSBuildThisFileDirectory)..\..\..\artifacts\native-binaries\windows-x64')">
+    <NativeModernizationBinaries Include="$(MSBuildThisFileDirectory)..\..\..\artifacts\native-binaries\windows-x64\*.*" />
+    <None Include="@(NativeModernizationBinaries)">
+      <Link>windows-x64\%(FileName)%(Extension)</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\extensions\cdn-broker\NEXUS.CdnBroker.csproj"/>
+    <ProjectReference Include="..\..\libs\protocol-core\Kongor.Core.csproj"/>
+    <ProjectReference Include="..\..\extensions\modding\Kongor.Modding.csproj"/>
+    <ProjectReference Include="..\..\extensions\vulkan-interop\NEXUS.VulkanInterop.csproj"/>
+    <ProjectReference Include="..\..\extensions\spatial-audio\NEXUS.SpatialAudio.csproj"/>
+    <ProjectReference Include="..\..\libs\contracts\NEXUS.Contracts.csproj"/>
+  </ItemGroup>
+
+</Project>

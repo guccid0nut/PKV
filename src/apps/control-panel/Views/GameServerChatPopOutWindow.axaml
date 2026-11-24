@@ -1,0 +1,97 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:vm="using:NEXUS.ControlPanel.GUI.ViewModels"
+        xmlns:controls="using:NEXUS.ControlPanel.GUI.Controls"
+        mc:Ignorable="d" d:DesignWidth="1180" d:DesignHeight="780"
+        x:Class="NEXUS.ControlPanel.GUI.Views.GameServerChatPopOutWindow"
+        x:DataType="vm:GameServersViewModel"
+        Title="NEXUS — Game Server Chat Manager"
+        Icon="/Assets/nexus-icon.ico"
+        Width="1180" Height="780"
+        MinWidth="880" MinHeight="560"
+        WindowStartupLocation="CenterScreen"
+        Background="#0B0F17">
+
+    <Grid RowDefinitions="Auto,*" Margin="14">
+
+        <!-- Pop-Out Top Header & Quick Server Prefix Bar -->
+        <StackPanel Grid.Row="0" Spacing="8" Margin="0,0,0,10">
+            <Border Background="#0F172A" BorderBrush="#1E293B" BorderThickness="1" CornerRadius="10" Padding="14,9">
+                <Grid ColumnDefinitions="Auto,*,Auto">
+                    <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
+                        <Border Background="#083344" BorderBrush="#00F0FF" BorderThickness="1" CornerRadius="8" Padding="8,4">
+                            <TextBlock Text="💬 SERVER CHAT MANAGER" FontSize="11.5" FontWeight="Black"
+                                       Foreground="#00F0FF" LetterSpacing="1" />
+                        </Border>
+                        <Border Background="#064E3B" BorderBrush="#10B981" BorderThickness="1" CornerRadius="6" Padding="7,2"
+                                VerticalAlignment="Center">
+                            <TextBlock Text="{Binding TotalActiveInstances, StringFormat='{}{0} Active'}"
+                                       FontSize="10.5" FontWeight="Bold" Foreground="#10B981" />
+                        </Border>
+                    </StackPanel>
+
+                    <TextBlock Grid.Column="1" Text="{Binding FleetStatusMessage}" FontSize="11" Foreground="#94A3B8"
+                               VerticalAlignment="Center" Margin="14,0" TextTrimming="CharacterEllipsis" />
+
+                    <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                        <Button Classes="secondary" Command="{Binding LoadAndRefreshFleetCommand}"
+                                IsEnabled="{Binding !IsRefreshing}" Padding="10,5"
+                                ToolTip.Tip="Re-discover and refresh all Local, Docker, and K3s game servers">
+                            <StackPanel Orientation="Horizontal" Spacing="5">
+                                <TextBlock Text="🔄" FontSize="11" />
+                                <TextBlock Text="Refresh Fleet" FontSize="11" FontWeight="SemiBold" />
+                            </StackPanel>
+                        </Button>
+
+                        <Button Classes="primary"
+                                AutomationProperties.AutomationId="BtnPopOutDockToPanel"
+                                Command="{Binding DockChatCommand}" Padding="10,5"
+                                ToolTip.Tip="Close pop-out window and dock chat back into NEXUS Control Panel">
+                            <StackPanel Orientation="Horizontal" Spacing="5">
+                                <TextBlock Text="↙" FontSize="11" FontWeight="Bold" />
+                                <TextBlock Text="Dock to Panel" FontSize="11" FontWeight="Bold" />
+                            </StackPanel>
+                        </Button>
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <!-- Compact Server Name Prefix Branding Bar -->
+            <Border Background="#0F172A" BorderBrush="#1E293B" BorderThickness="1" CornerRadius="8" Padding="10,6">
+                <Grid ColumnDefinitions="Auto,*,Auto,Auto">
+                    <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center" Margin="0,0,10,0">
+                        <TextBlock Text="🏷️" FontSize="12" VerticalAlignment="Center" />
+                        <TextBlock Text="SERVER NAME PREFIX:" FontSize="10" FontWeight="Bold" Foreground="#94A3B8" VerticalAlignment="Center" />
+                    </StackPanel>
+
+                    <TextBox Grid.Column="1" Text="{Binding CustomServerNamePrefix}"
+                             Watermark="e.g. ^pDONUT ^oARENA (Supports ^p, ^o, ^y, ^c, ^g, ^r, ^w caret colors)"
+                             FontSize="11.5" Padding="8,4" Margin="0,0,10,0" />
+
+                    <Border Grid.Column="2" Background="#0B0F17" BorderBrush="#334155" BorderThickness="1"
+                            CornerRadius="6" Padding="8,3" Margin="0,0,10,0" VerticalAlignment="Center">
+                        <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                            <TextBlock Text="Preview:" FontSize="9.5" FontWeight="Bold" Foreground="#64748B" VerticalAlignment="Center" />
+                            <TextBlock controls:K2CaretText.Text="{Binding CustomServerNamePrefix}"
+                                       FontSize="11.5" FontWeight="Black" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </Border>
+
+                    <StackPanel Grid.Column="3" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                        <Button Classes="primary" Command="{Binding ApplyServerNamePrefixCommand}" Padding="10,4">
+                            <TextBlock Text="Apply &amp; Save" FontWeight="Bold" FontSize="11" />
+                        </Button>
+                        <TextBlock Text="{Binding ServerNameApplyFeedback}" FontSize="10" Foreground="#10B981"
+                                   VerticalAlignment="Center" TextTrimming="CharacterEllipsis" MaxWidth="180" />
+                    </StackPanel>
+                </Grid>
+            </Border>
+        </StackPanel>
+
+        <!-- Live Multi-Server Chat Console -->
+        <controls:GameServerChatConsoleControl Grid.Row="1" />
+
+    </Grid>
+</Window>

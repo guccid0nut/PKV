@@ -1,0 +1,71 @@
+name: Docker Publish
+
+on:
+  workflow_dispatch:
+
+concurrency:
+  group: docker-publish
+  cancel-in-progress: false  # Do not cancel Docker pushes mid-build
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository_owner }}/compel-dedicated
+
+jobs:
+  publish:
+    name: Build & Push Docker Image
+    runs-on: ubuntu-latest
+    if: ${{ github.event_name == 'workflow_dispatch' }}
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9 # v4
+        with:
+          global-json-file: global.json
+          dotnet-quality: 'ga'
+
+      - name: Publish COMPEL (linux-x64, self-contained)
+        run: |
+          dotnet publish src/apps/compel/COMPEL.csproj \
+            -c Release \
+            -r linux-x64 \
+            -o artifacts/publish/compel \
+            --self-contained \
+            /p:PublishTrimmed=false
+
+      - name: Log in to GHCR
+        uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract Docker metadata
+        id: meta
+        uses: docker/metadata-action@c299e40c65443455700f0fdfc63efafe5b349051 # v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=sha,prefix=
+            type=ref,event=branch
+            type=raw,value=latest,enable={{is_default_branch}}
+
+      - name: Build and push image
+        uses: docker/build-push-action@10e90e3645eae34f1e60eeb005ba3a3d33f178e8 # v6
+        with:
+          context: .
+          file: infra/docker/Dockerfile.dedicated
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+
+      - name: Log pushed tags
+        run: |
+          echo "🐳 Image pushed successfully:"
+          echo "${{ steps.meta.outputs.tags }}" | tr ',' '\n'

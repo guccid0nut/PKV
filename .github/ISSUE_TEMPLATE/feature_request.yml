@@ -1,0 +1,47 @@
+name: Feature Request
+description: Propose a cleanroom enhancement, protocol improvement, or developer-experience upgrade
+title: "[Feature]: "
+labels: ["enhancement", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Project KONGOR V is 100% free, open-source, and strictly cleanroom. Please frame proposals around cleanroom interoperability, reliability, observability, or developer tooling.
+  - type: dropdown
+    id: subsystem
+    attributes:
+      label: Target Subsystem
+      options:
+        - Platform Services (Master / Chat / Web API / Web UI / Aspire)
+        - Desktop Apps (WILLOWMAKER / COMPEL / Control Panel / Replay Studio)
+        - Native Interop & Vulkan Layer (native/)
+        - TAO MCP & Kongor CLI
+        - Modding, AssetDB & Export Pipelines
+        - Documentation & CI/CD
+    validations:
+      required: true
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem Statement & Motivation
+      description: What problem does this solve for players, self-hosters, or contributors?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed Cleanroom Design
+      description: Outline the proposed architecture, CLI/API surface, and test plan.
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives Considered
+  - type: checkboxes
+    id: social_contract
+    attributes:
+      label: Cleanroom & Social Contract Alignment
+      options:
+        - label: This proposal requires zero proprietary/retail game files in the repository and aligns with the 100%-free open-source charter.
+          required: true

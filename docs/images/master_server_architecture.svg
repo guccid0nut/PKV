@@ -1,0 +1,141 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1150 780" width="100%" height="100%" style="background-color: #0d1117; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#161b22"/>
+      <stop offset="100%" stop-color="#0d1117"/>
+    </linearGradient>
+    <marker id="arrowGray" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 8 5 L 0 9 z" fill="#8b949e"/>
+    </marker>
+    <marker id="arrowGreen" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 8 5 L 0 9 z" fill="#3fb950"/>
+    </marker>
+    <marker id="arrowPurple" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 8 5 L 0 9 z" fill="#bc8cff"/>
+    </marker>
+    <marker id="arrowBlue" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 8 5 L 0 9 z" fill="#58a6ff"/>
+    </marker>
+    <filter id="shadow" x="-5%" y="-5%" width="110%" height="110%">
+      <feDropShadow dx="0" dy="4" stdDeviation="5" flood-color="#000000" flood-opacity="0.5"/>
+    </filter>
+  </defs>
+
+  <rect width="100%" height="100%" fill="url(#bgGrad)" rx="12"/>
+  <rect width="100%" height="100%" fill="none" stroke="#30363d" stroke-width="1.5" rx="12"/>
+
+  <!-- TITLE -->
+  <text x="575" y="40" text-anchor="middle" fill="#f0f6fc" font-size="18" font-weight="700">🏛️ KONGOR Master Server Architecture &amp; Routing</text>
+
+  <!-- CLIENTS SUBGRAPH -->
+  <g filter="url(#shadow)">
+    <rect x="40" y="65" width="1070" height="120" rx="10" fill="#161b22" stroke="#388bfd" stroke-width="1.5"/>
+    <rect x="40" y="65" width="1070" height="30" rx="10" fill="#1f6feb" fill-opacity="0.25"/>
+    <text x="60" y="86" fill="#58a6ff" font-size="13" font-weight="700">🎮 Players &amp; Dedicated Hosts</text>
+
+    <!-- Client Nodes -->
+    <rect x="60" y="105" width="310" height="65" rx="8" fill="#21262d" stroke="#58a6ff" stroke-width="1.2"/>
+    <text x="215" y="130" text-anchor="middle" fill="#f0f6fc" font-size="12" font-weight="700">🎮 Game Client (WILLOWMAKER)</text>
+    <text x="215" y="152" text-anchor="middle" fill="#79c0ff" font-size="11">HTTP /client_requester.php</text>
+
+    <rect x="420" y="105" width="310" height="65" rx="8" fill="#21262d" stroke="#58a6ff" stroke-width="1.2"/>
+    <text x="575" y="130" text-anchor="middle" fill="#f0f6fc" font-size="12" font-weight="700">🛡️ COMPEL Dedicated Host</text>
+    <text x="575" y="152" text-anchor="middle" fill="#79c0ff" font-size="11">HTTP /server_requester.php &amp; stats</text>
+
+    <rect x="780" y="105" width="310" height="65" rx="8" fill="#21262d" stroke="#58a6ff" stroke-width="1.2"/>
+    <text x="935" y="130" text-anchor="middle" fill="#f0f6fc" font-size="12" font-weight="700">🌐 Web Portal &amp; Control Panel</text>
+    <text x="935" y="152" text-anchor="middle" fill="#79c0ff" font-size="11">DAWNBRINGER / NEXUS GUI / SignalR</text>
+  </g>
+
+  <!-- MASTER SERVER SUBGRAPH -->
+  <g filter="url(#shadow)">
+    <rect x="40" y="225" width="1070" height="310" rx="10" fill="#161b22" stroke="#2ea043" stroke-width="1.5"/>
+    <rect x="40" y="225" width="1070" height="30" rx="10" fill="#2ea043" fill-opacity="0.25"/>
+    <text x="60" y="246" fill="#56d364" font-size="13" font-weight="700">☁️ KONGOR Master Server (Port 55555 / ASP.NET Core)</text>
+
+    <!-- Middleware -->
+    <rect x="60" y="270" width="480" height="45" rx="6" fill="#21262d" stroke="#3fb950" stroke-width="1.2"/>
+    <text x="300" y="298" text-anchor="middle" fill="#f0f6fc" font-size="12" font-weight="600">🛡️ Rate Limiting Middleware (Token Bucket / Strict / Relaxed)</text>
+
+    <rect x="580" y="270" width="510" height="45" rx="6" fill="#21262d" stroke="#3fb950" stroke-width="1.2"/>
+    <text x="835" y="298" text-anchor="middle" fill="#f0f6fc" font-size="12" font-weight="600">🔀 Request Router &amp; Subsystem Dispatcher</text>
+
+    <path d="M 540 292 L 580 292" stroke="#3fb950" stroke-width="1.5" marker-end="url(#arrowGreen)"/>
+
+    <!-- Handlers Grid -->
+    <g>
+      <rect x="60" y="335" width="155" height="75" rx="6" fill="#1c2128" stroke="#30363d" stroke-width="1"/>
+      <text x="137" y="360" text-anchor="middle" fill="#f0f6fc" font-size="11" font-weight="700">🔑 SRP Auth</text>
+      <text x="137" y="380" text-anchor="middle" fill="#8b949e" font-size="10">pre_auth / srpauth</text>
+      <text x="137" y="396" text-anchor="middle" fill="#7ee787" font-size="9">Session Token Vault</text>
+
+      <rect x="230" y="335" width="155" height="75" rx="6" fill="#1c2128" stroke="#30363d" stroke-width="1"/>
+      <text x="307" y="360" text-anchor="middle" fill="#f0f6fc" font-size="11" font-weight="700">🖥️ Server Req</text>
+      <text x="307" y="380" text-anchor="middle" fill="#8b949e" font-size="10">new_session / online</text>
+      <text x="307" y="396" text-anchor="middle" fill="#7ee787" font-size="9">Slot Heartbeats</text>
+
+      <rect x="400" y="335" width="155" height="75" rx="6" fill="#1c2128" stroke="#30363d" stroke-width="1"/>
+      <text x="477" y="360" text-anchor="middle" fill="#f0f6fc" font-size="11" font-weight="700">📊 Stats Req</text>
+      <text x="477" y="380" text-anchor="middle" fill="#8b949e" font-size="10">SHA1 HMAC Verify</text>
+      <text x="477" y="396" text-anchor="middle" fill="#7ee787" font-size="9">Async Match Queue</text>
+
+      <rect x="570" y="335" width="155" height="75" rx="6" fill="#1c2128" stroke="#30363d" stroke-width="1"/>
+      <text x="647" y="360" text-anchor="middle" fill="#f0f6fc" font-size="11" font-weight="700">🛒 Goblin Store</text>
+      <text x="647" y="380" text-anchor="middle" fill="#8b949e" font-size="10">Plinko / Vault / Buy</text>
+      <text x="647" y="396" text-anchor="middle" fill="#7ee787" font-size="9">Product Catalog</text>
+
+      <rect x="740" y="335" width="155" height="75" rx="6" fill="#1c2128" stroke="#30363d" stroke-width="1"/>
+      <text x="817" y="360" text-anchor="middle" fill="#f0f6fc" font-size="11" font-weight="700">🎬 Replay Upload</text>
+      <text x="817" y="380" text-anchor="middle" fill="#8b949e" font-size="10">/replays/upload</text>
+      <text x="817" y="396" text-anchor="middle" fill="#7ee787" font-size="9">Stream to Cloud S3</text>
+
+      <rect x="910" y="335" width="180" height="75" rx="6" fill="#1c2128" stroke="#30363d" stroke-width="1"/>
+      <text x="1000" y="360" text-anchor="middle" fill="#f0f6fc" font-size="11" font-weight="700">📡 SignalR Hubs</text>
+      <text x="1000" y="380" text-anchor="middle" fill="#8b949e" font-size="10">/hubs/presence</text>
+      <text x="1000" y="396" text-anchor="middle" fill="#7ee787" font-size="9">Real-time Pub/Sub</text>
+    </g>
+
+    <!-- Async Match Processing Pipeline -->
+    <rect x="60" y="435" width="1030" height="80" rx="6" fill="#14291c" stroke="#2ea043" stroke-width="1"/>
+    <text x="80" y="462" fill="#7ee787" font-size="12" font-weight="700">⚡ Async Background Worker Pipeline</text>
+    <text x="80" y="484" fill="#c9d1d9" font-size="11">IMatchProcessingChannel (Bounded Channel) ➔ MatchProcessingBackgroundWorker</text>
+    <text x="80" y="502" fill="#8b949e" font-size="11">Computes MMR rating deltas, K/D/A aggregates, Hero Mastery XP, and persists structured combat telemetry.</text>
+  </g>
+
+  <!-- DATA & CACHE INFRASTRUCTURE SUBGRAPH -->
+  <g filter="url(#shadow)">
+    <rect x="40" y="570" width="1070" height="175" rx="10" fill="#161b22" stroke="#a371f7" stroke-width="1.5"/>
+    <rect x="40" y="570" width="1070" height="30" rx="10" fill="#a371f7" fill-opacity="0.25"/>
+    <text x="60" y="591" fill="#bc8cff" font-size="13" font-weight="700">💾 Data &amp; Cache Infrastructure</text>
+
+    <!-- DB Node -->
+    <rect x="60" y="615" width="310" height="110" rx="8" fill="#21262d" stroke="#a371f7" stroke-width="1.2"/>
+    <text x="215" y="640" text-anchor="middle" fill="#f0f6fc" font-size="12" font-weight="700">🗄️ MERRICK DatabaseContext</text>
+    <text x="215" y="662" text-anchor="middle" fill="#8b949e" font-size="11">EF Core Multi-Provider</text>
+    <text x="215" y="682" text-anchor="middle" fill="#d2a8ff" font-size="10">PostgreSQL / Supabase / SQL Server</text>
+    <text x="215" y="700" text-anchor="middle" fill="#8b949e" font-size="10">Schemas: core, stat, data, misc</text>
+
+    <!-- Redis Node -->
+    <rect x="420" y="615" width="310" height="110" rx="8" fill="#21262d" stroke="#a371f7" stroke-width="1.2"/>
+    <text x="575" y="640" text-anchor="middle" fill="#f0f6fc" font-size="12" font-weight="700">⚡ Redis 7+ Distributed Cache</text>
+    <text x="575" y="662" text-anchor="middle" fill="#8b949e" font-size="11">Ports 28298 / 28299</text>
+    <text x="575" y="682" text-anchor="middle" fill="#d2a8ff" font-size="10">Sessions &amp; SRP Proofs / Salt Cache</text>
+    <text x="575" y="700" text-anchor="middle" fill="#8b949e" font-size="10">Matchmaking Queues &amp; Pub/Sub</text>
+
+    <!-- S3 Node -->
+    <rect x="780" y="615" width="310" height="110" rx="8" fill="#21262d" stroke="#a371f7" stroke-width="1.2"/>
+    <text x="935" y="640" text-anchor="middle" fill="#f0f6fc" font-size="12" font-weight="700">📦 Replay &amp; Patch Storage</text>
+    <text x="935" y="662" text-anchor="middle" fill="#8b949e" font-size="11">Community / S3 CDN</text>
+    <text x="935" y="682" text-anchor="middle" fill="#d2a8ff" font-size="10">LocalDisk / Supabase Storage / AWS S3</text>
+    <text x="935" y="700" text-anchor="middle" fill="#8b949e" font-size="10">Full .honreplay Binary Archives</text>
+  </g>
+
+  <!-- Connectors -->
+  <path d="M 215 170 L 215 270" stroke="#58a6ff" stroke-width="1.5" marker-end="url(#arrowBlue)"/>
+  <path d="M 575 170 L 575 270" stroke="#58a6ff" stroke-width="1.5" marker-end="url(#arrowBlue)"/>
+  <path d="M 935 170 L 935 270" stroke="#58a6ff" stroke-width="1.5" marker-end="url(#arrowBlue)"/>
+
+  <path d="M 215 535 L 215 615" stroke="#a371f7" stroke-width="1.5" marker-end="url(#arrowPurple)"/>
+  <path d="M 575 535 L 575 615" stroke="#a371f7" stroke-width="1.5" marker-end="url(#arrowPurple)"/>
+  <path d="M 935 535 L 935 615" stroke="#a371f7" stroke-width="1.5" marker-end="url(#arrowPurple)"/>
+</svg>

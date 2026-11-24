@@ -1,0 +1,584 @@
+@model StaffHostsViewModel
+@{
+    ViewData["Title"] = "Staff Command Center - Host Administration";
+
+    string GetStatusBadgeClass(string status)
+    {
+        return status.ToUpperInvariant() switch
+        {
+            "PENDING" => "bg-amber-500/15 text-amber-300 border-amber-500/30",
+            "APPROVED" => "bg-emerald-500/15 text-emerald-300 border-emerald-500/30",
+            "REJECTED" => "bg-rose-500/15 text-rose-300 border-rose-500/30",
+            "REVOKED" => "bg-slate-500/15 text-slate-400 border-slate-500/30",
+            _ => "bg-purple-500/15 text-purple-300 border-purple-500/30"
+        };
+    }
+
+    string TimeAgo(DateTimeOffset dateTime)
+    {
+        var span = TimeProvider.System.GetUtcNow() - dateTime;
+        return span.TotalDays switch
+        {
+            > 30 => $"{(int)(span.TotalDays / 30)}mo ago",
+            >= 1 => $"{(int)span.TotalDays}d ago",
+            _ when span.TotalHours >= 1 => $"{(int)span.TotalHours}h ago",
+            _ when span.TotalMinutes >= 1 => $"{(int)span.TotalMinutes}m ago",
+            _ => "just now"
+        };
+    }
+}
+
+<div class="w-full max-w-[1700px] mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6 animate-fadeIn">
+    <!-- Top Header Banner -->
+    <div
+        class="relative overflow-hidden rounded-2xl p-5 sm:p-6 bg-gradient-to-r from-purple-950/70 via-slate-900/80 to-slate-950/90 border border-purple-500/25 shadow-xl backdrop-blur-xl">
+        <div
+            class="absolute -right-12 -top-12 w-64 h-64 bg-purple-600/15 rounded-full blur-3xl pointer-events-none"></div>
+        <div
+            class="absolute -left-12 -bottom-12 w-64 h-64 bg-amber-600/10 rounded-full blur-3xl pointer-events-none"></div>
+
+        <div class="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div class="space-y-1.5">
+                <div
+                    class="inline-flex items-center gap-2 px-3 py-0.5 rounded-full bg-purple-500/15 border border-purple-500/30 text-purple-300 text-xs font-bold tracking-wider uppercase">
+                    <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                    <span>Server Infrastructure Provisioning</span>
+                </div>
+                <h1 class="text-2xl sm:text-3xl font-black text-white tracking-tight">
+                    VOLUNTEER HOST <span
+                        class="bg-gradient-to-r from-purple-400 via-pink-400 to-amber-400 bg-clip-text text-transparent">MANAGEMENT</span>
+                </h1>
+                <p class="text-xs sm:text-sm text-slate-400 max-w-2xl">
+                    Review and approve community game server host applications. Approving an application automatically
+                    provisions an isolated <code class="text-purple-300 font-mono">ServerHost (2)</code> account with
+                    random SRP credentials.
+                </p>
+            </div>
+
+            <!-- Action / Nav Switcher -->
+            <div class="flex flex-wrap items-center gap-2.5">
+                <a href="@Url.Action("Streamers", "Staff")"
+                   class="px-3.5 py-2 rounded-xl bg-[#9146FF]/20 hover:bg-[#9146FF]/30 border border-[#9146FF]/40 text-[#C499FF] text-xs font-bold transition-all flex items-center gap-1.5">
+                    <i class="fab fa-twitch"></i> Streamers
+                </a>
+                <a href="@Url.Action("Reports", "Staff")"
+                   class="px-3.5 py-2 rounded-xl bg-slate-800/80 hover:bg-slate-700/80 border border-slate-700 text-slate-300 text-xs font-bold transition-all flex items-center gap-1.5">
+                    <span>🛡️</span> Disciplinary Reports
+                </a>
+                <a href="@Url.Action("Inventory", "Staff")"
+                   class="px-3.5 py-2 rounded-xl bg-slate-800/80 hover:bg-slate-700/80 border border-slate-700 text-slate-300 text-xs font-bold transition-all flex items-center gap-1.5">
+                    <span>🎒</span> Player Inventory
+                </a>
+                <a href="@Url.Action("Leaderboard", "Home", new { mode = "hosts" })"
+                   class="px-3.5 py-2 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/40 text-amber-300 text-xs font-bold transition-all flex items-center gap-1.5">
+                    <span>🏆</span> Global Host Leaderboard
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stat KPI Cards -->
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+        <div class="glass-card p-4 rounded-xl border border-amber-500/30 bg-amber-500/5">
+            <div class="flex items-center justify-between text-amber-400 mb-1">
+                <span class="text-xs font-bold uppercase tracking-wider">Pending Review</span>
+                <span class="text-base">⏳</span>
+            </div>
+            <div class="text-2xl sm:text-3xl font-black text-white font-mono">@Model.PendingApplications.Count</div>
+            <div class="text-[11px] text-slate-400 mt-1">Awaiting staff approval</div>
+        </div>
+
+        <div class="glass-card p-4 rounded-xl border border-emerald-500/30 bg-emerald-500/5">
+            <div class="flex items-center justify-between text-emerald-400 mb-1">
+                <span class="text-xs font-bold uppercase tracking-wider">Active Hosts</span>
+                <span class="text-base">⚡</span>
+            </div>
+            <div class="text-2xl sm:text-3xl font-black text-white font-mono">@Model.ActiveHostCount</div>
+            <div class="text-[11px] text-slate-400 mt-1">Provisioned server hosts</div>
+        </div>
+
+        <div class="glass-card p-4 rounded-xl border border-purple-500/30 bg-purple-500/5">
+            <div class="flex items-center justify-between text-purple-400 mb-1">
+                <span class="text-xs font-bold uppercase tracking-wider">Total Hosted Games</span>
+                <span class="text-base">🎮</span>
+            </div>
+            <div
+                class="text-2xl sm:text-3xl font-black text-white font-mono">@Model.TotalHostedMatches.ToString("N0")</div>
+            <div class="text-[11px] text-slate-400 mt-1">Matches recorded across all hosts</div>
+        </div>
+
+        <div class="glass-card p-4 rounded-xl border border-slate-700 bg-slate-900/50">
+            <div class="flex items-center justify-between text-slate-400 mb-1">
+                <span class="text-xs font-bold uppercase tracking-wider">Total Applications</span>
+                <span class="text-base">📋</span>
+            </div>
+            <div class="text-2xl sm:text-3xl font-black text-white font-mono">@Model.TotalApplications</div>
+            <div class="text-[11px] text-slate-400 mt-1">Lifetime applications received</div>
+        </div>
+    </div>
+
+    <!-- Search & Filter Bar -->
+    <div
+        class="glass-card p-4 rounded-xl border border-slate-800 flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4">
+        <div class="flex flex-wrap items-center gap-2">
+            <button type="button" onclick="switchTab('pending')" id="tab-btn-pending"
+                    class="tab-btn px-4 py-2 rounded-xl text-xs font-bold transition-all border bg-amber-500 text-slate-950 border-amber-300 shadow-md">
+                Pending (@Model.PendingApplications.Count)
+            </button>
+            <button type="button" onclick="switchTab('approved')" id="tab-btn-approved"
+                    class="tab-btn px-4 py-2 rounded-xl text-xs font-bold transition-all border bg-slate-900 text-slate-400 border-slate-800 hover:bg-slate-800 hover:text-white">
+                Active Hosts (@Model.ApprovedHosts.Count)
+            </button>
+            <button type="button" onclick="switchTab('rejected')" id="tab-btn-rejected"
+                    class="tab-btn px-4 py-2 rounded-xl text-xs font-bold transition-all border bg-slate-900 text-slate-400 border-slate-800 hover:bg-slate-800 hover:text-white">
+                Rejected (@Model.RejectedApplications.Count)
+            </button>
+            <button type="button" onclick="switchTab('revoked')" id="tab-btn-revoked"
+                    class="tab-btn px-4 py-2 rounded-xl text-xs font-bold transition-all border bg-slate-900 text-slate-400 border-slate-800 hover:bg-slate-800 hover:text-white">
+                Revoked (@Model.RevokedHosts.Count)
+            </button>
+        </div>
+
+        <form method="get" action="@Url.Action("Hosts", "Staff")" class="flex items-center gap-2 w-full md:w-80">
+            <div class="relative flex-1">
+                <input type="text" name="search" value="@Model.SearchQuery" placeholder="Filter by username or notes..."
+                       class="w-full px-3.5 py-2 pl-9 rounded-xl bg-slate-900 border border-slate-700 text-white placeholder-slate-500 text-xs focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500"/>
+                <svg class="w-4 h-4 text-slate-400 absolute left-3 top-2.5" fill="none" stroke="currentColor"
+                     viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                </svg>
+            </div>
+            <button type="submit"
+                    class="px-3 py-2 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-xs font-bold transition-all">
+                Search
+            </button>
+        </form>
+    </div>
+
+    <!-- TAB CONTENT: PENDING APPLICATIONS -->
+    <div id="tab-pending" class="tab-content space-y-4">
+        @if (Model.PendingApplications.Count == 0)
+        {
+            <div class="glass-card p-12 text-center rounded-2xl border border-slate-800 space-y-3">
+                <div class="text-4xl">✨</div>
+                <div class="text-lg font-bold text-white">No Pending Host Applications</div>
+                <div class="text-xs text-slate-400 max-w-md mx-auto">All volunteer host applications have been reviewed.
+                    Outstanding requests will appear here as soon as players apply.
+                </div>
+            </div>
+        }
+        else
+        {
+            <div class="grid grid-cols-1 gap-4">
+                @foreach (var app in Model.PendingApplications)
+                {
+                    <div
+                        class="glass-card p-5 rounded-2xl border border-amber-500/30 bg-slate-900/80 shadow-lg space-y-4">
+                        <div
+                            class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-800/80 pb-3">
+                            <div class="flex items-center gap-3">
+                                <div
+                                    class="w-10 h-10 rounded-full bg-purple-600/20 border border-purple-500/30 flex items-center justify-center text-lg font-black text-purple-300 font-mono">
+                                    @app.MainAccountName[..1].ToUpperInvariant()
+                                </div>
+                                <div>
+                                    <div class="flex items-center gap-2">
+                                        <a href="@Url.Action("Stats", "Home", new { accountName = app.MainAccountName })"
+                                           target="_blank"
+                                           class="text-base font-black text-white hover:text-purple-300 transition-colors">
+                                            @app.MainAccountName
+                                        </a>
+                                        <span
+                                            class="px-2 py-0.5 rounded text-[10px] font-bold border @GetStatusBadgeClass(app.Status)">
+                                            @app.Status
+                                        </span>
+                                    </div>
+                                    <div class="text-xs text-slate-400">Applied @TimeAgo(app.TimestampApplied) • Desired
+                                        Host Username: <span class="font-mono text-purple-300">@app.HostUsername</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="flex items-center gap-2 self-end sm:self-auto">
+                                <button type="button"
+                                        onclick="openApproveModal(@app.Id, '@app.MainAccountName', '@app.HostUsername', '@app.Location', @app.Instances)"
+                                        class="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-md shadow-emerald-950 flex items-center gap-1.5 transition-all">
+                                    <span>✓</span> Approve & Provision
+                                </button>
+                                <button type="button" onclick="openRejectModal(@app.Id, '@app.MainAccountName')"
+                                        class="px-3.5 py-2 rounded-xl bg-rose-600/20 hover:bg-rose-600/30 border border-rose-500/40 text-rose-300 font-bold text-xs transition-all">
+                                    ✕ Reject
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Details Grid -->
+                        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
+                            <div class="p-3 rounded-xl bg-slate-950/60 border border-slate-800/80">
+                                <span
+                                    class="text-slate-500 block text-[10px] uppercase font-semibold">Location Region</span>
+                                <span class="font-black text-white text-sm">@app.Location</span>
+                            </div>
+                            <div class="p-3 rounded-xl bg-slate-950/60 border border-slate-800/80">
+                                <span
+                                    class="text-slate-500 block text-[10px] uppercase font-semibold">Instance Count</span>
+                                <span class="font-black text-white text-sm">@app.Instances Instances</span>
+                            </div>
+                            <div class="p-3 rounded-xl bg-slate-950/60 border border-slate-800/80">
+                                <span
+                                    class="text-slate-500 block text-[10px] uppercase font-semibold">Matches Played</span>
+                                <span
+                                    class="font-black text-purple-300 text-sm font-mono">@app.TotalMatchesPlayed Matches</span>
+                            </div>
+                            <div class="p-3 rounded-xl bg-slate-950/60 border border-slate-800/80">
+                                <span class="text-slate-500 block text-[10px] uppercase font-semibold">Disciplinary Standing</span>
+                                @if (app.DisciplinaryReportCount == 0)
+                                {
+                                    <span class="font-bold text-emerald-400 text-sm">Clean (0 Sanctions)</span>
+                                }
+                                else
+                                {
+                                    <span
+                                        class="font-bold text-rose-400 text-sm">@app.DisciplinaryReportCount Reports</span>
+                                }
+                            </div>
+                        </div>
+
+                        @if (!string.IsNullOrWhiteSpace(app.ApplicationNotes))
+                        {
+                            <div
+                                class="p-3 rounded-xl bg-slate-950/40 border border-slate-800/60 text-xs text-slate-300">
+                                <span class="text-slate-500 font-semibold block text-[10px] uppercase mb-0.5">Applicant Notes:</span>
+                                @app.ApplicationNotes
+                            </div>
+                        }
+                    </div>
+                }
+            </div>
+        }
+    </div>
+
+    <!-- TAB CONTENT: APPROVED HOSTS -->
+    <div id="tab-approved" class="tab-content hidden space-y-4">
+        @if (Model.ApprovedHosts.Count == 0)
+        {
+            <div class="glass-card p-12 text-center rounded-2xl border border-slate-800 space-y-3">
+                <div class="text-4xl">🌐</div>
+                <div class="text-lg font-bold text-white">No Active Volunteer Hosts</div>
+                <div class="text-xs text-slate-400 max-w-md mx-auto">Approved hosts will be listed here with their
+                    credentials status and controls.
+                </div>
+            </div>
+        }
+        else
+        {
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                @foreach (var host in Model.ApprovedHosts)
+                {
+                    <div
+                        class="glass-card p-5 rounded-2xl border border-emerald-500/30 bg-slate-900/80 shadow-lg space-y-4">
+                        <div class="flex items-center justify-between border-b border-slate-800/80 pb-3">
+                            <div class="flex items-center gap-3">
+                                <div
+                                    class="w-10 h-10 rounded-full bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center text-emerald-300 font-black text-lg">
+                                    ⚡
+                                </div>
+                                <div>
+                                    <div class="flex items-center gap-2">
+                                        <a href="@Url.Action("Stats", "Home", new { accountName = host.MainAccountName })"
+                                           target="_blank"
+                                           class="text-base font-black text-white hover:text-purple-300 transition-colors">
+                                            @host.MainAccountName
+                                        </a>
+                                        <span
+                                            class="px-2 py-0.5 rounded text-[10px] font-bold border @GetStatusBadgeClass(host.Status)">
+                                            @host.Status
+                                        </span>
+                                    </div>
+                                    <div class="text-xs text-slate-400">Host Account: <span
+                                            class="font-mono text-emerald-300 font-bold">@host.HostUsername</span></div>
+                                </div>
+                            </div>
+
+                            <span class="text-xs text-slate-500">Approved by @host.ReviewedByStaffName</span>
+                        </div>
+
+                        <div class="grid grid-cols-3 gap-2 text-xs">
+                            <div class="p-2.5 rounded-xl bg-slate-950/60 border border-slate-800 text-center">
+                                <span class="text-slate-500 block text-[10px] uppercase">Region</span>
+                                <span class="font-black text-white">@host.Location</span>
+                            </div>
+                            <div class="p-2.5 rounded-xl bg-slate-950/60 border border-slate-800 text-center">
+                                <span class="text-slate-500 block text-[10px] uppercase">Instances</span>
+                                <span class="font-black text-white">@host.Instances</span>
+                            </div>
+                            <div class="p-2.5 rounded-xl bg-slate-950/60 border border-slate-800 text-center">
+                                <span class="text-slate-500 block text-[10px] uppercase">Prefix</span>
+                                <span class="font-black text-slate-200 truncate block">@host.ServerNamePrefix</span>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center justify-between gap-2 pt-2 border-t border-slate-800/80">
+                            <button type="button" onclick="regenerateCredentials(@host.Id, '@host.HostUsername')"
+                                    class="px-3 py-1.5 rounded-xl bg-purple-600/20 hover:bg-purple-600/30 border border-purple-500/40 text-purple-300 font-bold text-xs transition-all flex items-center gap-1">
+                                <span>🔄</span> Re-roll Password
+                            </button>
+                            <button type="button"
+                                    onclick="openRevokeModal(@host.Id, '@host.MainAccountName', '@host.HostUsername')"
+                                    class="px-3 py-1.5 rounded-xl bg-rose-600/20 hover:bg-rose-600/30 border border-rose-500/40 text-rose-300 font-bold text-xs transition-all">
+                                🚫 Revoke Host
+                            </button>
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+    </div>
+
+    <!-- TAB CONTENT: REJECTED APPLICATIONS -->
+    <div id="tab-rejected" class="tab-content hidden space-y-4">
+        @if (Model.RejectedApplications.Count == 0)
+        {
+            <div class="glass-card p-12 text-center rounded-2xl border border-slate-800">
+                <div class="text-xs text-slate-400">No rejected applications.</div>
+            </div>
+        }
+        else
+        {
+            <div class="divide-y divide-slate-800 rounded-2xl border border-slate-800 overflow-hidden bg-slate-900/60">
+                @foreach (var rej in Model.RejectedApplications)
+                {
+                    <div class="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+                        <div>
+                            <div class="font-bold text-white">@rej.MainAccountName <span
+                                    class="text-slate-500 font-normal">(Requested: @rej.HostUsername)</span></div>
+                            <div class="text-slate-400">Reviewed by @rej.ReviewedByStaffName •
+                                Notes: @(rej.StaffNotes ?? "None provided")</div>
+                        </div>
+                        <button type="button"
+                                onclick="openApproveModal(@rej.Id, '@rej.MainAccountName', '@rej.HostUsername', '@rej.Location', @rej.Instances)"
+                                class="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-xs">
+                            Reconsider & Approve
+                        </button>
+                    </div>
+                }
+            </div>
+        }
+    </div>
+
+    <!-- TAB CONTENT: REVOKED HOSTS -->
+    <div id="tab-revoked" class="tab-content hidden space-y-4">
+        @if (Model.RevokedHosts.Count == 0)
+        {
+            <div class="glass-card p-12 text-center rounded-2xl border border-slate-800">
+                <div class="text-xs text-slate-400">No revoked host accounts.</div>
+            </div>
+        }
+        else
+        {
+            <div class="divide-y divide-slate-800 rounded-2xl border border-slate-800 overflow-hidden bg-slate-900/60">
+                @foreach (var rev in Model.RevokedHosts)
+                {
+                    <div class="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+                        <div>
+                            <div class="font-bold text-slate-300">@rev.MainAccountName <span
+                                    class="text-rose-400 font-mono">(@rev.HostUsername)</span></div>
+                            <div class="text-slate-500">Revoked by @rev.ReviewedByStaffName •
+                                Reason: @(rev.StaffNotes ?? "No notes")</div>
+                        </div>
+                        <button type="button"
+                                onclick="openApproveModal(@rev.Id, '@rev.MainAccountName', '@rev.HostUsername', '@rev.Location', @rev.Instances)"
+                                class="px-3 py-1.5 rounded-xl bg-emerald-600/20 hover:bg-emerald-600/30 border border-emerald-500/40 text-emerald-300 font-bold text-xs">
+                            Re-Authorize Host
+                        </button>
+                    </div>
+                }
+            </div>
+        }
+    </div>
+</div>
+
+<!-- APPROVE MODAL -->
+<div id="approveModal"
+     class="hidden fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+    <div
+        class="glass-card max-w-md w-full p-6 rounded-2xl border border-emerald-500/40 bg-slate-900 shadow-2xl space-y-4 animate-scaleUp">
+        <div class="flex items-center justify-between">
+            <h3 class="text-lg font-black text-white">Approve Host Application</h3>
+            <button type="button" onclick="closeApproveModal()" class="text-slate-400 hover:text-white text-lg">✕
+            </button>
+        </div>
+        <form id="approveForm" method="post">
+            @Html.AntiForgeryToken()
+            <p class="text-xs text-slate-300 leading-relaxed mb-3">
+                Approving application for <strong id="approvePlayerName" class="text-emerald-300"></strong> will
+                provision <span id="approveHostName" class="font-mono text-purple-300"></span> as a verified Game Server
+                Host with random SRP credentials.
+            </p>
+            <div class="space-y-3">
+                <div>
+                    <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Staff Notes
+                        (Optional)</label>
+                    <input type="text" name="staffNotes" placeholder="e.g. Dedicated US East VPS node"
+                           class="w-full px-3.5 py-2 rounded-xl bg-slate-950 border border-slate-700 text-white text-xs focus:outline-none focus:border-emerald-500"/>
+                </div>
+            </div>
+            <div class="flex items-center justify-end gap-2 mt-5">
+                <button type="button" onclick="closeApproveModal()"
+                        class="px-4 py-2 rounded-xl bg-slate-800 text-slate-300 font-bold text-xs">Cancel
+                </button>
+                <button type="submit"
+                        class="px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs shadow-lg shadow-emerald-950">
+                    Confirm Approval
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- REJECT MODAL -->
+<div id="rejectModal"
+     class="hidden fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+    <div
+        class="glass-card max-w-md w-full p-6 rounded-2xl border border-rose-500/40 bg-slate-900 shadow-2xl space-y-4 animate-scaleUp">
+        <div class="flex items-center justify-between">
+            <h3 class="text-lg font-black text-white">Reject Host Application</h3>
+            <button type="button" onclick="closeRejectModal()" class="text-slate-400 hover:text-white text-lg">✕
+            </button>
+        </div>
+        <form id="rejectForm" method="post">
+            @Html.AntiForgeryToken()
+            <p class="text-xs text-slate-300 leading-relaxed mb-3">
+                Reject host application for <strong id="rejectPlayerName" class="text-rose-300"></strong>.
+            </p>
+            <div class="space-y-3">
+                <div>
+                    <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Rejection Reason</label>
+                    <input type="text" name="staffNotes" placeholder="e.g. Server region currently over-provisioned"
+                           class="w-full px-3.5 py-2 rounded-xl bg-slate-950 border border-slate-700 text-white text-xs focus:outline-none focus:border-rose-500"/>
+                </div>
+            </div>
+            <div class="flex items-center justify-end gap-2 mt-5">
+                <button type="button" onclick="closeRejectModal()"
+                        class="px-4 py-2 rounded-xl bg-slate-800 text-slate-300 font-bold text-xs">Cancel
+                </button>
+                <button type="submit"
+                        class="px-5 py-2 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-black text-xs">
+                    Confirm Rejection
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- REVOKE MODAL -->
+<div id="revokeModal"
+     class="hidden fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+    <div
+        class="glass-card max-w-md w-full p-6 rounded-2xl border border-rose-500/40 bg-slate-900 shadow-2xl space-y-4 animate-scaleUp">
+        <div class="flex items-center justify-between">
+            <h3 class="text-lg font-black text-white">Revoke Host Authorization</h3>
+            <button type="button" onclick="closeRevokeModal()" class="text-slate-400 hover:text-white text-lg">✕
+            </button>
+        </div>
+        <form id="revokeForm" method="post">
+            @Html.AntiForgeryToken()
+            <p class="text-xs text-slate-300 leading-relaxed mb-3">
+                Revoking host authorization for <strong id="revokePlayerName" class="text-rose-300"></strong> will
+                disable the host account <span id="revokeHostName" class="font-mono text-purple-300"></span>
+                immediately.
+            </p>
+            <div class="space-y-3">
+                <div>
+                    <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Revocation Reason</label>
+                    <input type="text" name="staffNotes" placeholder="e.g. Unstable connection / server rule violations"
+                           required
+                           class="w-full px-3.5 py-2 rounded-xl bg-slate-950 border border-slate-700 text-white text-xs focus:outline-none focus:border-rose-500"/>
+                </div>
+            </div>
+            <div class="flex items-center justify-end gap-2 mt-5">
+                <button type="button" onclick="closeRevokeModal()"
+                        class="px-4 py-2 rounded-xl bg-slate-800 text-slate-300 font-bold text-xs">Cancel
+                </button>
+                <button type="submit"
+                        class="px-5 py-2 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-black text-xs">
+                    Confirm Revocation
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    function switchTab(tabId) {
+        document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+        document.querySelectorAll('.tab-btn').forEach(el => {
+            el.classList.remove('bg-amber-500', 'text-slate-950', 'border-amber-300', 'shadow-md');
+            el.classList.add('bg-slate-900', 'text-slate-400', 'border-slate-800');
+        });
+
+        const activeContent = document.getElementById('tab-' + tabId);
+        if (activeContent) activeContent.classList.remove('hidden');
+
+        const activeBtn = document.getElementById('tab-btn-' + tabId);
+        if (activeBtn) {
+            activeBtn.classList.remove('bg-slate-900', 'text-slate-400', 'border-slate-800');
+            activeBtn.classList.add('bg-amber-500', 'text-slate-950', 'border-amber-300', 'shadow-md');
+        }
+    }
+
+    function openApproveModal(id, playerName, hostName, location, instances) {
+        document.getElementById('approvePlayerName').textContent = playerName;
+        document.getElementById('approveHostName').textContent = hostName;
+        document.getElementById('approveForm').action = '/staff/hosts/' + id + '/approve';
+        document.getElementById('approveModal').classList.remove('hidden');
+    }
+
+    function closeApproveModal() {
+        document.getElementById('approveModal').classList.add('hidden');
+    }
+
+    function openRejectModal(id, playerName) {
+        document.getElementById('rejectPlayerName').textContent = playerName;
+        document.getElementById('rejectForm').action = '/staff/hosts/' + id + '/reject';
+        document.getElementById('rejectModal').classList.remove('hidden');
+    }
+
+    function closeRejectModal() {
+        document.getElementById('rejectModal').classList.add('hidden');
+    }
+
+    function openRevokeModal(id, playerName, hostName) {
+        document.getElementById('revokePlayerName').textContent = playerName;
+        document.getElementById('revokeHostName').textContent = hostName;
+        document.getElementById('revokeForm').action = '/staff/hosts/' + id + '/revoke';
+        document.getElementById('revokeModal').classList.remove('hidden');
+    }
+
+    function closeRevokeModal() {
+        document.getElementById('revokeModal').classList.add('hidden');
+    }
+
+    async function regenerateCredentials(id, hostName) {
+        if (!confirm('Are you sure you want to regenerate credentials for ' + hostName + '? The old password will be invalidated immediately.')) {
+            return;
+        }
+
+        try {
+            const response = await fetch('/staff/hosts/' + id + '/regenerate-password', {
+                method: 'POST',
+                headers: {'Accept': 'application/json', 'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value || ''}
+            });
+            const data = await response.json();
+            if (data.success) {
+                alert('Credentials for ' + hostName + ' regenerated successfully.');
+                location.reload();
+            } else {
+                alert('Failed to regenerate: ' + (data.message || 'Unknown error'));
+            }
+        } catch (e) {
+            alert('Error communicating with server: ' + e.message);
+        }
+    }
+</script>

@@ -1,0 +1,752 @@
+{
+  "meta": {
+    "description": "Historical animation & gameplay calibration matrix across 277 heroes and 469 MDFs",
+    "version": "1.0.0",
+    "source": "Project Kongor K2 Engine Monorepo Survey",
+    "sample_size_heroes": 277,
+    "sample_size_mdfs": 469
+  },
+  "global_standards": {
+    "bounds_height_standard": 112,
+    "bounds_height_tank": 160,
+    "bounds_radius_standard": 24,
+    "bounds_radius_tank": 32,
+    "action_point_ratio_mean": 0.424,
+    "action_point_ratio_median": 0.438,
+    "action_point_ratio_standard": 0.42,
+    "locomotion_speed_min": 285.0,
+    "locomotion_speed_max": 330.0,
+    "locomotion_speed_median": 300.0,
+    "locomotion_speed_mean": 298.8,
+    "action_blend_ms_standard": 200,
+    "idle_blend_ms_standard": 325,
+    "footstep_phase_left": 0.3,
+    "footstep_phase_right": 0.7,
+    "footstep_phases": [
+      0.3,
+      0.7
+    ]
+  },
+  "archetypes": {
+    "tank": {
+      "display_name": "Melee Tank / Initiator",
+      "primary_attribute": "Strength",
+      "attack_type": "melee",
+      "bounds_height": 160,
+      "bounds_radius": 32,
+      "action_point_ratio": 0.42,
+      "locomotion_speed": 300.0,
+      "action_blend_ms": 200,
+      "idle_blend_ms": 325,
+      "footstep_phases": [
+        0.3,
+        0.7
+      ],
+      "default_attack_range": 128,
+      "turn_rate": 360,
+      "recommended_weapon": "staves_polearms"
+    },
+    "carry": {
+      "display_name": "Melee / Ranged Physical Carry",
+      "primary_attribute": "Agility",
+      "attack_type": "melee",
+      "bounds_height": 112,
+      "bounds_radius": 24,
+      "action_point_ratio": 0.4,
+      "locomotion_speed": 310.0,
+      "action_blend_ms": 200,
+      "idle_blend_ms": 325,
+      "footstep_phases": [
+        0.3,
+        0.7
+      ],
+      "default_attack_range": 128,
+      "turn_rate": 360,
+      "recommended_weapon": "1h_blades_axes"
+    },
+    "mage": {
+      "display_name": "Ranged Spellcaster / Nuker",
+      "primary_attribute": "Intelligence",
+      "attack_type": "ranged",
+      "bounds_height": 112,
+      "bounds_radius": 24,
+      "action_point_ratio": 0.44,
+      "locomotion_speed": 295.0,
+      "action_blend_ms": 200,
+      "idle_blend_ms": 325,
+      "footstep_phases": [
+        0.3,
+        0.7
+      ],
+      "default_attack_range": 600,
+      "turn_rate": 360,
+      "recommended_weapon": "staves_polearms"
+    },
+    "support": {
+      "display_name": "Ranged Support / Enchanter",
+      "primary_attribute": "Intelligence",
+      "attack_type": "ranged",
+      "bounds_height": 112,
+      "bounds_radius": 24,
+      "action_point_ratio": 0.45,
+      "locomotion_speed": 295.0,
+      "action_blend_ms": 200,
+      "idle_blend_ms": 325,
+      "footstep_phases": [
+        0.3,
+        0.7
+      ],
+      "default_attack_range": 550,
+      "turn_rate": 360,
+      "recommended_weapon": "unarmed"
+    },
+    "bruiser": {
+      "display_name": "Melee Fighter / Bruiser",
+      "primary_attribute": "Strength",
+      "attack_type": "melee",
+      "bounds_height": 128,
+      "bounds_radius": 28,
+      "action_point_ratio": 0.42,
+      "locomotion_speed": 305.0,
+      "action_blend_ms": 200,
+      "idle_blend_ms": 325,
+      "footstep_phases": [
+        0.3,
+        0.7
+      ],
+      "default_attack_range": 128,
+      "turn_rate": 360,
+      "recommended_weapon": "dual_wield"
+    },
+    "strength_melee_tank": {
+      "display_name": "Strength Melee Tank",
+      "primary_attribute": "Strength",
+      "attack_type": "melee",
+      "bounds_height": 160,
+      "bounds_radius": 32,
+      "action_point_ratio": 0.42,
+      "locomotion_speed": 300.0,
+      "action_blend_ms": 200,
+      "idle_blend_ms": 325,
+      "footstep_phases": [
+        0.3,
+        0.7
+      ],
+      "default_attack_range": 128,
+      "turn_rate": 360,
+      "recommended_weapon": "staves_polearms"
+    },
+    "agility_melee_carry": {
+      "display_name": "Agility Melee Carry",
+      "primary_attribute": "Agility",
+      "attack_type": "melee",
+      "bounds_height": 112,
+      "bounds_radius": 24,
+      "action_point_ratio": 0.4,
+      "locomotion_speed": 315.0,
+      "action_blend_ms": 200,
+      "idle_blend_ms": 325,
+      "footstep_phases": [
+        0.3,
+        0.7
+      ],
+      "default_attack_range": 128,
+      "turn_rate": 360,
+      "recommended_weapon": "1h_blades_axes"
+    },
+    "agility_ranged_carry": {
+      "display_name": "Agility Ranged Carry",
+      "primary_attribute": "Agility",
+      "attack_type": "ranged",
+      "bounds_height": 112,
+      "bounds_radius": 24,
+      "action_point_ratio": 0.42,
+      "locomotion_speed": 305.0,
+      "action_blend_ms": 200,
+      "idle_blend_ms": 325,
+      "footstep_phases": [
+        0.3,
+        0.7
+      ],
+      "default_attack_range": 600,
+      "turn_rate": 360,
+      "recommended_weapon": "bows_launchers"
+    },
+    "intelligence_ranged_support": {
+      "display_name": "Intelligence Ranged Support",
+      "primary_attribute": "Intelligence",
+      "attack_type": "ranged",
+      "bounds_height": 112,
+      "bounds_radius": 24,
+      "action_point_ratio": 0.45,
+      "locomotion_speed": 295.0,
+      "action_blend_ms": 200,
+      "idle_blend_ms": 325,
+      "footstep_phases": [
+        0.3,
+        0.7
+      ],
+      "default_attack_range": 550,
+      "turn_rate": 360,
+      "recommended_weapon": "unarmed"
+    },
+    "intelligence_initiator_cc": {
+      "display_name": "Intelligence Initiator CC",
+      "primary_attribute": "Intelligence",
+      "attack_type": "ranged",
+      "bounds_height": 112,
+      "bounds_radius": 24,
+      "action_point_ratio": 0.43,
+      "locomotion_speed": 300.0,
+      "action_blend_ms": 200,
+      "idle_blend_ms": 325,
+      "footstep_phases": [
+        0.3,
+        0.7
+      ],
+      "default_attack_range": 500,
+      "turn_rate": 360,
+      "recommended_weapon": "staves_polearms"
+    },
+    "Tank": {
+      "display_name": "Melee Tank / Initiator",
+      "primary_attribute": "Strength",
+      "attack_type": "melee",
+      "bounds_height": 160,
+      "bounds_radius": 32,
+      "action_point_ratio": 0.42,
+      "locomotion_speed": 300.0,
+      "action_blend_ms": 200,
+      "idle_blend_ms": 325,
+      "footstep_phases": [
+        0.3,
+        0.7
+      ],
+      "default_attack_range": 128,
+      "turn_rate": 360,
+      "recommended_weapon": "staves_polearms"
+    },
+    "Carry": {
+      "display_name": "Melee / Ranged Physical Carry",
+      "primary_attribute": "Agility",
+      "attack_type": "melee",
+      "bounds_height": 112,
+      "bounds_radius": 24,
+      "action_point_ratio": 0.4,
+      "locomotion_speed": 310.0,
+      "action_blend_ms": 200,
+      "idle_blend_ms": 325,
+      "footstep_phases": [
+        0.3,
+        0.7
+      ],
+      "default_attack_range": 128,
+      "turn_rate": 360,
+      "recommended_weapon": "1h_blades_axes"
+    },
+    "Mage": {
+      "display_name": "Ranged Spellcaster / Nuker",
+      "primary_attribute": "Intelligence",
+      "attack_type": "ranged",
+      "bounds_height": 112,
+      "bounds_radius": 24,
+      "action_point_ratio": 0.44,
+      "locomotion_speed": 295.0,
+      "action_blend_ms": 200,
+      "idle_blend_ms": 325,
+      "footstep_phases": [
+        0.3,
+        0.7
+      ],
+      "default_attack_range": 600,
+      "turn_rate": 360,
+      "recommended_weapon": "staves_polearms"
+    },
+    "Support": {
+      "display_name": "Ranged Support / Enchanter",
+      "primary_attribute": "Intelligence",
+      "attack_type": "ranged",
+      "bounds_height": 112,
+      "bounds_radius": 24,
+      "action_point_ratio": 0.45,
+      "locomotion_speed": 295.0,
+      "action_blend_ms": 200,
+      "idle_blend_ms": 325,
+      "footstep_phases": [
+        0.3,
+        0.7
+      ],
+      "default_attack_range": 550,
+      "turn_rate": 360,
+      "recommended_weapon": "unarmed"
+    },
+    "Bruiser": {
+      "display_name": "Melee Fighter / Bruiser",
+      "primary_attribute": "Strength",
+      "attack_type": "melee",
+      "bounds_height": 128,
+      "bounds_radius": 28,
+      "action_point_ratio": 0.42,
+      "locomotion_speed": 305.0,
+      "action_blend_ms": 200,
+      "idle_blend_ms": 325,
+      "footstep_phases": [
+        0.3,
+        0.7
+      ],
+      "default_attack_range": 128,
+      "turn_rate": 360,
+      "recommended_weapon": "dual_wield"
+    },
+    "Strength_melee_tank": {
+      "display_name": "Strength Melee Tank",
+      "primary_attribute": "Strength",
+      "attack_type": "melee",
+      "bounds_height": 160,
+      "bounds_radius": 32,
+      "action_point_ratio": 0.42,
+      "locomotion_speed": 300.0,
+      "action_blend_ms": 200,
+      "idle_blend_ms": 325,
+      "footstep_phases": [
+        0.3,
+        0.7
+      ],
+      "default_attack_range": 128,
+      "turn_rate": 360,
+      "recommended_weapon": "staves_polearms"
+    },
+    "Agility_melee_carry": {
+      "display_name": "Agility Melee Carry",
+      "primary_attribute": "Agility",
+      "attack_type": "melee",
+      "bounds_height": 112,
+      "bounds_radius": 24,
+      "action_point_ratio": 0.4,
+      "locomotion_speed": 315.0,
+      "action_blend_ms": 200,
+      "idle_blend_ms": 325,
+      "footstep_phases": [
+        0.3,
+        0.7
+      ],
+      "default_attack_range": 128,
+      "turn_rate": 360,
+      "recommended_weapon": "1h_blades_axes"
+    },
+    "Agility_ranged_carry": {
+      "display_name": "Agility Ranged Carry",
+      "primary_attribute": "Agility",
+      "attack_type": "ranged",
+      "bounds_height": 112,
+      "bounds_radius": 24,
+      "action_point_ratio": 0.42,
+      "locomotion_speed": 305.0,
+      "action_blend_ms": 200,
+      "idle_blend_ms": 325,
+      "footstep_phases": [
+        0.3,
+        0.7
+      ],
+      "default_attack_range": 600,
+      "turn_rate": 360,
+      "recommended_weapon": "bows_launchers"
+    },
+    "Intelligence_ranged_support": {
+      "display_name": "Intelligence Ranged Support",
+      "primary_attribute": "Intelligence",
+      "attack_type": "ranged",
+      "bounds_height": 112,
+      "bounds_radius": 24,
+      "action_point_ratio": 0.45,
+      "locomotion_speed": 295.0,
+      "action_blend_ms": 200,
+      "idle_blend_ms": 325,
+      "footstep_phases": [
+        0.3,
+        0.7
+      ],
+      "default_attack_range": 550,
+      "turn_rate": 360,
+      "recommended_weapon": "unarmed"
+    },
+    "Intelligence_initiator_cc": {
+      "display_name": "Intelligence Initiator CC",
+      "primary_attribute": "Intelligence",
+      "attack_type": "ranged",
+      "bounds_height": 112,
+      "bounds_radius": 24,
+      "action_point_ratio": 0.43,
+      "locomotion_speed": 300.0,
+      "action_blend_ms": 200,
+      "idle_blend_ms": 325,
+      "footstep_phases": [
+        0.3,
+        0.7
+      ],
+      "default_attack_range": 500,
+      "turn_rate": 360,
+      "recommended_weapon": "staves_polearms"
+    }
+  },
+  "tank": {
+    "display_name": "Melee Tank / Initiator",
+    "primary_attribute": "Strength",
+    "attack_type": "melee",
+    "bounds_height": 160,
+    "bounds_radius": 32,
+    "action_point_ratio": 0.42,
+    "locomotion_speed": 300.0,
+    "action_blend_ms": 200,
+    "idle_blend_ms": 325,
+    "footstep_phases": [
+      0.3,
+      0.7
+    ],
+    "default_attack_range": 128,
+    "turn_rate": 360,
+    "recommended_weapon": "staves_polearms"
+  },
+  "carry": {
+    "display_name": "Melee / Ranged Physical Carry",
+    "primary_attribute": "Agility",
+    "attack_type": "melee",
+    "bounds_height": 112,
+    "bounds_radius": 24,
+    "action_point_ratio": 0.4,
+    "locomotion_speed": 310.0,
+    "action_blend_ms": 200,
+    "idle_blend_ms": 325,
+    "footstep_phases": [
+      0.3,
+      0.7
+    ],
+    "default_attack_range": 128,
+    "turn_rate": 360,
+    "recommended_weapon": "1h_blades_axes"
+  },
+  "mage": {
+    "display_name": "Ranged Spellcaster / Nuker",
+    "primary_attribute": "Intelligence",
+    "attack_type": "ranged",
+    "bounds_height": 112,
+    "bounds_radius": 24,
+    "action_point_ratio": 0.44,
+    "locomotion_speed": 295.0,
+    "action_blend_ms": 200,
+    "idle_blend_ms": 325,
+    "footstep_phases": [
+      0.3,
+      0.7
+    ],
+    "default_attack_range": 600,
+    "turn_rate": 360,
+    "recommended_weapon": "staves_polearms"
+  },
+  "support": {
+    "display_name": "Ranged Support / Enchanter",
+    "primary_attribute": "Intelligence",
+    "attack_type": "ranged",
+    "bounds_height": 112,
+    "bounds_radius": 24,
+    "action_point_ratio": 0.45,
+    "locomotion_speed": 295.0,
+    "action_blend_ms": 200,
+    "idle_blend_ms": 325,
+    "footstep_phases": [
+      0.3,
+      0.7
+    ],
+    "default_attack_range": 550,
+    "turn_rate": 360,
+    "recommended_weapon": "unarmed"
+  },
+  "bruiser": {
+    "display_name": "Melee Fighter / Bruiser",
+    "primary_attribute": "Strength",
+    "attack_type": "melee",
+    "bounds_height": 128,
+    "bounds_radius": 28,
+    "action_point_ratio": 0.42,
+    "locomotion_speed": 305.0,
+    "action_blend_ms": 200,
+    "idle_blend_ms": 325,
+    "footstep_phases": [
+      0.3,
+      0.7
+    ],
+    "default_attack_range": 128,
+    "turn_rate": 360,
+    "recommended_weapon": "dual_wield"
+  },
+  "strength_melee_tank": {
+    "display_name": "Strength Melee Tank",
+    "primary_attribute": "Strength",
+    "attack_type": "melee",
+    "bounds_height": 160,
+    "bounds_radius": 32,
+    "action_point_ratio": 0.42,
+    "locomotion_speed": 300.0,
+    "action_blend_ms": 200,
+    "idle_blend_ms": 325,
+    "footstep_phases": [
+      0.3,
+      0.7
+    ],
+    "default_attack_range": 128,
+    "turn_rate": 360,
+    "recommended_weapon": "staves_polearms"
+  },
+  "agility_melee_carry": {
+    "display_name": "Agility Melee Carry",
+    "primary_attribute": "Agility",
+    "attack_type": "melee",
+    "bounds_height": 112,
+    "bounds_radius": 24,
+    "action_point_ratio": 0.4,
+    "locomotion_speed": 315.0,
+    "action_blend_ms": 200,
+    "idle_blend_ms": 325,
+    "footstep_phases": [
+      0.3,
+      0.7
+    ],
+    "default_attack_range": 128,
+    "turn_rate": 360,
+    "recommended_weapon": "1h_blades_axes"
+  },
+  "agility_ranged_carry": {
+    "display_name": "Agility Ranged Carry",
+    "primary_attribute": "Agility",
+    "attack_type": "ranged",
+    "bounds_height": 112,
+    "bounds_radius": 24,
+    "action_point_ratio": 0.42,
+    "locomotion_speed": 305.0,
+    "action_blend_ms": 200,
+    "idle_blend_ms": 325,
+    "footstep_phases": [
+      0.3,
+      0.7
+    ],
+    "default_attack_range": 600,
+    "turn_rate": 360,
+    "recommended_weapon": "bows_launchers"
+  },
+  "intelligence_ranged_support": {
+    "display_name": "Intelligence Ranged Support",
+    "primary_attribute": "Intelligence",
+    "attack_type": "ranged",
+    "bounds_height": 112,
+    "bounds_radius": 24,
+    "action_point_ratio": 0.45,
+    "locomotion_speed": 295.0,
+    "action_blend_ms": 200,
+    "idle_blend_ms": 325,
+    "footstep_phases": [
+      0.3,
+      0.7
+    ],
+    "default_attack_range": 550,
+    "turn_rate": 360,
+    "recommended_weapon": "unarmed"
+  },
+  "intelligence_initiator_cc": {
+    "display_name": "Intelligence Initiator CC",
+    "primary_attribute": "Intelligence",
+    "attack_type": "ranged",
+    "bounds_height": 112,
+    "bounds_radius": 24,
+    "action_point_ratio": 0.43,
+    "locomotion_speed": 300.0,
+    "action_blend_ms": 200,
+    "idle_blend_ms": 325,
+    "footstep_phases": [
+      0.3,
+      0.7
+    ],
+    "default_attack_range": 500,
+    "turn_rate": 360,
+    "recommended_weapon": "staves_polearms"
+  },
+  "Tank": {
+    "display_name": "Melee Tank / Initiator",
+    "primary_attribute": "Strength",
+    "attack_type": "melee",
+    "bounds_height": 160,
+    "bounds_radius": 32,
+    "action_point_ratio": 0.42,
+    "locomotion_speed": 300.0,
+    "action_blend_ms": 200,
+    "idle_blend_ms": 325,
+    "footstep_phases": [
+      0.3,
+      0.7
+    ],
+    "default_attack_range": 128,
+    "turn_rate": 360,
+    "recommended_weapon": "staves_polearms"
+  },
+  "Carry": {
+    "display_name": "Melee / Ranged Physical Carry",
+    "primary_attribute": "Agility",
+    "attack_type": "melee",
+    "bounds_height": 112,
+    "bounds_radius": 24,
+    "action_point_ratio": 0.4,
+    "locomotion_speed": 310.0,
+    "action_blend_ms": 200,
+    "idle_blend_ms": 325,
+    "footstep_phases": [
+      0.3,
+      0.7
+    ],
+    "default_attack_range": 128,
+    "turn_rate": 360,
+    "recommended_weapon": "1h_blades_axes"
+  },
+  "Mage": {
+    "display_name": "Ranged Spellcaster / Nuker",
+    "primary_attribute": "Intelligence",
+    "attack_type": "ranged",
+    "bounds_height": 112,
+    "bounds_radius": 24,
+    "action_point_ratio": 0.44,
+    "locomotion_speed": 295.0,
+    "action_blend_ms": 200,
+    "idle_blend_ms": 325,
+    "footstep_phases": [
+      0.3,
+      0.7
+    ],
+    "default_attack_range": 600,
+    "turn_rate": 360,
+    "recommended_weapon": "staves_polearms"
+  },
+  "Support": {
+    "display_name": "Ranged Support / Enchanter",
+    "primary_attribute": "Intelligence",
+    "attack_type": "ranged",
+    "bounds_height": 112,
+    "bounds_radius": 24,
+    "action_point_ratio": 0.45,
+    "locomotion_speed": 295.0,
+    "action_blend_ms": 200,
+    "idle_blend_ms": 325,
+    "footstep_phases": [
+      0.3,
+      0.7
+    ],
+    "default_attack_range": 550,
+    "turn_rate": 360,
+    "recommended_weapon": "unarmed"
+  },
+  "Bruiser": {
+    "display_name": "Melee Fighter / Bruiser",
+    "primary_attribute": "Strength",
+    "attack_type": "melee",
+    "bounds_height": 128,
+    "bounds_radius": 28,
+    "action_point_ratio": 0.42,
+    "locomotion_speed": 305.0,
+    "action_blend_ms": 200,
+    "idle_blend_ms": 325,
+    "footstep_phases": [
+      0.3,
+      0.7
+    ],
+    "default_attack_range": 128,
+    "turn_rate": 360,
+    "recommended_weapon": "dual_wield"
+  },
+  "Strength_melee_tank": {
+    "display_name": "Strength Melee Tank",
+    "primary_attribute": "Strength",
+    "attack_type": "melee",
+    "bounds_height": 160,
+    "bounds_radius": 32,
+    "action_point_ratio": 0.42,
+    "locomotion_speed": 300.0,
+    "action_blend_ms": 200,
+    "idle_blend_ms": 325,
+    "footstep_phases": [
+      0.3,
+      0.7
+    ],
+    "default_attack_range": 128,
+    "turn_rate": 360,
+    "recommended_weapon": "staves_polearms"
+  },
+  "Agility_melee_carry": {
+    "display_name": "Agility Melee Carry",
+    "primary_attribute": "Agility",
+    "attack_type": "melee",
+    "bounds_height": 112,
+    "bounds_radius": 24,
+    "action_point_ratio": 0.4,
+    "locomotion_speed": 315.0,
+    "action_blend_ms": 200,
+    "idle_blend_ms": 325,
+    "footstep_phases": [
+      0.3,
+      0.7
+    ],
+    "default_attack_range": 128,
+    "turn_rate": 360,
+    "recommended_weapon": "1h_blades_axes"
+  },
+  "Agility_ranged_carry": {
+    "display_name": "Agility Ranged Carry",
+    "primary_attribute": "Agility",
+    "attack_type": "ranged",
+    "bounds_height": 112,
+    "bounds_radius": 24,
+    "action_point_ratio": 0.42,
+    "locomotion_speed": 305.0,
+    "action_blend_ms": 200,
+    "idle_blend_ms": 325,
+    "footstep_phases": [
+      0.3,
+      0.7
+    ],
+    "default_attack_range": 600,
+    "turn_rate": 360,
+    "recommended_weapon": "bows_launchers"
+  },
+  "Intelligence_ranged_support": {
+    "display_name": "Intelligence Ranged Support",
+    "primary_attribute": "Intelligence",
+    "attack_type": "ranged",
+    "bounds_height": 112,
+    "bounds_radius": 24,
+    "action_point_ratio": 0.45,
+    "locomotion_speed": 295.0,
+    "action_blend_ms": 200,
+    "idle_blend_ms": 325,
+    "footstep_phases": [
+      0.3,
+      0.7
+    ],
+    "default_attack_range": 550,
+    "turn_rate": 360,
+    "recommended_weapon": "unarmed"
+  },
+  "Intelligence_initiator_cc": {
+    "display_name": "Intelligence Initiator CC",
+    "primary_attribute": "Intelligence",
+    "attack_type": "ranged",
+    "bounds_height": 112,
+    "bounds_radius": 24,
+    "action_point_ratio": 0.43,
+    "locomotion_speed": 300.0,
+    "action_blend_ms": 200,
+    "idle_blend_ms": 325,
+    "footstep_phases": [
+      0.3,
+      0.7
+    ],
+    "default_attack_range": 500,
+    "turn_rate": 360,
+    "recommended_weapon": "staves_polearms"
+  }
+}

@@ -1,0 +1,65 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Launch Aspire Host (All Services)",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "build",
+            "program": "${workspaceFolder}/src/services/aspire-host/bin/Debug/net11.0/ASPIRE.ApplicationHost.dll",
+            "args": [],
+            "cwd": "${workspaceFolder}/src/services/aspire-host",
+            "console": "internalConsole"
+        },
+        {
+            "name": "Launch KONGOR MasterServer",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "build",
+            "program": "${workspaceFolder}/src/services/master-server/bin/Debug/net11.0/KONGOR.MasterServer.dll",
+            "args": [],
+            "cwd": "${workspaceFolder}/src/services/master-server",
+            "console": "internalConsole"
+        },
+        {
+            "name": "Launch TRANSMUTANSTEIN ChatServer",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "build",
+            "program": "${workspaceFolder}/src/services/chat-server/bin/Debug/net11.0/TRANSMUTANSTEIN.ChatServer.dll",
+            "args": [],
+            "cwd": "${workspaceFolder}/src/services/chat-server",
+            "console": "internalConsole"
+        },
+        {
+            "name": "Launch WILLOWMAKER",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "build",
+            "program": "${workspaceFolder}/src/apps/willowmaker/bin/Debug/net11.0/WILLOWMAKER.dll",
+            "args": [],
+            "cwd": "${workspaceFolder}/src/apps/willowmaker",
+            "console": "internalConsole"
+        },
+        {
+            "name": "Launch COMPEL",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "build",
+            "program": "${workspaceFolder}/src/apps/compel/bin/Debug/net11.0/COMPEL.dll",
+            "args": [],
+            "cwd": "${workspaceFolder}/src/apps/compel",
+            "console": "internalConsole"
+        },
+        {
+            "name": "Launch NEXUS ControlPanel GUI",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "build",
+            "program": "${workspaceFolder}/src/apps/control-panel/bin/Debug/net11.0/NEXUS.ControlPanel.GUI.dll",
+            "args": [],
+            "cwd": "${workspaceFolder}/src/apps/control-panel",
+            "console": "internalConsole"
+        }
+    ]
+}

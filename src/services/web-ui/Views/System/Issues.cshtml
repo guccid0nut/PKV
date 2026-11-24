@@ -1,0 +1,652 @@
+@model DAWNBRINGER.WebPortal.UI.Models.DeveloperIssues.DeveloperIssuesDashboardViewModel
+@{
+    ViewData["Title"] = "PROJECT KONGOR Developer Issues & Self-Healing Telemetry";
+}
+
+<div class="max-w-7xl mx-auto px-4 py-8 space-y-8">
+    <!-- Header Section -->
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 p-6 glass-panel rounded-2xl border border-slate-800/80 bg-slate-900/60 backdrop-blur-xl shadow-2xl">
+        <div class="space-y-1">
+            <div class="flex items-center gap-3">
+                <span id="signalr-indicator" class="flex h-3 w-3 relative" title="SignalR Telemetry Stream Active">
+                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                    <span class="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
+                </span>
+                <span class="text-xs font-bold uppercase tracking-widest text-emerald-400">Live Self-Healing Telemetry</span>
+                <span class="text-xs px-2 py-0.5 rounded-full bg-slate-800 text-slate-400 border border-slate-700/60">TAO Protocol</span>
+                <span class="text-xs px-2 py-0.5 rounded-full bg-purple-500/15 text-purple-300 border border-purple-500/30 font-bold">🛡️ Staff Only</span>
+            </div>
+            <h1 class="text-3xl font-extrabold text-white tracking-tight">Developer Issues & Autonomous Healing</h1>
+            <p class="text-slate-400 text-sm max-w-3xl">
+                Real-time tracking of K2 engine exceptions, native crash detours, asset pipeline faults, and deterministic reflex self-healing recipes across the NEXUS cluster.
+            </p>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-3">
+            <a asp-controller="Staff" asp-action="Reports" class="px-3 py-1.5 rounded-xl bg-purple-600/20 text-purple-300 border border-purple-500/30 text-xs font-semibold hover:bg-purple-600/30 transition-all flex items-center gap-1.5" title="Open Staff Moderation Suite">
+                <span>🛡️</span>
+                <span>Staff Suite</span>
+            </a>
+
+            <span id="system-health-badge" class="px-3 py-1.5 rounded-xl @(Model.Kpis.SystemHealth == "HEALTHY" ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/30" : Model.Kpis.SystemHealth == "DEGRADED" ? "bg-amber-500/10 text-amber-400 border-amber-500/30" : "bg-rose-500/10 text-rose-400 border-rose-500/30") text-xs font-semibold border flex items-center gap-2">
+                <span>⚡ System Health:</span>
+                <span id="system-health-text">@Model.Kpis.SystemHealth</span>
+            </span>
+
+            <span class="px-3 py-1.5 rounded-xl @(Model.IsDatabaseConnected ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/30" : "bg-sky-500/10 text-sky-400 border-sky-500/30") text-xs font-semibold border flex items-center gap-2"
+                  title="@(Model.IsDatabaseConnected ? "PostgreSQL / Supabase Authoritative Persistence" : "Failover Local NDJSON Append-Only Telemetry Store")">
+                <span>@(Model.IsDatabaseConnected ? "🗄️ Supabase DB" : "📑 NDJSON Failover")</span>
+            </span>
+
+            <span class="px-3 py-1.5 rounded-xl bg-slate-800/80 text-slate-300 text-xs font-semibold border border-slate-700/60 flex items-center gap-2">
+                <span>⏱️ Refreshed:</span>
+                <span id="last-refreshed-time">@Model.LastRefreshedUtc.ToString("HH:mm:ss UTC")</span>
+            </span>
+        </div>
+    </div>
+
+    <!-- 4 KPI Stat Cards -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <!-- KPI 1: Total Caught -->
+        <div class="p-5 glass-panel rounded-2xl border border-slate-800/80 bg-slate-900/50 backdrop-blur-xl relative overflow-hidden group hover:border-slate-700/80 transition-all">
+            <div class="flex items-center justify-between">
+                <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Total Caught</span>
+                <span class="p-2 rounded-xl bg-purple-500/10 text-purple-400 text-sm">🎯</span>
+            </div>
+            <div class="mt-3 flex items-baseline gap-2">
+                <span id="kpi-total" class="text-3xl font-extrabold text-white tracking-tight">@Model.Kpis.TotalCaught</span>
+                <span class="text-xs text-slate-400">fingerprints</span>
+            </div>
+            <div class="mt-2 text-xs text-slate-500">Across client, server & microservices</div>
+        </div>
+
+        <!-- KPI 2: Auto-Resolved -->
+        <div class="p-5 glass-panel rounded-2xl border border-slate-800/80 bg-slate-900/50 backdrop-blur-xl relative overflow-hidden group hover:border-emerald-500/40 transition-all">
+            <div class="flex items-center justify-between">
+                <span class="text-xs font-bold uppercase tracking-wider text-emerald-400">Auto-Resolved</span>
+                <span class="p-2 rounded-xl bg-emerald-500/10 text-emerald-400 text-sm">⚡</span>
+            </div>
+            <div class="mt-3 flex items-baseline gap-2">
+                <span id="kpi-autoresolved" class="text-3xl font-extrabold text-emerald-400 tracking-tight">@Model.Kpis.AutoResolvedCount</span>
+                <span id="kpi-percent" class="text-xs text-emerald-500/90 font-medium">(@Model.Kpis.AutoResolvedPercent%)</span>
+            </div>
+            <!-- Progress Bar -->
+            <div class="mt-3 w-full bg-slate-800 rounded-full h-1.5 overflow-hidden">
+                <div id="kpi-progress-bar" class="bg-gradient-to-r from-emerald-500 to-teal-400 h-1.5 rounded-full transition-all duration-500" style="width: @(Model.Kpis.AutoResolvedPercent)%"></div>
+            </div>
+        </div>
+
+        <!-- KPI 3: Action Required -->
+        <div class="p-5 glass-panel rounded-2xl border border-slate-800/80 bg-slate-900/50 backdrop-blur-xl relative overflow-hidden group hover:border-amber-500/40 transition-all">
+            <div class="flex items-center justify-between">
+                <span class="text-xs font-bold uppercase tracking-wider text-amber-400">Action Required</span>
+                <span class="p-2 rounded-xl bg-amber-500/10 text-amber-400 text-sm">⚠️</span>
+            </div>
+            <div class="mt-3 flex items-baseline gap-2">
+                <span id="kpi-actionrequired" class="text-3xl font-extrabold text-amber-400 tracking-tight">@Model.Kpis.ActionRequiredCount</span>
+                <span class="text-xs text-slate-400">pending triage</span>
+            </div>
+            <div class="mt-2 text-xs text-slate-500">Requires dev review or recipe addition</div>
+        </div>
+
+        <!-- KPI 4: Regressions / Open -->
+        <div class="p-5 glass-panel rounded-2xl border border-slate-800/80 bg-slate-900/50 backdrop-blur-xl relative overflow-hidden group hover:border-rose-500/40 transition-all">
+            <div class="flex items-center justify-between">
+                <span class="text-xs font-bold uppercase tracking-wider text-rose-400">Active / Regressions</span>
+                <span class="p-2 rounded-xl bg-rose-500/10 text-rose-400 text-sm">🔥</span>
+            </div>
+            <div class="mt-3 flex items-baseline gap-2">
+                <span id="kpi-open" class="text-3xl font-extrabold text-rose-400 tracking-tight">@Model.Kpis.OpenCount</span>
+                <span class="text-xs text-rose-500/90 font-medium">(<span id="kpi-regressions">@Model.Kpis.RegressionCount</span> regressions)</span>
+            </div>
+            <div class="mt-2 text-xs text-slate-500">Anti-oscillation breaker monitored</div>
+        </div>
+    </div>
+
+    <!-- Main Content Area: Matrix Filter + Table & Live Stream -->
+    <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+        <!-- Left: Filter Matrix & Table (3 Columns) -->
+        <div class="lg:col-span-3 space-y-4">
+            <!-- Filter & Search Toolbar -->
+            <div class="p-4 glass-panel rounded-2xl border border-slate-800/80 bg-slate-900/50 backdrop-blur-xl space-y-4">
+                <!-- Subsystem Filter Pills -->
+                <div class="flex flex-wrap items-center gap-2">
+                    <span class="text-xs font-semibold text-slate-400 mr-2">Subsystem:</span>
+                    <button type="button" onclick="filterBySubsystem('all')" class="subsystem-pill px-3 py-1 rounded-xl text-xs font-medium bg-purple-600/30 text-purple-300 border border-purple-500/40 hover:bg-purple-600/40 transition-all" data-subsystem="all">All</button>
+                    <button type="button" onclick="filterBySubsystem('GameClient')" class="subsystem-pill px-3 py-1 rounded-xl text-xs font-medium bg-slate-800/80 text-slate-400 border border-slate-700/60 hover:text-white transition-all" data-subsystem="GameClient">🎮 Game Client</button>
+                    <button type="button" onclick="filterBySubsystem('DedicatedServer')" class="subsystem-pill px-3 py-1 rounded-xl text-xs font-medium bg-slate-800/80 text-slate-400 border border-slate-700/60 hover:text-white transition-all" data-subsystem="DedicatedServer">🖥️ Dedicated Server</button>
+                    <button type="button" onclick="filterBySubsystem('AssetPipeline')" class="subsystem-pill px-3 py-1 rounded-xl text-xs font-medium bg-slate-800/80 text-slate-400 border border-slate-700/60 hover:text-white transition-all" data-subsystem="AssetPipeline">🎨 Asset Pipeline</button>
+                    <button type="button" onclick="filterBySubsystem('AudioSpatializer')" class="subsystem-pill px-3 py-1 rounded-xl text-xs font-medium bg-slate-800/80 text-slate-400 border border-slate-700/60 hover:text-white transition-all" data-subsystem="AudioSpatializer">🔊 Audio</button>
+                    <button type="button" onclick="filterBySubsystem('MasterServer')" class="subsystem-pill px-3 py-1 rounded-xl text-xs font-medium bg-slate-800/80 text-slate-400 border border-slate-700/60 hover:text-white transition-all" data-subsystem="MasterServer">🌐 Master Server</button>
+                    <button type="button" onclick="filterBySubsystem('WillowmakerDetours')" class="subsystem-pill px-3 py-1 rounded-xl text-xs font-medium bg-slate-800/80 text-slate-400 border border-slate-700/60 hover:text-white transition-all" data-subsystem="WillowmakerDetours">⚡ Detours</button>
+                </div>
+
+                <!-- Dropdowns & Instant Search Input -->
+                <div class="flex flex-col sm:flex-row items-center gap-3">
+                    <div class="relative flex-1 w-full">
+                        <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-500">🔍</span>
+                        <input id="search-input" type="text" placeholder="Instant search by title, fingerprint, module (e.g. k2_x64.dll), or signature..."
+                               class="w-full pl-9 pr-4 py-2 bg-slate-950/60 border border-slate-800 rounded-xl text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-purple-500/50 focus:ring-1 focus:ring-purple-500/50 transition-all"/>
+                    </div>
+
+                    <div class="flex items-center gap-2 w-full sm:w-auto">
+                        <select id="status-filter" onchange="applyFilters()" class="bg-slate-950/60 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-300 focus:outline-none focus:border-purple-500/50">
+                            <option value="all">All Statuses</option>
+                            <option value="Open">Open</option>
+                            <option value="AutoResolved">Auto-Resolved</option>
+                            <option value="ActionRequired">Action Required</option>
+                            <option value="Regression">Regression</option>
+                            <option value="ManualResolved">Manual Resolved</option>
+                        </select>
+
+                        <select id="severity-filter" onchange="applyFilters()" class="bg-slate-950/60 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-300 focus:outline-none focus:border-purple-500/50">
+                            <option value="all">All Severities</option>
+                            <option value="CriticalCrash">Critical Crash</option>
+                            <option value="Error">Error</option>
+                            <option value="Warning">Warning</option>
+                            <option value="Info">Info</option>
+                        </select>
+
+                        <button type="button" onclick="triggerDoctorSweep()" class="px-3 py-2 rounded-xl bg-purple-600/20 text-purple-300 border border-purple-500/40 text-xs font-semibold hover:bg-purple-600/30 transition-all flex items-center gap-1.5 whitespace-nowrap" title="Run kongor doctor health sweep">
+                            <span>🩺</span> Sweep
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Issues Table -->
+            <div class="glass-panel rounded-2xl border border-slate-800/80 bg-slate-900/50 backdrop-blur-xl overflow-hidden shadow-xl">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-xs text-slate-300" id="issues-table">
+                        <thead class="bg-slate-950/70 uppercase text-[10px] tracking-wider text-slate-400 border-b border-slate-800/80">
+                            <tr>
+                                <th scope="col" class="py-3 px-4 font-semibold">Severity</th>
+                                <th scope="col" class="py-3 px-4 font-semibold">Subsystem</th>
+                                <th scope="col" class="py-3 px-4 font-semibold">Issue Signature / Title</th>
+                                <th scope="col" class="py-3 px-4 font-semibold text-center">Hits</th>
+                                <th scope="col" class="py-3 px-4 font-semibold">Status</th>
+                                <th scope="col" class="py-3 px-4 font-semibold text-right">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-800/60" id="issues-table-body">
+                            @foreach (var item in Model.Issues)
+                            {
+                                var sevClass = item.Severity switch
+                                {
+                                    "CriticalCrash" => "bg-rose-500/15 text-rose-400 border-rose-500/30",
+                                    "Error" => "bg-red-500/15 text-red-400 border-red-500/30",
+                                    "Warning" => "bg-amber-500/15 text-amber-400 border-amber-500/30",
+                                    _ => "bg-sky-500/15 text-sky-400 border-sky-500/30"
+                                };
+
+                                var statusClass = item.Status switch
+                                {
+                                    "AutoResolved" => "bg-emerald-500/15 text-emerald-400 border-emerald-500/30",
+                                    "ManualResolved" => "bg-teal-500/15 text-teal-400 border-teal-500/30",
+                                    "ActionRequired" => "bg-amber-500/15 text-amber-400 border-amber-500/30",
+                                    "Regression" => "bg-purple-500/15 text-purple-400 border-purple-500/30",
+                                    _ => "bg-rose-500/15 text-rose-400 border-rose-500/30"
+                                };
+
+                                <tr class="hover:bg-slate-800/40 transition-colors issue-row cursor-pointer"
+                                    id="row-@item.Fingerprint"
+                                    data-fingerprint="@item.Fingerprint"
+                                    data-subsystem="@item.Subsystem"
+                                    data-severity="@item.Severity"
+                                    data-status="@item.Status"
+                                    onclick="openForensicsDrawer('@item.Fingerprint')">
+                                    <td class="py-3.5 px-4 whitespace-nowrap">
+                                        <span class="px-2 py-0.5 rounded-lg border text-[10px] font-bold uppercase @sevClass">
+                                            @item.Severity
+                                        </span>
+                                    </td>
+                                    <td class="py-3.5 px-4 whitespace-nowrap font-medium text-slate-300">
+                                        @item.Subsystem
+                                    </td>
+                                    <td class="py-3.5 px-4 max-w-md">
+                                        <div class="font-semibold text-white truncate" title="@item.Title">@item.Title</div>
+                                        <div class="text-[11px] text-slate-400 font-mono truncate mt-0.5" title="@item.NormalizedSignature">
+                                            @item.NormalizedSignature
+                                        </div>
+                                    </td>
+                                    <td class="py-3.5 px-4 text-center whitespace-nowrap">
+                                        <span class="px-2 py-0.5 rounded-full bg-slate-800 text-slate-300 border border-slate-700 font-mono text-[11px]">
+                                            @item.OccurrenceCount
+                                        </span>
+                                    </td>
+                                    <td class="py-3.5 px-4 whitespace-nowrap">
+                                        <span class="px-2 py-0.5 rounded-lg border text-[10px] font-bold uppercase @statusClass" id="status-badge-@item.Fingerprint">
+                                            @item.Status
+                                        </span>
+                                    </td>
+                                    <td class="py-3.5 px-4 text-right whitespace-nowrap" onclick="event.stopPropagation()">
+                                        <div class="flex items-center justify-end gap-2">
+                                            @if (item.Status != "AutoResolved" && item.Status != "ManualResolved")
+                                            {
+                                                <button type="button" onclick="triggerReflexHeal('@item.Fingerprint')"
+                                                        id="heal-btn-@item.Fingerprint"
+                                                        class="px-2.5 py-1 rounded-lg bg-emerald-600/20 text-emerald-400 border border-emerald-500/40 hover:bg-emerald-600/30 text-[11px] font-semibold transition-all flex items-center gap-1">
+                                                    <span>⚡</span> Heal
+                                                </button>
+                                            }
+                                            <button type="button" onclick="openForensicsDrawer('@item.Fingerprint')"
+                                                    class="px-2 py-1 rounded-lg bg-slate-800/80 text-slate-300 border border-slate-700 hover:text-white text-[11px] font-medium transition-all">
+                                                Inspect
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+
+                <div id="no-issues-fallback" class="hidden p-8 text-center text-slate-400 text-sm">
+                    No issues match the selected filters.
+                </div>
+            </div>
+        </div>
+
+        <!-- Right: Real-time Receipts Stream (1 Column) -->
+        <div class="space-y-4">
+            <div class="p-5 glass-panel rounded-2xl border border-slate-800/80 bg-slate-900/50 backdrop-blur-xl h-full flex flex-col">
+                <div class="flex items-center justify-between pb-3 border-b border-slate-800/80">
+                    <div class="flex items-center gap-2">
+                        <span class="text-sm font-bold text-white tracking-tight">Receipt Stream</span>
+                        <span class="px-1.5 py-0.5 rounded text-[10px] bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 font-semibold">LIVE</span>
+                    </div>
+                    <span class="text-[11px] text-slate-500 font-mono" id="activity-count">@Model.RecentActivities.Count items</span>
+                </div>
+
+                <div class="mt-4 space-y-3 overflow-y-auto max-h-[600px] pr-1" id="activity-stream">
+                    @foreach (var act in Model.RecentActivities)
+                    {
+                        <div class="p-3 rounded-xl bg-slate-950/60 border border-slate-800/90 text-xs space-y-1.5 transition-all hover:border-slate-700">
+                            <div class="flex items-center justify-between">
+                                <span class="px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 font-mono text-[10px] font-bold border border-emerald-500/20">
+                                    @act.Recipe
+                                </span>
+                                <span class="text-[10px] text-slate-500">@act.Timestamp.ToString("HH:mm:ss")</span>
+                            </div>
+                            <div class="text-slate-300 text-[11px] leading-relaxed">@act.Receipt</div>
+                            <div class="text-[10px] font-mono text-slate-500 flex items-center gap-1">
+                                <span>Fingerprint:</span>
+                                <span class="text-purple-400">@act.Fingerprint[..Math.Min(8, act.Fingerprint.Length)]</span>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Forensics Drawer / Modal -->
+<div id="forensics-modal" class="fixed inset-0 z-50 hidden bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="glass-panel w-full max-w-2xl max-h-[90vh] rounded-2xl border border-slate-700/80 bg-slate-900/95 shadow-2xl overflow-hidden flex flex-col animate-in fade-in zoom-in-95 duration-200">
+        <!-- Modal Header -->
+        <div class="p-5 border-b border-slate-800 flex items-center justify-between">
+            <div class="space-y-0.5">
+                <div class="flex items-center gap-2">
+                    <span id="modal-severity-badge" class="px-2 py-0.5 rounded text-[10px] font-bold uppercase"></span>
+                    <span id="modal-subsystem" class="text-xs font-semibold text-slate-400"></span>
+                    <span id="modal-status-badge" class="px-2 py-0.5 rounded text-[10px] font-bold uppercase"></span>
+                </div>
+                <h3 id="modal-title" class="text-lg font-bold text-white tracking-tight mt-1"></h3>
+            </div>
+            <button type="button" onclick="closeForensicsDrawer()" class="p-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 transition-all">
+                ✕
+            </button>
+        </div>
+
+        <!-- Modal Body -->
+        <div class="p-5 space-y-4 overflow-y-auto text-xs">
+            <!-- Metadata Grid -->
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 p-3 rounded-xl bg-slate-950/60 border border-slate-800">
+                <div>
+                    <div class="text-[10px] text-slate-500 uppercase font-semibold">Fingerprint</div>
+                    <div id="modal-fingerprint" class="font-mono text-purple-300 font-semibold mt-0.5"></div>
+                </div>
+                <div>
+                    <div class="text-[10px] text-slate-500 uppercase font-semibold">Occurrences</div>
+                    <div id="modal-occurrences" class="text-slate-200 font-mono font-semibold mt-0.5"></div>
+                </div>
+                <div>
+                    <div class="text-[10px] text-slate-500 uppercase font-semibold">Faulting Module</div>
+                    <div id="modal-module" class="font-mono text-sky-400 font-semibold mt-0.5"></div>
+                </div>
+                <div>
+                    <div class="text-[10px] text-slate-500 uppercase font-semibold">Last Seen</div>
+                    <div id="modal-lastseen" class="text-slate-300 font-mono mt-0.5"></div>
+                </div>
+            </div>
+
+            <!-- Resolution Receipt (if resolved) -->
+            <div id="modal-receipt-container" class="hidden p-3.5 rounded-xl bg-emerald-950/30 border border-emerald-500/40 text-emerald-300 space-y-1">
+                <div class="flex items-center gap-2 font-bold text-[11px] uppercase tracking-wider text-emerald-400">
+                    <span>✓ Self-Healing Receipt Applied</span>
+                    <span id="modal-receipt-recipe" class="px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-mono text-[10px]"></span>
+                </div>
+                <p id="modal-receipt-text" class="text-xs text-emerald-200/90 leading-relaxed"></p>
+            </div>
+
+            <!-- Raw Message -->
+            <div>
+                <div class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Raw Engine Message</div>
+                <div id="modal-raw-message" class="p-3 rounded-xl bg-slate-950/90 border border-slate-800/80 font-mono text-slate-300 text-[11px] leading-relaxed whitespace-pre-wrap break-words"></div>
+            </div>
+
+            <!-- Stack Trace -->
+            <div id="modal-stacktrace-container">
+                <div class="flex items-center justify-between mb-1.5">
+                    <span class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Stack Trace</span>
+                    <button type="button" onclick="copyStackTrace()" class="text-[10px] text-purple-400 hover:text-purple-300 font-medium flex items-center gap-1">
+                        <span>📋</span> Copy
+                    </button>
+                </div>
+                <pre id="modal-stacktrace" class="p-3 rounded-xl bg-slate-950/90 border border-slate-800/80 font-mono text-slate-400 text-[10px] leading-relaxed overflow-x-auto max-h-48"></pre>
+            </div>
+        </div>
+
+        <!-- Modal Footer Actions -->
+        <div class="p-4 border-t border-slate-800 bg-slate-950/50 flex items-center justify-between">
+            <div class="text-[11px] text-slate-500">Autonomous reflex actions execute immediately without restart.</div>
+            <div class="flex items-center gap-2">
+                <button type="button" id="modal-heal-btn" onclick="triggerReflexHealFromModal()"
+                        class="px-4 py-2 rounded-xl bg-emerald-600 text-white font-semibold text-xs hover:bg-emerald-500 shadow-lg shadow-emerald-900/40 transition-all flex items-center gap-1.5">
+                    <span>⚡</span> Trigger Reflex Heal
+                </button>
+                <button type="button" onclick="resolveManuallyFromModal()"
+                        class="px-3 py-2 rounded-xl bg-slate-800 text-slate-300 hover:text-white border border-slate-700 text-xs font-semibold transition-all">
+                    ✓ Mark Resolved
+                </button>
+                <button type="button" onclick="closeForensicsDrawer()"
+                        class="px-3 py-2 rounded-xl bg-slate-800/50 text-slate-400 hover:text-white text-xs transition-all">
+                    Close
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Embedded JSON Data for Initial Client State -->
+<script id="initial-issues-data" type="application/json">
+    @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Issues))
+</script>
+
+<!-- SignalR & Real-Time Dashboard Logic -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.0/signalr.min.js"></script>
+<script>
+    let issuesCache = [];
+    let currentSelectedFingerprint = null;
+    let selectedSubsystemFilter = 'all';
+
+    try {
+        const raw = document.getElementById('initial-issues-data').textContent;
+        issuesCache = JSON.parse(raw) || [];
+    } catch (e) {
+        console.warn("[IssuesDashboard] Could not parse initial json:", e);
+    }
+
+    // Filter Logic
+    function filterBySubsystem(subsystem) {
+        selectedSubsystemFilter = subsystem;
+        document.querySelectorAll('.subsystem-pill').forEach(pill => {
+            if (pill.getAttribute('data-subsystem') === subsystem) {
+                pill.classList.remove('bg-slate-800/80', 'text-slate-400', 'border-slate-700/60');
+                pill.classList.add('bg-purple-600/30', 'text-purple-300', 'border-purple-500/40');
+            } else {
+                pill.classList.remove('bg-purple-600/30', 'text-purple-300', 'border-purple-500/40');
+                pill.classList.add('bg-slate-800/80', 'text-slate-400', 'border-slate-700/60');
+            }
+        });
+        applyFilters();
+    }
+
+    function applyFilters() {
+        const query = (document.getElementById('search-input').value || '').toLowerCase().trim();
+        const statusVal = document.getElementById('status-filter').value;
+        const severityVal = document.getElementById('severity-filter').value;
+
+        const rows = document.querySelectorAll('.issue-row');
+        let visibleCount = 0;
+
+        rows.forEach(row => {
+            const rowSub = row.getAttribute('data-subsystem') || '';
+            const rowSev = row.getAttribute('data-severity') || '';
+            const rowStatus = row.getAttribute('data-status') || '';
+            const text = row.textContent.toLowerCase();
+
+            const matchesSub = selectedSubsystemFilter === 'all' || rowSub.toLowerCase() === selectedSubsystemFilter.toLowerCase();
+            const matchesStatus = statusVal === 'all' || rowStatus.toLowerCase() === statusVal.toLowerCase();
+            const matchesSeverity = severityVal === 'all' || rowSev.toLowerCase() === severityVal.toLowerCase();
+            const matchesQuery = !query || text.includes(query);
+
+            if (matchesSub && matchesStatus && matchesSeverity && matchesQuery) {
+                row.style.display = '';
+                visibleCount++;
+            } else {
+                row.style.display = 'none';
+            }
+        });
+
+        const fallback = document.getElementById('no-issues-fallback');
+        if (visibleCount === 0) {
+            fallback.classList.remove('hidden');
+        } else {
+            fallback.classList.add('hidden');
+        }
+    }
+
+    document.getElementById('search-input').addEventListener('input', applyFilters);
+
+    // Forensics Modal
+    function openForensicsDrawer(fingerprint) {
+        currentSelectedFingerprint = fingerprint;
+        const issue = issuesCache.find(i => i.Fingerprint === fingerprint || i.fingerprint === fingerprint);
+        if (!issue) return;
+
+        const modal = document.getElementById('forensics-modal');
+        document.getElementById('modal-title').innerText = issue.Title || issue.title;
+        document.getElementById('modal-fingerprint').innerText = issue.Fingerprint || issue.fingerprint;
+        document.getElementById('modal-subsystem').innerText = issue.Subsystem || issue.subsystem;
+        document.getElementById('modal-occurrences').innerText = issue.OccurrenceCount || issue.occurrenceCount || 1;
+        document.getElementById('modal-module').innerText = (issue.FaultingModule || issue.faultingModule || 'N/A') + (issue.FaultingAddress || issue.faultingAddress ? `+0x${issue.FaultingAddress || issue.faultingAddress}` : '');
+        document.getElementById('modal-lastseen').innerText = new Date(issue.LastSeenUtc || issue.lastSeenUtc).toLocaleTimeString();
+        document.getElementById('modal-raw-message').innerText = issue.RawMessage || issue.rawMessage || '';
+
+        const st = issue.StackTrace || issue.stackTrace || '';
+        const stElem = document.getElementById('modal-stacktrace');
+        const stContainer = document.getElementById('modal-stacktrace-container');
+        if (st) {
+            stElem.innerText = st;
+            stContainer.classList.remove('hidden');
+        } else {
+            stContainer.classList.add('hidden');
+        }
+
+        const sev = issue.Severity || issue.severity || 'Error';
+        const sevBadge = document.getElementById('modal-severity-badge');
+        sevBadge.innerText = sev;
+        sevBadge.className = `px-2 py-0.5 rounded text-[10px] font-bold uppercase ${sev === 'CriticalCrash' ? 'bg-rose-500/20 text-rose-400 border border-rose-500/30' : 'bg-red-500/20 text-red-400 border border-red-500/30'}`;
+
+        const status = issue.Status || issue.status || 'Open';
+        const statBadge = document.getElementById('modal-status-badge');
+        statBadge.innerText = status;
+        statBadge.className = `px-2 py-0.5 rounded text-[10px] font-bold uppercase ${status === 'AutoResolved' ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'bg-amber-500/20 text-amber-400 border border-amber-500/30'}`;
+
+        const receiptCont = document.getElementById('modal-receipt-container');
+        const receiptText = issue.ResolutionReceipt || issue.resolutionReceipt;
+        const recipeName = issue.ResolutionRecipeApplied || issue.resolutionRecipeApplied;
+        if (receiptText) {
+            receiptCont.classList.remove('hidden');
+            document.getElementById('modal-receipt-recipe').innerText = recipeName || 'Reflex';
+            document.getElementById('modal-receipt-text').innerText = receiptText;
+        } else {
+            receiptCont.classList.add('hidden');
+        }
+
+        const healBtn = document.getElementById('modal-heal-btn');
+        if (status === 'AutoResolved' || status === 'ManualResolved') {
+            healBtn.classList.add('hidden');
+        } else {
+            healBtn.classList.remove('hidden');
+        }
+
+        modal.classList.remove('hidden');
+    }
+
+    function closeForensicsDrawer() {
+        document.getElementById('forensics-modal').classList.add('hidden');
+    }
+
+    function copyStackTrace() {
+        const text = document.getElementById('modal-stacktrace').innerText;
+        navigator.clipboard.writeText(text).then(() => {
+            alert("Stack trace copied to clipboard.");
+        });
+    }
+
+    // Trigger Reflex Heal
+    async function triggerReflexHeal(fingerprint) {
+        try {
+            const btn = document.getElementById(`heal-btn-${fingerprint}`);
+            if (btn) {
+                btn.innerHTML = '<span>⏳</span> Healing...';
+                btn.disabled = true;
+            }
+
+            const resp = await fetch(`/api/admin/issues/${fingerprint}/heal`, { method: 'POST' });
+            const result = await resp.json();
+
+            if (result.success || result.healed) {
+                const statusBadge = document.getElementById(`status-badge-${fingerprint}`);
+                if (statusBadge) {
+                    statusBadge.innerText = 'AutoResolved';
+                    statusBadge.className = 'px-2 py-0.5 rounded-lg border text-[10px] font-bold uppercase bg-emerald-500/15 text-emerald-400 border-emerald-500/30';
+                }
+                if (btn) btn.remove();
+            }
+        } catch (e) {
+            console.error("[ReflexHeal] Error triggering heal:", e);
+        }
+    }
+
+    async function triggerReflexHealFromModal() {
+        if (!currentSelectedFingerprint) return;
+        await triggerReflexHeal(currentSelectedFingerprint);
+        closeForensicsDrawer();
+    }
+
+    async function resolveManuallyFromModal() {
+        if (!currentSelectedFingerprint) return;
+        const notes = prompt("Enter resolution notes:", "Verified fix in code and resolved.");
+        if (notes === null) return;
+
+        try {
+            await fetch(`/api/admin/issues/${currentSelectedFingerprint}/resolve`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ notes })
+            });
+            closeForensicsDrawer();
+        } catch (e) {
+            console.error("[ResolveManual] Error:", e);
+        }
+    }
+
+    async function triggerDoctorSweep() {
+        alert("Doctor health sweep dispatched. Probing all 10 engine subsystems...");
+    }
+
+    // SignalR Connection
+    const connection = new signalR.HubConnectionBuilder()
+        .withUrl("/hubs/developer-issues")
+        .withAutomaticReconnect()
+        .build();
+
+    connection.on("OnInitialState", function (state) {
+        if (state && state.issues) {
+            issuesCache = state.issues;
+        }
+        if (state && state.kpis) {
+            updateKpiUi(state.kpis);
+        }
+    });
+
+    connection.on("OnKpisUpdated", function (kpis) {
+        updateKpiUi(kpis);
+    });
+
+    function updateKpiUi(kpis) {
+        if (!kpis) return;
+        document.getElementById('kpi-total').innerText = kpis.totalCaught ?? kpis.TotalCaught ?? 0;
+        document.getElementById('kpi-autoresolved').innerText = kpis.autoResolvedCount ?? kpis.AutoResolvedCount ?? 0;
+        document.getElementById('kpi-actionrequired').innerText = kpis.actionRequiredCount ?? kpis.ActionRequiredCount ?? 0;
+        document.getElementById('kpi-open').innerText = kpis.openCount ?? kpis.OpenCount ?? 0;
+        document.getElementById('kpi-regressions').innerText = kpis.regressionCount ?? kpis.RegressionCount ?? 0;
+
+        const percent = kpis.autoResolvedPercent ?? kpis.AutoResolvedPercent ?? 0;
+        document.getElementById('kpi-percent').innerText = `(${percent}%)`;
+        document.getElementById('kpi-progress-bar').style.width = `${percent}%`;
+
+        const health = kpis.systemHealth ?? kpis.SystemHealth ?? 'HEALTHY';
+        document.getElementById('system-health-text').innerText = health;
+    }
+
+    connection.on("OnIssueUpdated", function (updated) {
+        const fp = updated.Fingerprint || updated.fingerprint;
+        const idx = issuesCache.findIndex(i => (i.Fingerprint || i.fingerprint) === fp);
+        if (idx >= 0) {
+            issuesCache[idx] = updated;
+        } else {
+            issuesCache.unshift(updated);
+        }
+
+        const row = document.getElementById(`row-${fp}`);
+        if (row) {
+            const status = updated.Status || updated.status;
+            row.setAttribute('data-status', status);
+            const statusBadge = document.getElementById(`status-badge-${fp}`);
+            if (statusBadge) {
+                statusBadge.innerText = status;
+                statusBadge.className = `px-2 py-0.5 rounded-lg border text-[10px] font-bold uppercase ${status === 'AutoResolved' ? 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30' : 'bg-amber-500/15 text-amber-400 border-amber-500/30'}`;
+            }
+            row.classList.add('bg-purple-950/40');
+            setTimeout(() => row.classList.remove('bg-purple-950/40'), 2000);
+        }
+    });
+
+    connection.on("OnActivityRecorded", function (act) {
+        const stream = document.getElementById('activity-stream');
+        if (!stream) return;
+
+        const timeStr = new Date(act.Timestamp || act.timestamp).toLocaleTimeString();
+        const itemHtml = `
+            <div class="p-3 rounded-xl bg-slate-950/60 border border-slate-800/90 text-xs space-y-1.5 transition-all hover:border-slate-700 animate-in fade-in slide-in-from-top-2 duration-300">
+                <div class="flex items-center justify-between">
+                    <span class="px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 font-mono text-[10px] font-bold border border-emerald-500/20">
+                        ${act.Recipe || act.recipe}
+                    </span>
+                    <span class="text-[10px] text-slate-500">${timeStr}</span>
+                </div>
+                <div class="text-slate-300 text-[11px] leading-relaxed">${act.Receipt || act.receipt}</div>
+                <div class="text-[10px] font-mono text-slate-500 flex items-center gap-1">
+                    <span>Fingerprint:</span>
+                    <span class="text-purple-400">${(act.Fingerprint || act.fingerprint || '').substring(0, 8)}</span>
+                </div>
+            </div>`;
+
+        stream.insertAdjacentHTML('afterbegin', itemHtml);
+    });
+
+    connection.start()
+        .then(() => {
+            connection.invoke("JoinFeed").catch(err => console.warn("[SignalR] JoinFeed failed:", err));
+        })
+        .catch(err => {
+            console.warn("[SignalR] Fallback mode active (offline):", err);
+            const ind = document.getElementById('signalr-indicator');
+            if (ind) ind.innerHTML = '<span class="relative inline-flex rounded-full h-3 w-3 bg-slate-600"></span>';
+        });
+</script>

@@ -1,0 +1,2 @@
+[*.{c,cpp,h,hpp}]
+file_header_template = SPDX-License-Identifier: MPL-2.0\nSPDX-FileCopyrightText: 2026 guccidonut and Project KONGOR V Contributors\nThis Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.\nIf a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.

@@ -1,0 +1,211 @@
+{
+  "schema_version": "1.0.0",
+  "description": "Declarative Tier-1 static analysis, anti-slop, UTF-8 encoding, and cleanroom boundary rules for Project Kongor (#115, #104, #36, #53).",
+  "banned_cs_symbols": [
+    ".Result",
+    ".Wait()",
+    "Thread.Sleep(",
+    ".GetAwaiter().GetResult()"
+  ],
+  "fabricated_evidence_and_noop_rules": [
+    {
+      "id": "FAB-EV-001",
+      "symbol": "FabricatedEvidence.SyntheticRva",
+      "pattern": "\\b(?:0x001428F0|0x002184C0|0x0008F310)\\b",
+      "name": "Fabricated synthetic crash RVA (0x001428F0 / 0x002184C0 / 0x0008F310) (#265)"
+    },
+    {
+      "id": "FAB-EV-002",
+      "symbol": "FabricatedEvidence.SyntheticFaultRip",
+      "pattern": "\\b(?:0x7FF7A1201402|0x7FF7A1189930)\\b",
+      "name": "Fabricated synthetic crash RIP address (0x7FF7A1201402 / 0x7FF7A1189930) (#265)"
+    },
+    {
+      "id": "FAB-EV-003",
+      "symbol": "FabricatedEvidence.FakeProcessTelemetry",
+      "pattern": "(?:\\b412L\\s*\\*\\s*1024L\\s*\\*\\s*1024L\\b|\\b42801\\b|\\b42795\\b)",
+      "name": "Fabricated process telemetry constant (412 MB / 42801 / 42795) (#265)"
+    },
+    {
+      "id": "FAB-EV-004",
+      "symbol": "FabricatedEvidence.SeededRandom42",
+      "pattern": "\\bnew\\s+Random\\s*\\(\\s*42\\s*\\)",
+      "name": "Seeded PRNG telemetry fabrication (new Random(42)) (#265)"
+    },
+    {
+      "id": "NOOP-CATCH-001",
+      "symbol": "Slop.NoOpZeroCompoundAssignment",
+      "pattern": "\\b\\w+\\s*[\\+\\-]=\\s*0\\s*;",
+      "name": "No-op += 0; / -= 0; catch-block metric-gaming statement (#265)"
+    }
+  ],
+  "python_scan_roots": [
+    "scripts/lib",
+    "src/tools/ghidra",
+    "src/tools/kongor"
+  ],
+  "empty_catch_ratchet_by_dir": {
+    "src/apps/compel": 24,
+    "src/apps/compel-gui": 3,
+    "src/apps/control-panel": 91,
+    "src/apps/replay-studio": 2,
+    "src/apps/willowmaker": 87,
+    "src/extensions/cdn-broker": 8,
+    "src/extensions/modding": 37,
+    "src/extensions/replay-renderer": 22,
+    "src/extensions/spatial-audio": 0,
+    "src/extensions/vulkan-interop": 1,
+    "src/libs/contracts": 0,
+    "src/libs/database-context": 6,
+    "src/libs/protocol-core": 31,
+    "src/libs/service-defaults": 1,
+    "src/libs/source-generators": 0,
+    "src/services/aspire-host": 1,
+    "src/services/chat-server": 33,
+    "src/services/master-server": 14,
+    "src/services/web-api": 0,
+    "src/services/web-ui": 23,
+    "src/tools/endpoint-auditor": 1,
+    "src/tools/headless-renderer": 1,
+    "src/tools/kongor-cli": 230,
+    "src/tools/lua-verifier": 0,
+    "src/tools/mod-cli": 2,
+    "src/tools/prebake-tool": 1
+  },
+  "max_test_only_public_types": 165,
+  "max_test_only_public_types_debt_note": {
+    "owner": "web-portal/dawnbringer",
+    "limit": 165,
+    "when_to_upgrade": "Re-ratchet 165 -> <= 158 once concurrent src/services/web-{api,ui} worktree stream lands"
+  },
+  "max_lua_readtextfile_assertions": 14,
+  "python_slop_rules": [
+    {
+      "id": "PY-SLOP-001",
+      "name": "bare_type_ignore",
+      "pattern": "#\\s*type:\\s*ignore(?!\\[)",
+      "message": "Bare '# type: ignore' is forbidden; specify an explicit error code such as '# type: ignore[import-not-found]'."
+    },
+    {
+      "id": "PY-SLOP-002",
+      "name": "subprocess_shell_true",
+      "pattern": "\\bsubprocess\\.\\w+\\([^)]*\\bshell\\s*=\\s*True\\b",
+      "message": "subprocess invocation with shell=True is forbidden; pass an explicit argument list with shell=False."
+    },
+    {
+      "id": "PY-SLOP-003",
+      "name": "silent_except_pass",
+      "pattern": "except\\s+(?:Exception|BaseException)(?:\\s+as\\s+\\w+)?\\s*:\\s*pass\\b",
+      "message": "Silent 'except Exception: pass' is forbidden; log context or handle the specific expected exception type."
+    }
+  ],
+  "python_utf8_enforcement": {
+    "id": "PY-UTF8-104",
+    "require_explicit_encoding_on": [
+      "read_text",
+      "write_text",
+      "open"
+    ],
+    "allowed_encodings": [
+      "utf-8",
+      "utf-8-sig",
+      "ascii"
+    ]
+  },
+  "offline_import_boundary": {
+    "id": "PY-BOUNDARY-053",
+    "restricted_roots": [
+      "scripts/lib",
+      "src/tools/ghidra"
+    ],
+    "forbidden_modules": [
+      "frida",
+      "win32pipe",
+      "win32file",
+      "websocket",
+      "requests",
+      "httpx",
+      "urllib.request"
+    ]
+  },
+  "cleanroom_rules": {
+    "decompiler_fingerprint_regex": "\\b(FUN_[0-9a-fA-F]{6,16}|DAT_[0-9a-fA-F]{6,16}|LAB_[0-9a-fA-F]{6,16}|PTR_LAB_[0-9a-fA-F]{6,16}|uVar\\d+|iVar\\d+|puVar\\d+|lVar\\d+|CONCAT\\d+|extraout_[A-Z0-9]+|in_stack_[0-9a-fA-F]+)\\b",
+    "hardcoded_user_path_regex": "(?i)(C:\\\\\\\\Users\\\\\\\\[A-Za-z0-9_.-]+|C:/Users/[A-Za-z0-9_.-]+|/home/[A-Za-z0-9_.-]+)"
+  },
+  "architecture_layers": {
+    "id": "ARCH-LAYER-240",
+    "max_cycles": 50,
+    "deny_rules": [
+      {
+        "id": "LAYER-DENY-001",
+        "rule": "offline_tools !-> live_runtime",
+        "from_layer": "offline_tools",
+        "to_layer": "live_runtime",
+        "from_prefixes": ["scripts/lib", "src/tools/ghidra"],
+        "forbidden_patterns": [
+          "\\busing\\s+Kongor\\.NativeGuard\\b",
+          "\\bNamedPipeClientStream\\b",
+          "\\bimport\\s+(?:frida|win32pipe)\\b"
+        ]
+      },
+      {
+        "id": "LAYER-DENY-002",
+        "rule": "client_override !-> server_internal",
+        "from_layer": "client_override",
+        "to_layer": "server_internal",
+        "from_prefixes": ["games/client/override"],
+        "forbidden_patterns": [
+          "(?i)games/server/",
+          "\\bServerInternal\\b",
+          "\\bCOMPEL\\.Server\\b"
+        ]
+      },
+      {
+        "id": "LAYER-DENY-003",
+        "rule": "protocol_core !-> mcp_cli",
+        "from_layer": "protocol_core",
+        "to_layer": "mcp_cli",
+        "from_prefixes": ["src/libs/protocol-core", "src/libs/contracts"],
+        "forbidden_patterns": [
+          "\\busing\\s+Kongor\\.Cli\\b",
+          "\\busing\\s+Kongor\\.Mcp\\b"
+        ]
+      }
+    ]
+  },
+  "hot_loop_rules": {
+    "id": "HOT-LOOP-248",
+    "suppression_marker": "kongor-hotloop-ignore",
+    "cpp_patterns": [
+      {
+        "id": "CPP-HOTLOOP-REGEX",
+        "pattern": "\\bstd::regex\\b",
+        "name": "std::regex construction inside hot frame/tick loop"
+      },
+      {
+        "id": "CPP-HOTLOOP-SYNC-IO",
+        "pattern": "\\b(?:std::ifstream|std::ofstream|fopen\\s*\\()",
+        "name": "synchronous file I/O (std::ifstream/ofstream/fopen) inside hot frame/tick loop"
+      },
+      {
+        "id": "CPP-HOTLOOP-SLEEP",
+        "pattern": "\\b(?:std::this_thread::sleep_for|Sleep\\s*\\()",
+        "name": "blocking thread sleep inside hot frame/tick loop"
+      }
+    ],
+    "cs_exempt_files": [
+      "src/services/master-server/Features/Store/PurchaseLobbyProductHandler.cs",
+      "src/services/master-server/Features/Store/PurchaseStoreProductHandler.cs",
+      "src/services/master-server/Services/Economy/EconomyService.cs",
+      "src/services/master-server/Services/Matches/MatchIngestionHandler.cs",
+      "src/services/master-server/Services/Replay/ReplayAutoUploadService.cs"
+    ],
+    "cs_patterns": [
+      {
+        "id": "CS-HOTLOOP-EF-SAVE",
+        "pattern": "\\.(?:SaveChangesAsync|SaveChanges|ExecuteSqlRawAsync)\\s*\\(",
+        "name": "EF Core SaveChangesAsync / database persistence inside loop"
+      }
+    ]
+  }
+}

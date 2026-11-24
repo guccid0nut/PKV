@@ -1,0 +1,38 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net11.0</TargetFramework>
+    <RootNamespace>Grpc.Challenger.Tests</RootNamespace>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk"/>
+    <PackageReference Include="xunit"/>
+    <PackageReference Include="xunit.runner.visualstudio">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="FluentAssertions"/>
+    <PackageReference Include="Moq"/>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory"/>
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions"/>
+    <PackageReference Include="Microsoft.Extensions.Options"/>
+    <PackageReference Include="Microsoft.Extensions.Configuration"/>
+  </ItemGroup>
+
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\src\libs\protocol-core\Kongor.Core.csproj"/>
+    <ProjectReference Include="..\..\..\src\libs\contracts\NEXUS.Contracts.csproj"/>
+    <ProjectReference Include="..\..\..\src\libs\database-context\MERRICK.DatabaseContext.csproj"/>
+    <ProjectReference Include="..\..\..\src\services\web-api\ZORGATH.WebPortal.API.csproj"/>
+    <ProjectReference Include="..\..\..\src\services\chat-server\TRANSMUTANSTEIN.ChatServer.csproj"/>
+    <ProjectReference Include="..\..\..\src\services\master-server\KONGOR.MasterServer.csproj"/>
+
+  </ItemGroup>
+
+</Project>

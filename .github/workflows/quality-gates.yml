@@ -1,0 +1,121 @@
+name: Quality Gates
+
+on:
+  schedule:
+    - cron: '0 6 * * 1'   # Monday 6 AM UTC
+  workflow_dispatch:
+
+jobs:
+  performance-tests:
+    name: Performance Tests
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: pwsh
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9 # v4
+        with:
+          global-json-file: global.json
+          dotnet-quality: 'ga'
+          cache: true
+          cache-dependency-path: Directory.Packages.props
+
+      - name: Build & Run Performance Tests
+        run: ./kongor.ps1 test performance --build -c Release -v normal
+
+      - name: Upload Results
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: performance-results
+          path: TestResults/
+          if-no-files-found: ignore
+          retention-days: 30
+
+  e2e-mcp-tests:
+    name: E2E MCP Tests
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: pwsh
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9 # v4
+        with:
+          global-json-file: global.json
+          dotnet-quality: 'ga'
+          cache: true
+          cache-dependency-path: Directory.Packages.props
+
+      - name: Build & Run E2E MCP Tests
+        run: ./kongor.ps1 test e2e --build -c Release -v normal
+
+      - name: Upload Results
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: e2e-mcp-results
+          path: TestResults/
+          if-no-files-found: ignore
+          retention-days: 30
+
+  aot-smoke:
+    name: AOT Publish Smoke Test
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: pwsh
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9 # v4
+        with:
+          global-json-file: global.json
+          dotnet-quality: 'ga'
+
+      - name: Full AOT Smoke (Publish + Execution Verification)
+        run: ./scripts/verify-aot.ps1 -Configuration Release -RuntimeIdentifier win-x64 -SmokeProject src/apps/compel/COMPEL.csproj
+
+  bot-scrimmage-determinism:
+    name: Headless Bot Scrimmage Determinism Gate
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: pwsh
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9 # v4
+        with:
+          global-json-file: global.json
+          dotnet-quality: 'ga'
+          cache: true
+          cache-dependency-path: Directory.Packages.props
+
+      - name: Run Deterministic 5v5 Bot Scrimmage Simulation Gate
+        run: |
+          dotnet run --project src/tools/kongor-cli/Kongor.Cli.csproj -- scrimmage --dry-run --seed 1337 --verify-determinism --json -o artifacts/scrimmage-determinism-report.json
+
+      - name: Upload Scrimmage Telemetry Artifacts
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: scrimmage-determinism-artifacts
+          path: artifacts/scrimmage-determinism-report.json
+          if-no-files-found: ignore
+          retention-days: 30

@@ -1,0 +1,42 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net11.0</TargetFramework>
+    <RootNamespace>ASPIRE.Prebaking.Tests</RootNamespace>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk"/>
+    <PackageReference Include="xunit"/>
+    <PackageReference Include="xunit.runner.visualstudio">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="FluentAssertions"/>
+    <PackageReference Include="Moq"/>
+    <PackageReference Include="NLua"/>
+    <PackageReference Include="MemoryPack"/>
+    <PackageReference Include="System.IO.Hashing"/>
+  </ItemGroup>
+
+
+  <ItemGroup>
+    <Content Include="xunit.runner.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\src\libs\contracts\NEXUS.Contracts.csproj"/>
+    <ProjectReference Include="..\..\..\src\libs\protocol-core\Kongor.Core.csproj"/>
+    <ProjectReference Include="..\..\..\src\extensions\modding\Kongor.Modding.csproj"/>
+    <ProjectReference Include="..\..\..\src\services\master-server\KONGOR.MasterServer.csproj"/>
+    <ProjectReference Include="..\..\..\src\tools\prebake-tool\prebake-tool.csproj"/>
+  </ItemGroup>
+
+</Project>

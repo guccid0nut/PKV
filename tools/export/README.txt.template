@@ -1,0 +1,375 @@
+================================================================================
+ PROJECT KONGOR — PLAYTEST BUNDLE
+ Version  : {{PLATFORM_VERSION}}
+ Build ID : {{BUILD_ID}}
+ Platform : {{PLATFORM}}
+ Commit   : {{GIT_COMMIT_SHORT}} ({{BUILT_UTC}})
+================================================================================
+
+Thank you for helping test Project Kongor. This is an active playtest build, so
+you may run into bugs or rough edges—please let us know if anything feels off.
+
+DO I NEED DOCKER?
+--------------------------------------------------------------------------------
+  * NO DOCKER NEEDED:
+    - Playing the game (Offline Bot Matches, Public/External Master Servers,
+      and P2P Direct Play).
+    - Joining a friend's hosted server.
+    - Installing the `kongor` CLI and running the TAO MCP Server (`kongor mcp`).
+    - Hosting Dedicated Match Servers (`COMPEL` / `COMPEL.GUI`) on Windows or
+      Linux connecting to an existing Master Server.
+
+  * DOCKER REQUIRED ONLY FOR SELF-HOSTED FULL STACK:
+    - Only needed if you are hosting the complete backend cluster (Master Server,
+      Chat Server, Web Portal, PostgreSQL 17, and Garnet cache) locally for your
+      friends.
+
+
+1. QUICK START — LAUNCHING THE GAME
+--------------------------------------------------------------------------------
+Keep WILLOWMAKER inside this `ProjectKongor` folder next to `games/`.
+
+  * TIPS FOR WINDOWS TESTERS (FAST SETUP & FIREWALL):
+    - Unblock the .zip before extracting:
+      Right-click the downloaded .zip -> Properties -> check "Unblock" -> OK
+      (or in PowerShell: Unblock-File <zip-path>). This prevents Windows SmartScreen
+      ("Windows protected your PC") prompts on unsigned playtest executables.
+      If you see SmartScreen: click "More info" -> "Run anyway".
+    - Fast Extraction:
+      Windows Explorer's built-in "Extract All" takes 30+ minutes on large
+      archives. Using 7-Zip (Right-click -> 7-Zip -> Extract here) or PowerShell
+      `tar -xf ProjectKongor-<build>-all.zip` finishes in ~90 seconds.
+    - Windows Defender Firewall (Host Operators):
+      When hosting for LAN/friends, Windows Firewall will prompt to allow access
+      for KONGOR.MasterServer, TRANSMUTANSTEIN.ChatServer, DAWNBRINGER, or hon_x64.
+      Allow access on BOTH "Private" and "Public" networks (in case your Wi-Fi is
+      classified as a Public network profile), or friends will time out connecting.
+
+  * Windows (`win-x64`):
+    Double-click `WILLOWMAKER.exe`.
+
+  * Linux (`linux-x64`):
+    Run `./WILLOWMAKER` (or `./launcher-linux-x64/WILLOWMAKER` in multi-OS
+    bundles) from Terminal. If your archive tool stripped execute permissions:
+      chmod +x ./WILLOWMAKER ./launcher-linux-x64/WILLOWMAKER ./tools-linux-x64/kongor ./games/client/linux-x64/hon-x86_64 ./games/client/linux-x64/hon.sh
+
+  * macOS (`osx-universal` — Apple Silicon & Intel):
+    `HoN64` and its 64-bit `.dylib` modules are Universal-64 (`arm64` + `x86_64`).
+    Because playtest builds are not Apple notarized, run the helper script once
+    before first launch to clear Gatekeeper quarantine (`xattr -cr`) and apply
+    local ad-hoc signatures (`codesign --force --sign -`):
+
+      chmod +x ./macos-self-sign.command
+      ./macos-self-sign.command
+
+    Then run `./WILLOWMAKER` (or `./launcher-osx-arm64/WILLOWMAKER` on Apple
+    Silicon / `./launcher-osx-x64/WILLOWMAKER` on Intel).
+
+
+2. HOST FOR FRIENDS (SELF-HOSTED FULL STACK)
+--------------------------------------------------------------------------------
+Host your own private Project Kongor cluster so friends can register accounts,
+form parties, chat, and play dedicated matches on your server!
+
+  * Prerequisite:
+    Docker Desktop (Windows / macOS) or Docker Engine + Compose v2 (Linux)
+    running locally. The cluster automatically provisions isolated
+    `postgres:17-alpine` on `127.0.0.1:25432` and `garnet` on `127.0.0.1:28398`.
+
+  * Launch Control Panel:
+    - Windows : `control-panel-win-x64\NEXUS.ControlPanel.GUI.exe`
+    - Linux   : `./control-panel-linux-x64/NEXUS.ControlPanel.GUI`
+    - macOS (* experimental): `./control-panel-osx-arm64/NEXUS.ControlPanel.GUI`
+      (Apple Silicon) or `./control-panel-osx-x64/NEXUS.ControlPanel.GUI` (Intel).
+      (* Note: macOS hosts can run the control panel and backend services
+      `master-server`, `chat-server`, `web-portal-api`, and `web-portal-ui`,
+      while dedicated COMPEL K2 game servers require a Windows or Linux
+      `compel-<rid>` host or P2P hosting.)
+
+  * Hosting Modes (in the Dashboard "Hosting Mode" panel):
+    - Local Only (`127.0.0.1`): For local practice and standalone testing.
+    - LAN (`192.168.x.x` / `10.x.x.x`): For players on your local home network.
+    - Tailscale / ZeroTier (`100.x.y.z`): Recommended zero-port-forwarding
+      internet play with friends! Create a Tailscale mesh and host instantly.
+    - Public Internet (WAN): For direct public hosting with port forwarding.
+
+  * Security Note for Public Internet (WAN):
+    The standalone web portal (`http://<host>:5266`) uses plain HTTP without
+    TLS; tell friends to use a unique Kongor-only password and never reuse
+    real-world passwords. (`ZORGATH` internal API remains strictly bound to
+    `127.0.0.1:5200`.)
+
+  * First-Boot Credentials & Friend Invite Codes:
+    - Bootstrap admin credentials are written once to:
+      `userdata/initial_admin_credentials.txt`
+    - 10 single-use friend invite codes are generated at:
+      `userdata/invite_codes.txt`
+    - Generate more invite codes or create accounts anytime via CLI:
+      `tools-<rid>/kongor invite create --count 10`
+      `tools-<rid>/kongor account create --username <name> --password <pass>`
+
+  * Firewall / Router Ports (for LAN & WAN hosts):
+    - TCP: `55555` (Master Server), `5266` (Web Portal Sign-Up & Store/Codex),
+           `11031-11033` (Chat Server)
+    - UDP: `11235-11245` (Dedicated Game Servers) and `11735-11745` (Voice)
+    - (Internal ports `5200`, `11234`, `25432`, `28398` are bound to `127.0.0.1`
+      and must NEVER be port-forwarded.)
+
+  * Linux Dedicated Server One-Time Host Prep:
+    K2's native Linux server writes runtime configs under `/opt/hon/config`;
+    run once before starting COMPEL on Linux:
+      `sudo mkdir -p /opt/hon/config && sudo chown "$USER:$USER" /opt/hon/config`
+
+
+3. JOIN A FRIEND'S SERVER
+--------------------------------------------------------------------------------
+Joining a friend's hosted Project Kongor server takes less than a minute:
+
+  1. Verify Build ID Parity:
+     Ensure your bundle `Build ID` ({{BUILD_ID}}) matches your friend's host
+     `Build ID`.
+  2. Register Your Account:
+     Open `http://<host-ip>:5266/Account/Register` in your web browser. Enter
+     the single-use Invite Code provided by your host, choose your username,
+     and enter a unique Kongor-only password.
+     (New standalone accounts start with 10,000 Gold, 25,000 Silver, and 25
+     Plinko Tickets!)
+  3. Connect & Play:
+     Launch `WILLOWMAKER` -> set Master Server to `<host-ip>:55555` -> click
+     Play Online, sign in with your new account credentials, and join a hosted
+     COMPEL match!
+
+
+4. WAYS TO PLAY (NO DOCKER REQUIRED)
+--------------------------------------------------------------------------------
+  A) Offline Bot Matches:
+     Open WILLOWMAKER, pick a map/mode (Forests of Caldavar, Mid Wars, Strikers,
+     Capture The Flag, Team Deathmatch, Rift Wars, Devo Wars), and start a
+     Practice / Bot Match.
+     (macOS note: Master Server play and P2P Join are the most tested paths on
+     macOS so far; offline bot mode on macOS is still experimental.)
+
+  B) P2P Direct Play (Up to 10 Players):
+     - Join (Windows / Linux / macOS): Enter the host's IP:Port (LAN, Tailscale,
+       or ZeroTier works well) in WILLOWMAKER's P2P panel.
+     - Host (Windows / Linux): Click Host P2P Match in WILLOWMAKER. The bundled
+       `games/server_p2p/` server links client `.s2z` archives automatically.
+       Forward UDP port `11235` if hosting over the internet.
+     - macOS Host Note: There is no native macOS dedicated server binary; Mac
+       users can join P2P games or host via a Linux Docker container.
+
+  C) Local / Offline Auto & Community Master Servers (Project Kongor {{PLATFORM_VERSION}}):
+     By default, WILLOWMAKER uses `Local / Offline Auto (localhost:55555)`:
+     - If you are running a local `NEXUS` cluster on `:55555`, it connects online
+       automatically.
+     - Otherwise, clicking Play boots straight into the **Offline Main Menu Hub**
+       (full 3D Avatar Store, Vault, Learnatorium, Seasonal Themes, Practice/Bot
+       Matches, and P2P Hosting) with zero connection errors!
+     - To join a friend's or community's hosted Master Server, select `Custom
+       Address` (`<host-ip>:55555`) in WILLOWMAKER Settings. Leave "Pure 4.10
+       Compatibility Mode" unchecked for Project Kongor `{{PLATFORM_VERSION}}` hosts; only enable
+       it when connecting to an external legacy 4.10 server.
+
+  D) Queue Arcade ("While You Wait" Skirmish Matches):
+     When queued solo or in a party for Matchmaking, opt into Queue Arcade to jump
+     instantly into a zero-stakes skirmish match against bots while waiting for
+     your real match to pop. Skirmishes never affect your real rating or stats,
+     and when your match is found, everyone is automatically pulled into the
+     ranked game lobby with zero friction!
+
+
+5. INSTALLING THE `kongor` CLI & TAO MCP SERVER
+--------------------------------------------------------------------------------
+(Included in `tools-<rid>/`.)
+
+To add `kongor` to your user `PATH` and sync `.mcp.json` to your OS (no admin
+rights, `.NET SDK`, or Docker needed) so it works from any terminal directory:
+
+  * Windows (PowerShell / CMD):
+      .\tools-win-x64\kongor.exe install
+      (or `.\tools-win-x64\kongor.exe refresh`)
+
+  * Linux / macOS:
+      ./tools-<rid>/kongor install
+      (or `./tools-<rid>/kongor refresh`)
+
+  * Zero-Config AI Agent Registration (TAO MCP Server):
+    - Claude Code : `claude mcp add kongor -- ./tools-<rid>/kongor mcp`
+                    (or open this folder after running `kongor install`—`.mcp.json`
+                    and `CLAUDE.md` are pre-generated at the bundle root!)
+    - Cursor      : Open this `ProjectKongor` folder after running `kongor install`;
+                    `.mcp.json` is auto-discovered automatically.
+    - Antigravity : `./tools-<rid>/kongor mcp --register-only`
+
+Useful commands (run from any directory after `kongor install`):
+  * `kongor`           — Status check for local services, ports, and VFS mounts
+  * `kongor where`     — Show active Project Kongor bundle/workspace path
+  * `kongor workspace` — List or switch registered Project Kongor installations
+  * `kongor play`      — Launch WILLOWMAKER & game client
+  * `kongor host`      — Launch COMPEL dedicated match server supervisor
+  * `kongor gui`       — Open NEXUS Control Panel desktop GUI
+  * `kongor start`     — Start local Master + Chat + Web Server stack
+  * `kongor stop`      — Stop running Project Kongor background processes (scoped to active bundle)
+  * `kongor mcp`       — Run the TAO MCP server over stdio for Claude Desktop,
+                         Cursor, or Antigravity (UI/VFS inspection, replay parsing,
+                         and local session tools)
+
+
+6. DISPLAY (60 HZ TO 500 HZ) & WINDOWS PREREQUISITES
+--------------------------------------------------------------------------------
+  * Display Defaults:
+    First launch detects your monitor's refresh rate (60 Hz–500 Hz) and starts
+    in Borderless Windowed mode to avoid fullscreen mode-switch issues. Engine
+    FPS caps default to 1000; you can adjust VSync and frame limits in Settings.
+
+  * Windows Prerequisites:
+    - Windows uses DXVK v3.0.2 (Vulkan 1.3) to reduce shader compilation hitches.
+    - Updated NVIDIA, AMD, or Intel GPU driver with Vulkan 1.3 support.
+    - Microsoft Visual C++ x64 Redistributable:
+      https://aka.ms/vs/17/release/vc_redist.x64.exe
+
+
+7. HOSTING DEDICATED SERVERS (`COMPEL` — NO DOCKER REQUIRED)
+--------------------------------------------------------------------------------
+(Included under `compel-<rid>/`.)
+
+  * Run `COMPEL.GUI` or `COMPEL` on Windows or Linux.
+  * COMPEL links read-only `.s2z` archives from `games/client/` on first run.
+  * Enter your Master Server URL and Host Account in `COMPEL.GUI` (or
+    `compel-<rid>/COMPEL.json`). Remote HTTP control (`:11234`) stays disabled
+    unless you configure your own `AuthenticationToken`.
+  * UDP ports per match instance (`N = 0, 1, ...`): Game `11235 + N`,
+    Voice `11735 + N`.
+
+
+8. TESTER SHORTCUTS & LOCAL DIAGNOSTIC BUNDLES
+--------------------------------------------------------------------------------
+  * `Ctrl + Shift + D` in WILLOWMAKER : Open Developer Control Panel.
+  * `Ctrl + Shift + D` In-Game        : Toggle Dev Cockpit (RmlUi on Windows,
+                                        native K2 Dev Cockpit on Linux & macOS).
+
+  * Reporting Crashes or Bugs:
+    Crash dumps and logs are not uploaded automatically. If you hit a crash or
+    issue, click "Export Diagnostics" in WILLOWMAKER to create a local `.zip`
+    (`<= 8 MB`) that scrubs common tokens, passwords, IPs, and OS usernames.
+    Please feel free to open and double-check the `.zip` contents before sending
+    it in Discord just to be sure.
+
+  * Note on Cold-Boot Watchdog Dumps:
+    If you see a `hang_*_pid*.dmp` in your logs directory after first launching,
+    this is a benign diagnostic snapshot captured by the launcher watchdog while
+    the game engine was compiling Vulkan shaders during cold boot; no action is needed.
+
+
+9. DEVELOPER & AI AGENT REFERENCE (`kongor mcp` LOCAL STACK SETUP)
+--------------------------------------------------------------------------------
+(Optional reference for developers connecting Claude Desktop, Cursor, Copilot,
+or Antigravity to `kongor mcp` to set up or test a local backend stack.)
+
+  * Connecting Your Agent:
+    Run `kongor refresh` first, then configure your MCP client to run
+    `kongor mcp` over `stdio`.
+
+  * Default Local Endpoints (Override via `host` / `masterServer` if needed):
+    - PostgreSQL 17 (`MERRICK`) : `127.0.0.1:25432` (Docker) or `127.0.0.1:5432`
+    - Garnet / Redis Cache      : `127.0.0.1:28398` (Docker) or `127.0.0.1:28298`
+    - Master Server             : `127.0.0.1:55555`
+    - Chat Server               : `127.0.0.1:11031` (HTTPS `:5554`)
+    - Web Portal UI / API       : `127.0.0.1:5266` / `127.0.0.1:5200`
+    - COMPEL Control Plane      : `127.0.0.1:11234` (Local), `:11334` (Docker),
+                                  `:11434` (K3s / Agones)
+
+  * Keep Player & Dedicated-Host (`svr_login`) Accounts Separate:
+    COMPEL authenticates to the Master Server using a Host Account (`svr_login`).
+    Use separate accounts for playing vs. hosting—and if you run multiple COMPEL
+    fleets at the same time (e.g., Local + Docker + K3s), give each fleet its
+    own Host Account so their `svr_login` sessions do not kick each other off.
+    Accounts and tokens can be managed in `NEXUS.ControlPanel.GUI` ("Users" and
+    "Secrets & Config" tabs), the Web Portal, or via `kongor_db_fixture`.
+
+  * Recommended 4-Step Bootstrap Sequence for Agents:
+    1. Start Stack     : `kongor_server_manage` (`action: "start"`,
+                         `target: "cluster"`) or "Start Cluster" in Control Panel.
+    2. Schema & Users  : `KONGOR.MasterServer` runs schema initialization and
+                         catalog seeding on startup; use `kongor_db_fixture` /
+                         `kongor_db_pool_diagnostics` (and `kongor_db_migrate`
+                         when running with EF migrations) to verify DB readiness
+                         and ensure both Player and distinct Host accounts exist.
+    3. Verify Health   : `kongor_health_check` and `kongor_diagnostics` (tool
+                         responses include remediation hints if a port or config
+                         check fails).
+    4. Launch & Test   : `kongor_compel_manage` (`action: "start"` / `"instances"`)
+                         and `kongor_game_client_manage` / `kongor_client_eval_lua`
+                         to start dedicated workers and verify a local match.
+
+
+10. BUNDLE DIRECTORY LAYOUT
+--------------------------------------------------------------------------------
+The unified playtest bundle contains the complete client, hosting, services,
+and tool suite structured as follows:
+
+  ProjectKongor/
+  |-- WILLOWMAKER.exe                Primary Windows game launcher & player client
+  |-- launcher-<rid>/                Platform game launchers (Linux / macOS)
+  |-- macos-self-sign.command        macOS quarantine remover & ad-hoc code signer
+  |-- control-panel-<rid>/           NEXUS Control Panel desktop GUI supervisor
+  |-- services-<rid>/                Self-hosted backend server stack:
+  |   |-- master-server/             KONGOR MasterServer (login, accounts, stats)
+  |   |-- chat-server/               TRANSMUTANSTEIN ChatServer (channels, PMs)
+  |   |-- web-portal-api/            ZORGATH Web API (internal management)
+  |   `-- web-portal-ui/             DAWNBRINGER Web Portal (registration, codex)
+  |-- compel-<rid>/                  COMPEL & COMPEL.GUI match server supervisors
+  |-- tools-<rid>/                   `kongor` unified CLI administration utility
+  |-- infra/docker/
+  |   `-- docker-compose.yml         Isolated Docker Compose (PostgreSQL 17 + Garnet)
+  |-- games/
+  |   |-- client/                    K2 Client runtime, DXVK 3.0.2 & base .s2z archives
+  |   |-- shared/                    Shared common .s2z resources
+  |   |-- server_p2p/                Lightweight companion server for P2P lobby hosts
+  |   `-- server/                    Dedicated K2 Server binaries for COMPEL matches
+  |-- userdata/                      Local runtime data, initial credentials, invites
+  |-- playtest_policy.json           Bundle environment security policy
+  |-- build_manifest.json            Cryptographic archive & entity CRC32 manifest
+  |-- LICENSE                        GNU AGPL-3.0-or-later license (platform, CLI & services)
+  |-- LICENSE.native-mpl2.txt        Mozilla Public License 2.0 (native C/C++ layer)
+  |-- NOTICE                         Authorship, upstream lineage & community credits
+  |-- CHANGELOG.md                   Technical changelog across v5.0, v5.0.1 & v{{PLATFORM_VERSION}}
+  |-- RELEASE_NOTES_v{{PLATFORM_VERSION}}.md       Player & operator release notes for v{{PLATFORM_VERSION}}
+  |-- CREDITS.md                     Tribute to original HoN devs, community & pioneers
+  |-- AI_GRATITUDE.md                AI model acknowledgments & educational engineering notes
+  |-- THIRD_PARTY_NOTICES.md         Open-source libraries, dependencies & attributions
+  `-- README.txt                     This file
+
+11. ACKNOWLEDGMENTS & PRESERVATION CREDITS
+--------------------------------------------------------------------------------
+Project Kongor V is an independent, non-commercial community preservation effort
+(zero donations, zero monetization). Full legal, community, and AI collaboration
+notes live in `NOTICE`, `CREDITS.md`, `AI_GRATITUDE.md`, and `THIRD_PARTY_NOTICES.md`.
+
+  * Original Heroes of Newerth & K2 Engine Creators (S2 Games, Frostburn Studios
+    & Garena, 2009-2022):
+    Deep gratitude to every engineer, designer, artist, composer, QA tester, and
+    community lead who built and sustained Newerth over more than a decade--with
+    a special thank-you to `ElementUser` (`EU`) for his years of tireless work on
+    scripts, bug fixes, tooltips, UI updates, PBT patches, and direct community
+    communication across S2 Games and Frostburn Studios, alongside `Fielding`,
+    `Idejder`, `Nome`, `Wza`, `HyperXewl` (`xewl`), `Kros`, `Buro`, `MacroHard`,
+    `Diva`, `AceJR`, `CJK`, `SoundWizard`, `MsPudding`, `Nigma`, `BreakCPK`, and
+    the entire original development teams. (Project Kongor V is independent and
+    is not affiliated with or endorsed by Garena, S2 Games, Frostburn Studios,
+    Kongor Studios, or any individuals named above.)
+
+  * Open-Source & Modding Community Pioneers:
+    Grateful credit to `[K]ONGOR` (Project KONGOR Open Source contributors),
+    `korDen`, `KRAT0Sz` (`why2k`), `RedBear`, `Theli`,
+    `shawwn`, `manu311`, `mrhappyasthma`, HoNBots authors (`tkt-hon`, `kairus101`,
+    `St0l3n_ID`, `Anakonda`, `Sparks1992`, `AsiaPingPong`), classic HoN UI modders
+    & custom map creators (`Bang!`, `Notausgang`, `xewl`, `Valky`, `Cralle`, and
+    the HoN Custom Maps community), and Craig Mason-Jones (`JSON4Lua`).
+
+  * AI Models & Developer Platforms (`AI_GRATITUDE.md`):
+    Gratitude to Google / DeepMind (`Gemini` & `Antigravity`), Anthropic (`Claude`,
+    `Claude Code`, & the open `Model Context Protocol`), JetBrains (`Junie`,
+    `PyCharm`, & `Rider`), and OpenAI (`GPT` & `Codex`) for pair-programming,
+    review, and debugging help--shared with practical lessons in `AI_GRATITUDE.md`.
+================================================================================

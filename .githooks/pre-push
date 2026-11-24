@@ -1,0 +1,12 @@
+#!/bin/sh
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# SPDX-FileCopyrightText: 2026 guccidonut and Project KONGOR V Contributors
+# Project KONGOR V (https://github.com/guccidonut/PKV)
+# Project Kongor pre-push hook (VERSIONED - lives in .githooks/, activated via
+#   git config core.hooksPath .githooks   or   powershell -File scripts/install-git-hooks.ps1)
+# Delegates to scripts/git-pre-push.ps1. Non-interactive so AI agents / MCP tools can run git push.
+# Git passes: $1 = remote name, $2 = remote url.
+REPO_ROOT="$(git rev-parse --show-toplevel)"
+git lfs pre-push "$@" || exit 1
+powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass -File "$REPO_ROOT/scripts/git-pre-push.ps1" "$1" "$2" < /dev/null
+exit $?

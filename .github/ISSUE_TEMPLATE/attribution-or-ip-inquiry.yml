@@ -1,0 +1,34 @@
+name: Attribution, License, or IP Inquiry
+description: Request contributor credit updates, license clarification, or good-faith IP review
+title: "[Attribution / Legal]: "
+labels: ["governance", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for reaching out in good faith. For confidential rightsholder or security notices, you may also use **GitHub Private Vulnerability Reporting** (`Security` tab → **Report a vulnerability**).
+  - type: dropdown
+    id: category
+    attributes:
+      label: Inquiry Type
+      options:
+        - Contributor / Open-Source Attribution Update
+        - License Metadata Clarification
+        - Copyright or Asset Concern
+        - Trademark / Non-Affiliation Clarification
+    validations:
+      required: true
+  - type: input
+    id: paths
+    attributes:
+      label: Relevant File Path(s) or URL(s)
+      placeholder: "e.g., THIRD_PARTY_NOTICES.md, src/tools/..."
+    validations:
+      required: true
+  - type: textarea
+    id: details
+    attributes:
+      label: Details & Requested Resolution
+      description: Share the upstream repository/license or rightsholder context and how we can resolve this accurately.
+    validations:
+      required: true

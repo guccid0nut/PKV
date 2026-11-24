@@ -1,0 +1,1277 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="clr-namespace:WILLOWMAKER.Core.ViewModels"
+             xmlns:views="clr-namespace:WILLOWMAKER.Core.Views"
+             mc:Ignorable="d" d:DesignWidth="1280" d:DesignHeight="800"
+             x:Class="WILLOWMAKER.Core.Views.MainView"
+             x:DataType="vm:MainViewModel">
+
+    <Design.DataContext>
+        <vm:MainViewModel />
+        <!-- This Only Sets The DataContext For The Previewer In An IDE, To Set The Actual DataContext For Runtime, Set The DataContext Property In Code -->
+    </Design.DataContext>
+
+    <!-- Colours & Palettes: https://materialui.co/ -->
+
+    <UserControl.Styles>
+        <!-- Modern Sleek Voice Sliders (Zero Clipping, Custom Themed Thumb Beads) -->
+        <Style Selector="Slider.voice-slider">
+            <Setter Property="Height" Value="32" />
+            <Setter Property="MinHeight" Value="32" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="ClipToBounds" Value="False" />
+        </Style>
+        <Style Selector="Slider.voice-slider /template/ Thumb">
+            <Setter Property="Width" Value="16" />
+            <Setter Property="Height" Value="16" />
+            <Setter Property="CornerRadius" Value="8" />
+            <Setter Property="ClipToBounds" Value="False" />
+        </Style>
+        <Style Selector="Slider.mic-slider /template/ Thumb">
+            <Setter Property="Background" Value="#38BDF8" />
+            <Setter Property="BorderBrush" Value="#E0F2FE" />
+            <Setter Property="BorderThickness" Value="2" />
+        </Style>
+        <Style Selector="Slider.mic-slider:pointerover /template/ Thumb">
+            <Setter Property="Background" Value="#7DD3FC" />
+            <Setter Property="BorderBrush" Value="#FFFFFF" />
+        </Style>
+        <Style Selector="Slider.gain-slider /template/ Thumb">
+            <Setter Property="Background" Value="#F59E0B" />
+            <Setter Property="BorderBrush" Value="#FEF3C7" />
+            <Setter Property="BorderThickness" Value="2" />
+        </Style>
+        <Style Selector="Slider.gain-slider:pointerover /template/ Thumb">
+            <Setter Property="Background" Value="#FCD34D" />
+            <Setter Property="BorderBrush" Value="#FFFFFF" />
+        </Style>
+        <Style Selector="Slider.rcas-slider /template/ Thumb">
+            <Setter Property="Background" Value="#10B981" />
+            <Setter Property="BorderBrush" Value="#A7F3D0" />
+            <Setter Property="BorderThickness" Value="2" />
+        </Style>
+        <Style Selector="Slider.rcas-slider:pointerover /template/ Thumb">
+            <Setter Property="Background" Value="#34D399" />
+            <Setter Property="BorderBrush" Value="#FFFFFF" />
+        </Style>
+
+        <!-- Active Optimization Preset Highlight Styles -->
+        <Style Selector="Button.preset-recommended.preset-active /template/ ContentPresenter">
+            <Setter Property="Background" Value="#0E3A5D" />
+            <Setter Property="BorderBrush" Value="#38BDF8" />
+            <Setter Property="BorderThickness" Value="2" />
+        </Style>
+        <Style Selector="Button.preset-fps.preset-active /template/ ContentPresenter">
+            <Setter Property="Background" Value="#065F46" />
+            <Setter Property="BorderBrush" Value="#34D399" />
+            <Setter Property="BorderThickness" Value="2" />
+        </Style>
+        <Style Selector="Button.preset-graphics.preset-active /template/ ContentPresenter">
+            <Setter Property="Background" Value="#4C1D95" />
+            <Setter Property="BorderBrush" Value="#C4B5FD" />
+            <Setter Property="BorderThickness" Value="2" />
+        </Style>
+    </UserControl.Styles>
+
+    <Grid Background="#0A0D14" RowDefinitions="Auto, *, Auto" Focusable="True" PointerPressed="Background_PointerPressed">
+        <!-- Atmospheric Background Artwork -->
+        <Image Source="/Assets/caldavar.png" Stretch="UniformToFill" Opacity="0.14" Grid.RowSpan="3"
+               HorizontalAlignment="Center" VerticalAlignment="Center" />
+
+        <!-- Dark Gradient Vignette Overlay -->
+        <Border Grid.RowSpan="3">
+            <Border.Background>
+                <LinearGradientBrush StartPoint="0%,0%" EndPoint="0%,100%">
+                    <GradientStop Color="#CC0A0D14" Offset="0.0" />
+                    <GradientStop Color="#E60A0D14" Offset="0.5" />
+                    <GradientStop Color="#F207090E" Offset="1.0" />
+                </LinearGradientBrush>
+            </Border.Background>
+        </Border>
+
+        <!-- ROW 0: TOP NOTIFICATIONS & HEADER BAR -->
+        <StackPanel Grid.Row="0">
+            <!-- CRASH / RECOVERY SUPERVISION BANNER -->
+            <Border Background="#3B0810" BorderBrush="#DC2626" BorderThickness="0, 0, 0, 1.5"
+                    Padding="24, 8" Margin="0, 0, 0, 4" IsVisible="{Binding HasCrashReportBanner}">
+                <Grid ColumnDefinitions="Auto, *, Auto, Auto, Auto">
+                    <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                        <TextBlock Text="⚠️" FontSize="14" VerticalAlignment="Center" />
+                        <TextBlock Text="{Binding CrashReportBannerText}" Foreground="#FECACA" FontSize="12" FontWeight="SemiBold" VerticalAlignment="Center" />
+                    </StackPanel>
+
+                    <TextBlock Grid.Column="1" Text="{Binding DiagnosticExportStatusText}" Foreground="#38BDF8"
+                               FontSize="11" FontWeight="Bold" Margin="16, 0" VerticalAlignment="Center" TextAlignment="Right" />
+
+                    <Button Grid.Column="2" Command="{Binding RelaunchInSafeModeCommand}" Margin="8, 0"
+                            Background="#7F1D1D" Foreground="#FEE2E2" BorderBrush="#DC2626" BorderThickness="1"
+                            CornerRadius="6" Padding="12, 5" Cursor="Hand" ToolTip.Tip="Relaunch with Safe Mode (disables user mods and overlay hooks while keeping core fixes)">
+                        <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                            <TextBlock Text="🛡️ Relaunch in Safe Mode" FontSize="11" FontWeight="Bold" />
+                        </StackPanel>
+                    </Button>
+
+                    <Button Grid.Column="3" Command="{Binding ExportDiagnosticBundleCommand}" Margin="8, 0"
+                            Background="#DC2626" Foreground="#FFFFFF" BorderBrush="#EF4444" BorderThickness="1"
+                            CornerRadius="6" Padding="12, 5" Cursor="Hand" ToolTip.Tip="Save privacy-scrubbed diagnostic zip (&lt;= 8 MB) to local disk for Discord sharing">
+                        <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                            <TextBlock Text="📦 Save Discord Crash Zip" FontSize="11" FontWeight="Bold" />
+                        </StackPanel>
+                    </Button>
+
+                    <Button Grid.Column="4" Command="{Binding DismissCrashBannerCommand}"
+                            Background="#1E293B" Foreground="#94A3B8" BorderBrush="#334155" BorderThickness="1"
+                            CornerRadius="6" Padding="10, 5" Cursor="Hand" ToolTip.Tip="Dismiss crash notification">
+                        <TextBlock Text="✕ Dismiss" FontSize="11" FontWeight="Bold" />
+                    </Button>
+                </Grid>
+            </Border>
+
+            <!-- TOP HEADER BAR -->
+            <Grid Margin="24, 10, 24, 6" ColumnDefinitions="Auto, *, Auto">
+            <!-- Title Branding & Icon -->
+            <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
+                <Image Source="/Assets/willowmaker.png" Width="30" Height="30" VerticalAlignment="Center" ToolTip.Tip="WILLOWMAKER - Project KONGOR Launcher" />
+                <TextBlock Text="PROJECT KONGOR" FontSize="16" FontWeight="Black" Foreground="#F8FAFC"
+                           VerticalAlignment="Center" LetterSpacing="0.5" />
+                <Border Background="#101C30" BorderBrush="#0284C7" BorderThickness="1" CornerRadius="4" Padding="6, 2"
+                        VerticalAlignment="Center">
+                    <TextBlock Text="WILLOWMAKER" FontSize="10" FontWeight="Bold" Foreground="#38BDF8" />
+                </Border>
+            </StackPanel>
+
+            <!-- Center Social & Community Quick Links -->
+            <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="10">
+                <Button Command="{Binding GoToURLCommand}"
+                        CommandParameter="{Binding DiscordLink}" Cursor="Hand"
+                        Background="#141824" BorderBrush="#2A344A" BorderThickness="1.5" CornerRadius="8"
+                        Padding="16, 7" ToolTip.Tip="Join Project KONGOR Discord Community">
+                    <Button.Styles>
+                        <Style Selector="Button:pointerover /template/ ContentPresenter">
+                            <Setter Property="Background" Value="#1E293B" />
+                            <Setter Property="BorderBrush" Value="#6366F1" />
+                        </Style>
+                    </Button.Styles>
+                    <TextBlock Text="Discord" FontSize="11" FontWeight="Bold" Foreground="#C7D2FE" VerticalAlignment="Center" />
+                </Button>
+
+                <Button Command="{Binding GoToURLCommand}"
+                        CommandParameter="{Binding RedditLink}" Cursor="Hand"
+                        Background="#141824" BorderBrush="#2A344A" BorderThickness="1.5" CornerRadius="8"
+                        Padding="16, 7" ToolTip.Tip="Join Project KONGOR on Reddit (/r/newerth)">
+                    <Button.Styles>
+                        <Style Selector="Button:pointerover /template/ ContentPresenter">
+                            <Setter Property="Background" Value="#1E293B" />
+                            <Setter Property="BorderBrush" Value="#F97316" />
+                        </Style>
+                    </Button.Styles>
+                    <TextBlock Text="Reddit" FontSize="11" FontWeight="Bold" Foreground="#FED7AA" VerticalAlignment="Center" />
+                </Button>
+            </StackPanel>
+
+            <!-- Auto-Update Status Pill -->
+            <Border Grid.Column="2" HorizontalAlignment="Right" VerticalAlignment="Center"
+                    Background="#121622" BorderBrush="#1E2638" BorderThickness="1" CornerRadius="16"
+                    Padding="12, 5">
+                <Grid ColumnDefinitions="Auto, Auto">
+                    <!-- Spinner while checking -->
+                    <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center"
+                                IsVisible="{Binding UpdateCheckIsInProgress}">
+                        <Path Classes="spinner" Width="13" Height="13" VerticalAlignment="Center" Margin="0, 0, 6, 0"
+                              Stroke="#34D399" StrokeThickness="1.5" StrokeLineCap="Round"
+                              Data="M 6.5,1.0 A 5.5,5.5 0 1 1 1.0,6.5" RenderTransformOrigin="50%, 50%">
+                            <Path.RenderTransform>
+                                <RotateTransform Angle="0" />
+                            </Path.RenderTransform>
+                            <Path.Styles>
+                                <Style Selector="Path.spinner">
+                                    <Style.Animations>
+                                        <Animation Duration="0:0:1" IterationCount="INFINITE">
+                                            <KeyFrame Cue="0%"><Setter Property="RotateTransform.Angle" Value="0.0" /></KeyFrame>
+                                            <KeyFrame Cue="100%"><Setter Property="RotateTransform.Angle" Value="360.0" /></KeyFrame>
+                                        </Animation>
+                                    </Style.Animations>
+                                </Style>
+                            </Path.Styles>
+                        </Path>
+                        <TextBlock Foreground="#34D399" FontSize="11" FontWeight="SemiBold" VerticalAlignment="Center"
+                                   Text="Checking For Update ..." />
+                    </StackPanel>
+
+                    <!-- Unreachable notification -->
+                    <TextBlock Grid.Column="0" Foreground="#F87171" FontSize="11" FontWeight="SemiBold"
+                               VerticalAlignment="Center" Text="⚠ Repository Unreachable"
+                               IsVisible="{Binding ReleasesRepositoryIsUnreachable}" />
+
+                    <!-- Up To Date state -->
+                    <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="5" VerticalAlignment="Center"
+                                IsVisible="{Binding UpdateIsUnavailable}">
+                        <TextBlock Text="✓" Foreground="#34D399" FontSize="11" FontWeight="Bold" VerticalAlignment="Center" />
+                        <TextBlock Text="Up To Date" Foreground="#34D399" FontSize="11" FontWeight="SemiBold" VerticalAlignment="Center" />
+                    </StackPanel>
+
+                    <!-- Update pending -->
+                    <TextBlock Grid.Column="0" Foreground="#FBBF24" FontSize="11" FontWeight="SemiBold"
+                               VerticalAlignment="Center" Text="{Binding UpdateIsPendingMessage}"
+                               IsVisible="{Binding UpdateIsPending}" />
+
+                    <!-- Update downloading -->
+                    <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center"
+                                IsVisible="{Binding UpdateIsDownloading}">
+                        <TextBlock Foreground="#38BDF8" FontSize="11" FontWeight="SemiBold" VerticalAlignment="Center"
+                                   Text="{Binding UpdateDownloadMessage}" />
+                        <TextBlock Foreground="#38BDF8" FontSize="11" FontWeight="Bold" VerticalAlignment="Center"
+                                   Text="{Binding UpdateDownloadPercentDisplay}" />
+                    </StackPanel>
+
+                    <!-- Restarting -->
+                    <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center"
+                                IsVisible="{Binding UpdateIsRestarting}">
+                        <TextBlock Foreground="#A78BFA" FontSize="11" FontWeight="SemiBold" VerticalAlignment="Center"
+                                   Text="Restarting ..." />
+                    </StackPanel>
+
+                    <!-- Version Label -->
+                    <Border Grid.Column="1" Margin="8, 0, 0, 0" Background="#1E2536" CornerRadius="4" Padding="6, 1"
+                            VerticalAlignment="Center">
+                        <TextBlock Text="{Binding VersionDisplay}" FontSize="10" FontWeight="Bold" Foreground="#94A3B8" />
+                    </Border>
+                </Grid>
+            </Border>
+        </Grid>
+        </StackPanel>
+
+        <!-- ROW 1: SCROLLABLE CENTRAL WORKSPACE (FULL-WIDTH MULTI-COLUMN DASHBOARD) -->
+        <ScrollViewer Grid.Row="1" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+            <StackPanel Margin="24, 4, 24, 10" Spacing="10" HorizontalAlignment="Stretch">
+                
+                <!-- HERO STRIP: Server, Action Buttons, and Optimization Presets -->
+                <Grid ColumnDefinitions="1*, 1.5*, 1.3*" HorizontalAlignment="Stretch">
+                    
+                    <!-- BOX 1: Master Server Address -->
+                    <Border Grid.Column="0" Background="#121622" BorderBrush="#1C2333" BorderThickness="1" CornerRadius="8"
+                            Padding="12, 8" Margin="0, 0, 5, 0">
+                        <StackPanel Spacing="4" VerticalAlignment="Center">
+                            <Grid ColumnDefinitions="*, Auto">
+                                <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                                    <TextBlock Text="🌐" FontSize="10" VerticalAlignment="Center" />
+                                    <TextBlock Text="MASTER SERVER ADDRESS" FontSize="9.5" FontWeight="Bold" Foreground="#64748B" LetterSpacing="0.5" VerticalAlignment="Center" />
+                                </StackPanel>
+                                <Ellipse Grid.Column="1" Width="7" Height="7" Fill="{Binding ServerStatusColor}" VerticalAlignment="Center" ToolTip.Tip="{Binding ServerStatusText}" />
+                            </Grid>
+                            <ComboBox SelectedItem="{Binding MasterServerAddress}"
+                                      Name="MasterServerAddressDropdown" HorizontalAlignment="Stretch"
+                                      HorizontalContentAlignment="Stretch" IsEnabled="{Binding MasterServerInputIsEnabled}"
+                                      Height="32" Cursor="Hand">
+                                <ComboBoxItem HorizontalContentAlignment="Stretch">Local / Offline Auto (localhost:55555)</ComboBoxItem>
+                                <ComboBoxItem HorizontalContentAlignment="Stretch">Offline Mode</ComboBoxItem>
+                                <ComboBoxItem HorizontalContentAlignment="Stretch">localhost:55555</ComboBoxItem>
+                                <ComboBoxItem HorizontalContentAlignment="Stretch">masterserver.newbs.io</ComboBoxItem>
+                                <ComboBoxItem HorizontalContentAlignment="Stretch" IsEnabled="{Binding IsKongorNetEnabled}" ToolTip.Tip="Temporarily disabled — awaiting kongor.net transition to PKV v5">api.kongor.net</ComboBoxItem>
+                                <ComboBoxItem HorizontalContentAlignment="Stretch">Custom Address ...</ComboBoxItem>
+                            </ComboBox>
+                            <TextBox Text="{Binding CustomMasterServerAddress}" Height="28" Margin="0, 1, 0, 0"
+                                     HorizontalAlignment="Stretch" TextAlignment="Center"
+                                     Watermark="e.g. 192.168.1.50:55555"
+                                     IsVisible="{Binding CanShowCustomMasterServerAddressField}"
+                                     IsEnabled="{Binding MasterServerInputIsEnabled}"
+                                     LostFocus="CustomMasterServerAddress_LostFocus"
+                                     KeyDown="CustomMasterServerAddress_KeyDown" />
+                            <TextBlock Text="{Binding MasterServerProbe.StatusMessage}"
+                                       FontSize="8.5"
+                                       Foreground="{Binding MasterServerProbe.StatusColor}"
+                                       Margin="2, 2, 0, 2"
+                                       IsVisible="{Binding MasterServerProbe.StatusMessage, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+
+                            <!-- Pure 4.10 Compatibility Mode Toggle -->
+                            <CheckBox IsChecked="{Binding PureCompatibilityMode}"
+                                      Margin="2, 0, 0, 2" MinHeight="22" Cursor="Hand"
+                                      ToolTip.Tip="When checked, omits ';override' from -mod for strict compatibility with external vanilla 4.10 master servers. Leave unchecked for Project KONGOR Master Server, P2P, and Bot Matches.">
+                                <TextBlock Text="Pure 4.10 Compatibility Mode" FontSize="9.5" FontWeight="SemiBold" Foreground="#94A3B8" VerticalAlignment="Center" />
+                            </CheckBox>
+
+                            <!-- Discord Streamer Privacy Mode Toggle -->
+                            <CheckBox IsChecked="{Binding DiscordStreamerPrivacyMode}"
+                                      Margin="2, 0, 0, 2" MinHeight="22" Cursor="Hand"
+                                      ToolTip.Tip="Hides your username, clan tag, live KDA, and party join info on Discord Rich Presence while keeping the current map, hero portrait, and match timer.">
+                                <TextBlock Text="Discord Streamer Privacy Mode" FontSize="9.5" FontWeight="SemiBold" Foreground="#94A3B8" VerticalAlignment="Center" />
+                            </CheckBox>
+
+                            <!-- Live Discord Rich Presence Preview Pill (visible while HoN or World Editor is active) -->
+                            <TextBlock Text="{Binding DiscordPresencePreviewText}"
+                                       FontSize="9.5"
+                                       FontWeight="SemiBold"
+                                       Foreground="#38BDF8"
+                                       TextTrimming="CharacterEllipsis"
+                                       Margin="6, 0, 2, 2"
+                                       ToolTip.Tip="{Binding DiscordPresencePreviewText}"
+                                       IsVisible="{Binding DiscordPresencePreviewText, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+
+                            <!-- Section Separator -->
+                            <Rectangle Height="1" Fill="#1E293B" Margin="0, 4, 0, 4" />
+
+                            <!-- CDN Section -->
+                            <Grid ColumnDefinitions="*, Auto" Margin="0, 2, 0, 0">
+                                <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                                    <TextBlock Text="📦" FontSize="10" VerticalAlignment="Center" />
+                                    <TextBlock Text="CONTENT DELIVERY NETWORK (CDN)" FontSize="9.5" FontWeight="Bold" Foreground="#64748B" LetterSpacing="0.5" VerticalAlignment="Center" />
+                                </StackPanel>
+                            </Grid>
+                            <ComboBox ItemsSource="{Binding AvailableCDNOptions}"
+                                      SelectedItem="{Binding SelectedCDNAddressItem}"
+                                      Name="CDNAddressDropdown" HorizontalAlignment="Stretch"
+                                      HorizontalContentAlignment="Stretch" IsEnabled="{Binding CDNInputIsEnabled}"
+                                      Height="32" Cursor="Hand">
+                                <ComboBox.Styles>
+                                    <Style Selector="ComboBoxItem">
+                                        <Setter Property="IsEnabled" Value="{Binding IsEnabled}" />
+                                    </Style>
+                                </ComboBox.Styles>
+                                <ComboBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding DisplayText}" ToolTip.Tip="{Binding TooltipText}" />
+                                    </DataTemplate>
+                                </ComboBox.ItemTemplate>
+                            </ComboBox>
+                            <TextBox Text="{Binding CustomCDNAddress}" Height="28" Margin="0, 1, 0, 0"
+                                     HorizontalAlignment="Stretch" TextAlignment="Center"
+                                     Watermark="e.g. 192.168.1.50:55555/cdn"
+                                     IsVisible="{Binding CanShowCustomCDNAddressField}"
+                                     IsEnabled="{Binding CDNInputIsEnabled}"
+                                     LostFocus="CustomCDNAddress_LostFocus"
+                                     KeyDown="CustomCDNAddress_KeyDown" />
+                            <TextBlock Text="{Binding CDNProbe.StatusMessage}"
+                                       FontSize="8.5"
+                                       Foreground="{Binding CDNProbe.StatusColor}"
+                                       Margin="2, 0, 0, 0"
+                                       IsVisible="{Binding CDNProbe.StatusMessage, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+
+                            <!-- Player-Controlled CDN Update Panel -->
+                            <Grid ColumnDefinitions="*, Auto" Margin="0, 4, 0, 0">
+                                <!-- Download Update Button (Active only when update is pending; never downloads automatically) -->
+                                <Button Grid.Column="0"
+                                        Command="{Binding DownloadCdnUpdateCommand}"
+                                        IsEnabled="{Binding CanDownloadCdnUpdate}"
+                                        Height="28" Margin="0, 0, 4, 0"
+                                        HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"
+                                        Background="#0F172A" BorderBrush="#0284C7" BorderThickness="1" CornerRadius="6"
+                                        Cursor="Hand" ToolTip.Tip="Download and install verified game update from CDN">
+                                    <StackPanel Orientation="Horizontal" Spacing="6" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                        <TextBlock Text="📥" FontSize="11" VerticalAlignment="Center" />
+                                        <TextBlock Text="{Binding DownloadCdnButtonText}" FontSize="10.5" FontWeight="SemiBold" Foreground="#38BDF8" VerticalAlignment="Center" />
+                                    </StackPanel>
+                                </Button>
+
+                                <!-- Manual Refresh / Check Button (Read-only manifest probe) -->
+                                <Button Grid.Column="1"
+                                        Command="{Binding CheckForCdnUpdatesCommand}"
+                                        IsEnabled="{Binding CanCheckForCdnUpdates}"
+                                        Width="32" Height="28"
+                                        HorizontalAlignment="Center" HorizontalContentAlignment="Center"
+                                        Background="#0F172A" BorderBrush="#0284C7" BorderThickness="1" CornerRadius="6"
+                                        Cursor="Hand" ToolTip.Tip="Check CDN for updates (read-only, never downloads automatically)">
+                                    <TextBlock Text="🔄" FontSize="11" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                </Button>
+                            </Grid>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- BOX 2: Hero Action Buttons (Play & Map Editor) -->
+                    <Grid Grid.Column="1" ColumnDefinitions="1*, 1.5*" Margin="5, 0, 5, 0">
+                        <!-- Open Map Editor Button -->
+                        <Button Grid.Column="0" Command="{Binding LaunchMapEditorCommand}" Height="54" Margin="0, 0, 5, 0"
+                                Cursor="Hand" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch"
+                                IsEnabled="{Binding CanLaunchMapEditor}" Background="#064E3B" BorderBrush="#059669"
+                                BorderThickness="1.5" CornerRadius="8">
+                            <Button.Styles>
+                                <Style Selector="Button TextBlock">
+                                    <Setter Property="RenderTransform" Value="scale(1)" />
+                                    <Setter Property="FontWeight" Value="SemiBold" />
+                                </Style>
+                                <Style Selector="Button:pointerover TextBlock">
+                                    <Setter Property="RenderTransform" Value="scale(1.04)" />
+                                    <Setter Property="FontWeight" Value="Bold" />
+                                </Style>
+                                <Style Selector="Button:pointerover /template/ ContentPresenter">
+                                    <Setter Property="Background" Value="#047857" />
+                                    <Setter Property="BorderBrush" Value="#10B981" />
+                                </Style>
+                                <Style Selector="Button:pressed TextBlock">
+                                    <Setter Property="RenderTransform" Value="scale(1.02)" />
+                                </Style>
+                                <Style Selector="Button:pressed /template/ ContentPresenter">
+                                    <Setter Property="Background" Value="#059669" />
+                                </Style>
+                            </Button.Styles>
+                            <Grid HorizontalAlignment="Center" VerticalAlignment="Center">
+                                <StackPanel Orientation="Horizontal" Spacing="6" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                    <TextBlock Text="🗺️" FontSize="13" VerticalAlignment="Center" />
+                                    <TextBlock Text="{Binding LaunchMapEditorButtonText}" Foreground="#D1FAE5" FontSize="13" FontWeight="Bold"
+                                               RenderTransformOrigin="50%, 50%">
+                                        <TextBlock.Transitions>
+                                            <Transitions>
+                                                <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.2" Easing="CubicEaseOut" />
+                                            </Transitions>
+                                        </TextBlock.Transitions>
+                                    </TextBlock>
+                                </StackPanel>
+                            </Grid>
+                        </Button>
+
+                        <!-- Play Project KONGOR Button with Synchronisation Bypass Hold Fill -->
+                        <Button Grid.Column="1" x:Name="LaunchGameClientButton" Height="54" Margin="5, 0, 0, 0"
+                                Padding="0" Cursor="Hand" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch"
+                                IsEnabled="{Binding CanLaunchGameClient}" Background="#047857" BorderBrush="#10B981"
+                                BorderThickness="2" CornerRadius="8">
+                            <Button.Styles>
+                                <Style Selector="Button TextBlock">
+                                    <Setter Property="RenderTransform" Value="scale(1)" />
+                                    <Setter Property="FontWeight" Value="Bold" />
+                                </Style>
+                                <Style Selector="Button:pointerover TextBlock">
+                                    <Setter Property="RenderTransform" Value="scale(1.04)" />
+                                    <Setter Property="FontWeight" Value="Black" />
+                                </Style>
+                                <Style Selector="Button:pointerover /template/ ContentPresenter">
+                                    <Setter Property="Background" Value="#059669" />
+                                    <Setter Property="BorderBrush" Value="#34D399" />
+                                </Style>
+                                <Style Selector="Button:pressed TextBlock">
+                                    <Setter Property="RenderTransform" Value="scale(1.02)" />
+                                </Style>
+                                <Style Selector="Button.HoldPending:pressed /template/ ContentPresenter">
+                                    <Setter Property="Background" Value="#059669" />
+                                </Style>
+                            </Button.Styles>
+                            <Grid x:Name="LaunchGameClientHoldFillHost" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+                                <Rectangle x:Name="LaunchGameClientHoldFill" HorizontalAlignment="Left"
+                                           VerticalAlignment="Stretch" Width="0" Fill="#40FFFFFF" RadiusX="6" RadiusY="6" />
+                                <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                    <TextBlock Text="▶" FontSize="14" Foreground="#A7F3D0" VerticalAlignment="Center" />
+                                    <TextBlock Text="{Binding LaunchGameClientButtonText}" Foreground="#FFFFFF" FontSize="15" FontWeight="Black"
+                                               RenderTransformOrigin="50%, 50%">
+                                        <TextBlock.Transitions>
+                                            <Transitions>
+                                                <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.2" Easing="CubicEaseOut" />
+                                            </Transitions>
+                                        </TextBlock.Transitions>
+                                    </TextBlock>
+                                </StackPanel>
+                            </Grid>
+                        </Button>
+                    </Grid>
+
+                    <!-- BOX 3: 1-Click Optimization Presets & Live Pipeline Feedback -->
+                    <Border Grid.Column="2" Background="#121622" BorderBrush="#1C2333" BorderThickness="1" CornerRadius="8"
+                            Padding="10, 8" Margin="5, 0, 0, 0">
+                        <StackPanel Spacing="6" VerticalAlignment="Center">
+                            <!-- Header + Active Preset Badge -->
+                            <Grid ColumnDefinitions="*, Auto">
+                                <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
+                                    <TextBlock Text="⚡" FontSize="10" VerticalAlignment="Center" />
+                                    <TextBlock Text="GRAPHICS &amp; FPS PRESETS" FontSize="9.5" FontWeight="Bold" Foreground="#64748B" LetterSpacing="0.5" VerticalAlignment="Center" />
+                                </StackPanel>
+                                <Border Grid.Column="1"
+                                        Background="{Binding ActiveGraphicsPresetBadgeBackground}"
+                                        BorderBrush="{Binding ActiveGraphicsPresetBadgeBorder}"
+                                        BorderThickness="1" CornerRadius="4" Padding="6, 1" VerticalAlignment="Center">
+                                    <TextBlock Text="{Binding ActiveGraphicsPresetBadgeText}"
+                                               FontSize="8.5" FontWeight="Black"
+                                               Foreground="{Binding ActiveGraphicsPresetBadgeForeground}" />
+                                </Border>
+                            </Grid>
+
+                            <!-- Detected Hardware 1-Line Summary -->
+                            <TextBlock Text="{Binding DetectedHardwareSummary}"
+                                       FontSize="9" FontWeight="SemiBold" Foreground="#94A3B8"
+                                       TextTrimming="CharacterEllipsis"
+                                       ToolTip.Tip="{Binding DetectedHardwareSummary}"
+                                       IsVisible="{Binding DetectedHardwareSummary, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+
+                            <!-- Row 0: Auto-Detect & Recommended Settings Button -->
+                            <Button Command="{Binding ApplyRecommendedSettingsCommand}"
+                                    Classes="preset-recommended"
+                                    Classes.preset-active="{Binding IsRecommendedPresetActive}"
+                                    Height="28" Cursor="Hand" Background="#0C2036" BorderBrush="#0284C7" BorderThickness="1.5"
+                                    CornerRadius="6" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"
+                                    ToolTip.Tip="{Binding RecommendedSettingsTooltip}">
+                                <Button.Styles>
+                                    <Style Selector="Button:pointerover /template/ ContentPresenter">
+                                        <Setter Property="Background" Value="#0369A1" />
+                                        <Setter Property="BorderBrush" Value="#38BDF8" />
+                                    </Style>
+                                </Button.Styles>
+                                <StackPanel Orientation="Horizontal" Spacing="6" HorizontalAlignment="Center">
+                                    <TextBlock Text="🎯" FontSize="11" VerticalAlignment="Center" />
+                                    <TextBlock Text="Recommended Settings" FontSize="11" FontWeight="Bold" Foreground="#38BDF8" VerticalAlignment="Center" />
+                                    <Border Background="#1E3A8A" CornerRadius="4" Padding="4, 1" VerticalAlignment="Center" Margin="2, 0, 0, 0">
+                                        <TextBlock Text="AUTO" FontSize="8" FontWeight="Black" Foreground="#93C5FD" />
+                                    </Border>
+                                </StackPanel>
+                            </Button>
+
+                            <!-- Row 1: Dual 1-Click Presets (Best FPS & Best Graphics) -->
+                            <Grid ColumnDefinitions="*, *">
+                                <Button Grid.Column="0" Command="{Binding ApplyBestFpsPresetCommand}"
+                                        Classes="preset-fps"
+                                        Classes.preset-active="{Binding IsBestFpsPresetActive}"
+                                        Margin="0, 0, 3, 0"
+                                        Height="27" Cursor="Hand" Background="#0F2420" BorderBrush="#059669" BorderThickness="1.5"
+                                        CornerRadius="6" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"
+                                        ToolTip.Tip="Maximum FPS: Medium (1024) Shadows, AA Off, 512 Reflections, SSAO Off, Auto Monitor Max Hz, DirectFlip, Vulkan HUD Off">
+                                    <Button.Styles>
+                                        <Style Selector="Button:pointerover /template/ ContentPresenter">
+                                            <Setter Property="Background" Value="#047857" />
+                                            <Setter Property="BorderBrush" Value="#34D399" />
+                                        </Style>
+                                    </Button.Styles>
+                                    <StackPanel Orientation="Horizontal" Spacing="4" HorizontalAlignment="Center">
+                                        <TextBlock Text="⚡" FontSize="10" VerticalAlignment="Center" />
+                                        <TextBlock Text="Best FPS" FontSize="10" FontWeight="Bold" Foreground="#34D399" VerticalAlignment="Center" />
+                                    </StackPanel>
+                                </Button>
+
+                                <Button Grid.Column="1" Command="{Binding ApplyBestGraphicsPresetCommand}"
+                                        Classes="preset-graphics"
+                                        Classes.preset-active="{Binding IsBestGraphicsPresetActive}"
+                                        Margin="3, 0, 0, 0"
+                                        Height="27" Cursor="Hand" Background="#1C1433" BorderBrush="#7C3AED" BorderThickness="1.5"
+                                        CornerRadius="6" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"
+                                        ToolTip.Tip="Maximum Visual Quality: Ultra (4096) Shadows, 4x MSAA, 2048 Reflections, SSAO On, Auto Monitor Max Hz, DirectFlip (~170 FPS on mid-range modern GPUs @ 1440p; use High 2048 Shadows for 200+ FPS)">
+                                    <Button.Styles>
+                                        <Style Selector="Button:pointerover /template/ ContentPresenter">
+                                            <Setter Property="Background" Value="#6D28D9" />
+                                            <Setter Property="BorderBrush" Value="#A78BFA" />
+                                        </Style>
+                                    </Button.Styles>
+                                    <StackPanel Orientation="Horizontal" Spacing="4" HorizontalAlignment="Center">
+                                        <TextBlock Text="✨" FontSize="10" VerticalAlignment="Center" />
+                                        <TextBlock Text="Best Graphics" FontSize="10" FontWeight="Bold" Foreground="#A78BFA" VerticalAlignment="Center" />
+                                    </StackPanel>
+                                </Button>
+                            </Grid>
+
+                            <!-- Live Effective Graphics Pipeline Strip + Click Diff Banner -->
+                            <Border Background="#0B0F19" BorderBrush="#1E293B" BorderThickness="1" CornerRadius="6" Padding="8, 6">
+                                <StackPanel Spacing="4">
+                                    <TextBlock Text="{Binding ActiveGraphicsPipelineSummary}"
+                                               FontSize="9.5" FontWeight="SemiBold" Foreground="#CBD5E1"
+                                               TextWrapping="Wrap" />
+                                    <TextBlock Text="{Binding LastPresetChangeSummary}"
+                                               FontSize="9.5" FontWeight="Bold"
+                                               Foreground="{Binding LastPresetChangeForeground}"
+                                               TextWrapping="Wrap"
+                                               IsVisible="{Binding HasLastPresetChangeSummary}" />
+                                </StackPanel>
+                            </Border>
+                        </StackPanel>
+                    </Border>
+                </Grid>
+
+                <!-- QUICK ACCESS BAR: DirectPlay P2P, Mod Manager & Advanced Settings Toggle -->
+                <Border Background="#121622" BorderBrush="#1C2333" BorderThickness="1" CornerRadius="8" Padding="10, 7">
+                    <Grid ColumnDefinitions="Auto, Auto, *, Auto">
+                        <Button Grid.Column="0" x:Name="OpenDirectPlayButton" Command="{Binding ToggleDirectPlayCommand}"
+                                Margin="0, 0, 8, 0" Background="#0C2036" BorderBrush="#0284C7" BorderThickness="1"
+                                CornerRadius="6" Padding="12, 6" Cursor="Hand"
+                                ToolTip.Tip="Host or join peer-to-peer matches with automatic UPnP port forwarding and Windows Firewall audit">
+                            <StackPanel Orientation="Horizontal" Spacing="6">
+                                <TextBlock Text="🌐" FontSize="11" VerticalAlignment="Center" />
+                                <TextBlock Text="DirectPlay P2P" FontSize="11" FontWeight="Bold" Foreground="#38BDF8" VerticalAlignment="Center" />
+                            </StackPanel>
+                        </Button>
+
+                        <!-- Hidden: client mods are now integrated directly into HoN's in-game settings -->
+                        <Button Grid.Column="1" x:Name="OpenModManagerButton" Command="{Binding ToggleModManagerCommand}"
+                                IsVisible="False"
+                                Margin="0, 0, 8, 0" Background="#1A1838" BorderBrush="#6366F1" BorderThickness="1"
+                                CornerRadius="6" Padding="12, 6" Cursor="Hand"
+                                ToolTip.Tip="Manage client mods, alt avatars, and visual overrides">
+                            <StackPanel Orientation="Horizontal" Spacing="6">
+                                <TextBlock Text="🧩" FontSize="11" VerticalAlignment="Center" />
+                                <TextBlock Text="Mod Manager" FontSize="11" FontWeight="Bold" Foreground="#C7D2FE" VerticalAlignment="Center" />
+                            </StackPanel>
+                        </Button>
+
+                        <ToggleButton Grid.Column="3" x:Name="AdvancedOptionsToggleButton"
+                                      IsChecked="{Binding IsAdvancedOptionsOpen}"
+                                      Background="#141824" BorderBrush="#334155" BorderThickness="1"
+                                      CornerRadius="6" Padding="12, 6" Cursor="Hand"
+                                      ToolTip.Tip="Toggle advanced graphics, shader cache, spatial audio radar, and CDN sync controls">
+                            <TextBlock Text="{Binding AdvancedOptionsButtonText}" FontSize="11" FontWeight="Bold" Foreground="#E2E8F0" />
+                        </ToggleButton>
+                    </Grid>
+                </Border>
+
+                <!-- TWO-COLUMN DASHBOARD GRID -->
+                <Grid ColumnDefinitions="*, *" HorizontalAlignment="Stretch">
+                    
+                    <!-- LEFT COLUMN: Graphics & Engine Modernization + Shader Cache -->
+                    <StackPanel Grid.Column="0" Margin="0, 0, 5, 0" Spacing="10">
+                        
+                        <!-- CARD 1: Graphics & Engine Configuration -->
+                        <Border Background="#121622" BorderBrush="#1C2333" BorderThickness="1" CornerRadius="8" Padding="14, 10">
+                            <StackPanel Spacing="8">
+                                <TextBlock Text="🎮 GRAPHICS &amp; ENGINE CONFIGURATION" FontSize="11" FontWeight="Bold" Foreground="#38BDF8" LetterSpacing="0.5" />
+
+                                <!-- Target Monitor (Full Width so Number, Model Name, Resolution & Max Hz are never truncated) -->
+                                <StackPanel Spacing="2">
+                                    <Label FontSize="10" Foreground="#94A3B8" Padding="0">Target Monitor</Label>
+                                    <ComboBox SelectedItem="{Binding SelectedMonitor}"
+                                              ItemsSource="{Binding AvailableMonitors}"
+                                              HorizontalAlignment="Stretch" Cursor="Hand" Height="32"
+                                              ToolTip.Tip="Select the monitor to run on. In Borderless/Fullscreen, the game will automatically launch on this display and adapt its resolution and max refresh rate.">
+                                        <ComboBox.ItemTemplate>
+                                            <DataTemplate>
+                                                <TextBlock Text="{Binding DisplayLabel}" />
+                                            </DataTemplate>
+                                        </ComboBox.ItemTemplate>
+                                    </ComboBox>
+                                </StackPanel>
+
+                                <!-- Display Mode & Screen Resolution Controls -->
+                                <Grid ColumnDefinitions="*, *">
+                                    <StackPanel Grid.Column="0" Margin="0, 0, 5, 0" Spacing="2">
+                                        <Label FontSize="10" Foreground="#94A3B8" Padding="0">Display Mode</Label>
+                                        <ComboBox SelectedItem="{Binding SelectedDisplayMode}"
+                                                  ItemsSource="{Binding AvailableDisplayModes}"
+                                                  HorizontalAlignment="Stretch" Cursor="Hand" Height="32"
+                                                  ToolTip.Tip="Borderless Windowed for seamless multi-tasking across monitors, or Exclusive Fullscreen for lowest input latency." />
+                                    </StackPanel>
+                                    <StackPanel Grid.Column="1" Margin="5, 0, 0, 0" Spacing="2">
+                                        <Label FontSize="10" Foreground="#94A3B8" Padding="0">Screen Resolution</Label>
+                                        <ComboBox SelectedItem="{Binding SelectedResolution}"
+                                                  ItemsSource="{Binding AvailableResolutions}"
+                                                  HorizontalAlignment="Stretch" Cursor="Hand" Height="32"
+                                                  ToolTip.Tip="Supported display resolutions for the selected monitor." />
+                                    </StackPanel>
+                                </Grid>
+
+                                <!-- Always-Visible Graphics Quality & Shadow Fidelity Controls (Managed by WILLOWMAKER) -->
+                                <Grid ColumnDefinitions="*, *">
+                                    <StackPanel Grid.Column="0" Margin="0, 0, 5, 0" Spacing="2">
+                                        <Label FontSize="10" Foreground="#94A3B8" Padding="0">Graphics Quality / AA Profile</Label>
+                                        <ComboBox SelectedItem="{Binding SelectedRayTracingPreset}"
+                                                  ItemsSource="{Binding AvailableRayTracingPresets}"
+                                                  HorizontalAlignment="Stretch" Cursor="Hand" Height="32"
+                                                  ToolTip.Tip="Controls Anti-Aliasing (0x / 2x / 4x MSAA) and Reflection Map resolution (512 / 1024 / 2048). Managed by WILLOWMAKER (written to autoexec.cfg on launch — overrides in-game Options on restart)." />
+                                    </StackPanel>
+                                    <StackPanel Grid.Column="1" Margin="5, 0, 0, 0" Spacing="2">
+                                        <Label FontSize="10" Foreground="#94A3B8" Padding="0">Shadow Fidelity</Label>
+                                        <ComboBox SelectedItem="{Binding SelectedShadowFidelity}"
+                                                  ItemsSource="{Binding AvailableShadowFidelities}"
+                                                  HorizontalAlignment="Stretch" Cursor="Hand" Height="32"
+                                                  ToolTip.Tip="Medium (1024): Best FPS (SSAO off). High (2048) [Recommended]: Sharp soft shadows with 200+ Hz headroom. Ultra (4096): Maximum shadow resolution (~1 ms extra CPU/render cost). Managed by WILLOWMAKER (written to autoexec.cfg on launch — overrides in-game Options on restart)." />
+                                    </StackPanel>
+                                </Grid>
+
+                                <!-- Presentation Mode Control -->
+                                <StackPanel Spacing="2">
+                                    <Label FontSize="10" Foreground="#94A3B8" Padding="0">Presentation Mode (Flip / Mailbox)</Label>
+                                    <ComboBox SelectedItem="{Binding SelectedPresentationMode}"
+                                              ItemsSource="{Binding AvailablePresentationModes}"
+                                              HorizontalAlignment="Stretch" Cursor="Hand" Height="32"
+                                              ToolTip.Tip="DirectFlip (FLIP_DISCARD): Zero-lag hardware scanout (obeys HoN's in-game VSync toggle). DXVK Mailbox: Zero-lag tear-free presentation (ideal for 60 Hz non-G-Sync/FreeSync screens). Legacy: Classic DWM VSync." />
+                                </StackPanel>
+
+                                <!-- Refresh Rate & Max FPS Cap (Auto-Detection + VRR Readiness Pill + Collapsible Manual Override) -->
+                                <Border Background="#0C101A" BorderBrush="#1C2333" BorderThickness="1" CornerRadius="6" Padding="10, 8">
+                                    <StackPanel Spacing="6">
+                                        <Grid ColumnDefinitions="*, Auto">
+                                            <StackPanel Grid.Column="0" Spacing="2">
+                                                <Label FontSize="10" Foreground="#94A3B8" Padding="0">Refresh Rate &amp; Max FPS Cap</Label>
+                                                <TextBlock Text="{Binding EffectiveRefreshRateSummary}" FontSize="12" FontWeight="SemiBold" Foreground="#38BDF8" VerticalAlignment="Center" />
+                                            </StackPanel>
+                                            <ToggleButton Grid.Column="1" IsChecked="{Binding IsManualRefreshRateExpanded}"
+                                                          Padding="8, 4" Height="26" CornerRadius="4" Background="#1E293B" BorderBrush="#334155" BorderThickness="1" Cursor="Hand"
+                                                          ToolTip.Tip="Configure a custom frame rate cap override or apply the VRR sub-refresh cap.">
+                                                <StackPanel Orientation="Horizontal" Spacing="4">
+                                                    <TextBlock Text="⚙ Custom Cap" FontSize="10" Foreground="#E2E8F0" VerticalAlignment="Center" />
+                                                </StackPanel>
+                                            </ToggleButton>
+                                        </Grid>
+
+                                        <!-- Phase-1 Automatic Cross-PC Display & VRR Readiness Pill -->
+                                        <Border Background="{Binding VrrReadinessBackground}"
+                                                BorderBrush="{Binding VrrReadinessBorder}"
+                                                BorderThickness="1" CornerRadius="4" Padding="8, 4"
+                                                ToolTip.Tip="{Binding VrrReadinessTooltip}">
+                                            <TextBlock Text="{Binding VrrReadinessPillText}"
+                                                       FontSize="9.5" FontWeight="SemiBold"
+                                                       Foreground="{Binding VrrReadinessForeground}"
+                                                       TextWrapping="Wrap" />
+                                        </Border>
+
+                                        <!-- Collapsible Manual Override Section -->
+                                        <StackPanel IsVisible="{Binding IsManualRefreshRateExpanded}" Spacing="6" Margin="0, 4, 0, 0">
+                                            <Separator Height="1" Background="#1C2333" />
+                                            <Grid ColumnDefinitions="Auto, *">
+                                                <CheckBox Grid.Column="0" IsChecked="{Binding ManualRefreshRateOverrideEnabled}" VerticalAlignment="Center" Cursor="Hand" Margin="0, 0, 8, 0">
+                                                    <TextBlock Text="Override Max FPS:" FontSize="10" Foreground="#CBD5E1" VerticalAlignment="Center" />
+                                                </CheckBox>
+                                                <TextBox Grid.Column="1" Text="{Binding ManualMaxFpsText}" Height="28" FontSize="11" Padding="6, 4"
+                                                         Watermark="e.g. 140, 189, 200, 360" IsEnabled="{Binding ManualRefreshRateOverrideEnabled}"
+                                                         ToolTip.Tip="Specify a fixed frame rate cap (0 = Uncapped). Leave unchecked to auto-sync with each monitor's refresh rate." />
+                                            </Grid>
+                                            <Button Command="{Binding ApplyVrrLowLatencyCapCommand}"
+                                                    IsVisible="{Binding CanSuggestVrrLowLatencyCap}"
+                                                    Height="26" Padding="10, 3" CornerRadius="5" Cursor="Hand"
+                                                    Background="#07261E" BorderBrush="#059669" BorderThickness="1"
+                                                    HorizontalAlignment="Left"
+                                                    ToolTip.Tip="Optional VRR tuning (Hz - Hz²/3600): caps slightly below refresh ceiling so frames stay strictly inside G-SYNC / FreeSync without hitting VSync latency.">
+                                                <TextBlock Text="{Binding ApplyVrrLowLatencyCapButtonText}" FontSize="9.5" FontWeight="Bold" Foreground="#34D399" VerticalAlignment="Center" />
+                                            </Button>
+                                        </StackPanel>
+                                    </StackPanel>
+                                </Border>
+
+                                <!-- ADVANCED ENGINE CONTROLS (Collapsible Drawer to declutter default view) -->
+                                <StackPanel x:Name="AdvancedGraphicsDrawer" IsVisible="{Binding IsAdvancedOptionsOpen}" Spacing="8">
+                                <!-- Swapchain Backend & Vulkan Performance HUD -->
+                                <Grid ColumnDefinitions="*, *">
+                                    <StackPanel Grid.Column="0" Margin="0, 0, 5, 0" Spacing="2">
+                                        <Label FontSize="10" Foreground="#94A3B8" Padding="0">Swapchain Backend</Label>
+                                        <ComboBox SelectedItem="{Binding SelectedSwapchainBackend}"
+                                                  ItemsSource="{Binding AvailableSwapchainBackends}"
+                                                  HorizontalAlignment="Stretch" Cursor="Hand" Height="32"
+                                                  ToolTip.Tip="Select the graphics API translation layer: DXVK (Vulkan WSI) or D3D9On12 (DirectX 12)." />
+                                    </StackPanel>
+                                    <StackPanel Grid.Column="1" Margin="5, 0, 0, 0" Spacing="2">
+                                        <Label FontSize="10" Foreground="#94A3B8" Padding="0">Vulkan Performance HUD</Label>
+                                        <ComboBox SelectedItem="{Binding SelectedVulkanHudMode}"
+                                                  ItemsSource="{Binding AvailableVulkanHudModes}"
+                                                  HorizontalAlignment="Stretch" Cursor="Hand" Height="32" />
+                                    </StackPanel>
+                                </Grid>
+
+                                <!-- Esports Network Protocol & Simulation Tickrate -->
+                                <Grid ColumnDefinitions="*, *">
+                                    <StackPanel Grid.Column="0" Grid.ColumnSpan="2" Spacing="2">
+                                        <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                                            <Label FontSize="10" Foreground="#94A3B8" Padding="0">Esports Network Protocol &amp; Simulation Tickrate</Label>
+                                            <Border Background="#064E3B" BorderBrush="#059669" BorderThickness="1" CornerRadius="4" Padding="5, 1" VerticalAlignment="Center">
+                                                <TextBlock Text="Sub-10ms Input" FontSize="8.5" FontWeight="Bold" Foreground="#A7F3D0" />
+                                            </Border>
+                                        </StackPanel>
+                                        <ComboBox SelectedItem="{Binding SelectedNetworkProfile}"
+                                                  ItemsSource="{Binding AvailableNetworkProfiles}"
+                                                  HorizontalAlignment="Stretch" Cursor="Hand" Height="32"
+                                                  ToolTip.Tip="Select the client-server network protocol. Competitive 128-Tick applies K2's maximum 85 Hz cl_packetSendFPS ceiling alongside 128 net_maxPacketRate, 256 KB/s bandwidth, and sub-10ms input response." />
+                                    </StackPanel>
+                                </Grid>
+
+                                <!-- Low Latency & Async Pipeline Compilation Controls -->
+                                <Grid ColumnDefinitions="*, *">
+                                    <StackPanel Grid.Column="0" Margin="0, 0, 5, 0" Spacing="2">
+                                        <Label FontSize="10" Foreground="#94A3B8" Padding="0">NVIDIA Reflex Low Latency</Label>
+                                        <Border Background="#0C101A" BorderBrush="#1C273C" BorderThickness="1" CornerRadius="6" Height="32" Padding="8, 0">
+                                            <Grid ColumnDefinitions="*, Auto" VerticalAlignment="Center">
+                                                <TextBlock Text="Ultra Low Latency" FontSize="10" FontWeight="SemiBold" Foreground="#E2E8F0" VerticalAlignment="Center" />
+                                                <ToggleSwitch Grid.Column="1" IsChecked="{Binding EnableNvidiaReflex}"
+                                                              OnContent="" OffContent="" Margin="0" Cursor="Hand" VerticalAlignment="Center"
+                                                              ToolTip.Tip="NVIDIA Reflex / Low-Latency Frame Queue: reduces input latency and render queue jitter" />
+                                            </Grid>
+                                        </Border>
+                                    </StackPanel>
+                                    <StackPanel Grid.Column="1" Margin="5, 0, 0, 0" Spacing="2">
+                                        <Label FontSize="10" Foreground="#94A3B8" Padding="0">Async Pipeline Caching</Label>
+                                        <Border Background="#0C101A" BorderBrush="#1C273C" BorderThickness="1" CornerRadius="6" Height="32" Padding="8, 0">
+                                            <Grid ColumnDefinitions="*, Auto" VerticalAlignment="Center">
+                                                <TextBlock Text="Graphics Pipeline (GPL)" FontSize="10" FontWeight="SemiBold" Foreground="#E2E8F0" VerticalAlignment="Center" />
+                                                <ToggleSwitch Grid.Column="1" IsChecked="{Binding EnableAsyncPipelineCaching}"
+                                                              OnContent="" OffContent="" Margin="0" Cursor="Hand" VerticalAlignment="Center"
+                                                              ToolTip.Tip="Vulkan Graphics Pipeline Library (GPL) asynchronous shader compilation to eliminate stutter." />
+                                            </Grid>
+                                        </Border>
+                                    </StackPanel>
+                                </Grid>
+
+                                <!-- AMD FidelityFX RCAS (Contrast-Adaptive Sharpening) -->
+                                <Border Background="#0C101A" BorderBrush="#1C273C" BorderThickness="1" CornerRadius="6" Padding="10, 8">
+                                    <StackPanel Spacing="6">
+                                        <Grid ColumnDefinitions="*, Auto" VerticalAlignment="Center">
+                                            <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                                                <TextBlock Text="✨ AMD FidelityFX RCAS" FontSize="10.5" FontWeight="Bold" Foreground="#34D399" VerticalAlignment="Center" />
+                                                <Border Background="#064E3B" BorderBrush="#059669" BorderThickness="1" CornerRadius="4" Padding="5, 1" VerticalAlignment="Center">
+                                                    <TextBlock Text="FSR" FontSize="8.5" FontWeight="Bold" Foreground="#A7F3D0" />
+                                                </Border>
+                                            </StackPanel>
+                                            <ToggleSwitch Grid.Column="1" IsChecked="{Binding EnableFidelityFxRcas}"
+                                                          OnContent="" OffContent="" Margin="0" Cursor="Hand" VerticalAlignment="Center"
+                                                          ToolTip.Tip="Toggle AMD FidelityFX Robust Contrast-Adaptive Sharpening (Vulkan WSI post-processing pass)" />
+                                        </Grid>
+
+                                        <!-- Sharpness Slider (Active when RCAS is enabled) -->
+                                        <Grid ColumnDefinitions="Auto, *, Auto" VerticalAlignment="Center" IsVisible="{Binding EnableFidelityFxRcas}">
+                                            <TextBlock Grid.Column="0" Text="Sharpness:" FontSize="9.5" FontWeight="SemiBold" Foreground="#94A3B8" VerticalAlignment="Center" Margin="0, 0, 8, 0" />
+                                            <Slider Grid.Column="1" Classes="voice-slider rcas-slider"
+                                                    Value="{Binding FidelityFxRcasSharpness}" Minimum="0.0" Maximum="1.0"
+                                                    SmallChange="0.05" LargeChange="0.10"
+                                                    Height="32" Cursor="Hand" ToolTip.Tip="Adjust RCAS sharpness level (0% = Subtle, 100% = Maximum)" />
+                                            <TextBlock Grid.Column="2" Text="{Binding FidelityFxRcasSharpnessText}" FontSize="9.5" FontWeight="Bold"
+                                                       Foreground="#34D399" VerticalAlignment="Center" Margin="8, 0, 0, 0" MinWidth="32" TextAlignment="Right" />
+                                        </Grid>
+                                    </StackPanel>
+                                </Border>
+                                </StackPanel>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- CARD 2: Vulkan Shader Pipeline & Cache (Advanced Drawer) -->
+                        <Border x:Name="AdvancedShaderCacheCard" IsVisible="{Binding IsAdvancedOptionsOpen}" Background="#121622" BorderBrush="#1C2333" BorderThickness="1" CornerRadius="8" Padding="14, 10">
+                            <Grid ColumnDefinitions="*, Auto" VerticalAlignment="Center">
+                                <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
+                                    <StackPanel Orientation="Horizontal" Spacing="6">
+                                        <TextBlock Text="🌋" FontSize="12" VerticalAlignment="Center"/>
+                                        <TextBlock Text="Vulkan Shader Cache" FontWeight="Bold" FontSize="11" Foreground="#F59E0B" VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                    <TextBlock Text="{Binding ShaderCacheStatusText}" FontSize="10" Foreground="#94A3B8"/>
+                                </StackPanel>
+                                <Button Grid.Column="1" Command="{Binding PurgeShaderCacheCommand}"
+                                        Background="#2A1B1F" BorderBrush="#991B1B" BorderThickness="1" Foreground="#F87171"
+                                        FontSize="11" FontWeight="Bold" Padding="10, 4" CornerRadius="6" Cursor="Hand"
+                                        ToolTip.Tip="Purge stale binary shaders and re-seed pristine base cache to fix driver hitches">
+                                    <StackPanel Orientation="Horizontal" Spacing="4">
+                                        <TextBlock Text="🧹" FontSize="11"/>
+                                        <TextBlock Text="Purge Cache" FontSize="11"/>
+                                    </StackPanel>
+                                </Button>
+                            </Grid>
+                        </Border>
+
+                        <!-- CARD 3: Content Delivery Network (CDN) & Asset Synchronisation (Advanced Drawer) -->
+                        <Border x:Name="AdvancedCdnSyncCard" IsVisible="{Binding IsAdvancedOptionsOpen}" Background="#121622" BorderBrush="#1C2333" BorderThickness="1" CornerRadius="8" Padding="14, 10">
+                            <Grid ColumnDefinitions="*, Auto" VerticalAlignment="Center">
+                                <StackPanel Grid.Column="0" Spacing="3" VerticalAlignment="Center" Margin="0, 0, 10, 0">
+                                    <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                                        <TextBlock Text="☁️" FontSize="12" VerticalAlignment="Center"/>
+                                        <TextBlock Text="Allow CDN Asset Updates" FontWeight="Bold" FontSize="11" Foreground="#38BDF8" VerticalAlignment="Center"/>
+                                        <Border Background="#1E293B" BorderBrush="#334155" BorderThickness="1" CornerRadius="4" Padding="5, 1" VerticalAlignment="Center">
+                                            <TextBlock Text="Safety Gated" FontSize="8.5" FontWeight="Bold" Foreground="#94A3B8"/>
+                                        </Border>
+                                    </StackPanel>
+                                    <TextBlock Text="Allow checking &amp; pulling files from official CDN (always asks confirmation before downloading)"
+                                               FontSize="9.5" Foreground="#64748B" TextWrapping="Wrap"/>
+                                </StackPanel>
+                                <ToggleSwitch Grid.Column="1" IsChecked="{Binding EnableCdnSync}"
+                                              OnContent="" OffContent="" Margin="0" Cursor="Hand" VerticalAlignment="Center"
+                                              ToolTip.Tip="Allow CDN Asset Updates: When enabled and connected to an official master server, prompts for confirmation before pulling any updates. Bypassed on localhost and custom servers." />
+                            </Grid>
+                        </Border>
+
+                        <!-- CARD 5: Launcher Utilities & Ecosystem Quick Access (Balanced on Left Column) -->
+                        <Border Background="#121622" BorderBrush="#1C2333" BorderThickness="1" CornerRadius="8" Padding="14, 8">
+                            <!-- Live Logs Button -->
+                            <Button Command="{Binding ToggleLiveLogsCommand}"
+                                    Background="#141824" BorderBrush="#1E2638" BorderThickness="1" CornerRadius="6"
+                                    Height="30" Cursor="Hand" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"
+                                    ToolTip.Tip="Open Real-time Live Console &amp; IPC Logs">
+                                <StackPanel Orientation="Horizontal" Spacing="6" HorizontalAlignment="Center">
+                                    <TextBlock Text="📋" FontSize="11" VerticalAlignment="Center" />
+                                    <TextBlock Text="Live Console &amp; IPC Logs" FontSize="11" FontWeight="Bold" Foreground="#38BDF8" VerticalAlignment="Center" />
+                                    <Ellipse Width="6" Height="6" Fill="{Binding LiveLogs.ErrorBannerForeground}" VerticalAlignment="Center" Margin="4, 0, 0, 0" />
+                                </StackPanel>
+                            </Button>
+                        </Border>
+                    </StackPanel>
+
+                    <!-- RIGHT COLUMN: Spatial Audio (HRTF) Radar -->
+                    <StackPanel Grid.Column="1" Margin="5, 0, 0, 0" Spacing="10">
+                        
+                        <!-- CARD 3: Spatial Audio (3D HRTF) (Advanced Drawer) -->
+                        <Border x:Name="AdvancedSpatialAudioCard" IsVisible="{Binding IsAdvancedOptionsOpen}" Background="#121622" BorderBrush="#1C2333" BorderThickness="1" CornerRadius="8" Padding="14, 10">
+                            <StackPanel Spacing="6">
+                                <Grid ColumnDefinitions="*, Auto">
+                                    <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                                        <TextBlock Text="🎧 Spatial Audio (HRTF)" FontWeight="Bold" FontSize="11" Foreground="#38BDF8" VerticalAlignment="Center"/>
+                                        <Border Background="#0C4A6E" BorderBrush="#0284C7" BorderThickness="1" CornerRadius="4" Padding="5, 1">
+                                            <TextBlock Text="OpenAL Soft" FontSize="9" FontWeight="Bold" Foreground="#BAE6FD"/>
+                                        </Border>
+                                    </StackPanel>
+                                    <ToggleSwitch Grid.Column="1" IsChecked="{Binding EnableSpatialAudio}" OnContent="" OffContent="" Margin="0" Cursor="Hand"/>
+                                </Grid>
+
+                                <!-- Spatial Audio Stage -->
+                                <StackPanel IsVisible="{Binding EnableSpatialAudio}" Spacing="6" Margin="0, 2, 0, 0">
+                                    <TextBlock Text="Studio-grade 3D binaural headphone audio with dynamic terrain occlusion &amp; 128-voice mixing."
+                                               FontSize="10" Foreground="#94A3B8" TextWrapping="Wrap" Margin="0, 2, 0, 4" />
+
+                                    <!-- Interactive 3D HRTF Sound Stage & Radar -->
+                                    <Border Background="#0C101A" BorderBrush="#1C273C" BorderThickness="1" CornerRadius="8" Padding="10, 7" Margin="0, 6, 0, 0">
+                                        <StackPanel Spacing="5">
+                                            <Grid ColumnDefinitions="*, Auto">
+                                                <TextBlock Text="3D SPATIAL RADAR" FontSize="10" FontWeight="Bold" Foreground="#38BDF8" VerticalAlignment="Center" />
+                                                <TextBlock Grid.Column="1" Text="Woodworth ITD + ILD" FontSize="9" FontWeight="SemiBold" Foreground="#64748B" VerticalAlignment="Center" />
+                                            </Grid>
+
+                                            <!-- Audition Sound Track Selection Dropdown -->
+                                            <Grid ColumnDefinitions="Auto, *" Margin="0, 1, 0, 2">
+                                                <TextBlock Grid.Column="0" Text="Audition Sound:" FontSize="10" FontWeight="SemiBold" Foreground="#94A3B8" VerticalAlignment="Center" Margin="0, 0, 6, 0" />
+                                                <ComboBox Grid.Column="1" ItemsSource="{Binding AvailableSpatialAuditionTracks}"
+                                                          SelectedItem="{Binding SelectedSpatialAuditionTrack}"
+                                                          Height="26" FontSize="10" HorizontalAlignment="Stretch" Cursor="Hand" />
+                                            </Grid>
+
+                                            <!-- Circular Soundstage Radar & Controls -->
+                                            <Grid ColumnDefinitions="118, *" Margin="0, 2, 0, 2">
+                                                <!-- Radar Host (118x118) -->
+                                                <Border Grid.Column="0" x:Name="SpatialRadarHost" Width="118" Height="118"
+                                                        Background="#060A14" BorderBrush="#0284C7" BorderThickness="1.5" CornerRadius="59"
+                                                        HorizontalAlignment="Center" VerticalAlignment="Center" ClipToBounds="True" Cursor="Cross">
+                                                    <Canvas Width="118" Height="118">
+                                                        <!-- 75% Range Ring -->
+                                                        <Ellipse Width="72" Height="72" Canvas.Left="23" Canvas.Top="23"
+                                                                 Stroke="#1E293B" StrokeThickness="1" StrokeDashArray="2,2" />
+                                                        <!-- 50% Range Ring -->
+                                                        <Ellipse Width="48" Height="48" Canvas.Left="35" Canvas.Top="35"
+                                                                 Stroke="#1E293B" StrokeThickness="1" />
+                                                        <!-- 25% Range Ring -->
+                                                        <Ellipse Width="24" Height="24" Canvas.Left="47" Canvas.Top="47"
+                                                                 Stroke="#1E293B" StrokeThickness="1" StrokeDashArray="2,2" />
+
+                                                        <!-- Crosshairs -->
+                                                        <Line StartPoint="59, 0" EndPoint="59, 118" Stroke="#131F33" StrokeThickness="1" />
+                                                        <Line StartPoint="0, 59" EndPoint="118, 59" Stroke="#131F33" StrokeThickness="1" />
+
+                                                        <!-- Compass Labels -->
+                                                        <TextBlock Text="N" Canvas.Left="55" Canvas.Top="2" FontSize="8" FontWeight="Bold" Foreground="#38BDF8" />
+                                                        <TextBlock Text="E" Canvas.Left="108" Canvas.Top="53" FontSize="8" FontWeight="Bold" Foreground="#64748B" />
+                                                        <TextBlock Text="S" Canvas.Left="56" Canvas.Top="105" FontSize="8" FontWeight="Bold" Foreground="#64748B" />
+                                                        <TextBlock Text="W" Canvas.Left="3" Canvas.Top="53" FontSize="8" FontWeight="Bold" Foreground="#64748B" />
+
+                                                        <!-- Center Listener Avatar (YOU) -->
+                                                        <Border Canvas.Left="47" Canvas.Top="47" Width="24" Height="24" CornerRadius="12"
+                                                                Background="#0F172A" BorderBrush="#38BDF8" BorderThickness="1.5">
+                                                            <TextBlock Text="🎧" FontSize="11" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                                        </Border>
+
+                                                        <!-- Dynamic Spatial Sound Source Beacon -->
+                                                        <Canvas Canvas.Left="{Binding SpatialRadarBeaconX}" Canvas.Top="{Binding SpatialRadarBeaconY}">
+                                                            <Ellipse Width="14" Height="14" Fill="#EF4444" Stroke="#FECACA" StrokeThickness="2" />
+                                                            <Ellipse Width="6" Height="6" Margin="4" Fill="#FFFFFF" />
+                                                        </Canvas>
+                                                    </Canvas>
+                                                </Border>
+
+                                                <!-- Right Side: Action Controls & Info -->
+                                                <StackPanel Grid.Column="1" Margin="10, 0, 0, 0" VerticalAlignment="Center" Spacing="6">
+                                                    <!-- Audio Playback & 360 Sweep Action Buttons -->
+                                                    <Grid ColumnDefinitions="*, *">
+                                                        <!-- Play/Pause Continuous Audio Button -->
+                                                        <Button Grid.Column="0" Command="{Binding ToggleContinuousAudioCommand}" Margin="0, 0, 3, 0"
+                                                                Background="#0F766E" Foreground="#FFFFFF" Height="28" CornerRadius="6"
+                                                                HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Cursor="Hand"
+                                                                ToolTip.Tip="Toggle continuous looping spatial audio playback">
+                                                            <TextBlock Text="{Binding ContinuousAudioPlayButtonText}" FontSize="10" FontWeight="Bold" VerticalAlignment="Center" />
+                                                        </Button>
+
+                                                        <!-- Separate 360° Orbit Sweep Button (Runs 360 sweep once) -->
+                                                        <Button Grid.Column="1" Command="{Binding TestSpatialAudioCommand}" Margin="3, 0, 0, 0"
+                                                                Background="#1A1838" BorderBrush="#6366F1" BorderThickness="1" Foreground="#C7D2FE" Height="28" CornerRadius="6"
+                                                                HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Cursor="Hand"
+                                                                ToolTip.Tip="Play a single 360-degree binaural orbit sweep circling around your head">
+                                                            <StackPanel Orientation="Horizontal" Spacing="4" HorizontalAlignment="Center">
+                                                                <TextBlock Text="🔄" FontSize="11" VerticalAlignment="Center"/>
+                                                                <TextBlock Text="360° Orbit Sweep" FontSize="10" FontWeight="Bold" VerticalAlignment="Center" />
+                                                            </StackPanel>
+                                                        </Button>
+                                                    </Grid>
+
+                                                    <!-- Quick Cardinal Snap Buttons -->
+                                                    <Grid ColumnDefinitions="*, *, *, *, *">
+                                                        <Button Grid.Column="0" Command="{Binding PlayDirectionalSpatialSoundCommand}" CommandParameter="front"
+                                                                Margin="0, 0, 1, 0" Height="22" Cursor="Hand" Background="#141824" BorderBrush="#1F283D" BorderThickness="1"
+                                                                CornerRadius="4" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"
+                                                                ToolTip.Tip="Snap to Front (0°)">
+                                                            <TextBlock Text="Front" FontSize="8" FontWeight="SemiBold" Foreground="#BAE6FD" />
+                                                        </Button>
+                                                        <Button Grid.Column="1" Command="{Binding PlayDirectionalSpatialSoundCommand}" CommandParameter="right"
+                                                                Margin="1, 0, 1, 0" Height="22" Cursor="Hand" Background="#141824" BorderBrush="#1F283D" BorderThickness="1"
+                                                                CornerRadius="4" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"
+                                                                ToolTip.Tip="Snap to Right Ear (+90°)">
+                                                            <TextBlock Text="Right" FontSize="8" FontWeight="SemiBold" Foreground="#BAE6FD" />
+                                                        </Button>
+                                                        <Button Grid.Column="2" Command="{Binding PlayDirectionalSpatialSoundCommand}" CommandParameter="center"
+                                                                Margin="1, 0, 1, 0" Height="22" Cursor="Hand" Background="#141824" BorderBrush="#38BDF8" BorderThickness="1"
+                                                                CornerRadius="4" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"
+                                                                ToolTip.Tip="Center sound source (0°, 0% Distance)">
+                                                            <TextBlock Text="Center" FontSize="8" FontWeight="Bold" Foreground="#38BDF8" />
+                                                        </Button>
+                                                        <Button Grid.Column="3" Command="{Binding PlayDirectionalSpatialSoundCommand}" CommandParameter="behind"
+                                                                Margin="1, 0, 1, 0" Height="22" Cursor="Hand" Background="#141824" BorderBrush="#1F283D" BorderThickness="1"
+                                                                CornerRadius="4" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"
+                                                                ToolTip.Tip="Snap to Behind (180°)">
+                                                            <TextBlock Text="Behind" FontSize="8" FontWeight="SemiBold" Foreground="#BAE6FD" />
+                                                        </Button>
+                                                        <Button Grid.Column="4" Command="{Binding PlayDirectionalSpatialSoundCommand}" CommandParameter="left"
+                                                                Margin="1, 0, 0, 0" Height="22" Cursor="Hand" Background="#141824" BorderBrush="#1F283D" BorderThickness="1"
+                                                                CornerRadius="4" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"
+                                                                ToolTip.Tip="Snap to Left Ear (-90°)">
+                                                            <TextBlock Text="Left" FontSize="8" FontWeight="SemiBold" Foreground="#BAE6FD" />
+                                                        </Button>
+                                                    </Grid>
+
+                                                    <TextBlock Text="💡 Click / drag circle to position sound source" FontSize="9" Foreground="#64748B" HorizontalAlignment="Center" />
+                                                </StackPanel>
+                                            </Grid>
+
+                                            <!-- Live Acoustic Feedback Display -->
+                                            <Border Background="#070A10" BorderBrush="#161D2B" BorderThickness="1" CornerRadius="4" Padding="6, 3">
+                                                <TextBlock Text="{Binding SpatialAudioFeedbackText}" FontSize="9" FontWeight="SemiBold" Foreground="#34D399"
+                                                           HorizontalAlignment="Center" TextTrimming="CharacterEllipsis" />
+                                            </Border>
+                                        </StackPanel>
+                                    </Border>
+                                </StackPanel>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- CARD 4: Opus Voice Chat & Microphone (48 kHz) -->
+                        <Border Background="#121622" BorderBrush="#1C2333" BorderThickness="1" CornerRadius="8" Padding="14, 12">
+                            <StackPanel Spacing="10">
+                                <Grid ColumnDefinitions="*, Auto">
+                                    <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                                        <TextBlock Text="🎙️ Opus Voice Chat" FontWeight="Bold" FontSize="11" Foreground="#38BDF8" VerticalAlignment="Center"/>
+                                        <Border Background="#1E1B4B" BorderBrush="#6366F1" BorderThickness="1" CornerRadius="4" Padding="6, 2">
+                                            <TextBlock Text="Opus 2.2.2" FontSize="9" FontWeight="Bold" Foreground="#C7D2FE"/>
+                                        </Border>
+                                    </StackPanel>
+                                    <Border Grid.Column="1" Background="#0F2420" BorderBrush="#059669" BorderThickness="1" CornerRadius="4" Padding="7, 2">
+                                        <TextBlock Text="48 kHz Mono" FontSize="9" FontWeight="Bold" Foreground="#34D399"/>
+                                    </Border>
+                                </Grid>
+
+                                <TextBlock Text="Low-latency voice chat with real-time Concentus Opus compression &amp; headphone loopback auditioning."
+                                           FontSize="10" Foreground="#94A3B8" TextWrapping="Wrap" Margin="0, 0, 0, 2" />
+
+                                <!-- Hardware Device & In-Game Push-To-Talk Keys Info -->
+                                <Border Background="#0C101A" BorderBrush="#1C273C" BorderThickness="1" CornerRadius="6" Padding="10, 8">
+                                    <Grid ColumnDefinitions="*, Auto" VerticalAlignment="Center">
+                                        <StackPanel Grid.Column="0" Spacing="3" VerticalAlignment="Center" Margin="0, 0, 10, 0">
+                                            <TextBlock Text="{Binding VoiceDetectedMicText}" FontSize="9.5" FontWeight="SemiBold" Foreground="#E2E8F0" TextTrimming="CharacterEllipsis"/>
+                                            <TextBlock Text="In-Game PTT: T (Team) • Y (Lane) • Mouse4 (Party)" FontSize="9" Foreground="#64748B" />
+                                        </StackPanel>
+                                        <Button Grid.Column="1" Command="{Binding TestMicrophoneCommand}" IsEnabled="{Binding CanTestVoice}"
+                                                Background="#0C2036" BorderBrush="#0284C7" BorderThickness="1.5" CornerRadius="6"
+                                                Height="30" Padding="14, 0" Cursor="Hand" VerticalAlignment="Center"
+                                                ToolTip.Tip="Record 3 seconds of voice and audition playback with Opus compression">
+                                            <Button.Styles>
+                                                <Style Selector="Button:pointerover /template/ ContentPresenter">
+                                                    <Setter Property="Background" Value="#0369A1" />
+                                                    <Setter Property="BorderBrush" Value="#38BDF8" />
+                                                </Style>
+                                            </Button.Styles>
+                                            <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
+                                                <TextBlock Text="{Binding VoiceTestButtonText}" FontSize="10" FontWeight="Bold" Foreground="#38BDF8" VerticalAlignment="Center"/>
+                                            </StackPanel>
+                                        </Button>
+                                    </Grid>
+                                </Border>
+
+                                <!-- Microphone Input Controls: Volume & Gain Boost in Dedicated Inset Cards -->
+                                <Grid ColumnDefinitions="*, 12, *">
+                                    <!-- Mic Input Volume Card -->
+                                    <Border Grid.Column="0" Background="#0C101A" BorderBrush="#1C273C" BorderThickness="1" CornerRadius="8" Padding="12, 10">
+                                        <StackPanel Spacing="6">
+                                            <Grid ColumnDefinitions="Auto, *, Auto">
+                                                <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                                                    <TextBlock Text="🎤" FontSize="11" VerticalAlignment="Center" />
+                                                    <TextBlock Text="Mic Volume" FontSize="9.5" FontWeight="SemiBold" Foreground="#94A3B8" VerticalAlignment="Center" />
+                                                </StackPanel>
+                                                <TextBlock Grid.Column="2" Text="{Binding VoiceMicVolumeText}" FontSize="9.5" FontWeight="Bold" Foreground="#38BDF8" VerticalAlignment="Center" />
+                                            </Grid>
+                                            <Slider Classes="voice-slider mic-slider" Value="{Binding VoiceMicVolume}" Minimum="0" Maximum="150" SmallChange="5" LargeChange="10"
+                                                    Height="32" Margin="0, 2, 0, 0" Cursor="Hand" />
+                                        </StackPanel>
+                                    </Border>
+
+                                    <!-- Column 1: 12px Spacer -->
+
+                                    <!-- Mic Software Gain Boost Card -->
+                                    <Border Grid.Column="2" Background="#0C101A" BorderBrush="#1C273C" BorderThickness="1" CornerRadius="8" Padding="12, 10">
+                                        <StackPanel Spacing="6">
+                                            <Grid ColumnDefinitions="Auto, *, Auto">
+                                                <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                                                    <TextBlock Text="⚡" FontSize="11" VerticalAlignment="Center" />
+                                                    <TextBlock Text="Gain Boost" FontSize="9.5" FontWeight="SemiBold" Foreground="#94A3B8" VerticalAlignment="Center" />
+                                                </StackPanel>
+                                                <TextBlock Grid.Column="2" Text="{Binding VoiceMicGainText}" FontSize="9.5" FontWeight="Bold" Foreground="#FBBF24" VerticalAlignment="Center" />
+                                            </Grid>
+                                            <Slider Classes="voice-slider gain-slider" Value="{Binding VoiceMicGain}" Minimum="0" Maximum="24" SmallChange="1" LargeChange="3"
+                                                    Height="32" Margin="0, 2, 0, 0" Cursor="Hand" />
+                                        </StackPanel>
+                                    </Border>
+                                </Grid>
+
+                                <!-- Noise Suppression Inset Card (Built-In Open-Source Spectral DSP) -->
+                                <Border Background="#0C101A" BorderBrush="#1C273C" BorderThickness="1" CornerRadius="6" Padding="12, 8">
+                                    <Grid ColumnDefinitions="*, Auto" VerticalAlignment="Center">
+                                        <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                                            <TextBlock Text="🧠 Noise Suppression" FontSize="9.5" FontWeight="SemiBold" Foreground="#E2E8F0" VerticalAlignment="Center" />
+                                            <Border Background="#1E1B4B" BorderBrush="#6366F1" BorderThickness="1" CornerRadius="4" Padding="6, 2" VerticalAlignment="Center">
+                                                <TextBlock Text="Built-In DSP" FontSize="8" FontWeight="Bold" Foreground="#A5B4FC" />
+                                            </Border>
+                                        </StackPanel>
+                                        <ToggleSwitch Grid.Column="1" IsChecked="{Binding EnableVoiceAiNoiseSuppression}"
+                                                      OnContent="" OffContent="" Margin="0, 0, 4, 0" Cursor="Hand" VerticalAlignment="Center"
+                                                      ToolTip.Tip="Built-in open-source spectral noise suppression DSP: reduces fan hum, mechanical keyboard clatter, and background noise in real time" />
+                                    </Grid>
+                                </Border>
+
+                                <!-- Live Progress & Energy VU Meter Inset Card -->
+                                <Border Background="#090D16" BorderBrush="#151E2E" BorderThickness="1" CornerRadius="6" Padding="10, 8">
+                                    <StackPanel Spacing="5">
+                                        <Grid ColumnDefinitions="*, Auto">
+                                            <TextBlock Text="{Binding VoiceTestStatusText}" FontSize="9.5" FontWeight="SemiBold"
+                                                       Foreground="{Binding VoiceTestStatusColor}" TextTrimming="CharacterEllipsis" VerticalAlignment="Center"/>
+                                            <TextBlock Grid.Column="1" Text="{Binding VoiceTestPeakPercentText}" FontSize="9.5" FontWeight="Bold"
+                                                       Foreground="#38BDF8" VerticalAlignment="Center" Margin="8, 0, 0, 0"/>
+                                        </Grid>
+                                        <ProgressBar Value="{Binding VoiceTestProgress}" Minimum="0" Maximum="100" Height="5"
+                                                     Background="#050810" Foreground="#38BDF8" CornerRadius="2.5"/>
+                                    </StackPanel>
+                                </Border>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </Grid>
+
+
+            </StackPanel>
+        </ScrollViewer>
+
+        <!-- ROW 2: BOTTOM STATUS, TELEMETRY & SYNC DOCK -->
+        <Border Grid.Row="2" Background="#0C0F17" BorderBrush="#1C2230" BorderThickness="0, 1, 0, 0" Padding="16, 8">
+                    <StackPanel Spacing="6">
+                        <!-- Telemetry Ribbon & Quick Actions -->
+                        <Grid ColumnDefinitions="Auto, Auto, Auto, Auto, *">
+                            <!-- Online Players -->
+                            <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center" Margin="0, 0, 16, 0">
+                                <Ellipse Width="8" Height="8" Fill="{Binding ServerStatusColor}" VerticalAlignment="Center" />
+                                <TextBlock Text="{Binding LiveOnlinePlayers, StringFormat='{}{0} Online'}"
+                                           Foreground="#CBD5E1" FontSize="11" FontWeight="Bold" VerticalAlignment="Center" />
+                            </StackPanel>
+
+                            <!-- Matches Count -->
+                            <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center" Margin="0, 0, 16, 0">
+                                <TextBlock Text="⚔️" FontSize="11" VerticalAlignment="Center" />
+                                <TextBlock Text="{Binding LiveMatchesCount, StringFormat='{}{0} Matches'}"
+                                           Foreground="#94A3B8" FontSize="11" FontWeight="SemiBold" VerticalAlignment="Center" />
+                            </StackPanel>
+
+                            <!-- Logs Button -->
+                            <Button Grid.Column="2" Command="{Binding ToggleLiveLogsCommand}" Margin="0, 0, 10, 0"
+                                    Background="#141824" BorderBrush="#1E2638" BorderThickness="1" CornerRadius="6"
+                                    Padding="10, 4" Cursor="Hand" ToolTip.Tip="Open Real-time Live Console &amp; IPC Logs">
+                                <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                                    <TextBlock Text="📋 Logs" FontSize="11" FontWeight="Bold" Foreground="#38BDF8" VerticalAlignment="Center" />
+                                    <Ellipse Width="6" Height="6" Fill="{Binding LiveLogs.ErrorBannerForeground}" VerticalAlignment="Center" />
+                                </StackPanel>
+                            </Button>
+
+                            <!-- Bug / Diagnostic Zip Button -->
+                            <Button Grid.Column="3" Command="{Binding ExportDiagnosticBundleCommand}" Margin="0, 0, 10, 0"
+                                    Background="#141824" BorderBrush="#2A344A" BorderThickness="1" CornerRadius="6"
+                                    Padding="10, 4" Cursor="Hand" ToolTip.Tip="Export privacy-scrubbed Discord bug report zip (&lt;= 8 MB) or live freeze capture">
+                                <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                                    <TextBlock Text="📦 Bug / Freeze Zip" FontSize="11" FontWeight="Bold" Foreground="#A78BFA" VerticalAlignment="Center" />
+                                </StackPanel>
+                            </Button>
+
+                            <!-- Leaderboard Ticker / Status on Right -->
+                            <StackPanel Grid.Column="4" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center"
+                                        HorizontalAlignment="Right" IsVisible="{Binding !HasTopWinrateTicker}">
+                                <TextBlock Text="⚔️ Project KONGOR Live Matchmaking" Foreground="#64748B" FontSize="11" VerticalAlignment="Center" />
+                                <TextBlock Text="{Binding ServerStatusText}" Foreground="{Binding ServerStatusColor}" FontWeight="Bold" FontSize="11" VerticalAlignment="Center" />
+                            </StackPanel>
+                            <TextBlock Grid.Column="4" Text="{Binding LeaderboardTickerText}" Foreground="#F59E0B"
+                                       FontSize="11" FontWeight="SemiBold" TextTrimming="CharacterEllipsis"
+                                       VerticalAlignment="Center" HorizontalAlignment="Right" IsVisible="{Binding HasTopWinrateTicker}" />
+                        </Grid>
+
+                        <!-- Synchronisation Status & Progress Bar (when active) -->
+                        <Grid Height="18" ColumnDefinitions="*, *, *, *" IsVisible="{Binding !SynchronisationIsFailed}">
+                            <TextBlock Grid.Column="0" Text="{Binding DownloadedFilesDisplay}" HorizontalAlignment="Left" VerticalAlignment="Center" FontSize="12" Foreground="#94A3B8" />
+                            <TextBlock Grid.Column="1" Text="{Binding RemovedFilesDisplay}" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="12" Foreground="#94A3B8" />
+                            <TextBlock Grid.Column="2" Text="{Binding SkippedFilesDisplay}" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="12" Foreground="#94A3B8" />
+                            <TextBlock Grid.Column="3" Text="{Binding UpToDateFilesDisplay}" HorizontalAlignment="Right" VerticalAlignment="Center" FontSize="12" Foreground="#94A3B8" />
+                        </Grid>
+                        <TextBlock Height="18" Text="{Binding SynchronisationStatusMessage}" HorizontalAlignment="Center"
+                                   VerticalAlignment="Center" FontSize="12" Foreground="#F87171" IsVisible="{Binding SynchronisationIsFailed}" />
+                        <ProgressBar Height="6" CornerRadius="3" Minimum="0" Maximum="100"
+                                     Value="{Binding SynchronisationProgressPercent}"
+                                     IsVisible="{Binding SynchronisationIsScheduled}" Foreground="#10B981" />
+                    </StackPanel>
+                </Border>
+
+        <!-- Full-Featured Live Console / Logs Modal Overlay -->
+        <Grid Grid.RowSpan="3" x:Name="LiveLogsOverlay" IsVisible="{Binding IsLiveLogsOpen}" Background="#E6080B10"
+              HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+            <Border Background="#131722" BorderBrush="#2A2F3D" BorderThickness="1.5" CornerRadius="12" Margin="24"
+                    MaxWidth="1250" MaxHeight="820" Padding="15">
+                <Grid RowDefinitions="Auto, *">
+                    <!-- Modal Header with Title & Close Button -->
+                    <Grid Grid.Row="0" ColumnDefinitions="*, Auto" Margin="5,0,5,10">
+                        <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
+                            <TextBlock Text="📋 WILLOWMAKER LIVE CONSOLE &amp; IPC LOG STREAM" FontSize="14"
+                                       FontWeight="Bold" Foreground="#F8FAFC"
+                                       FontFamily="{StaticResource MonoSpaceFont}" />
+                        </StackPanel>
+                        <Button Grid.Column="1" Command="{Binding CloseLiveLogsCommand}" Background="#334155"
+                                Foreground="#CBD5E1" CornerRadius="6" Padding="12,5" Cursor="Hand">
+                            <TextBlock Text="✕ Close" FontSize="12" FontWeight="Bold" />
+                        </Button>
+                    </Grid>
+
+                    <!-- Live Logs View Component -->
+                    <views:LiveLogsView Grid.Row="1" DataContext="{Binding LiveLogs}" />
+                </Grid>
+            </Border>
+        </Grid>
+
+        <!-- DirectPlay P2P Modal Overlay -->
+        <Grid Grid.RowSpan="3" x:Name="DirectPlayOverlay" IsVisible="{Binding IsDirectPlayOpen}" Background="#E6080B10"
+              HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+            <Border Background="#131722" BorderBrush="#2A2F3D" BorderThickness="1.5" CornerRadius="12" Margin="24"
+                    MaxWidth="940" MaxHeight="760" Padding="15">
+                <Grid RowDefinitions="Auto, *">
+                    <Grid Grid.Row="0" ColumnDefinitions="*, Auto" Margin="5,0,5,10">
+                        <TextBlock Grid.Column="0" Text="🌐 DIRECTPLAY P2P HOST &amp; JOIN" FontSize="14"
+                                   FontWeight="Bold" Foreground="#F8FAFC" VerticalAlignment="Center" />
+                        <Button Grid.Column="1" x:Name="CloseDirectPlayButton" Command="{Binding CloseDirectPlayCommand}"
+                                Background="#334155" Foreground="#CBD5E1" CornerRadius="6" Padding="12,5" Cursor="Hand">
+                            <TextBlock Text="✕ Close" FontSize="12" FontWeight="Bold" />
+                        </Button>
+                    </Grid>
+                    <views:DirectPlayView Grid.Row="1" x:Name="DirectPlayViewControl" DataContext="{Binding DirectPlay}" />
+                </Grid>
+            </Border>
+        </Grid>
+
+        <!-- Mod Manager Modal Overlay -->
+        <Grid Grid.RowSpan="3" x:Name="ModManagerOverlay" IsVisible="{Binding IsModManagerOpen}" Background="#E6080B10"
+              HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+            <Border Background="#131722" BorderBrush="#2A2F3D" BorderThickness="1.5" CornerRadius="12" Margin="24"
+                    MaxWidth="1120" MaxHeight="780" Padding="15">
+                <Grid RowDefinitions="Auto, *">
+                    <Grid Grid.Row="0" ColumnDefinitions="*, Auto" Margin="5,0,5,10">
+                        <TextBlock Grid.Column="0" Text="🧩 MOD MANAGER &amp; AVATAR CUSTOMIZER" FontSize="14"
+                                   FontWeight="Bold" Foreground="#F8FAFC" VerticalAlignment="Center" />
+                        <Button Grid.Column="1" x:Name="CloseModManagerButton" Command="{Binding CloseModManagerCommand}"
+                                Background="#334155" Foreground="#CBD5E1" CornerRadius="6" Padding="12,5" Cursor="Hand">
+                            <TextBlock Text="✕ Close" FontSize="12" FontWeight="Bold" />
+                        </Button>
+                    </Grid>
+                    <views:ModManagerView Grid.Row="1" x:Name="ModManagerViewControl" DataContext="{Binding ModManager}" />
+                </Grid>
+            </Border>
+        </Grid>
+
+
+
+
+    </Grid>
+
+</UserControl>

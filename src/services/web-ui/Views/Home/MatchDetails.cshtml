@@ -1,0 +1,1515 @@
+@* ReSharper disable All *@
+@using System.Globalization
+@using System.Text.Json
+@using ASPIRE.Common.Enumerations.Statistics
+@using DAWNBRINGER.WebPortal.UI.Controllers
+@using MERRICK.DatabaseContext.Entities.Core
+@using MERRICK.DatabaseContext.Entities.Statistics
+@{
+    MatchStatistics? matchStat = ViewData["Match"] as MatchStatistics;
+    List<PlayerStatistics>? playerStats = ViewData["PlayerStats"] as List<PlayerStatistics>;
+    Account? currentUserAccount = ViewData["CurrentUserAccount"] as Account;
+
+    int matchId = matchStat?.MatchID ?? playerStats?.FirstOrDefault()?.MatchID ?? 0;
+    int timePlayed = matchStat?.TimePlayed ?? playerStats?.FirstOrDefault()?.SecondsPlayed ?? 0;
+    double minutesPlayed = Math.Max(timePlayed / 60.0, 0.5);
+
+    TimeSpan duration = TimeSpan.FromSeconds(timePlayed);
+    string durationFormatted = duration.Hours > 0
+        ? duration.ToString(@"h\:mm\:ss")
+        : duration.ToString(@"mm\:ss");
+
+    List<PlayerStatistics> legionPlayers = playerStats?.Where(p => p.Team == 1).OrderBy(p => p.LobbyPosition).ToList() ?? [];
+    List<PlayerStatistics> hellbournePlayers = playerStats?.Where(p => p.Team == 2).OrderBy(p => p.LobbyPosition).ToList() ?? [];
+
+    bool legionWon = (matchStat != null && matchStat.ScoreTeam1 > matchStat.ScoreTeam2) || legionPlayers.Any(p => p.Win > 0);
+    bool hellbourneWon = (matchStat != null && matchStat.ScoreTeam2 > matchStat.ScoreTeam1) || hellbournePlayers.Any(p => p.Win > 0);
+
+    string mapName = "Forests of Caldavar";
+    string mapIconPath = "/images/maps/caldavar.png";
+
+    if (matchStat != null && !string.IsNullOrWhiteSpace(matchStat.Map))
+    {
+        string rawMap = matchStat.Map.ToLowerInvariant().Replace("maps/", "").Trim();
+        mapName = rawMap switch
+        {
+            "caldavar" or "forests_of_caldavar" or "caldavar_1v1" => "Forests of Caldavar",
+            "caldavar_old" => "Forests of Caldavar (Old)",
+            "caldavar_reborn" => "Forests of Caldavar Reborn",
+            "midwars_reborn" or "midwarsreborn" => "Mid Wars Reborn",
+            "midwars" or "midwars_old" or "midwarsold" => "Mid Wars",
+            "grimmscross" or "grimmscrossing" => "Grimms Crossing",
+            "watchtower" => "Watchtower",
+            "riftwars" => "Rift Wars",
+            "devowars" => "Devo Wars",
+            "soccer" or "strikers" or "hon_strikers" => "HoN Strikers",
+            "team_deathmatch" => "Team Deathmatch",
+            _ => CultureInfo.CurrentCulture.TextInfo.ToTitleCase(rawMap.Replace("_", " "))
+        };
+
+        mapIconPath = rawMap switch
+        {
+            "caldavar" or "forests_of_caldavar" or "caldavar_1v1" => "/images/maps/caldavar.png",
+            "caldavar_old" => "/images/maps/caldavar_old.png",
+            "caldavar_reborn" => "/images/maps/caldavar_reborn.png",
+            "midwars_reborn" or "midwarsreborn" => "/images/maps/midwars_reborn.png",
+            "midwars" or "midwars_old" or "midwarsold" => "/images/maps/midwars.png",
+            "grimmscross" or "grimmscrossing" => "/images/maps/grimmscrossing.png",
+            "watchtower" => "/images/maps/watchtower.png",
+            "riftwars" => "/images/maps/riftwars.png",
+            "devowars" => "/images/maps/devowars.png",
+            "soccer" or "strikers" or "hon_strikers" => "/images/maps/soccer.png",
+            "team_deathmatch" => "/images/maps/team_deathmatch.png",
+            _ => $"/images/maps/{rawMap}.png"
+        };
+    }
+
+    // Determine Game Mode: Public Match vs Ranked (Matchmaking)
+    bool isRanked = (playerStats != null && playerStats.Any(p => p.RankedMatch > 0))
+                    || (matchStat != null && (matchStat.GameMode.Contains("ranked", StringComparison.OrdinalIgnoreCase) || matchStat.GameMode.Contains("matchmaking", StringComparison.OrdinalIgnoreCase)));
+
+    string modeDisplay = isRanked ? "Ranked" : "Public Match";
+
+    string ResolveItemImage(string? itemIdentifier)
+    {
+        if (string.IsNullOrWhiteSpace(itemIdentifier))
+        {
+            return "/images/items/default.png";
+        }
+
+        string cleaned = itemIdentifier.Trim();
+        if (cleaned.StartsWith("Item_", StringComparison.OrdinalIgnoreCase))
+        {
+            cleaned = cleaned[5..];
+        }
+
+        string lowerNoUnderscore = cleaned.Replace("_", "").ToLowerInvariant();
+        return $"/images/items/{lowerNoUnderscore}.png";
+    }
+
+    string FormatRankName(Rank rank)
+    {
+        return rank switch
+        {
+            Rank.NO_MEDAL => "Unranked",
+            Rank.BRONZE_5 => "Bronze V",
+            Rank.BRONZE_4 => "Bronze IV",
+            Rank.BRONZE_3 => "Bronze III",
+            Rank.BRONZE_2 => "Bronze II",
+            Rank.BRONZE_1 => "Bronze I",
+            Rank.SILVER_5 => "Silver V",
+            Rank.SILVER_4 => "Silver IV",
+            Rank.SILVER_3 => "Silver III",
+            Rank.SILVER_2 => "Silver II",
+            Rank.SILVER_1 => "Silver I",
+            Rank.GOLD_4 => "Gold IV",
+            Rank.GOLD_3 => "Gold III",
+            Rank.GOLD_2 => "Gold II",
+            Rank.GOLD_1 => "Gold I",
+            Rank.DIAMOND_3 => "Diamond III",
+            Rank.DIAMOND_2 => "Diamond II",
+            Rank.DIAMOND_1 => "Diamond I",
+            Rank.LEGENDARY_2 => "Legendary II",
+            Rank.LEGENDARY_1 => "Legendary I",
+            Rank.IMMORTAL => "Immortal",
+            _ => "Unranked"
+        };
+    }
+
+    ViewData["Title"] = $"Match #{matchId} Statistics";
+}
+
+<div class="w-full max-w-7xl mx-auto py-4 sm:py-8 px-3 sm:px-4 space-y-6 sm:space-y-8 animate-fade-in-up">
+    <!-- Breadcrumb & Header -->
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+            <a asp-controller="Home" asp-action="Matches"
+               class="text-xs text-purple-400 hover:underline font-semibold flex items-center gap-1 mb-2">
+                <span>←</span> Back to Match History
+            </a>
+            <div class="flex items-center gap-4">
+                <!-- Large Prominent Map Icon Pulled from Authentic Game Files -->
+                <div
+                    class="w-20 h-20 md:w-24 md:h-24 rounded-2xl overflow-hidden bg-slate-900 border-2 border-purple-500/50 shadow-2xl shadow-purple-950/60 flex-shrink-0 flex items-center justify-center p-1.5 group hover:border-purple-400 transition-all">
+                    <img src="@(DAWNBRINGER.WebPortal.UI.Services.HeroAndMapAssetResolver.ResolveMapIconUrl(matchStat?.Map))"
+                         onError="this.onerror=null;this.src='/images/maps/default.png';"
+                         alt="@mapName Map"
+                         class="w-full h-full object-contain filter drop-shadow-md"/>
+                </div>
+
+                <div>
+                    <div class="flex items-center gap-3">
+                        <h1 class="text-3xl md:text-4xl font-black text-white tracking-tight">Match #@matchId</h1>
+                        <span
+                            class="px-3 py-1 rounded-full @(isRanked ? "bg-purple-950/80 border border-purple-500/40 text-purple-300" : "bg-cyan-950/80 border border-cyan-500/40 text-cyan-300") text-xs font-bold uppercase tracking-wider shadow-sm">
+                            @modeDisplay
+                        </span>
+                    </div>
+                    <p class="text-slate-400 text-xs md:text-sm mt-1.5">
+                        Map: <span class="text-purple-300 font-bold">@mapName</span> · Duration: <span
+                            class="text-slate-200 font-semibold">@durationFormatted</span>
+                        @if (matchStat != null)
+                        {
+                            <span> · Recorded: @matchStat.TimestampRecorded.ToString("yyyy-MM-dd HH:mm")</span>
+                        }
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Action Buttons (Download Replay, Replay Visualizer & Share Card) -->
+        <div class="flex items-center gap-3 flex-wrap">
+            <button type="button" onclick="shareMatchCard()"
+                    class="px-4 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-black text-xs shadow-lg shadow-amber-500/25 hover:scale-105 transition-all flex items-center gap-2 cursor-pointer">
+                <span>✨</span>
+                <span>Share Match Card</span>
+            </button>
+            <a href="/learnatorium/playback/@matchId"
+               class="px-4 py-2.5 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-bold text-xs shadow-md border border-purple-400/30 hover:scale-105 transition-all flex items-center gap-2">
+                <span>🎓</span>
+                <span>Learnatorium 2D Replay</span>
+            </a>
+            <a href="/replays/@matchId"
+               class="px-5 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-xs shadow-lg transition-all flex items-center gap-2 border border-slate-700 hover:scale-105">
+                <span>💾</span>
+                <span>Download .honreplay</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- Interactive 2D Match Replay Cinema Section -->
+    <div
+        class="rounded-3xl bg-slate-950/90 border border-purple-500/30 overflow-hidden shadow-2xl shadow-purple-950/30 p-5 sm:p-6 space-y-4 relative">
+        <div
+            class="absolute -right-20 -top-20 w-80 h-80 bg-purple-600/10 rounded-full blur-3xl pointer-events-none"></div>
+
+        <!-- Cinema Header & Live Score -->
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-3 border-b border-slate-800 pb-3">
+            <div class="flex items-center gap-3">
+                <span class="text-2xl">🗺️</span>
+                <div>
+                    <div class="flex items-center gap-2">
+                        <h3 class="text-base font-extrabold text-white">Interactive 2D Match Replay</h3>
+                        @{
+                            var preloadedReplay = ViewData["ReplayTimeline"] as MatchReplayTimelineDto;
+                            bool isVerifiedTelemetry = preloadedReplay?.TelemetrySource is "server_log" or "honreplay";
+                            string badgeClass = isVerifiedTelemetry
+                                ? "bg-emerald-500/15 text-emerald-300 border-emerald-500/35"
+                                : "bg-amber-500/15 text-amber-300 border-amber-500/35";
+                            string badgeLabel = preloadedReplay?.TelemetryLabel
+                                                ?? (isVerifiedTelemetry ? "Verified Server Telemetry" : "Tactical Reconstruction");
+                        }
+                        <span id="replay-telemetry-badge"
+                              class="text-[10px] font-mono font-bold px-2.5 py-0.5 rounded-md border inline-flex items-center gap-1.5 @badgeClass">
+                            <span class="w-1.5 h-1.5 rounded-full bg-current animate-pulse"></span>
+                            <span id="replay-telemetry-badge-text">@badgeLabel</span>
+                        </span>
+                        <span
+                            class="text-[10px] font-mono font-bold px-2 py-0.5 rounded-md bg-purple-500/20 text-purple-300 border border-purple-500/30">60 FPS</span>
+                    </div>
+                    <p class="text-xs text-slate-400">Scrub the timeline or select a player to inspect combat and
+                        items</p>
+                </div>
+            </div>
+
+            <!-- Scoreboard & Download Action -->
+            <div class="flex items-center gap-4 flex-wrap text-xs">
+                <div
+                    class="flex items-center gap-2 bg-slate-900/90 border border-slate-800 px-3 py-1.5 rounded-xl font-mono">
+                    <span class="text-sky-400 font-bold">🛡️ <span
+                            id="replay-score-legion">@legionPlayers.Sum(p => p.HeroKills)</span></span>
+                    <span class="text-slate-600 font-bold">vs</span>
+                    <span class="text-rose-400 font-bold">💀 <span
+                            id="replay-score-hellbourne">@hellbournePlayers.Sum(p => p.HeroKills)</span></span>
+                </div>
+
+                <a href="/learnatorium/playback/@matchId"
+                   class="px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-bold flex items-center gap-1.5 transition-all shadow-md">
+                    <span>🎓</span>
+                    <span>Open in Learnatorium Studio</span>
+                </a>
+
+                <a href="/replays/@matchId"
+                   class="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white font-bold flex items-center gap-1.5 transition-all shadow-sm">
+                    <span>💾</span>
+                    <span>Download Replay</span>
+                </a>
+            </div>
+        </div>
+
+        <!-- Main Visualizer Layout: Canvas + Inspector Side Panel -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-5 items-start">
+            <!-- 2D Battlefield Canvas (2 cols) -->
+            <div
+                class="lg:col-span-2 relative rounded-2xl overflow-hidden bg-slate-950 border border-slate-800 shadow-2xl flex items-center justify-center p-2">
+                <canvas id="match-replay-canvas" width="600" height="600" role="region" aria-label="Interactive 2D match replay battlefield"
+                        class="w-full max-w-[580px] aspect-square rounded-xl bg-[#090d16] shadow-inner cursor-crosshair">Your browser does not support HTML5 Canvas.</canvas>
+
+                <!-- Mouse Follow Tooltip -->
+                <div id="replay-tooltip"
+                     class="hidden absolute p-2.5 rounded-xl bg-slate-900/95 border border-purple-500/40 shadow-2xl backdrop-blur-md pointer-events-none min-w-[220px]"></div>
+            </div>
+
+            <!-- Side Inspector & Focus Card (1 col) -->
+            <div class="space-y-4">
+                <!-- Player Spectate POV Dropdown -->
+                <div class="p-4 rounded-2xl bg-slate-900/70 border border-slate-800 space-y-2">
+                    <label for="replay-pov-select"
+                           class="text-xs font-bold text-slate-400 uppercase tracking-wider block">Spectate Camera
+                        POV</label>
+                    <select id="replay-pov-select"
+                            class="w-full bg-slate-950 border border-slate-700 text-xs text-white rounded-xl px-3 py-2 focus:ring-2 focus:ring-purple-500 focus:outline-none cursor-pointer">
+                        <option value="all">👁️ Full Map Spectator</option>
+                        <option value="director">🎬 Action Director Cam (Auto-Follow Combat)</option>
+                        @if (playerStats != null)
+                        {
+                            @foreach (PlayerStatistics player in playerStats)
+                            {
+                                string pName = !string.IsNullOrWhiteSpace(player.AccountName) ? player.AccountName : $"Player #{player.AccountID}";
+                                string hName = Heroes.ResolveHeroDisplayName(player.HeroIdentifier);
+                                <option value="@player.AccountID">
+                                    @(player.Team == 1 ? "🛡️ [Legion]" : "💀 [Hellbourne]") @pName (@hName)
+                                </option>
+                            }
+                        }
+                    </select>
+                </div>
+
+                <!-- Unit Detail Inspector -->
+                <div class="p-4 rounded-2xl bg-slate-900/70 border border-slate-800 space-y-3">
+                    <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider">Unit Inspector</h4>
+                    <div id="replay-player-inspector">
+                        <div class="text-center py-6 text-slate-500 text-xs">
+                            <span>Click any player on the battlefield or roster to inspect stats</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Live Combat & Action Feed -->
+                <div class="p-4 rounded-2xl bg-slate-900/70 border border-slate-800 space-y-2.5">
+                    <div class="flex items-center justify-between gap-2">
+                        <h4 class="text-xs font-bold text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
+                            <span>⚔️</span> Live Action Feed
+                        </h4>
+                        <div class="flex items-center gap-1 text-[10px] font-bold">
+                            <button type="button" data-feed-filter="all" class="replay-feed-filter px-2 py-0.5 rounded-md bg-purple-600 text-white">All</button>
+                            <button type="button" data-feed-filter="combat" class="replay-feed-filter px-2 py-0.5 rounded-md bg-slate-800 text-slate-400 hover:text-white">Kills</button>
+                            <button type="button" data-feed-filter="items" class="replay-feed-filter px-2 py-0.5 rounded-md bg-slate-800 text-slate-400 hover:text-white">Items</button>
+                            <button type="button" data-feed-filter="spells" class="replay-feed-filter px-2 py-0.5 rounded-md bg-slate-800 text-slate-400 hover:text-white">Spells</button>
+                        </div>
+                    </div>
+                    <div id="replay-action-feed" class="max-h-48 overflow-y-auto space-y-1.5 pr-1 text-[11px]">
+                        <div class="text-center py-4 text-slate-500 text-xs">Loading tactical timeline events...</div>
+                    </div>
+                </div>
+
+                <!-- Keyboard Controls Helper -->
+                <div
+                    class="p-3 rounded-xl bg-slate-950/60 border border-slate-800/80 text-[11px] text-slate-400 space-y-1">
+                    <div class="font-bold text-slate-300">⌨️ Keyboard Shortcuts</div>
+                    <div><b class="text-purple-400">Spacebar:</b> Play / Pause</div>
+                    <div><b class="text-purple-400">← / →:</b> Jump 10s back / forward</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Scrubber & Playback Controls Bar -->
+        <div class="p-4 rounded-2xl bg-slate-900/80 border border-slate-800 space-y-3">
+            <!-- Event Pins & Scrubber Track -->
+            <div class="space-y-1.5">
+                <div class="relative w-full h-3">
+                    <div id="replay-event-pins" class="absolute inset-0 pointer-events-auto"></div>
+                </div>
+                <input type="range" id="replay-scrubber" min="0" max="@timePlayed" value="0" step="0.5"
+                       class="w-full h-2 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-purple-500 hover:accent-purple-400 transition-all"/>
+            </div>
+
+            <!-- Controls Row: Play, Time, Speed -->
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+                <div class="flex items-center gap-3">
+                    <button type="button" id="replay-play-btn"
+                            class="w-9 h-9 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-bold flex items-center justify-center shadow-md transition-all">
+                        ▶️
+                    </button>
+                    <span id="replay-time-display"
+                          class="font-mono font-bold text-white text-sm">00:00 / @durationFormatted</span>
+                </div>
+
+                <!-- Speed Toggles -->
+                <div class="flex items-center gap-1.5 text-slate-400 font-medium">
+                    <span>Speed:</span>
+                    <button type="button"
+                            class="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-400 replay-speed-btn"
+                            data-speed="0.5">0.5x
+                    </button>
+                    <button type="button"
+                            class="px-2.5 py-1 rounded-lg bg-purple-600 text-white font-black replay-speed-btn"
+                            data-speed="1">1x
+                    </button>
+                    <button type="button"
+                            class="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-400 replay-speed-btn"
+                            data-speed="2">2x
+                    </button>
+                    <button type="button"
+                            class="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-400 replay-speed-btn"
+                            data-speed="4">4x
+                    </button>
+                    <button type="button"
+                            class="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-400 replay-speed-btn"
+                            data-speed="8">8x
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Match Stats Container -->
+    <div class="space-y-8">
+        <!-- ================= LEGION TEAM (GOLD THEME) ================= -->
+        <div
+            class="rounded-2xl bg-slate-950/80 border border-amber-500/30 overflow-hidden shadow-xl shadow-amber-950/20">
+            <!-- Legion Banner -->
+            <div
+                class="bg-gradient-to-r from-amber-950/80 via-slate-900 to-slate-950 p-4 border-b border-amber-500/30 flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <span class="text-xl font-black text-amber-400 tracking-wider">LEGION</span>
+                    @if (legionWon)
+                    {
+                        <span
+                            class="px-3 py-0.5 rounded bg-gradient-to-r from-amber-500 to-yellow-600 text-slate-950 font-black text-xs uppercase tracking-widest shadow-md">
+                            WINNER
+                        </span>
+                    }
+                </div>
+                <div class="text-xs text-amber-300/80 font-bold uppercase tracking-wider">
+                    Team
+                    KDA: @legionPlayers.Sum(p => p.HeroKills) / @legionPlayers.Sum(p => p.HeroDeaths) / @legionPlayers.Sum(p => p.HeroAssists)
+                </div>
+            </div>
+
+            <!-- Legion Scoreboard Table -->
+            <div class="overflow-x-auto">
+                <table class="w-full text-left text-xs text-slate-300">
+                    <thead
+                        class="bg-slate-900/90 text-amber-200/70 uppercase text-[10px] font-bold tracking-wider border-b border-slate-800">
+                    <tr>
+                        <th class="py-3 px-4 min-w-[180px]">Player</th>
+                        <th class="py-3 px-3 text-center">Rank</th>
+                        <th class="py-3 px-2 text-center">LV</th>
+                        <th class="py-3 px-3 text-center">K / D / A</th>
+                        <th class="py-3 px-2 text-center">CK</th>
+                        <th class="py-3 px-2 text-center">CD</th>
+                        <th class="py-3 px-2 text-center">XPM</th>
+                        <th class="py-3 px-2 text-center">GPM</th>
+                        <th class="py-3 px-2 text-center">APM</th>
+                        <th class="py-3 px-2 text-center">W</th>
+                        <th class="py-3 px-4 min-w-[210px]">Items</th>
+                    </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-800/60 font-medium">
+                    @foreach (PlayerStatistics player in legionPlayers)
+                    {
+                        bool isCurrentUser = currentUserAccount != null && currentUserAccount.ID == player.AccountID;
+                        string heroDisplayName = Heroes.ResolveHeroDisplayName(player.HeroIdentifier);
+                        int ck = player.TeamCreepKills + player.NeutralCreepKills;
+                        int cd = player.Denies;
+                        int xpm = (int)Math.Round(player.Experience / minutesPlayed);
+                        int gpm = (int)Math.Round((player.GoldSpent + player.Gold) / minutesPlayed);
+                        int apm = (int)Math.Round(player.Actions / minutesPlayed);
+
+                        double rating = player.RankedMatch > 0 ? player.RankedSkillRatingChange : player.PublicSkillRatingChange;
+                        Rank rankEnum = RankExtensions.GetRank(rating > 0 ? rating : 1500);
+                        string rankName = FormatRankName(rankEnum);
+
+                        <tr class="@(isCurrentUser ? "bg-amber-500/10 border-l-4 border-l-amber-400" : "hover:bg-slate-800/40") transition-all">
+                            <!-- Player & Hero -->
+                            <td class="py-3 px-4 flex items-center gap-3">
+                                <a href="/stats?accountName=@player.AccountName"
+                                   class="w-10 h-10 rounded-lg overflow-hidden bg-slate-900 border border-amber-500/30 flex-shrink-0 hover:border-amber-400 transition-all shadow-md group"
+                                   title="View @player.AccountName's player stats">
+                                    <img
+                                        src="@(DAWNBRINGER.WebPortal.UI.Services.HeroAndMapAssetResolver.ResolveHeroIconUrl(player.HeroIdentifier))"
+                                        onError="this.onerror=null;this.src='/images/heroes/default.png';"
+                                        alt="@heroDisplayName"
+                                        class="w-full h-full object-cover group-hover:scale-105 transition-transform"/>
+                                </a>
+                                <div>
+                                    <a href="/stats?accountName=@player.AccountName"
+                                       class="text-white font-bold text-sm block hover:text-amber-400 hover:underline transition-colors"
+                                       title="View @player.AccountName's player stats">
+                                        @if (!string.IsNullOrEmpty(player.ClanTag))
+                                        {
+                                            <span class="text-amber-400/90 font-semibold">[@player.ClanTag]</span>
+                                        }
+                                        @player.AccountName
+                                    </a>
+                                    <span class="text-[11px] text-slate-400">@heroDisplayName</span>
+                                </div>
+                            </td>
+
+                            <!-- Rank -->
+                            <td class="py-3 px-3 text-center">
+                                    <span
+                                        class="px-2 py-0.5 rounded bg-slate-800 border border-amber-500/30 text-amber-300 text-[10px] font-bold whitespace-nowrap">
+                                        🛡️ @rankName
+                                    </span>
+                            </td>
+
+                            <!-- Level -->
+                            <td class="py-3 px-2 text-center text-white font-bold">@player.HeroLevel</td>
+
+                            <!-- K / D / A -->
+                            <td class="py-3 px-3 text-center whitespace-nowrap font-bold text-xs">
+                                <span class="text-emerald-400">@player.HeroKills</span> /
+                                <span class="text-rose-400">@player.HeroDeaths</span> /
+                                <span class="text-amber-400">@player.HeroAssists</span>
+                            </td>
+
+                            <!-- CK & CD -->
+                            <td class="py-3 px-2 text-center text-slate-200">@ck</td>
+                            <td class="py-3 px-2 text-center text-slate-200">@cd</td>
+
+                            <!-- XPM, GPM, APM -->
+                            <td class="py-3 px-2 text-center text-purple-300">@xpm</td>
+                            <td class="py-3 px-2 text-center text-amber-300">@gpm</td>
+                            <td class="py-3 px-2 text-center text-cyan-300">@apm</td>
+
+                            <!-- Wards -->
+                            <td class="py-3 px-2 text-center text-emerald-300">@player.WardsPlaced</td>
+
+                            <!-- Inventory (6 Item Slots - Clickable to open Item Modal) -->
+                            <td class="py-3 px-4">
+                                <div class="flex items-center gap-1">
+                                    @for (int i = 0; i < 6; i++)
+                                    {
+                                        string? itemIdent = player.Inventory != null && i < player.Inventory.Count ? player.Inventory[i] : null;
+                                        string itemImg = ResolveItemImage(itemIdent);
+
+                                        if (!string.IsNullOrEmpty(itemIdent))
+                                        {
+                                            <div onclick="showItemModal('@itemIdent')"
+                                                 class="w-8 h-8 rounded bg-slate-900 border border-slate-700/80 hover:border-amber-400 overflow-hidden flex items-center justify-center flex-shrink-0 cursor-pointer transform hover:scale-110 transition-all shadow-md group"
+                                                 title="Click to view item details">
+                                                <img src="@itemImg"
+                                                     onError="this.onerror=null;this.src='/images/items/default.png';"
+                                                     alt="@itemIdent"
+                                                     class="w-full h-full object-cover"/>
+                                            </div>
+                                        }
+                                        else
+                                        {
+                                            <div
+                                                class="w-8 h-8 rounded bg-slate-900/60 border border-slate-800/80 overflow-hidden flex items-center justify-center flex-shrink-0">
+                                                <span class="text-[9px] text-slate-700 font-bold">•</span>
+                                            </div>
+                                        }
+                                    }
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- ================= HELLBOURNE TEAM (RED THEME) ================= -->
+        <div class="rounded-2xl bg-slate-950/80 border border-rose-500/30 overflow-hidden shadow-xl shadow-rose-950/20">
+            <!-- Hellbourne Banner -->
+            <div
+                class="bg-gradient-to-r from-rose-950/80 via-slate-900 to-slate-950 p-4 border-b border-rose-500/30 flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <span class="text-xl font-black text-rose-400 tracking-wider">HELLBOURNE</span>
+                    @if (hellbourneWon)
+                    {
+                        <span
+                            class="px-3 py-0.5 rounded bg-gradient-to-r from-rose-600 to-red-600 text-white font-black text-xs uppercase tracking-widest shadow-md">
+                            WINNER
+                        </span>
+                    }
+                </div>
+                <div class="text-xs text-rose-300/80 font-bold uppercase tracking-wider">
+                    Team
+                    KDA: @hellbournePlayers.Sum(p => p.HeroKills) / @hellbournePlayers.Sum(p => p.HeroDeaths) / @hellbournePlayers.Sum(p => p.HeroAssists)
+                </div>
+            </div>
+
+            <!-- Hellbourne Scoreboard Table -->
+            <div class="overflow-x-auto">
+                <table class="w-full text-left text-xs text-slate-300">
+                    <thead
+                        class="bg-slate-900/90 text-rose-200/70 uppercase text-[10px] font-bold tracking-wider border-b border-slate-800">
+                    <tr>
+                        <th class="py-3 px-4 min-w-[180px]">Player</th>
+                        <th class="py-3 px-3 text-center">Rank</th>
+                        <th class="py-3 px-2 text-center">LV</th>
+                        <th class="py-3 px-3 text-center">K / D / A</th>
+                        <th class="py-3 px-2 text-center">CK</th>
+                        <th class="py-3 px-2 text-center">CD</th>
+                        <th class="py-3 px-2 text-center">XPM</th>
+                        <th class="py-3 px-2 text-center">GPM</th>
+                        <th class="py-3 px-2 text-center">APM</th>
+                        <th class="py-3 px-2 text-center">W</th>
+                        <th class="py-3 px-4 min-w-[210px]">Items</th>
+                    </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-800/60 font-medium">
+                    @foreach (PlayerStatistics player in hellbournePlayers)
+                    {
+                        bool isCurrentUser = currentUserAccount != null && currentUserAccount.ID == player.AccountID;
+                        string heroDisplayName = Heroes.ResolveHeroDisplayName(player.HeroIdentifier);
+                        int ck = player.TeamCreepKills + player.NeutralCreepKills;
+                        int cd = player.Denies;
+                        int xpm = (int)Math.Round(player.Experience / minutesPlayed);
+                        int gpm = (int)Math.Round((player.GoldSpent + player.Gold) / minutesPlayed);
+                        int apm = (int)Math.Round(player.Actions / minutesPlayed);
+
+                        double rating = player.RankedMatch > 0 ? player.RankedSkillRatingChange : player.PublicSkillRatingChange;
+                        Rank rankEnum = RankExtensions.GetRank(rating > 0 ? rating : 1500);
+                        string rankName = FormatRankName(rankEnum);
+
+                        <tr class="@(isCurrentUser ? "bg-rose-500/10 border-l-4 border-l-rose-400" : "hover:bg-slate-800/40") transition-all">
+                            <!-- Player & Hero -->
+                            <td class="py-3 px-4 flex items-center gap-3">
+                                <a href="/stats?accountName=@player.AccountName"
+                                   class="w-10 h-10 rounded-lg overflow-hidden bg-slate-900 border border-rose-500/30 flex-shrink-0 hover:border-rose-400 transition-all shadow-md group"
+                                   title="View @player.AccountName's player stats">
+                                    <img
+                                        src="@(DAWNBRINGER.WebPortal.UI.Services.HeroAndMapAssetResolver.ResolveHeroIconUrl(player.HeroIdentifier))"
+                                        onError="this.onerror=null;this.src='/images/heroes/default.png';"
+                                        alt="@heroDisplayName"
+                                        class="w-full h-full object-cover group-hover:scale-105 transition-transform"/>
+                                </a>
+                                <div>
+                                    <a href="/stats?accountName=@player.AccountName"
+                                       class="text-white font-bold text-sm block hover:text-rose-400 hover:underline transition-colors"
+                                       title="View @player.AccountName's player stats">
+                                        @if (!string.IsNullOrEmpty(player.ClanTag))
+                                        {
+                                            <span class="text-rose-400/90 font-semibold">[@player.ClanTag]</span>
+                                        }
+                                        @player.AccountName
+                                    </a>
+                                    <span class="text-[11px] text-slate-400">@heroDisplayName</span>
+                                </div>
+                            </td>
+
+                            <!-- Rank -->
+                            <td class="py-3 px-3 text-center">
+                                    <span
+                                        class="px-2 py-0.5 rounded bg-slate-800 border border-rose-500/30 text-rose-300 text-[10px] font-bold whitespace-nowrap">
+                                        🛡️ @rankName
+                                    </span>
+                            </td>
+
+                            <!-- Level -->
+                            <td class="py-3 px-2 text-center text-white font-bold">@player.HeroLevel</td>
+
+                            <!-- K / D / A -->
+                            <td class="py-3 px-3 text-center whitespace-nowrap font-bold text-xs">
+                                <span class="text-emerald-400">@player.HeroKills</span> /
+                                <span class="text-rose-400">@player.HeroDeaths</span> /
+                                <span class="text-amber-400">@player.HeroAssists</span>
+                            </td>
+
+                            <!-- CK & CD -->
+                            <td class="py-3 px-2 text-center text-slate-200">@ck</td>
+                            <td class="py-3 px-2 text-center text-slate-200">@cd</td>
+
+                            <!-- XPM, GPM, APM -->
+                            <td class="py-3 px-2 text-center text-purple-300">@xpm</td>
+                            <td class="py-3 px-2 text-center text-amber-300">@gpm</td>
+                            <td class="py-3 px-2 text-center text-cyan-300">@apm</td>
+
+                            <!-- Wards -->
+                            <td class="py-3 px-2 text-center text-emerald-300">@player.WardsPlaced</td>
+
+                            <!-- Inventory (6 Item Slots - Clickable to open Item Modal) -->
+                            <td class="py-3 px-4">
+                                <div class="flex items-center gap-1">
+                                    @for (int i = 0; i < 6; i++)
+                                    {
+                                        string? itemIdent = player.Inventory != null && i < player.Inventory.Count ? player.Inventory[i] : null;
+                                        string itemImg = ResolveItemImage(itemIdent);
+
+                                        if (!string.IsNullOrEmpty(itemIdent))
+                                        {
+                                            <div onclick="showItemModal('@itemIdent')"
+                                                 class="w-8 h-8 rounded bg-slate-900 border border-slate-700/80 hover:border-purple-400 overflow-hidden flex items-center justify-center flex-shrink-0 cursor-pointer transform hover:scale-110 transition-all shadow-md group"
+                                                 title="Click to view item details">
+                                                <img src="@itemImg"
+                                                     onError="this.onerror=null;this.src='/images/items/default.png';"
+                                                     alt="@itemIdent"
+                                                     class="w-full h-full object-cover"/>
+                                            </div>
+                                        }
+                                        else
+                                        {
+                                            <div
+                                                class="w-8 h-8 rounded bg-slate-900/60 border border-slate-800/80 overflow-hidden flex items-center justify-center flex-shrink-0">
+                                                <span class="text-[9px] text-slate-700 font-bold">•</span>
+                                            </div>
+                                        }
+                                    }
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ================= INTERACTIVE MATCH ANALYTICS & SPATIAL HEATMAP DASHBOARD ================= -->
+<div
+    class="glass-panel p-5 sm:p-7 rounded-3xl border border-slate-700/80 shadow-2xl space-y-6 bg-slate-900/90 relative overflow-hidden animate-fade-in-up">
+    <!-- Header with Title and Navigation Tabs -->
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-800 pb-5">
+        <div>
+            <div class="flex items-center gap-2.5">
+                <span class="text-2xl">📊</span>
+                <h2 class="text-2xl font-black text-white tracking-tight">Match Analytics & Spatial Telemetry</h2>
+            </div>
+            <p class="text-xs sm:text-sm text-slate-400 mt-1">
+                Dynamic post-match momentum curves, 2D spatial combat heatmaps, and deep performance metrics.
+            </p>
+        </div>
+
+        <!-- Tab Buttons -->
+        <div
+            class="flex items-center gap-1.5 p-1 bg-slate-950/80 rounded-2xl border border-slate-800 self-start md:self-auto overflow-x-auto max-w-full">
+            <button onclick="switchAnalyticsTab('momentum')" id="tab-btn-momentum" type="button"
+                    class="analytics-tab-btn px-4 py-2 rounded-xl text-xs font-bold transition-all bg-purple-600 text-white shadow-md flex items-center gap-1.5 whitespace-nowrap">
+                <span>📈</span> Gold & XP Momentum
+            </button>
+            <button onclick="switchAnalyticsTab('heatmap')" id="tab-btn-heatmap" type="button"
+                    class="analytics-tab-btn px-4 py-2 rounded-xl text-xs font-bold transition-all text-slate-400 hover:text-white hover:bg-slate-800/60 flex items-center gap-1.5 whitespace-nowrap">
+                <span>🗺️</span> Combat Heatmap
+            </button>
+            <button onclick="switchAnalyticsTab('damage')" id="tab-btn-damage" type="button"
+                    class="analytics-tab-btn px-4 py-2 rounded-xl text-xs font-bold transition-all text-slate-400 hover:text-white hover:bg-slate-800/60 flex items-center gap-1.5 whitespace-nowrap">
+                <span>⚔️</span> Damage Breakdown
+            </button>
+            <button onclick="switchAnalyticsTab('radar')" id="tab-btn-radar" type="button"
+                    class="analytics-tab-btn px-4 py-2 rounded-xl text-xs font-bold transition-all text-slate-400 hover:text-white hover:bg-slate-800/60 flex items-center gap-1.5 whitespace-nowrap">
+                <span>🎯</span> Player Radar
+            </button>
+        </div>
+    </div>
+
+    <!-- TAB 1: GOLD & XP MOMENTUM SWING CHART -->
+    <div id="analytics-tab-momentum" class="space-y-4">
+        <div
+            class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-slate-950/60 p-3.5 rounded-2xl border border-slate-800/80">
+            <div class="flex items-center gap-3">
+                <span class="text-xs font-bold text-slate-300 uppercase tracking-wider">Metrics:</span>
+                <div class="flex items-center gap-1.5">
+                    <button onclick="KongorMatchAnalytics.setChartMode('gold')" data-mode="gold" type="button"
+                            class="swing-chart-btn px-3 py-1.5 rounded-xl text-xs font-bold bg-purple-600 text-white shadow-md transition-all">
+                        💰 Net Gold Swing
+                    </button>
+                    <button onclick="KongorMatchAnalytics.setChartMode('xp')" data-mode="xp" type="button"
+                            class="swing-chart-btn px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-800 text-slate-400 hover:text-white transition-all">
+                        ⭐ Net XP Swing
+                    </button>
+                    <button onclick="KongorMatchAnalytics.setChartMode('cumulative')" data-mode="cumulative"
+                            type="button"
+                            class="swing-chart-btn px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-800 text-slate-400 hover:text-white transition-all">
+                        📊 Total Team Curves
+                    </button>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-4 text-xs font-semibold">
+                <div class="flex items-center gap-1.5">
+                    <span class="w-3 h-3 rounded-full bg-emerald-500 shadow-sm"></span>
+                    <span class="text-emerald-400">Legion Lead</span>
+                </div>
+                <div class="flex items-center gap-1.5">
+                    <span class="w-3 h-3 rounded-full bg-rose-500 shadow-sm"></span>
+                    <span class="text-rose-400">Hellbourne Lead</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Canvas Container -->
+        <div
+            class="w-full h-[280px] bg-slate-950/80 rounded-2xl border border-slate-800/80 p-2 relative overflow-hidden shadow-inner">
+            <canvas id="match-swing-chart-canvas" class="w-full h-full block" role="img" aria-label="Match gold and experience swing chart">Your browser does not support HTML5 Canvas.</canvas>
+        </div>
+
+        <!-- Milestone Events Timeline Strip -->
+        <div class="space-y-2 pt-2">
+            <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
+                <span>⚡</span> KEY MATCH TURNING POINTS & MILESTONES
+            </h4>
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5" id="milestones-container">
+                @{
+                    MatchTimelineDto? tlObj = ViewData["MatchTimeline"] as MatchTimelineDto;
+                    if (tlObj != null && tlObj.Milestones.Count > 0)
+                    {
+                        foreach (var m in tlObj.Milestones)
+                        {
+                            bool isLeg = m.Team == 1;
+                            <div
+                                class="p-2.5 rounded-xl bg-slate-950/70 border @(isLeg ? "border-emerald-500/30" : "border-rose-500/30") flex items-center gap-3">
+                                <div
+                                    class="w-8 h-8 rounded-lg overflow-hidden bg-slate-900 border border-slate-700 flex-shrink-0">
+                                    <img src="@(m.IconUrl ?? "/images/heroes/default.png")"
+                                         onError="this.src='/images/heroes/default.png';"
+                                         alt="@(m.EventType ?? "Match Event")"
+                                         class="w-full h-full object-cover"/>
+                                </div>
+                                <div class="min-w-0 flex-1">
+                                    <div class="flex items-center justify-between text-[10px]">
+                                        <span class="font-mono font-bold text-amber-400">@m.FormattedTime</span>
+                                        <span
+                                            class="font-bold uppercase @(isLeg ? "text-emerald-400" : "text-rose-400")">@m.EventType</span>
+                                    </div>
+                                    <p class="text-xs text-slate-200 truncate mt-0.5"
+                                       title="@m.Description">@m.Description</p>
+                                </div>
+                            </div>
+                        }
+                    }
+                }
+            </div>
+        </div>
+    </div>
+
+    <!-- TAB 2: 2D COMBAT & WARD SPATIAL HEATMAP -->
+    <div id="analytics-tab-heatmap" class="hidden space-y-4">
+        <div
+            class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-slate-950/60 p-3.5 rounded-2xl border border-slate-800/80">
+            <div class="flex items-center gap-3">
+                <span class="text-xs font-bold text-slate-300 uppercase tracking-wider">Layer Filters:</span>
+                <div class="flex items-center gap-1.5 flex-wrap">
+                    <button onclick="KongorMatchAnalytics.setHeatmapFilter('all')" data-filter="all" type="button"
+                            class="heatmap-filter-btn px-3 py-1.5 rounded-xl text-xs font-bold bg-purple-600 text-white transition-all shadow-md">
+                        🔥 All Combat
+                    </button>
+                    <button onclick="KongorMatchAnalytics.setHeatmapFilter('legion')" data-filter="legion" type="button"
+                            class="heatmap-filter-btn px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-800 text-slate-400 hover:text-white transition-all">
+                        🛡️ Legion Kills
+                    </button>
+                    <button onclick="KongorMatchAnalytics.setHeatmapFilter('hellbourne')" data-filter="hellbourne"
+                            type="button"
+                            class="heatmap-filter-btn px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-800 text-slate-400 hover:text-white transition-all">
+                        💀 Hellbourne Kills
+                    </button>
+                    <button onclick="KongorMatchAnalytics.setHeatmapFilter('wards')" data-filter="wards" type="button"
+                            class="heatmap-filter-btn px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-800 text-slate-400 hover:text-white transition-all">
+                        👁️ Wards Placed
+                    </button>
+                </div>
+            </div>
+
+            <div class="text-xs text-slate-400 flex items-center gap-2">
+                <span>Thermal Density:</span>
+                <span
+                    class="px-2 py-0.5 rounded bg-gradient-to-r from-emerald-500 via-amber-500 to-rose-600 text-white text-[10px] font-bold">Low → Hotspot</span>
+            </div>
+        </div>
+
+        <!-- Heatmap Container with Map Background -->
+        <div class="flex flex-col lg:flex-row gap-6 items-center justify-center">
+            <div
+                class="relative w-full max-w-[512px] aspect-square rounded-3xl overflow-hidden border-2 border-purple-500/40 bg-slate-950 shadow-2xl">
+                <!-- Base Map Graphic -->
+                <img id="heatmap-map-bg" src="@(DAWNBRINGER.WebPortal.UI.Services.HeroAndMapAssetResolver.ResolveMinimapUrl(matchStat?.Map))" onError="this.src='/images/maps/minimap_caldavar.png';"
+                     alt="@mapName"
+                     class="w-full h-full object-cover filter brightness-75 contrast-125 select-none pointer-events-none"/>
+                <!-- Canvas Layer for Gaussian Thermal Glow -->
+                <canvas id="match-heatmap-canvas" class="absolute inset-0 w-full h-full pointer-events-none" role="img" aria-label="Match kill and death spatial heatmap overlay">Your browser does not support HTML5 Canvas.</canvas>
+                <!-- Pin Overlay for Interactive Kill Pins -->
+                <div id="heatmap-pin-overlay" class="absolute inset-0 w-full h-full"></div>
+            </div>
+
+            <!-- Heatmap Side Legend & Lane Statistics -->
+            <div class="w-full lg:max-w-xs space-y-4">
+                <div class="p-4 rounded-2xl bg-slate-950/70 border border-slate-800 space-y-3">
+                    <h4 class="text-xs font-bold text-purple-300 uppercase tracking-widest flex items-center gap-2">
+                        <span>🗺️</span> MAP SPATIAL INFO
+                    </h4>
+                    <div class="space-y-2 text-xs">
+                        <div class="flex justify-between py-1 border-b border-slate-800/80">
+                            <span class="text-slate-400">Map Arena:</span>
+                            <span class="text-white font-bold">@mapName</span>
+                        </div>
+                        <div class="flex justify-between py-1 border-b border-slate-800/80">
+                            <span class="text-slate-400">Primary Objective:</span>
+                            <span class="text-amber-400 font-bold">Kongor Pit (River)</span>
+                        </div>
+                        <div class="flex justify-between py-1">
+                            <span class="text-slate-400">Spatial Calibration:</span>
+                            <span class="text-emerald-400 font-mono font-bold">16,384 x 16,384 u</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="p-4 rounded-2xl bg-slate-950/70 border border-slate-800 space-y-2 text-xs text-slate-300">
+                    <div class="font-bold text-white flex items-center gap-1.5">
+                        <span>💡</span> Pro Tip:
+                    </div>
+                    <p class="leading-relaxed text-[11px] text-slate-400">
+                        Hover or tap any kill or ward marker on the map to view the exact combatants, timestamps, and
+                        combat description.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- TAB 3: DAMAGE & COMBAT TELEMETRY BREAKDOWN -->
+    <div id="analytics-tab-damage" class="hidden space-y-4">
+        <div
+            class="p-3.5 rounded-2xl bg-slate-950/60 border border-slate-800/80 text-xs text-slate-400 flex items-center justify-between">
+            <span class="font-semibold text-slate-300">Player Combat Telemetry & Damage Share (%)</span>
+            <span class="text-[11px] text-purple-300">Ordered by Team & Lobby Position</span>
+        </div>
+        <div id="match-damage-telemetry-container" class="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <!-- Dynamically populated by match-analytics.js -->
+        </div>
+    </div>
+
+    <!-- TAB 4: 6-AXIS PLAYER PERFORMANCE RADAR -->
+    <div id="analytics-tab-radar" class="hidden space-y-4">
+        <div
+            class="flex flex-col sm:flex-row items-center justify-between gap-4 bg-slate-950/60 p-3.5 rounded-2xl border border-slate-800/80">
+            <div class="flex items-center gap-2">
+                <span class="text-xs font-bold text-slate-400 uppercase">Compare:</span>
+                <select id="radar-player1-select"
+                        class="bg-slate-900 border border-cyan-500/50 text-cyan-300 text-xs font-bold rounded-xl px-3 py-1.5 focus:outline-none focus:border-cyan-400">
+                    @if (playerStats != null)
+                    {
+                        foreach (var p in playerStats)
+                        {
+                            <option
+                                value="@p.AccountID">@p.AccountName (@Heroes.ResolveHeroDisplayName(p.HeroIdentifier))
+                                [Team @p.Team]
+                            </option>
+                        }
+                    }
+                </select>
+                <span class="text-xs font-bold text-slate-500">VS</span>
+                <select id="radar-player2-select"
+                        class="bg-slate-900 border border-rose-500/50 text-rose-300 text-xs font-bold rounded-xl px-3 py-1.5 focus:outline-none focus:border-rose-400">
+                    @if (playerStats != null)
+                    {
+                        foreach (var p in playerStats.OrderByDescending(p => p.Team))
+                        {
+                            <option
+                                value="@p.AccountID">@p.AccountName (@Heroes.ResolveHeroDisplayName(p.HeroIdentifier))
+                                [Team @p.Team]
+                            </option>
+                        }
+                    }
+                </select>
+            </div>
+
+            <div class="flex items-center gap-4 text-xs font-bold">
+                <div class="flex items-center gap-1.5">
+                    <span class="w-3 h-3 rounded-full bg-cyan-500"></span>
+                    <span id="radar-p1-label" class="text-cyan-300">Player 1</span>
+                </div>
+                <div class="flex items-center gap-1.5">
+                    <span class="w-3 h-3 rounded-full bg-rose-500"></span>
+                    <span id="radar-p2-label" class="text-rose-300">Player 2</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Radar SVG Visualization Container -->
+        <div class="flex items-center justify-center p-6 bg-slate-950/80 rounded-2xl border border-slate-800/80">
+            <svg id="match-radar-svg" viewBox="0 0 300 300"
+                 class="w-full max-w-[340px] aspect-square overflow-visible"></svg>
+        </div>
+    </div>
+</div>
+
+<!-- ================= GLASSMORPHIC ITEM DETAILS MODAL SYNCHRONIZED WITH ITEM DETAIL PAGE ================= -->
+<div id="item-details-modal"
+     class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md hidden items-center justify-center p-4 transition-all duration-300">
+    <div
+        class="glass-panel max-w-lg w-full p-6 sm:p-7 rounded-3xl border border-slate-700/80 shadow-2xl space-y-5 relative overflow-hidden bg-slate-900/95 max-h-[90vh] overflow-y-auto animate-fade-in-up">
+        <!-- Close Button -->
+        <button onclick="closeItemModal()" type="button"
+                class="absolute top-4 right-4 text-slate-400 hover:text-white text-lg font-bold w-8 h-8 rounded-lg bg-slate-800/60 hover:bg-slate-800 border border-slate-700 flex items-center justify-center transition-all z-10">
+            ✕
+        </button>
+
+        <!-- Modal Header Card -->
+        <div class="flex flex-col sm:flex-row items-start sm:items-center gap-5 relative z-10 pr-6">
+            <div
+                class="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl overflow-hidden bg-slate-950 border-2 border-amber-400/40 p-1 flex-shrink-0 shadow-xl">
+                <img id="modal-item-icon" src="/images/items/default.png" alt="Item Icon"
+                     class="w-full h-full object-cover rounded-xl"
+                     onError="this.onerror=null;this.src='/images/items/default.png';"/>
+            </div>
+            <div class="space-y-2 flex-1 min-w-0">
+                <div class="flex items-center justify-between gap-2 flex-wrap">
+                    <h3 id="modal-item-name"
+                        class="text-2xl sm:text-3xl font-extrabold text-white tracking-tight truncate">Item Name</h3>
+                    <span id="modal-status-badge"
+                          class="px-3 py-1 rounded-full text-xs font-bold tracking-wider uppercase bg-emerald-500/10 border border-emerald-500/30 text-emerald-400">
+                        ACTIVE
+                    </span>
+                </div>
+                <p id="modal-item-code" class="text-xs font-mono text-amber-400/80">Item Code: <span
+                        id="modal-item-code-val" class="font-bold text-white">code</span></p>
+
+                <div class="flex flex-wrap items-center gap-2 text-xs" id="modal-item-cost-container">
+                    <!-- Dynamic pills for Category, Total Cost, Recipe Scroll Cost -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Embedded Item Description / Effects & Stats -->
+        <div class="p-4 sm:p-5 rounded-2xl bg-slate-950/70 border border-slate-800/80 space-y-1.5">
+            <div class="text-[11px] font-bold text-amber-400 uppercase tracking-widest flex items-center gap-1.5">
+                <span>✨</span> ITEM EFFECTS & STATS
+            </div>
+            <p id="modal-item-description" class="text-xs sm:text-sm text-slate-200 leading-relaxed font-normal">
+                Item description details...
+            </p>
+        </div>
+
+        <!-- Recipe Components Section -->
+        <div id="modal-item-comps-container"
+             class="p-4 sm:p-5 rounded-2xl bg-slate-950/60 border border-slate-800 space-y-3 hidden">
+            <h3 class="text-xs font-bold text-slate-300 uppercase tracking-widest flex items-center gap-2">
+                <span>🔨</span> RECIPE COMPONENTS
+            </h3>
+            <div id="modal-item-comps-list" class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                <!-- Component Cards dynamically populated -->
+            </div>
+        </div>
+
+        <!-- Builds Into (Forward Upgrade Tree) Section -->
+        <div id="modal-item-builds-into-container"
+             class="p-4 sm:p-5 rounded-2xl bg-slate-950/60 border border-cyan-500/30 space-y-3 hidden">
+            <h3 class="text-xs font-bold text-cyan-300 uppercase tracking-widest flex items-center gap-2">
+                <span>⬆️</span> BUILDS INTO
+            </h3>
+            <div id="modal-item-builds-into-list" class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+            </div>
+        </div>
+
+        <!-- Upgrade Path Note -->
+        <div id="modal-item-upgrade-container"
+             class="p-4 rounded-2xl bg-cyan-950/40 border border-cyan-500/40 text-cyan-300 text-xs sm:text-sm flex items-center gap-3 hidden">
+            <span class="text-xl">🛡️</span>
+            <div>
+                <strong class="font-bold">Upgrade Path:</strong> <span id="modal-item-upgrade-text">Upgrade Note</span>
+            </div>
+        </div>
+
+        <!-- Level Upgrade Tier Pricing Section -->
+        <div id="modal-item-levels-container"
+             class="hidden p-4 sm:p-5 rounded-2xl bg-slate-950/60 border border-amber-500/30 space-y-3">
+            <div class="flex items-center justify-between">
+                <h3 class="text-xs font-bold text-amber-400 uppercase tracking-widest flex items-center gap-2">
+                    <span>📈</span> LEVEL UPGRADE & PRICING BREAKDOWN
+                </h3>
+                <span id="modal-item-levels-count" class="text-[11px] font-medium text-slate-400 font-mono">Upgradable Tiers</span>
+            </div>
+            <div id="modal-item-levels-list" class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                <!-- Level Tiers Cards dynamically populated -->
+            </div>
+        </div>
+
+        <!-- Shop Lore / Flavor -->
+        <div id="modal-item-flavor-container"
+             class="p-4 rounded-2xl bg-slate-950/40 border border-slate-800/80 space-y-1.5 hidden">
+            <h3 class="text-xs font-bold text-purple-400 uppercase tracking-widest flex items-center gap-2">
+                <span>📜</span> SHOP LORE
+            </h3>
+            <p id="modal-item-flavor" class="text-xs sm:text-sm italic text-slate-400 leading-relaxed font-serif">
+                "Shop flavor text..."
+            </p>
+        </div>
+
+        <div class="pt-2 flex justify-end">
+            <button onclick="closeItemModal()" type="button"
+                    class="px-5 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-white text-xs font-bold transition-all shadow-md">
+                Close
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+    let itemCatalogCache = null;
+    const matchLegacyItemAliases = @Html.Raw(JsonSerializer.Serialize(
+                                       HomeController.LegacyItemAliases.ToDictionary(
+                                           k => k.Key.ToLowerInvariant(),
+                                           v => v.Value.ToLowerInvariant())));
+
+    // Multi-key resolution helper
+    function findItemInCatalog(catalog, rawCode) {
+        if (!rawCode || !catalog) return null;
+        const key = String(rawCode).trim().toLowerCase();
+        const cleanKey = key.startsWith('item_') ? key.substring(5) : key;
+        const strippedKey = cleanKey.replace(/_/g, '').replace(/\s+/g, '');
+        const aliasKey = matchLegacyItemAliases[cleanKey] || matchLegacyItemAliases[strippedKey] || cleanKey;
+        const withUnderscore = cleanKey.replace(/([a-z])([A-Z])/g, '$1_$2').toLowerCase();
+        const alphaNum = cleanKey.replace(/[^a-z0-9]/g, '');
+
+        return catalog[aliasKey]
+            || catalog['item_' + aliasKey]
+            || catalog[key]
+            || catalog[cleanKey]
+            || catalog[strippedKey]
+            || catalog['item_' + cleanKey]
+            || catalog['item_' + strippedKey]
+            || catalog[withUnderscore]
+            || catalog['item_' + withUnderscore]
+            || catalog[alphaNum];
+    }
+
+    function indexApiItemsIntoCatalog(targetMap, rawPayload) {
+        const list = Array.isArray(rawPayload)
+            ? rawPayload
+            : (rawPayload && typeof rawPayload === 'object' ? Object.values(rawPayload) : []);
+        list.forEach(entry => {
+            if (!entry || typeof entry !== 'object') return;
+            const rawCode = String(entry.code || entry.itemIdentifier || entry.key || '').trim();
+            const cleanCode = rawCode.replace(/^Item_/i, '').toLowerCase();
+            const stripped = cleanCode.replace(/_/g, '').replace(/\s+/g, '');
+            if (!cleanCode && !stripped) return;
+
+            const normalizeSub = sub => {
+                if (typeof sub === 'string') return {code: sub, name: sub};
+                if (!sub || typeof sub !== 'object') return {code: '', name: ''};
+                return {
+                    ...sub,
+                    code: sub.code || sub.Code || '',
+                    name: sub.name || sub.Name || '',
+                    cost: sub.cost ?? sub.Cost ?? 0,
+                    icon: sub.icon || sub.Icon || '',
+                    isRecipe: Boolean(sub.isRecipe ?? sub.IsRecipe)
+                };
+            };
+            let comps = Array.isArray(entry.components) ? entry.components.map(normalizeSub) : [];
+            if (comps.length === 0 && typeof entry.componentCodesJson === 'string' && entry.componentCodesJson.trim().startsWith('[')) {
+                try {
+                    const parsed = JSON.parse(entry.componentCodesJson);
+                    if (Array.isArray(parsed)) comps = parsed.map(normalizeSub);
+                } catch (_) {
+                }
+            }
+
+            const norm = {
+                ...entry,
+                code: cleanCode || stripped,
+                name: entry.name || entry.displayName || cleanCode.toUpperCase(),
+                icon: entry.icon || entry.iconPath || `/images/items/${stripped || 'default'}.png`,
+                components: comps,
+                buildsInto: Array.isArray(entry.buildsInto) ? entry.buildsInto.map(normalizeSub) : []
+            };
+
+            targetMap[norm.code] = norm;
+            targetMap['item_' + norm.code] = norm;
+            if (stripped) {
+                targetMap[stripped] = norm;
+                targetMap['item_' + stripped] = norm;
+            }
+            if (norm.name) {
+                const normName = String(norm.name).toLowerCase().replace(/[^a-z0-9]/g, '');
+                if (normName && !targetMap[normName]) targetMap[normName] = norm;
+            }
+        });
+
+        Object.keys(matchLegacyItemAliases).forEach(alias => {
+            const dest = matchLegacyItemAliases[alias];
+            const target = targetMap[dest] || targetMap[dest.replace(/_/g, '')];
+            if (target) {
+                if (!targetMap[alias]) targetMap[alias] = target;
+                if (!targetMap['item_' + alias]) targetMap['item_' + alias] = target;
+            }
+        });
+    }
+
+    async function getItemCatalog() {
+        if (!itemCatalogCache) {
+            itemCatalogCache = {};
+
+            // 1. Fetch live DB item catalog from /api/items and index by item code (not numeric array index)
+            try {
+                const apiResp = await fetch('/api/items', {headers: {'Accept': 'application/json'}});
+                if (apiResp.ok) {
+                    const apiData = await apiResp.json();
+                    indexApiItemsIntoCatalog(itemCatalogCache, apiData);
+                }
+            } catch (err) {
+                console.error('Failed to fetch /api/items:', err);
+            }
+
+            // 2. Merge fallback static metadata from /item_metadata.json
+            try {
+                const metaResp = await fetch('/item_metadata.json');
+                if (metaResp.ok) {
+                    const metaData = await metaResp.json();
+                    for (const k in metaData) {
+                        if (!itemCatalogCache[k]) {
+                            itemCatalogCache[k] = metaData[k];
+                        }
+                    }
+                }
+            } catch (err) {
+                console.error('Failed to fetch /item_metadata.json:', err);
+            }
+        }
+        return itemCatalogCache;
+    }
+
+    async function showItemModal(itemIdent) {
+        if (!itemIdent || itemIdent.trim() === '') return;
+
+        const catalog = await getItemCatalog();
+        const rawCode = itemIdent.trim();
+        const cleanCode = rawCode.startsWith('Item_') ? rawCode.substring(5) : rawCode;
+        const strippedKey = cleanCode.toLowerCase().replace(/_/g, '').replace(/\s+/g, '');
+
+        const itemData = findItemInCatalog(catalog, rawCode) || {
+            name: cleanCode.replace(/([A-Z])/g, ' $1').replace(/_/g, ' ').trim(),
+            cost: "N/A",
+            description: "Standard Project KONGOR battle item equipped during this match.",
+            flavor: "",
+            icon: "/images/items/" + strippedKey + ".png",
+            components: [],
+            upgrade: ""
+        };
+
+        const iconElem = document.getElementById('modal-item-icon');
+        const nameElem = document.getElementById('modal-item-name');
+        const descElem = document.getElementById('modal-item-description');
+        const flavorContainer = document.getElementById('modal-item-flavor-container');
+        const flavorElem = document.getElementById('modal-item-flavor');
+        const upgradeContainer = document.getElementById('modal-item-upgrade-container');
+        const upgradeText = document.getElementById('modal-item-upgrade-text');
+
+        iconElem.src = itemData.icon || ("/images/items/" + strippedKey + ".png");
+        nameElem.textContent = itemData.name || cleanCode;
+
+        const codeElem = document.getElementById('modal-item-code-val');
+        if (codeElem) codeElem.innerText = itemData.code || itemData.key || cleanCode;
+
+        const statusBadge = document.getElementById('modal-status-badge');
+        if (statusBadge) {
+            if (itemData.isActive === false) {
+                statusBadge.innerText = 'DISABLED';
+                statusBadge.className = 'px-3 py-1 rounded-full text-xs font-bold tracking-wider uppercase bg-red-500/10 border border-red-500/30 text-red-400';
+            } else {
+                statusBadge.innerText = 'ACTIVE';
+                statusBadge.className = 'px-3 py-1 rounded-full text-xs font-bold tracking-wider uppercase bg-emerald-500/10 border border-emerald-500/30 text-emerald-400';
+            }
+        }
+
+        const costContainer = document.getElementById('modal-item-cost-container');
+        if (costContainer) {
+            let html = '';
+            if (itemData.category) {
+                html += `<span class="px-3 py-1 rounded-xl bg-slate-900 border border-slate-800 text-slate-300 font-medium">Category: <strong class="text-amber-300">${itemData.category}</strong></span>`;
+            }
+            const costVal = Number(itemData.cost || 0);
+            html += `<span class="px-3 py-1 rounded-xl bg-slate-900 border border-slate-800 text-slate-300 font-medium">Cost: <strong class="text-amber-400 font-mono">💰 ${costVal > 0 ? costVal.toLocaleString() : (itemData.cost || "Base Item")} Gold</strong></span>`;
+            if (itemData.recipeCost && Number(itemData.recipeCost) > 0) {
+                html += `<span class="px-3 py-1 rounded-xl bg-purple-500/10 border border-purple-500/30 text-purple-300 font-medium">Recipe Scroll Cost: <strong class="font-mono">${Number(itemData.recipeCost).toLocaleString()}g</strong></span>`;
+            }
+            costContainer.innerHTML = html;
+        }
+
+        descElem.textContent = itemData.description || "No detailed description available.";
+
+        // Components & Recipe Section
+        const compsContainer = document.getElementById('modal-item-comps-container');
+        const compsList = document.getElementById('modal-item-comps-list');
+        compsList.innerHTML = '';
+
+        let compsToRender = (itemData.components && itemData.components.length > 0) ? [...itemData.components] : [];
+        const realComps = compsToRender.filter(c => (c.name || '').toLowerCase() !== 'recipe');
+        const hasRecipe = compsToRender.some(c => (c.name || '').toLowerCase().includes('recipe')) || (itemData.recipeCost && Number(itemData.recipeCost) > 0);
+
+        if (realComps.length > 0 || hasRecipe) {
+            compsContainer.classList.remove('hidden');
+
+            realComps.forEach(c => {
+                const compCode = (c.icon || c.code || c.name || '').toLowerCase().trim();
+                const matchedComp = findItemInCatalog(catalog, compCode);
+                const cIcon = (matchedComp && matchedComp.icon) ? matchedComp.icon : `/images/items/${c.icon || compCode || 'default'}.png`;
+                const cName = (matchedComp && matchedComp.name) ? matchedComp.name : c.name;
+                const cCostVal = Number(c.cost || (matchedComp ? matchedComp.cost : 0));
+
+                const compCard = document.createElement('div');
+                compCard.className = 'flex items-center gap-3 p-3 rounded-2xl bg-slate-900 border border-slate-800 hover:border-amber-500/40 hover:bg-slate-800/80 transition-all text-slate-200 group cursor-pointer';
+                compCard.addEventListener('click', function () {
+                    showItemModal(compCode);
+                });
+                compCard.innerHTML = `
+                    <img src="${cIcon}" onError="this.onerror=null;this.src='/images/items/default.png';" alt="${cName}" class="w-9 h-9 rounded-xl object-cover border border-slate-700 bg-slate-950 flex-shrink-0" />
+                    <div class="flex flex-col min-w-0">
+                        <span class="font-bold text-xs text-white group-hover:text-amber-300 transition-colors truncate">${cName}</span>
+                        <span class="text-[11px] text-amber-400 font-mono">💰 ${cCostVal.toLocaleString()}g</span>
+                    </div>
+                `;
+                compsList.appendChild(compCard);
+            });
+
+            if (hasRecipe) {
+                const recipeCostVal = Number(itemData.recipeCost || 1000);
+                const recipeCard = document.createElement('div');
+                recipeCard.className = 'flex items-center gap-3 p-3 rounded-2xl bg-slate-900/60 border border-slate-800 text-slate-400';
+                recipeCard.innerHTML = `
+                    <div class="w-9 h-9 rounded-xl bg-slate-950 border border-slate-800 flex items-center justify-center text-base flex-shrink-0">📜</div>
+                    <div class="flex flex-col min-w-0">
+                        <span class="font-bold text-xs text-slate-300 truncate">Recipe Scroll</span>
+                        <span class="text-[11px] text-amber-400 font-mono">💰 ${recipeCostVal.toLocaleString()}g</span>
+                    </div>
+                `;
+                compsList.appendChild(recipeCard);
+            }
+        } else {
+            compsContainer.classList.add('hidden');
+        }
+
+        // Forward Builds Into Section
+        const buildsIntoContainer = document.getElementById('modal-item-builds-into-container');
+        const buildsIntoList = document.getElementById('modal-item-builds-into-list');
+        if (buildsIntoContainer && buildsIntoList) {
+            buildsIntoList.innerHTML = '';
+            const upgradesToRender = Array.isArray(itemData.buildsInto) ? itemData.buildsInto : [];
+            if (upgradesToRender.length > 0) {
+                buildsIntoContainer.classList.remove('hidden');
+                upgradesToRender.forEach(u => {
+                    const uCode = (u.code || u.icon || u.name || '').toLowerCase().trim();
+                    const matchedUp = findItemInCatalog(catalog, uCode);
+                    const uIcon = (matchedUp && matchedUp.icon) ? matchedUp.icon : (u.icon || `/images/items/${uCode || 'default'}.png`);
+                    const uName = (matchedUp && matchedUp.name) ? matchedUp.name : (u.name || uCode);
+                    const uCostVal = Number(u.cost || (matchedUp ? matchedUp.cost : 0));
+
+                    const upCard = document.createElement('div');
+                    upCard.className = 'flex items-center gap-3 p-3 rounded-2xl bg-slate-900 border border-slate-800 hover:border-cyan-500/40 hover:bg-slate-800/80 transition-all text-slate-200 group cursor-pointer';
+                    upCard.addEventListener('click', function () {
+                        showItemModal(uCode);
+                    });
+                    upCard.innerHTML = `
+                        <img src="${uIcon}" onError="this.onerror=null;this.src='/images/items/default.png';" alt="${uName}" class="w-9 h-9 rounded-xl object-cover border border-slate-700 bg-slate-950 flex-shrink-0" />
+                        <div class="flex flex-col min-w-0">
+                            <span class="font-bold text-xs text-white group-hover:text-cyan-300 transition-colors truncate">${uName}</span>
+                            <span class="text-[11px] text-cyan-400 font-mono">💰 ${uCostVal.toLocaleString()}g</span>
+                        </div>
+                    `;
+                    buildsIntoList.appendChild(upCard);
+                });
+            } else {
+                buildsIntoContainer.classList.add('hidden');
+            }
+        }
+
+        // Upgrade Note
+        if (itemData.upgrade && itemData.upgrade.trim() !== '') {
+            upgradeText.textContent = itemData.upgrade;
+            upgradeContainer.classList.remove('hidden');
+        } else {
+            upgradeContainer.classList.add('hidden');
+        }
+
+        // Populate Level Upgrade Breakdown
+        const levelsContainer = document.getElementById('modal-item-levels-container');
+        const levelsList = document.getElementById('modal-item-levels-list');
+        const levelsCount = document.getElementById('modal-item-levels-count');
+
+        if (levelsContainer && levelsList) {
+            levelsList.innerHTML = '';
+            const upgText = itemData.upgrade || itemData.description || '';
+            const lvlMatch = upgText.match(/level\s*(\d+)/i) || upgText.match(/upgardable\s*to\s*level\s*(\d+)/i);
+            let maxLvl = lvlMatch ? parseInt(lvlMatch[1]) : 0;
+            if (maxLvl <= 1) {
+                const keyLower = (rawCode || '').toLowerCase();
+                if (['shieldbreaker', 'pierce', 'spellshards', 'riftshards', 'puzzlebox', 'nullfireblade', 'manaburn1'].includes(keyLower)) {
+                    maxLvl = (keyLower === 'riftshards') ? 4 : 3;
+                }
+            }
+
+            if (maxLvl > 1) {
+                levelsContainer.classList.remove('hidden');
+                if (levelsCount) levelsCount.innerText = `${maxLvl} Upgradable Tiers`;
+
+                const baseCost = Number(costVal || itemData.cost || 0);
+                const scrollCost = Number(itemData.recipeCost || 1000);
+
+                for (let l = 1; l <= maxLvl; l++) {
+                    const totalCost = baseCost + (l - 1) * scrollCost;
+                    const tierCard = document.createElement('div');
+                    tierCard.className = 'p-3 rounded-2xl bg-slate-900 border border-slate-800 space-y-1.5 hover:border-slate-700 transition-colors';
+                    tierCard.innerHTML = `
+                        <div class="flex items-center justify-between">
+                            <span class="px-2.5 py-0.5 rounded-lg text-xs font-bold bg-slate-800 text-amber-300 border border-slate-700">
+                                LEVEL ${l}
+                            </span>
+                            <span class="text-xs font-bold text-amber-400 font-mono">
+                                💰 ${totalCost.toLocaleString()}g
+                            </span>
+                        </div>
+                        <div class="text-[11px] text-slate-400 font-mono pt-1 border-t border-slate-800/60">
+                            ${l === 1 ? 'Base Item Initial Cost' : `Recipe Scroll (+${scrollCost.toLocaleString()}g)`}
+                        </div>
+                    `;
+                    levelsList.appendChild(tierCard);
+                }
+            } else {
+                levelsContainer.classList.add('hidden');
+            }
+        }
+
+        // Flavor Lore
+        if (itemData.flavor && itemData.flavor.trim() !== '') {
+            flavorElem.textContent = '"' + itemData.flavor + '"';
+            flavorContainer.classList.remove('hidden');
+        } else {
+            flavorContainer.classList.add('hidden');
+        }
+
+        const modal = document.getElementById('item-details-modal');
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+    }
+
+    function closeItemModal() {
+        const modal = document.getElementById('item-details-modal');
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+    }
+
+    function shareMatchCard() {
+        @if (playerStats is { Count: > 0 })
+        {
+            PlayerStatistics? topPlayer = playerStats.OrderByDescending(p => p.HeroKills * 3 + p.HeroAssists - p.HeroDeaths * 2).FirstOrDefault();
+            if (topPlayer != null)
+            {
+                bool isVic = topPlayer.Win > 0;
+                int gpmCalc = (int)Math.Round(topPlayer.Gold / Math.Max(1.0, minutesPlayed));
+                int xpmCalc = (int)Math.Round(topPlayer.Experience / Math.Max(1.0, minutesPlayed));
+                double kdrCalc = topPlayer.HeroDeaths > 0 ? (topPlayer.HeroKills / (double)topPlayer.HeroDeaths) : topPlayer.HeroKills;
+                int csCalc = topPlayer.TeamCreepKills + topPlayer.NeutralCreepKills;
+                <text>
+                    const matchData = {
+                        matchId: '@matchId',
+                        mapName: '@mapName',
+                        duration: '@durationFormatted',
+                        gameMode: '@modeDisplay',
+                        isVictory: @(isVic ? "true" : "false"),
+                        isMvp: true,
+                        playerName: '@topPlayer.AccountName',
+                        heroName: '@topPlayer.HeroIdentifier.Replace("Hero_", "")',
+                        rankName: 'Immortal',
+                        kills: @topPlayer.HeroKills,
+                        deaths: @topPlayer.HeroDeaths,
+                        assists: @topPlayer.HeroAssists,
+                        kdr: @kdrCalc,
+                        gpm: @gpmCalc,
+                        xpm: @xpmCalc,
+                        damage: @topPlayer.HeroDamage,
+                        wards: @topPlayer.WardsPlaced,
+                        creeps: @csCalc,
+                        items: [@Html.Raw(string.Join(",", (topPlayer.Inventory ?? new List<string>()).Take(6).Select(i => $"'{i}'")))]
+                    };
+                    if (window.NexusBragCard) {
+                        window.NexusBragCard.generate(matchData);
+                    }
+                </text>
+            }
+        }
+    }
+
+    function switchAnalyticsTab(tabName) {
+        const tabs = ['momentum', 'heatmap', 'damage', 'radar'];
+        tabs.forEach(t => {
+            const el = document.getElementById(`analytics-tab-${t}`);
+            const btn = document.getElementById(`tab-btn-${t}`);
+            if (el && btn) {
+                if (t === tabName) {
+                    el.classList.remove('hidden');
+                    btn.classList.add('bg-purple-600', 'text-white', 'shadow-md');
+                    btn.classList.remove('text-slate-400', 'hover:text-white', 'hover:bg-slate-800/60');
+                } else {
+                    el.classList.add('hidden');
+                    btn.classList.remove('bg-purple-600', 'text-white', 'shadow-md');
+                    btn.classList.add('text-slate-400', 'hover:text-white', 'hover:bg-slate-800/60');
+                }
+            }
+        });
+
+        if (tabName === 'momentum' && window.KongorMatchAnalytics) {
+            window.KongorMatchAnalytics.initTimelineChart();
+        } else if (tabName === 'heatmap' && window.KongorMatchAnalytics) {
+            window.KongorMatchAnalytics.initHeatmapCanvas();
+        } else if (tabName === 'radar' && window.KongorMatchAnalytics) {
+            window.KongorMatchAnalytics.initRadarChart();
+        }
+    }
+</script>
+
+<script src="/js/match-analytics.js" defer asp-append-version="true"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', async function () {
+        try {
+            let timelineData = @Html.Raw(ViewData["MatchTimelineJson"] ?? "null");
+            let heatmapData = @Html.Raw(ViewData["CombatHeatmapJson"] ?? "null");
+            let telemetryData = @Html.Raw(ViewData["DamageTelemetryJson"] ?? "null");
+
+            // Dynamic fetch from DuckDB Lakehouse API if heatmapData not pre-rendered
+            if (!heatmapData) {
+                try {
+                    const resp = await fetch('/api/lakehouse/matches/@matchId/heatmap');
+                    if (resp.ok) {
+                        const rawPoints = await resp.json();
+                        if (Array.isArray(rawPoints) && rawPoints.length > 0) {
+                            heatmapData = {
+                                KillEvents: rawPoints.filter(p => p.eventType === 0 || p.eventType === 2).map(p => ({
+                                    NormalizedX: p.positionX > 1.0 ? p.positionX / 16384.0 : p.positionX,
+                                    NormalizedY: p.positionY > 1.0 ? (1.0 - p.positionY / 16384.0) : p.positionY,
+                                    KillerTeam: p.eventType === 0 ? 1 : 2,
+                                    EventType: 'KILL',
+                                    FormattedTime: 'Lakehouse',
+                                    Description: 'Combat Takedown'
+                                })),
+                                WardEvents: rawPoints.filter(p => p.eventType === 6).map(p => ({
+                                    NormalizedX: p.positionX > 1.0 ? p.positionX / 16384.0 : p.positionX,
+                                    NormalizedY: p.positionY > 1.0 ? (1.0 - p.positionY / 16384.0) : p.positionY,
+                                    KillerTeam: 1,
+                                    EventType: 'WARD',
+                                    FormattedTime: 'Lakehouse',
+                                    Description: 'Ward Placed'
+                                }))
+                            };
+                        }
+                    }
+                } catch (e) {
+                    console.debug('[MatchAnalytics] Lakehouse heatmap fetch:', e);
+                }
+            }
+
+            if (window.KongorMatchAnalytics) {
+                window.KongorMatchAnalytics.init(timelineData, heatmapData, telemetryData);
+            }
+        } catch (err) {
+            console.error('[MatchAnalytics] Initialization error:', err);
+        }
+    });
+</script>
+
+<script src="/js/replay-player.js" defer asp-append-version="true"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        if (typeof MatchReplayPlayer !== 'undefined') {
+            window.replayPlayer = new MatchReplayPlayer('match-replay-canvas', {
+                matchId: @matchId,
+                map: '@(DAWNBRINGER.WebPortal.UI.Services.HeroAndMapAssetResolver.ResolveMapSlug(matchStat?.Map))'
+            });
+        }
+    });
+</script>

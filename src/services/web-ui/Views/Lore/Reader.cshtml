@@ -1,0 +1,435 @@
+@using System.Text.Json
+@model LoreComicDetailDto
+@{
+    ViewData["Title"] = $"{Model.Title} - Project Kongor Lore";
+    var currentAccount = ViewBag.CurrentAccount as AccountDto;
+    var isStaff = ViewBag.IsStaff is true;
+    var prevIssue = ViewBag.PrevIssue as LoreComicSummaryDto;
+    var nextIssue = ViewBag.NextIssue as LoreComicSummaryDto;
+}
+
+<div class="min-h-screen text-slate-100 pb-20">
+    <!-- Reader Top Toolbar -->
+    <div class="sticky top-16 z-40 bg-slate-950/90 backdrop-blur-xl border-b border-slate-800/80 px-4 py-3 mb-6">
+        <div class="max-w-5xl mx-auto flex flex-wrap items-center justify-between gap-3">
+            <div class="flex items-center gap-3 min-w-0">
+                <a href="/lore"
+                   class="p-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-white border border-slate-700/60 transition-all text-xs font-bold flex items-center gap-1.5"
+                   title="Back to Lore Catalog">
+                    <i class="fa-solid fa-arrow-left"></i> <span class="hidden sm:inline">Lore Hub</span>
+                </a>
+                <div class="truncate">
+                    <div class="flex items-center gap-2 flex-wrap">
+                        <div class="text-[10px] font-bold uppercase tracking-wider text-purple-400">@Model.ArcTitle • Issue #@Model.IssueNumber</div>
+                        <span class="px-2 py-0.5 rounded-md bg-purple-500/20 border border-purple-500/40 text-purple-300 font-bold text-[10px] uppercase tracking-wider inline-flex items-center gap-1">
+                            <span>🛡️</span> STAFF WIP
+                        </span>
+                    </div>
+                    <h1 class="text-sm sm:text-base font-extrabold text-white truncate">@Model.Title</h1>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-2">
+                <!-- Reading Mode Toggles -->
+                <div class="bg-slate-900 border border-slate-700/60 rounded-xl p-0.5 flex items-center text-xs">
+                    <button id="btn-mode-vertical" type="button"
+                            class="px-2.5 py-1 rounded-lg font-bold bg-purple-600 text-white transition-all">
+                        <i class="fa-solid fa-arrows-up-down"></i> <span class="hidden md:inline">Scroll</span>
+                    </button>
+                    <button id="btn-mode-single" type="button"
+                            class="px-2.5 py-1 rounded-lg font-bold text-slate-400 hover:text-white transition-all">
+                        <i class="fa-solid fa-book-open"></i> <span class="hidden md:inline">Page Flip</span>
+                    </button>
+                </div>
+
+                <!-- Fullscreen Toggle -->
+                <button id="btn-fullscreen" type="button"
+                        class="p-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-white border border-slate-700/60 text-xs font-bold transition-all"
+                        title="Toggle Fullscreen">
+                    <i class="fa-solid fa-expand"></i>
+                </button>
+
+                @if (!string.IsNullOrEmpty(Model.CinematicVideoUrl))
+                {
+                    <a href="#cinematic"
+                       class="px-3 py-1.5 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/40 text-xs font-bold transition-all flex items-center gap-1.5">
+                        <i class="fa-solid fa-play"></i> <span class="hidden sm:inline">3D Short</span>
+                    </a>
+                }
+            </div>
+        </div>
+    </div>
+
+    <!-- Comic Viewer Stage -->
+    <div id="comic-viewport" class="max-w-4xl mx-auto px-2 sm:px-4 transition-all">
+        <div class="mb-4 rounded-xl border border-amber-500/25 bg-amber-950/20 px-4 py-2.5 text-[11px] text-amber-200/90 leading-relaxed">
+            <strong class="text-amber-300 uppercase tracking-wider">Sample Development Art:</strong>
+            These pages are AI-generated development placeholders illustrating per-Master-Server <em>Parallel Universe Timelines</em> (not official Heroes of Newerth comics).
+        </div>
+        <!-- 1. Continuous Vertical Scroll Mode (Default) -->
+        <div id="view-vertical"
+             class="flex flex-col items-center gap-0 w-full rounded-2xl overflow-hidden shadow-2xl bg-black border border-slate-800/80">
+            @if (Model.Pages.Count == 0)
+            {
+                <div class="p-16 text-center text-slate-400">
+                    <i class="fa-regular fa-image text-5xl mb-4 text-slate-600"></i>
+                    <p class="text-base font-bold">Pages for this issue are being prepared.</p>
+                </div>
+            }
+            else
+            {
+                @foreach (var comicPage in Model.Pages)
+                {
+                    <div class="w-full relative group">
+                        <img src="@comicPage.ImageUrl"
+                             alt="Page @comicPage.PageNumber - @Model.Title"
+                             loading="lazy"
+                             class="w-full h-auto block select-none"/>
+                        <div
+                            class="absolute bottom-2 right-2 px-2 py-0.5 rounded bg-black/60 text-[10px] text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity">
+                            Page @comicPage.PageNumber
+                        </div>
+                    </div>
+                }
+            }
+        </div>
+
+        <!-- 2. Single Page Flip Mode (Hidden by default) -->
+        <div id="view-single" class="hidden flex-col items-center w-full">
+            <div
+                class="w-full rounded-2xl overflow-hidden shadow-2xl bg-black border border-slate-800/80 relative flex items-center justify-center min-h-[500px]">
+                <img id="single-page-img" src="@(Model.Pages.FirstOrDefault()?.ImageUrl ?? "")" alt="Comic Page"
+                     class="max-h-[85vh] w-auto mx-auto select-none"/>
+
+                <!-- Page Navigation Overlay Buttons -->
+                <button id="btn-page-prev" type="button"
+                        class="absolute left-3 top-1/2 -translate-y-1/2 p-3 rounded-full bg-slate-950/70 hover:bg-purple-600 text-white border border-white/10 transition-all shadow-lg">
+                    <i class="fa-solid fa-chevron-left text-lg"></i>
+                </button>
+                <button id="btn-page-next" type="button"
+                        class="absolute right-3 top-1/2 -translate-y-1/2 p-3 rounded-full bg-slate-950/70 hover:bg-purple-600 text-white border border-white/10 transition-all shadow-lg">
+                    <i class="fa-solid fa-chevron-right text-lg"></i>
+                </button>
+            </div>
+
+            <div class="mt-4 flex items-center justify-center gap-4 text-xs text-slate-400 font-bold">
+                <span>Page <span id="current-page-num" class="text-white">1</span> of @Model.Pages.Count</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Cinematic 3D Short Section (If Available) -->
+    @if (!string.IsNullOrEmpty(Model.CinematicVideoUrl))
+    {
+        <div id="cinematic" class="max-w-4xl mx-auto px-4 mt-12">
+            <div
+                class="rounded-3xl border border-amber-500/30 bg-slate-900/80 backdrop-blur-xl p-6 shadow-2xl shadow-amber-950/20">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="flex items-center gap-2.5">
+                        <div
+                            class="w-8 h-8 rounded-xl bg-amber-500/20 border border-amber-500/40 text-amber-300 flex items-center justify-center font-bold text-sm">
+                            <i class="fa-solid fa-film"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-black text-white">3D Animated Cinematic Short</h3>
+                            <p class="text-xs text-slate-400">Produced with the Project Kongor Production Engine</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="rounded-2xl overflow-hidden bg-black aspect-video border border-slate-800">
+                    <video src="@Model.CinematicVideoUrl" controls poster="@Model.CoverImageUrl"
+                           class="w-full h-full object-contain"></video>
+                </div>
+            </div>
+        </div>
+    }
+
+    <!-- Bottom Credits & Private Rating Footer Card -->
+    <div class="max-w-4xl mx-auto px-4 mt-12">
+        <div class="rounded-3xl border border-slate-800 bg-slate-900/80 backdrop-blur-xl p-6 sm:p-8 shadow-xl">
+            <!-- Creator & Contributor Attribution -->
+            <div class="mb-8">
+                <div class="text-xs font-black uppercase tracking-wider text-purple-400 mb-3 flex items-center gap-2">
+                    <i class="fa-solid fa-pen-nib"></i> Production Credits & Creative Team
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+                    @if (Model.Credits.Count == 0)
+                    {
+                        <div class="col-span-full text-xs text-slate-500">Project Kongor Narrative Team</div>
+                    }
+                    else
+                    {
+                        @foreach (var credit in Model.Credits)
+                        {
+                            <div
+                                class="p-3.5 rounded-2xl bg-slate-950/60 border border-slate-800/80 flex items-center gap-3">
+                                <div
+                                    class="w-9 h-9 rounded-xl bg-purple-950/60 border border-purple-500/30 text-purple-300 flex items-center justify-center text-sm font-bold flex-shrink-0">
+                                    <i class="fa-solid fa-user-astronaut"></i>
+                                </div>
+                                <div class="min-w-0">
+                                    <div class="text-[10px] font-bold text-slate-400 uppercase">@credit.Role</div>
+                                    <div class="text-xs font-bold text-white truncate">
+                                        @if (credit.AccountID.HasValue && !string.IsNullOrEmpty(credit.AccountName))
+                                        {
+                                            <a href="/profile?name=@credit.AccountName"
+                                               class="hover:text-purple-300 transition-colors">
+                                                @credit.DisplayName
+                                            </a>
+                                        }
+                                        else
+                                        {
+                                            <span>@credit.DisplayName</span>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    }
+                </div>
+            </div>
+
+            <!-- Private Rating Widget -->
+            <div class="pt-6 border-t border-slate-800/80 flex flex-col sm:flex-row items-center justify-between gap-4">
+                <div>
+                    <h4 class="text-sm font-bold text-white flex items-center gap-2">
+                        <span>⭐</span> Rate this Storyline
+                    </h4>
+                    <p class="text-xs text-slate-400 mt-0.5">
+                        Your private rating helps our story & cinematic team craft future issues.
+                    </p>
+                </div>
+
+                @if (currentAccount == null)
+                {
+                    <div class="text-xs text-slate-400 bg-slate-950/60 px-4 py-2 rounded-xl border border-slate-800">
+                        <a href="/account/login" class="text-purple-400 hover:text-purple-300 font-bold">Log in</a> with
+                        your Project Kongor account to rate.
+                    </div>
+                }
+                else
+                {
+                    <div class="flex flex-col items-end gap-1.5">
+                        <div id="star-container" class="flex items-center gap-1 text-xl cursor-pointer"
+                             data-comic-id="@Model.ID" data-current-score="@(Model.UserScore ?? 0)">
+                            @for (var i = 1; i <= 5; i++)
+                            {
+                                var isFilled = Model.UserScore.HasValue && i <= Model.UserScore.Value;
+                                <i class="star-btn fa-solid fa-star transition-all duration-150 @(isFilled ? "text-amber-400 scale-110 drop-shadow-[0_0_8px_rgba(251,191,36,0.5)]" : "text-slate-700 hover:text-amber-300")"
+                                   data-value="@i"></i>
+                            }
+                        </div>
+                        <span id="rating-status-text" class="text-[11px] font-semibold text-slate-400">
+                            @(Model.UserScore.HasValue ? $"You rated this {Model.UserScore.Value} ★ (Click to change)" : "Click a star to submit your rating")
+                        </span>
+                    </div>
+                }
+            </div>
+
+            @if (isStaff && Model.StaffRatingMetrics != null)
+            {
+                <!-- Staff Internal Analytics Section -->
+                <div class="mt-6 pt-6 border-t border-purple-500/30 bg-purple-950/20 rounded-2xl p-4">
+                    <div class="text-xs font-black uppercase text-purple-300 mb-2 flex items-center gap-2">
+                        <i class="fa-solid fa-chart-simple"></i> Staff Internal Rating Analytics
+                    </div>
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 text-xs">
+                        <div class="bg-slate-900/80 p-3 rounded-xl border border-purple-500/20">
+                            <div class="text-slate-400 text-[10px] uppercase">Average Score</div>
+                            <div class="text-lg font-black text-amber-400">@Model.StaffRatingMetrics.AverageScore ★ /
+                                5.0
+                            </div>
+                        </div>
+                        <div class="bg-slate-900/80 p-3 rounded-xl border border-purple-500/20">
+                            <div class="text-slate-400 text-[10px] uppercase">Total User Votes</div>
+                            <div class="text-lg font-black text-white">@Model.StaffRatingMetrics.TotalRatings</div>
+                        </div>
+                        <div
+                            class="col-span-2 bg-slate-900/80 p-3 rounded-xl border border-purple-500/20 flex items-center gap-2">
+                            <div class="text-slate-400 text-[10px] uppercase mr-2">Distribution:</div>
+                            @foreach (var kvp in Model.StaffRatingMetrics.ScoreDistribution.OrderByDescending(k => k.Key))
+                            {
+                                <span class="px-2 py-0.5 rounded bg-slate-800 text-[11px] text-slate-300">
+                                    <strong>@kvp.Key ★:</strong> @kvp.Value
+                                </span>
+                            }
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+
+        <!-- Previous & Next Issue Nav -->
+        <div class="mt-8 flex items-center justify-between gap-4">
+            @if (prevIssue != null)
+            {
+                <a href="/lore/@prevIssue.Slug"
+                   class="px-5 py-3 rounded-2xl bg-slate-900/80 hover:bg-slate-800 border border-slate-700/60 text-xs font-bold text-slate-300 hover:text-white transition-all flex items-center gap-2">
+                    <i class="fa-solid fa-arrow-left"></i> Previous: #@prevIssue.IssueNumber @prevIssue.Title
+                </a>
+            }
+            else
+            {
+                <div></div>
+            }
+
+            @if (nextIssue != null)
+            {
+                <a href="/lore/@nextIssue.Slug"
+                   class="px-5 py-3 rounded-2xl bg-purple-600/90 hover:bg-purple-500 text-white text-xs font-bold transition-all shadow-lg shadow-purple-900/40 flex items-center gap-2">
+                    Next: #@nextIssue.IssueNumber @nextIssue.Title <i class="fa-solid fa-arrow-right"></i>
+                </a>
+            }
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const pages = @Html.Raw(JsonSerializer.Serialize(Model.Pages.Select(p => p.ImageUrl).ToList()));
+        let currentPageIndex = 0;
+
+        const btnVertical = document.getElementById('btn-mode-vertical');
+        const btnSingle = document.getElementById('btn-mode-single');
+        const viewVertical = document.getElementById('view-vertical');
+        const viewSingle = document.getElementById('view-single');
+        const singlePageImg = document.getElementById('single-page-img');
+        const currentPageNum = document.getElementById('current-page-num');
+        const btnPagePrev = document.getElementById('btn-page-prev');
+        const btnPageNext = document.getElementById('btn-page-next');
+        const btnFullscreen = document.getElementById('btn-fullscreen');
+
+        // Mode Switching
+        btnVertical.addEventListener('click', () => {
+            viewVertical.classList.remove('hidden');
+            viewSingle.classList.add('hidden');
+            btnVertical.classList.add('bg-purple-600', 'text-white');
+            btnVertical.classList.remove('text-slate-400');
+            btnSingle.classList.remove('bg-purple-600', 'text-white');
+            btnSingle.classList.add('text-slate-400');
+        });
+
+        btnSingle.addEventListener('click', () => {
+            viewVertical.classList.add('hidden');
+            viewSingle.classList.remove('hidden');
+            btnSingle.classList.add('bg-purple-600', 'text-white');
+            btnSingle.classList.remove('text-slate-400');
+            btnVertical.classList.remove('bg-purple-600', 'text-white');
+            btnVertical.classList.add('text-slate-400');
+            updateSinglePageView();
+        });
+
+        function updateSinglePageView() {
+            if (pages.length === 0) return;
+            singlePageImg.src = pages[currentPageIndex];
+            currentPageNum.textContent = (currentPageIndex + 1).toString();
+            btnPagePrev.disabled = currentPageIndex === 0;
+            btnPageNext.disabled = currentPageIndex === pages.length - 1;
+        }
+
+        btnPagePrev?.addEventListener('click', () => {
+            if (currentPageIndex > 0) {
+                currentPageIndex--;
+                updateSinglePageView();
+                window.scrollTo({top: viewSingle.offsetTop - 80, behavior: 'smooth'});
+            }
+        });
+
+        btnPageNext?.addEventListener('click', () => {
+            if (currentPageIndex < pages.length - 1) {
+                currentPageIndex++;
+                updateSinglePageView();
+                window.scrollTo({top: viewSingle.offsetTop - 80, behavior: 'smooth'});
+            }
+        });
+
+        // Keyboard hotkeys
+        document.addEventListener('keydown', (e) => {
+            if (!viewSingle.classList.contains('hidden')) {
+                if (e.key === 'ArrowRight' || e.key === 'j' || e.key === 'd') {
+                    btnPageNext?.click();
+                } else if (e.key === 'ArrowLeft' || e.key === 'k' || e.key === 'a') {
+                    btnPagePrev?.click();
+                }
+            }
+        });
+
+        // Fullscreen
+        btnFullscreen.addEventListener('click', () => {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(() => {
+                });
+            } else {
+                document.exitFullscreen().catch(() => {
+                });
+            }
+        });
+
+        // Rating Widget Interactivity
+        const starContainer = document.getElementById('star-container');
+        const ratingStatusText = document.getElementById('rating-status-text');
+        if (starContainer) {
+            const stars = starContainer.querySelectorAll('.star-btn');
+            const comicId = starContainer.getAttribute('data-comic-id');
+            let userScore = parseInt(starContainer.getAttribute('data-current-score') || '0', 10);
+
+            stars.forEach(star => {
+                const val = parseInt(star.getAttribute('data-value'), 10);
+
+                star.addEventListener('mouseenter', () => {
+                    stars.forEach(s => {
+                        const sVal = parseInt(s.getAttribute('data-value'), 10);
+                        if (sVal <= val) {
+                            s.classList.add('text-amber-300', 'scale-110');
+                            s.classList.remove('text-slate-700');
+                        } else {
+                            s.classList.remove('text-amber-300', 'text-amber-400', 'scale-110');
+                            s.classList.add('text-slate-700');
+                        }
+                    });
+                });
+
+                star.addEventListener('mouseleave', () => {
+                    renderStars(userScore);
+                });
+
+                star.addEventListener('click', async () => {
+                    try {
+                        ratingStatusText.textContent = "Saving your rating...";
+                        const resp = await fetch(`/lore/comics/${comicId}/rate`, {
+                            method: 'POST',
+                            headers: {'Content-Type': 'application/json'},
+                            body: JSON.stringify({score: val})
+                        });
+                        const data = await resp.json();
+                        if (resp.ok && data.success) {
+                            userScore = val;
+                            starContainer.setAttribute('data-current-score', userScore.toString());
+                            renderStars(userScore);
+                            ratingStatusText.textContent = `You rated this ${userScore} ★ (Click to change)`;
+                        } else {
+                            ratingStatusText.textContent = data.message || "Failed to save rating.";
+                            renderStars(userScore);
+                        }
+                    } catch (err) {
+                        ratingStatusText.textContent = "Network error saving rating.";
+                        renderStars(userScore);
+                    }
+                });
+            });
+
+            function renderStars(score) {
+                stars.forEach(s => {
+                    const sVal = parseInt(s.getAttribute('data-value'), 10);
+                    if (score > 0 && sVal <= score) {
+                        s.classList.add('text-amber-400', 'scale-110', 'drop-shadow-[0_0_8px_rgba(251,191,36,0.5)]');
+                        s.classList.remove('text-slate-700', 'text-amber-300');
+                    } else {
+                        s.classList.remove('text-amber-400', 'text-amber-300', 'scale-110', 'drop-shadow-[0_0_8px_rgba(251,191,36,0.5)]');
+                        s.classList.add('text-slate-700');
+                    }
+                });
+            }
+        }
+    });
+</script>

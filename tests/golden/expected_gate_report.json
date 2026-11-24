@@ -1,0 +1,28 @@
+{
+    "schemaVersion":  "1.0.0",
+    "overallStatus":  "PASS",
+    "exitCode":  0,
+    "T1":  {
+               "status":  "PASS",
+               "kbNotesMin":  9,
+               "mcpIssuesMin":  239
+           },
+    "T2":  {
+               "status":  "PASS",
+               "contractsPassed":  50,
+               "contractsFailed":  0
+           },
+    "T3":  {
+               "status":  "PASS",
+               "xmlFilesScanned":  13,
+               "unknownCvarViolations":  0
+           },
+    "T4":  {
+               "status":  "PASS",
+               "vfsConfigPresent":  true
+           },
+    "T5":  {
+               "status":  "PASS",
+               "trackedPairsCompared":  294
+           }
+}

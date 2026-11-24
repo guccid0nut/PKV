@@ -1,0 +1,77 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# SPDX-FileCopyrightText: 2026 guccidonut and Project KONGOR V Contributors
+# Project KONGOR V (https://github.com/guccidonut/PKV)
+#
+# Turnkey Community P2P Relay Stack (coturn STUN/TURN + rathole UDP Tunnel)
+# Pierces Carrier-Grade NAT (CGNAT / RFC 6598), Symmetric NAT, and UDP-blocked networks
+# for WILLOWMAKER DirectPlay hosts alongside COMPEL's existing UDPForwarder proxy.
+#
+# Usage:
+#   1. Export secrets (NEVER commit real secrets to Git):
+#        $env:KONGOR_TURN_SECRET = "<32-byte-random-hex>"
+#        $env:KONGOR_RATHOLE_TOKEN = "<32-byte-random-hex>"
+#        $env:KONGOR_RELAY_EXTERNAL_IP = "<public-vps-ipv4>"
+#   2. Render rathole-server.toml with KONGOR_RATHOLE_TOKEN substituted, or supply a local override mount.
+#   3. Start stack:
+#        docker compose -f infra/docker/docker-compose.p2p-relay.yml up -d
+
+services:
+  coturn:
+    image: coturn/coturn:4.6.3-alpine
+    container_name: kongor-p2p-coturn
+    restart: unless-stopped
+    read_only: true
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    ports:
+      - "${KONGOR_TURN_UDP_PORT:-3478}:3478/udp"
+      - "${KONGOR_TURN_TCP_PORT:-3478}:3478/tcp"
+      - "${KONGOR_TURN_TLS_PORT:-5349}:5349/tcp"
+      - "${KONGOR_TURN_RELAY_MIN_PORT:-49152}-${KONGOR_TURN_RELAY_MAX_PORT:-49252}:49152-49252/udp"
+    volumes:
+      - ../p2p/coturn.conf:/etc/coturn/turnserver.conf:ro
+    command:
+      - "-c"
+      - "/etc/coturn/turnserver.conf"
+      - "--use-auth-secret"
+      - "--static-auth-secret=${KONGOR_TURN_SECRET:?Set KONGOR_TURN_SECRET before starting coturn}"
+      - "--realm=${KONGOR_TURN_REALM:-p2p.kongor.local}"
+      - "--external-ip=${KONGOR_RELAY_EXTERNAL_IP:-}"
+    tmpfs:
+      - /var/tmp:rw,noexec,nosuid,size=16m
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  rathole-server:
+    image: rapiz1/rathole:v0.5.0
+    container_name: kongor-p2p-rathole-server
+    restart: unless-stopped
+    read_only: true
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    ports:
+      - "${KONGOR_RATHOLE_CONTROL_PORT:-2333}:2333/tcp"
+      - "${KONGOR_RATHOLE_PUBLIC_UDP_PORT:-20550}:20550/udp"
+      - "${KONGOR_RATHOLE_PUBLIC_VOICE_PORT:-21050}:21050/udp"
+    environment:
+      - RUST_LOG=${KONGOR_RATHOLE_LOG_LEVEL:-info}
+      - KONGOR_RATHOLE_TOKEN=${KONGOR_RATHOLE_TOKEN:?Set KONGOR_RATHOLE_TOKEN before starting rathole-server}
+    volumes:
+      # Before production start, substitute ${KONGOR_RATHOLE_TOKEN} into a runtime-only server.toml
+      # (or set KONGOR_RATHOLE_SERVER_CONFIG to your rendered untracked file path).
+      - "${KONGOR_RATHOLE_SERVER_CONFIG:-../p2p/rathole-server.toml}:/app/server.toml:ro"
+    command:
+      - "--server"
+      - "/app/server.toml"
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"

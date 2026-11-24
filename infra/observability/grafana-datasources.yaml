@@ -1,0 +1,70 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# SPDX-FileCopyrightText: 2026 guccidonut and Project KONGOR V Contributors
+# Project KONGOR V (https://github.com/guccidonut/PKV)
+# Auto-provisioned Grafana datasources linking Metrics (Mimir), Logs (Loki),
+# Traces (Tempo), and Continuous Profiles (Pyroscope).
+
+apiVersion: 1
+
+datasources:
+  - name: Mimir
+    uid: kongor-mimir
+    type: prometheus
+    access: proxy
+    url: http://mimir:9009/prometheus
+    isDefault: true
+    editable: false
+    jsonData:
+      httpMethod: POST
+      exemplarTraceIdDestinations:
+        - name: trace_id
+          datasourceUid: kongor-tempo
+
+  - name: Loki
+    uid: kongor-loki
+    type: loki
+    access: proxy
+    url: http://loki:3100
+    editable: false
+    jsonData:
+      derivedFields:
+        - datasourceUid: kongor-tempo
+          matcherRegex: "(?:trace_id|traceId)[=:\"]+([0-9a-fA-F]{16,32})"
+          name: TraceID
+          url: "$${__value.raw}"
+
+  - name: Tempo
+    uid: kongor-tempo
+    type: tempo
+    access: proxy
+    url: http://tempo:3200
+    editable: false
+    jsonData:
+      httpMethod: GET
+      tracesToLogsV2:
+        datasourceUid: kongor-loki
+        spanStartTimeShift: "-5m"
+        spanEndTimeShift: "5m"
+        filterByTraceID: true
+        filterBySpanID: false
+      tracesToMetrics:
+        datasourceUid: kongor-mimir
+        spanStartTimeShift: "-5m"
+        spanEndTimeShift: "5m"
+      tracesToProfiles:
+        datasourceUid: kongor-pyroscope
+        tags:
+          - key: service.name
+            value: service_name
+        profileTypeId: process_cpu:cpu:nanoseconds:cpu:nanoseconds
+      serviceMap:
+        datasourceUid: kongor-mimir
+      nodeGraph:
+        enabled: true
+
+  - name: Pyroscope
+    uid: kongor-pyroscope
+    type: grafana-pyroscope-datasource
+    access: proxy
+    url: http://pyroscope:4040
+    editable: false

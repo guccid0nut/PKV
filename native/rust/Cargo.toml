@@ -1,0 +1,29 @@
+# SPDX-License-Identifier: MPL-2.0
+# SPDX-FileCopyrightText: 2026 guccidonut and Project KONGOR V Contributors
+# This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
+# If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
+
+[workspace]
+resolver = "2"
+members = [
+    "kongor_parsers",
+    "kongor_parsers_ffi",
+    "kongor_xdp_aya",
+]
+# The Linux kernel BPF binary crate depends on `aya-ebpf` and requires `bpf-linker` on Linux;
+# keep it excluded from the offline host workspace so `cargo build`/`cargo test` succeed with
+# zero external crate dependencies on Windows & Linux hosts.
+exclude = [
+    "kongor_xdp_aya/ebpf",
+]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+license = "MPL-2.0"
+rust-version = "1.78.0"
+
+[profile.release]
+opt-level = 3
+lto = false
+codegen-units = 16

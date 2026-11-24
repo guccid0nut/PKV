@@ -1,0 +1,171 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1150 780" width="100%" height="100%" style="background-color: #0d1117; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#161b22"/>
+      <stop offset="100%" stop-color="#0d1117"/>
+    </linearGradient>
+    <marker id="arrowBlue" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 8 5 L 0 9 z" fill="#58a6ff"/>
+    </marker>
+    <marker id="arrowGreen" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 8 5 L 0 9 z" fill="#3fb950"/>
+    </marker>
+    <marker id="arrowPurple" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 8 5 L 0 9 z" fill="#bc8cff"/>
+    </marker>
+    <marker id="arrowOrange" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 8 5 L 0 9 z" fill="#d29922"/>
+    </marker>
+    <filter id="shadow" x="-5%" y="-5%" width="110%" height="110%">
+      <feDropShadow dx="0" dy="4" stdDeviation="5" flood-color="#000000" flood-opacity="0.5"/>
+    </filter>
+  </defs>
+
+  <rect width="100%" height="100%" fill="url(#bgGrad)" rx="12"/>
+  <rect width="100%" height="100%" fill="none" stroke="#30363d" stroke-width="1.5" rx="12"/>
+
+  <!-- TITLE -->
+  <text x="575" y="40" text-anchor="middle" fill="#f0f6fc" font-size="18" font-weight="700">🖥️ NEXUS Control Panel GUI Architecture &amp; Data Flows</text>
+
+  <!-- 1. UI LAYER (AVALONIA 11) -->
+  <g filter="url(#shadow)">
+    <rect x="40" y="65" width="1070" height="185" rx="10" fill="#161b22" stroke="#1f6feb" stroke-width="1.5"/>
+    <rect x="40" y="65" width="1070" height="30" rx="10" fill="#1f6feb" fill-opacity="0.25"/>
+    <text x="60" y="86" fill="#58a6ff" font-size="13" font-weight="700">🖥️ Control Panel UI Layer (Avalonia 11 XAML &amp; CommunityToolkit MVVM)</text>
+
+    <!-- UI Cards -->
+    <rect x="60" y="105" width="165" height="125" rx="8" fill="#21262d" stroke="#388bfd" stroke-width="1.2"/>
+    <text x="142" y="130" text-anchor="middle" fill="#f0f6fc" font-size="12" font-weight="700">📊 DashboardView</text>
+    <text x="142" y="152" text-anchor="middle" fill="#8b949e" font-size="11">Cluster Lifecycle</text>
+    <text x="142" y="172" text-anchor="middle" fill="#58a6ff" font-size="10">1-Click Start / Stop</text>
+    <text x="142" y="192" text-anchor="middle" fill="#8b949e" font-size="10">Probes &amp; Telemetry</text>
+
+    <rect x="240" y="105" width="165" height="125" rx="8" fill="#21262d" stroke="#388bfd" stroke-width="1.2"/>
+    <text x="322" y="130" text-anchor="middle" fill="#f0f6fc" font-size="12" font-weight="700">🌐 GameServersView</text>
+    <text x="322" y="152" text-anchor="middle" fill="#8b949e" font-size="11">COMPEL Fleet Grid</text>
+    <text x="322" y="172" text-anchor="middle" fill="#58a6ff" font-size="10">Match Room Browser</text>
+    <text x="322" y="192" text-anchor="middle" fill="#8b949e" font-size="10">Live Latency &amp; Filter</text>
+
+    <rect x="420" y="105" width="165" height="125" rx="8" fill="#21262d" stroke="#388bfd" stroke-width="1.2"/>
+    <text x="502" y="130" text-anchor="middle" fill="#f0f6fc" font-size="12" font-weight="700">📜 LiveLogsView</text>
+    <text x="502" y="152" text-anchor="middle" fill="#8b949e" font-size="11">Consolidated Stream</text>
+    <text x="502" y="172" text-anchor="middle" fill="#58a6ff" font-size="10">Regex Path Masking</text>
+    <text x="502" y="192" text-anchor="middle" fill="#8b949e" font-size="10">Level Filtering &amp; Search</text>
+
+    <rect x="600" y="105" width="165" height="125" rx="8" fill="#21262d" stroke="#388bfd" stroke-width="1.2"/>
+    <text x="682" y="130" text-anchor="middle" fill="#f0f6fc" font-size="12" font-weight="700">🔒 SecretsConfigView</text>
+    <text x="682" y="152" text-anchor="middle" fill="#8b949e" font-size="11">9-Section Config</text>
+    <text x="682" y="172" text-anchor="middle" fill="#58a6ff" font-size="10">User Secrets Vault</text>
+    <text x="682" y="192" text-anchor="middle" fill="#8b949e" font-size="10">1-Click Recommended</text>
+
+    <rect x="780" y="105" width="165" height="125" rx="8" fill="#21262d" stroke="#388bfd" stroke-width="1.2"/>
+    <text x="862" y="130" text-anchor="middle" fill="#f0f6fc" font-size="12" font-weight="700">👥 UsersView</text>
+    <text x="862" y="152" text-anchor="middle" fill="#8b949e" font-size="11">Merrick Account Admin</text>
+    <text x="862" y="172" text-anchor="middle" fill="#58a6ff" font-size="10">SRP Salt / Verifier</text>
+    <text x="862" y="192" text-anchor="middle" fill="#8b949e" font-size="10">Gold / Silver Economy</text>
+
+    <rect x="960" y="105" width="130" height="125" rx="8" fill="#21262d" stroke="#388bfd" stroke-width="1.2"/>
+    <text x="1025" y="130" text-anchor="middle" fill="#f0f6fc" font-size="12" font-weight="700">🦸 3D Viewport</text>
+    <text x="1025" y="152" text-anchor="middle" fill="#8b949e" font-size="11">WebView2 / Three.js</text>
+    <text x="1025" y="172" text-anchor="middle" fill="#58a6ff" font-size="10">360° Hero Orbit</text>
+    <text x="1025" y="192" text-anchor="middle" fill="#8b949e" font-size="10">Empath Audio &amp; SFX</text>
+  </g>
+
+  <!-- 2. CONTROL PANEL BACKEND SERVICES -->
+  <g filter="url(#shadow)">
+    <rect x="40" y="290" width="1070" height="195" rx="10" fill="#161b22" stroke="#8b949e" stroke-width="1.5"/>
+    <rect x="40" y="290" width="1070" height="30" rx="10" fill="#8b949e" fill-opacity="0.25"/>
+    <text x="60" y="311" fill="#c9d1d9" font-size="13" font-weight="700">⚙️ Control Panel Core Services &amp; Logic Engine</text>
+
+    <!-- Service Cards -->
+    <rect x="60" y="335" width="165" height="130" rx="8" fill="#21262d" stroke="#8b949e" stroke-width="1.2"/>
+    <text x="142" y="360" text-anchor="middle" fill="#f0f6fc" font-size="11" font-weight="700">NexusOrchestrator</text>
+    <text x="142" y="380" text-anchor="middle" fill="#8b949e" font-size="10">Process Tree Mgmt</text>
+    <text x="142" y="400" text-anchor="middle" fill="#79c0ff" font-size="10">Aspire CLI Spawning</text>
+    <text x="142" y="420" text-anchor="middle" fill="#8b949e" font-size="10">Graceful Shutdown</text>
+
+    <rect x="240" y="335" width="165" height="130" rx="8" fill="#21262d" stroke="#8b949e" stroke-width="1.2"/>
+    <text x="322" y="360" text-anchor="middle" fill="#f0f6fc" font-size="11" font-weight="700">GameServerFleetService</text>
+    <text x="322" y="380" text-anchor="middle" fill="#8b949e" font-size="10">COMPEL REST Client</text>
+    <text x="322" y="400" text-anchor="middle" fill="#79c0ff" font-size="10">/ping, /status, /sync</text>
+    <text x="322" y="420" text-anchor="middle" fill="#8b949e" font-size="10">Mass Fleet Control</text>
+
+    <rect x="420" y="335" width="165" height="130" rx="8" fill="#21262d" stroke="#8b949e" stroke-width="1.2"/>
+    <text x="502" y="360" text-anchor="middle" fill="#f0f6fc" font-size="11" font-weight="700">LiveLogHubService</text>
+    <text x="502" y="380" text-anchor="middle" fill="#8b949e" font-size="10">Multi-Channel Pipe</text>
+    <text x="502" y="400" text-anchor="middle" fill="#79c0ff" font-size="10">Privacy Regex Sanitizer</text>
+    <text x="502" y="420" text-anchor="middle" fill="#8b949e" font-size="10">Stdout/Stderr Stream</text>
+
+    <rect x="600" y="335" width="165" height="130" rx="8" fill="#21262d" stroke="#8b949e" stroke-width="1.2"/>
+    <text x="682" y="360" text-anchor="middle" fill="#f0f6fc" font-size="11" font-weight="700">SecretsManagerService</text>
+    <text x="682" y="380" text-anchor="middle" fill="#8b949e" font-size="10">UserSecrets JSON I/O</text>
+    <text x="682" y="400" text-anchor="middle" fill="#79c0ff" font-size="10">Key Alias Resolver</text>
+    <text x="682" y="420" text-anchor="middle" fill="#8b949e" font-size="10">AES Vault Sync</text>
+
+    <rect x="780" y="335" width="165" height="130" rx="8" fill="#21262d" stroke="#8b949e" stroke-width="1.2"/>
+    <text x="862" y="360" text-anchor="middle" fill="#f0f6fc" font-size="11" font-weight="700">UserManagementService</text>
+    <text x="862" y="380" text-anchor="middle" fill="#8b949e" font-size="10">EF Core MerrickContext</text>
+    <text x="862" y="400" text-anchor="middle" fill="#79c0ff" font-size="10">SRP Math / Hashes</text>
+    <text x="862" y="420" text-anchor="middle" fill="#8b949e" font-size="10">Rankings &amp; Accounts</text>
+
+    <rect x="960" y="335" width="130" height="130" rx="8" fill="#21262d" stroke="#8b949e" stroke-width="1.2"/>
+    <text x="1025" y="360" text-anchor="middle" fill="#f0f6fc" font-size="11" font-weight="700">Asset &amp; Health</text>
+    <text x="1025" y="380" text-anchor="middle" fill="#8b949e" font-size="10">11-Port Scanner</text>
+    <text x="1025" y="400" text-anchor="middle" fill="#79c0ff" font-size="10">S2Z 3D Extractor</text>
+    <text x="1025" y="420" text-anchor="middle" fill="#8b949e" font-size="10">Docker &amp; DB Probes</text>
+  </g>
+
+  <!-- 3. EXTERNAL NODES & CLOUD ECOSYSTEM -->
+  <g filter="url(#shadow)">
+    <rect x="40" y="525" width="1070" height="215" rx="10" fill="#161b22" stroke="#238636" stroke-width="1.5"/>
+    <rect x="40" y="525" width="1070" height="30" rx="10" fill="#238636" fill-opacity="0.25"/>
+    <text x="60" y="546" fill="#3fb950" font-size="13" font-weight="700">☁️ External Infrastructure, Microservices &amp; Fleet Nodes</text>
+
+    <!-- External Cards -->
+    <rect x="60" y="570" width="190" height="145" rx="8" fill="#21262d" stroke="#238636" stroke-width="1.2"/>
+    <text x="155" y="598" text-anchor="middle" fill="#f0f6fc" font-size="12" font-weight="700">⚙️ .NET Aspire Host</text>
+    <text x="155" y="620" text-anchor="middle" fill="#8b949e" font-size="11">Port 5550 (AppHost)</text>
+    <text x="155" y="642" text-anchor="middle" fill="#7ee787" font-size="10">Microservice Orchestrator</text>
+    <text x="155" y="662" text-anchor="middle" fill="#8b949e" font-size="10">OTLP Traces &amp; Metrics</text>
+
+    <rect x="270" y="570" width="190" height="145" rx="8" fill="#21262d" stroke="#d29922" stroke-width="1.2"/>
+    <text x="365" y="598" text-anchor="middle" fill="#f0f6fc" font-size="12" font-weight="700">🛡️ Remote COMPEL Nodes</text>
+    <text x="365" y="620" text-anchor="middle" fill="#8b949e" font-size="11">Control Plane Port 11234</text>
+    <text x="365" y="642" text-anchor="middle" fill="#f0883e" font-size="10">Dedicated Game Servers</text>
+    <text x="365" y="662" text-anchor="middle" fill="#8b949e" font-size="10">UDP 21235+ Game Relay</text>
+
+    <rect x="480" y="570" width="190" height="145" rx="8" fill="#21262d" stroke="#238636" stroke-width="1.2"/>
+    <text x="575" y="598" text-anchor="middle" fill="#f0f6fc" font-size="12" font-weight="700">🏛️ KONGOR Master Server</text>
+    <text x="575" y="620" text-anchor="middle" fill="#8b949e" font-size="11">Port 55555 (ASP.NET Core)</text>
+    <text x="575" y="642" text-anchor="middle" fill="#7ee787" font-size="10">SRP Auth &amp; Stats API</text>
+    <text x="575" y="662" text-anchor="middle" fill="#8b949e" font-size="10">Chat &amp; Presence Hubs</text>
+
+    <rect x="690" y="570" width="190" height="145" rx="8" fill="#21262d" stroke="#a371f7" stroke-width="1.2"/>
+    <text x="785" y="598" text-anchor="middle" fill="#f0f6fc" font-size="12" font-weight="700">🗄️ MERRICK Database</text>
+    <text x="785" y="620" text-anchor="middle" fill="#8b949e" font-size="11">Postgres / Supabase / SQL</text>
+    <text x="785" y="642" text-anchor="middle" fill="#d2a8ff" font-size="10">User &amp; Match State</text>
+    <text x="785" y="662" text-anchor="middle" fill="#8b949e" font-size="10">Economy &amp; Inventory</text>
+
+    <rect x="900" y="570" width="190" height="145" rx="8" fill="#21262d" stroke="#a371f7" stroke-width="1.2"/>
+    <text x="995" y="598" text-anchor="middle" fill="#f0f6fc" font-size="12" font-weight="700">🔒 User Secrets Vault</text>
+    <text x="995" y="620" text-anchor="middle" fill="#8b949e" font-size="11">%APPDATA%/UserSecrets</text>
+    <text x="995" y="642" text-anchor="middle" fill="#d2a8ff" font-size="10">00005072-6f6a-6563-74...</text>
+    <text x="995" y="662" text-anchor="middle" fill="#8b949e" font-size="10">API Keys &amp; DB Passwords</text>
+  </g>
+
+  <!-- CONNECTING ARROWS -->
+  <!-- UI to Services -->
+  <line x1="142" y1="230" x2="142" y2="335" stroke="#58a6ff" stroke-width="1.5" marker-end="url(#arrowBlue)"/>
+  <line x1="322" y1="230" x2="322" y2="335" stroke="#58a6ff" stroke-width="1.5" marker-end="url(#arrowBlue)"/>
+  <line x1="502" y1="230" x2="502" y2="335" stroke="#58a6ff" stroke-width="1.5" marker-end="url(#arrowBlue)"/>
+  <line x1="682" y1="230" x2="682" y2="335" stroke="#58a6ff" stroke-width="1.5" marker-end="url(#arrowBlue)"/>
+  <line x1="862" y1="230" x2="862" y2="335" stroke="#58a6ff" stroke-width="1.5" marker-end="url(#arrowBlue)"/>
+  <line x1="1025" y1="230" x2="1025" y2="335" stroke="#58a6ff" stroke-width="1.5" marker-end="url(#arrowBlue)"/>
+
+  <!-- Services to External -->
+  <line x1="142" y1="465" x2="155" y2="570" stroke="#3fb950" stroke-width="1.5" marker-end="url(#arrowGreen)"/>
+  <line x1="322" y1="465" x2="365" y2="570" stroke="#d29922" stroke-width="1.5" marker-end="url(#arrowOrange)"/>
+  <line x1="502" y1="465" x2="575" y2="570" stroke="#3fb950" stroke-width="1.5" marker-end="url(#arrowGreen)"/>
+  <line x1="682" y1="465" x2="995" y2="570" stroke="#bc8cff" stroke-width="1.5" marker-end="url(#arrowPurple)"/>
+  <line x1="862" y1="465" x2="785" y2="570" stroke="#bc8cff" stroke-width="1.5" marker-end="url(#arrowPurple)"/>
+</svg>

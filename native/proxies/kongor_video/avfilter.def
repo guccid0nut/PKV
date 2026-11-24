@@ -1,0 +1,3 @@
+LIBRARY avfilter-x64-7
+EXPORTS
+    avfilter_register_all

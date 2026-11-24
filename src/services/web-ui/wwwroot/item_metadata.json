@@ -1,0 +1,3694 @@
+{
+  "runesoftheblight": {
+    "name": "Runes of the Blight",
+    "cost": "90",
+    "description": "",
+    "flavor": "",
+    "icon": "/images/items/runesoftheblight.png",
+    "components": [],
+    "upgrade": "Basic consumable starting item."
+  },
+  "item_runesoftheblight": {
+    "name": "Runes of the Blight",
+    "cost": "90",
+    "description": "",
+    "flavor": "",
+    "icon": "/images/items/runesoftheblight.png",
+    "components": [],
+    "upgrade": "Basic consumable starting item."
+  },
+  "blightstones": {
+    "name": "Runes of the Blight",
+    "cost": "90",
+    "description": "",
+    "flavor": "",
+    "icon": "/images/items/runesoftheblight.png",
+    "components": [],
+    "upgrade": "Basic consumable starting item."
+  },
+  "flamingeye": {
+    "name": "Ward of Sight",
+    "cost": "100",
+    "description": "",
+    "flavor": "",
+    "icon": "/images/items/flamingeye.png",
+    "components": [],
+    "upgrade": ""
+  },
+  "item_flamingeye": {
+    "name": "Ward of Sight",
+    "cost": "100",
+    "description": "",
+    "flavor": "",
+    "icon": "/images/items/flamingeye.png",
+    "components": [],
+    "upgrade": ""
+  },
+  "wardofsight": {
+    "name": "Ward of Sight",
+    "cost": "100",
+    "description": "",
+    "flavor": "",
+    "icon": "/images/items/flamingeye.png",
+    "components": [],
+    "upgrade": ""
+  },
+  "item_wardofsight": {
+    "name": "Ward of Sight",
+    "cost": "100",
+    "description": "",
+    "flavor": "",
+    "icon": "/images/items/flamingeye.png",
+    "components": [],
+    "upgrade": ""
+  },
+  "refreshingornament": {
+    "name": "Refreshing Ornament",
+    "cost": "550",
+    "description": "",
+    "flavor": "",
+    "icon": "/images/items/refreshingornament.png",
+    "components": [],
+    "upgrade": ""
+  },
+  "item_refreshingornament": {
+    "name": "Refreshing Ornament",
+    "cost": "550",
+    "description": "",
+    "flavor": "",
+    "icon": "/images/items/refreshingornament.png",
+    "components": [],
+    "upgrade": ""
+  },
+  "goldenapple": {
+    "name": "Golden Apple",
+    "cost": "90",
+    "description": "",
+    "flavor": "",
+    "icon": "/images/items/goldenapple.png",
+    "components": [],
+    "upgrade": ""
+  },
+  "item_goldenapple": {
+    "name": "Golden Apple",
+    "cost": "90",
+    "description": "",
+    "flavor": "",
+    "icon": "/images/items/goldenapple.png",
+    "components": [],
+    "upgrade": ""
+  },
+  "somazssynchronizer": {
+    "name": "Orb of Zamos",
+    "cost": "100",
+    "description": "",
+    "flavor": "",
+    "icon": "/images/items/orb_of_zamos.png",
+    "components": [],
+    "upgrade": ""
+  },
+  "item_somazssynchronizer": {
+    "name": "Orb of Zamos",
+    "cost": "100",
+    "description": "",
+    "flavor": "",
+    "icon": "/images/items/orb_of_zamos.png",
+    "components": [],
+    "upgrade": ""
+  },
+  "orbofzamos": {
+    "name": "Orb of Zamos",
+    "cost": "100",
+    "description": "",
+    "flavor": "",
+    "icon": "/images/items/orb_of_zamos.png",
+    "components": [],
+    "upgrade": ""
+  },
+  "orb_of_zamos": {
+    "name": "Orb of Zamos",
+    "cost": "100",
+    "description": "",
+    "flavor": "",
+    "icon": "/images/items/orb_of_zamos.png",
+    "components": [],
+    "upgrade": ""
+  },
+  "manapotion": {
+    "name": "Mana Potion",
+    "cost": "50",
+    "description": "",
+    "flavor": "",
+    "icon": "/images/items/manapotion.png",
+    "components": [],
+    "upgrade": ""
+  },
+  "item_manapotion": {
+    "name": "Mana Potion",
+    "cost": "50",
+    "description": "",
+    "flavor": "",
+    "icon": "/images/items/manapotion.png",
+    "components": [],
+    "upgrade": ""
+  },
+  "gravelocket": {
+    "name": "Grave Locket",
+    "cost": "735",
+    "description": "",
+    "flavor": "",
+    "icon": "/images/items/gravelocket.png",
+    "components": [
+      {
+        "name": "Minor Totem",
+        "cost": "50",
+        "icon": "minortotem"
+      },
+      {
+        "name": "Pretender's Crown",
+        "cost": "165",
+        "icon": "pretenderscrown"
+      },
+      {
+        "name": "Pretender's Crown",
+        "cost": "165",
+        "icon": "pretenderscrown"
+      },
+      {
+        "name": "Recipe",
+        "cost": "355",
+        "icon": "recipe"
+      }
+    ],
+    "upgrade": ""
+  },
+  "item_gravelocket": {
+    "name": "Grave Locket",
+    "cost": "735",
+    "description": "",
+    "flavor": "",
+    "icon": "/images/items/gravelocket.png",
+    "components": [
+      {
+        "name": "Minor Totem",
+        "cost": "50",
+        "icon": "minortotem"
+      },
+      {
+        "name": "Pretender's Crown",
+        "cost": "165",
+        "icon": "pretenderscrown"
+      },
+      {
+        "name": "Pretender's Crown",
+        "cost": "165",
+        "icon": "pretenderscrown"
+      },
+      {
+        "name": "Recipe",
+        "cost": "355",
+        "icon": "recipe"
+      }
+    ],
+    "upgrade": ""
+  },
+  "platedgreaves": {
+    "name": "Plated Greaves",
+    "cost": "1350",
+    "description": "",
+    "flavor": "",
+    "icon": "/images/items/platedgreaves.png",
+    "components": [
+      {
+        "name": "Marchers",
+        "cost": "500",
+        "icon": "marchers"
+      },
+      {
+        "name": "Chainmail",
+        "cost": "550",
+        "icon": "chainmail"
+      },
+      {
+        "name": "Recipe",
+        "cost": "300",
+        "icon": "recipe"
+      }
+    ],
+    "upgrade": ""
+  },
+  "item_platedgreaves": {
+    "name": "Plated Greaves",
+    "cost": "1350",
+    "description": "",
+    "flavor": "",
+    "icon": "/images/items/platedgreaves.png",
+    "components": [
+      {
+        "name": "Marchers",
+        "cost": "500",
+        "icon": "marchers"
+      },
+      {
+        "name": "Chainmail",
+        "cost": "550",
+        "icon": "chainmail"
+      },
+      {
+        "name": "Recipe",
+        "cost": "300",
+        "icon": "recipe"
+      }
+    ],
+    "upgrade": ""
+  },
+  "bloodchalice": {
+    "name": "Blood Chalice",
+    "cost": "625",
+    "description": "",
+    "flavor": "",
+    "icon": "/images/items/bloodchalice.png",
+    "components": [
+      {
+        "name": "Mark of the Novice",
+        "cost": "150",
+        "icon": "markofthenovice"
+      },
+      {
+        "name": "Scarab",
+        "cost": "325",
+        "icon": "scarab"
+      },
+      {
+        "name": "Recipe",
+        "cost": "150",
+        "icon": "recipe"
+      }
+    ],
+    "upgrade": ""
+  },
+  "item_bloodchalice": {
+    "name": "Blood Chalice",
+    "cost": "625",
+    "description": "",
+    "flavor": "",
+    "icon": "/images/items/bloodchalice.png",
+    "components": [
+      {
+        "name": "Mark of the Novice",
+        "cost": "150",
+        "icon": "markofthenovice"
+      },
+      {
+        "name": "Scarab",
+        "cost": "325",
+        "icon": "scarab"
+      },
+      {
+        "name": "Recipe",
+        "cost": "150",
+        "icon": "recipe"
+      }
+    ],
+    "upgrade": ""
+  },
+  "sacrificialstone": {
+    "name": "Sacrificial Stone",
+    "cost": "2100",
+    "description": "",
+    "flavor": "",
+    "icon": "/images/items/sacrificialstone.png",
+    "components": [
+      {
+        "name": "Health Crystal",
+        "cost": "1100",
+        "icon": "healthcrystal"
+      },
+      {
+        "name": "Mana Crystal",
+        "cost": "1000",
+        "icon": "manacrystal"
+      }
+    ],
+    "upgrade": ""
+  },
+  "item_sacrificialstone": {
+    "name": "Sacrificial Stone",
+    "cost": "2100",
+    "description": "",
+    "flavor": "",
+    "icon": "/images/items/sacrificialstone.png",
+    "components": [
+      {
+        "name": "Health Crystal",
+        "cost": "1100",
+        "icon": "healthcrystal"
+      },
+      {
+        "name": "Mana Crystal",
+        "cost": "1000",
+        "icon": "manacrystal"
+      }
+    ],
+    "upgrade": ""
+  },
+  "astrolabe": {
+    "name": "Astrolabe",
+    "cost": "1750",
+    "description": "",
+    "flavor": "",
+    "icon": "/images/items/astrolabe.png",
+    "components": [
+      {
+        "name": "Ring of Sorcery",
+        "cost": "1415",
+        "icon": "replenish"
+      },
+      {
+        "name": "Recipe",
+        "cost": "335",
+        "icon": "recipe"
+      }
+    ],
+    "upgrade": ""
+  },
+  "item_astrolabe": {
+    "name": "Astrolabe",
+    "cost": "1750",
+    "description": "",
+    "flavor": "",
+    "icon": "/images/items/astrolabe.png",
+    "components": [
+      {
+        "name": "Ring of Sorcery",
+        "cost": "1415",
+        "icon": "replenish"
+      },
+      {
+        "name": "Recipe",
+        "cost": "335",
+        "icon": "recipe"
+      }
+    ],
+    "upgrade": ""
+  },
+  "pushstaff": {
+    "name": "Push Staff",
+    "cost": "1800",
+    "description": "",
+    "flavor": "",
+    "icon": "/images/items/pushstaff.png",
+    "components": [
+      {
+        "name": "Neophyte Book",
+        "cost": "1000",
+        "icon": "neophytebook"
+      },
+      {
+        "name": "Major Totem",
+        "cost": "540",
+        "icon": "majortotem"
+      },
+      {
+        "name": "Recipe",
+        "cost": "260",
+        "icon": "recipe"
+      }
+    ],
+    "upgrade": "Core mobility component for casters and initiators."
+  },
+  "item_pushstaff": {
+    "name": "Push Staff",
+    "cost": "1800",
+    "description": "",
+    "flavor": "",
+    "icon": "/images/items/pushstaff.png",
+    "components": [
+      {
+        "name": "Neophyte Book",
+        "cost": "1000",
+        "icon": "neophytebook"
+      },
+      {
+        "name": "Major Totem",
+        "cost": "540",
+        "icon": "majortotem"
+      },
+      {
+        "name": "Recipe",
+        "cost": "260",
+        "icon": "recipe"
+      }
+    ],
+    "upgrade": "Core mobility component for casters and initiators."
+  },
+  "tabletofcommand": {
+    "name": "Push Staff",
+    "cost": "1800",
+    "description": "",
+    "flavor": "",
+    "icon": "/images/items/pushstaff.png",
+    "components": [
+      {
+        "name": "Neophyte Book",
+        "cost": "1000",
+        "icon": "neophytebook"
+      },
+      {
+        "name": "Major Totem",
+        "cost": "540",
+        "icon": "majortotem"
+      },
+      {
+        "name": "Recipe",
+        "cost": "260",
+        "icon": "recipe"
+      }
+    ],
+    "upgrade": "Core mobility component for casters and initiators."
+  },
+  "sandscepter": {
+    "name": "Sand Scepter",
+    "cost": "2200",
+    "description": "",
+    "flavor": "",
+    "icon": "/images/items/sandscepter.png",
+    "components": [],
+    "upgrade": "Provides crowd control and self-invulnerability."
+  },
+  "item_sandscepter": {
+    "name": "Sand Scepter",
+    "cost": "2200",
+    "description": "",
+    "flavor": "",
+    "icon": "/images/items/sandscepter.png",
+    "components": [],
+    "upgrade": "Provides crowd control and self-invulnerability."
+  },
+  "dreamcatcher": {
+    "name": "Dreamcatcher",
+    "cost": "2600",
+    "description": "",
+    "flavor": "",
+    "icon": "/images/items/dreamcatcher.png",
+    "components": [
+      {
+        "name": "Ring of the Teacher",
+        "cost": "550",
+        "icon": "manaregen3"
+      },
+      {
+        "name": "Apprentice Robe",
+        "cost": "450",
+        "icon": "apprenticesrobe"
+      },
+      {
+        "name": "Recipe",
+        "cost": "1600",
+        "icon": "recipe"
+      }
+    ],
+    "upgrade": ""
+  },
+  "item_dreamcatcher": {
+    "name": "Dreamcatcher",
+    "cost": "2600",
+    "description": "",
+    "flavor": "",
+    "icon": "/images/items/dreamcatcher.png",
+    "components": [
+      {
+        "name": "Ring of the Teacher",
+        "cost": "550",
+        "icon": "manaregen3"
+      },
+      {
+        "name": "Apprentice Robe",
+        "cost": "450",
+        "icon": "apprenticesrobe"
+      },
+      {
+        "name": "Recipe",
+        "cost": "1600",
+        "icon": "recipe"
+      }
+    ],
+    "upgrade": ""
+  },
+  "morph": {
+    "name": "Kuldra's Sheepstick",
+    "cost": "5425",
+    "description": "",
+    "flavor": "",
+    "icon": "/images/items/morph.png",
+    "components": [
+      {
+        "name": "Acolyte Staff",
+        "cost": "2700",
+        "icon": "acolytesstaff"
+      },
+      {
+        "name": "Luminous Prism",
+        "cost": "1500",
+        "icon": "luminousprism"
+      },
+      {
+        "name": "Perpetual Cogwheel",
+        "cost": "1325",
+        "icon": "perpetualcogwheel"
+      }
+    ],
+    "upgrade": "Ultimate disarm & silence hex artifact."
+  },
+  "item_morph": {
+    "name": "Kuldra's Sheepstick",
+    "cost": "5425",
+    "description": "",
+    "flavor": "",
+    "icon": "/images/items/morph.png",
+    "components": [
+      {
+        "name": "Acolyte Staff",
+        "cost": "2700",
+        "icon": "acolytesstaff"
+      },
+      {
+        "name": "Luminous Prism",
+        "cost": "1500",
+        "icon": "luminousprism"
+      },
+      {
+        "name": "Perpetual Cogwheel",
+        "cost": "1325",
+        "icon": "perpetualcogwheel"
+      }
+    ],
+    "upgrade": "Ultimate disarm & silence hex artifact."
+  },
+  "kuldrassheepstick": {
+    "name": "Kuldra's Sheepstick",
+    "cost": "5425",
+    "description": "",
+    "flavor": "",
+    "icon": "/images/items/morph.png",
+    "components": [
+      {
+        "name": "Acolyte Staff",
+        "cost": "2700",
+        "icon": "acolytesstaff"
+      },
+      {
+        "name": "Luminous Prism",
+        "cost": "1500",
+        "icon": "luminousprism"
+      },
+      {
+        "name": "Perpetual Cogwheel",
+        "cost": "1325",
+        "icon": "perpetualcogwheel"
+      }
+    ],
+    "upgrade": "Ultimate disarm & silence hex artifact."
+  },
+  "kuldra": {
+    "name": "Kuldra's Sheepstick",
+    "cost": "5425",
+    "description": "",
+    "flavor": "",
+    "icon": "/images/items/morph.png",
+    "components": [
+      {
+        "name": "Acolyte Staff",
+        "cost": "2700",
+        "icon": "acolytesstaff"
+      },
+      {
+        "name": "Luminous Prism",
+        "cost": "1500",
+        "icon": "luminousprism"
+      },
+      {
+        "name": "Perpetual Cogwheel",
+        "cost": "1325",
+        "icon": "perpetualcogwheel"
+      }
+    ],
+    "upgrade": "Ultimate disarm & silence hex artifact."
+  },
+  "masterslegacy": {
+    "name": "Master's Legacy",
+    "cost": "6500",
+    "description": "",
+    "flavor": "",
+    "icon": "/images/items/masterslegacy.png",
+    "components": [
+      {
+        "name": "Staff of the Master",
+        "cost": "4200",
+        "icon": "intelligence7"
+      },
+      {
+        "name": "Recipe",
+        "cost": "2300",
+        "icon": "recipe"
+      }
+    ],
+    "upgrade": "Enhances hero ultimate abilities."
+  },
+  "item_masterslegacy": {
+    "name": "Master's Legacy",
+    "cost": "6500",
+    "description": "",
+    "flavor": "",
+    "icon": "/images/items/masterslegacy.png",
+    "components": [
+      {
+        "name": "Staff of the Master",
+        "cost": "4200",
+        "icon": "intelligence7"
+      },
+      {
+        "name": "Recipe",
+        "cost": "2300",
+        "icon": "recipe"
+      }
+    ],
+    "upgrade": "Enhances hero ultimate abilities."
+  },
+  "intelligence6": {
+    "name": "Grimoire of Power",
+    "cost": "5200",
+    "description": "",
+    "flavor": "",
+    "icon": "/images/items/intelligence6.png",
+    "components": [
+      {
+        "name": "Lightbrand",
+        "cost": "2200",
+        "icon": "lightbrand"
+      },
+      {
+        "name": "Blessed Orb",
+        "cost": "2100",
+        "icon": "blessedorb"
+      },
+      {
+        "name": "Recipe",
+        "cost": "900",
+        "icon": "recipe"
+      }
+    ],
+    "upgrade": "Can be combined with Lightbrand and Frostbrand into Dawnbringer."
+  },
+  "item_intelligence6": {
+    "name": "Grimoire of Power",
+    "cost": "5200",
+    "description": "",
+    "flavor": "",
+    "icon": "/images/items/intelligence6.png",
+    "components": [
+      {
+        "name": "Lightbrand",
+        "cost": "2200",
+        "icon": "lightbrand"
+      },
+      {
+        "name": "Blessed Orb",
+        "cost": "2100",
+        "icon": "blessedorb"
+      },
+      {
+        "name": "Recipe",
+        "cost": "900",
+        "icon": "recipe"
+      }
+    ],
+    "upgrade": "Can be combined with Lightbrand and Frostbrand into Dawnbringer."
+  },
+  "grimoireofpower": {
+    "name": "Grimoire of Power",
+    "cost": "5200",
+    "description": "",
+    "flavor": "",
+    "icon": "/images/items/intelligence6.png",
+    "components": [
+      {
+        "name": "Lightbrand",
+        "cost": "2200",
+        "icon": "lightbrand"
+      },
+      {
+        "name": "Blessed Orb",
+        "cost": "2100",
+        "icon": "blessedorb"
+      },
+      {
+        "name": "Recipe",
+        "cost": "900",
+        "icon": "recipe"
+      }
+    ],
+    "upgrade": "Can be combined with Lightbrand and Frostbrand into Dawnbringer."
+  },
+  "grimoire": {
+    "name": "Grimoire of Power",
+    "cost": "5200",
+    "description": "",
+    "flavor": "",
+    "icon": "/images/items/intelligence6.png",
+    "components": [
+      {
+        "name": "Lightbrand",
+        "cost": "2200",
+        "icon": "lightbrand"
+      },
+      {
+        "name": "Blessed Orb",
+        "cost": "2100",
+        "icon": "blessedorb"
+      },
+      {
+        "name": "Recipe",
+        "cost": "900",
+        "icon": "recipe"
+      }
+    ],
+    "upgrade": "Increases magical spell damage."
+  },
+  "lextalionis": {
+    "name": "Lex Talionis",
+    "cost": "1200",
+    "description": "",
+    "flavor": "",
+    "icon": "/images/items/lex_talionis.png",
+    "components": [
+      {
+        "name": "Ringmail",
+        "cost": "450",
+        "icon": "ringmail"
+      },
+      {
+        "name": "Ring of the Teacher",
+        "cost": "550",
+        "icon": "manaregen3"
+      },
+      {
+        "name": "Recipe",
+        "cost": "200",
+        "icon": "recipe"
+      }
+    ],
+    "upgrade": ""
+  },
+  "lex_talionis": {
+    "name": "Lex Talionis",
+    "cost": "1200",
+    "description": "",
+    "flavor": "",
+    "icon": "/images/items/lex_talionis.png",
+    "components": [
+      {
+        "name": "Ringmail",
+        "cost": "450",
+        "icon": "ringmail"
+      },
+      {
+        "name": "Ring of the Teacher",
+        "cost": "550",
+        "icon": "manaregen3"
+      },
+      {
+        "name": "Recipe",
+        "cost": "200",
+        "icon": "recipe"
+      }
+    ],
+    "upgrade": ""
+  },
+  "barrieridol": {
+    "name": "Barrier Idol",
+    "cost": "3150",
+    "description": "",
+    "flavor": "",
+    "icon": "/images/items/barrieridol.png",
+    "components": [
+      {
+        "name": "Shaman's Headdress",
+        "cost": "2050",
+        "icon": "magicarmor2"
+      },
+      {
+        "name": "Astrolabe",
+        "cost": "1750",
+        "icon": "astrolabe"
+      }
+    ],
+    "upgrade": ""
+  },
+  "item_barrieridol": {
+    "name": "Barrier Idol",
+    "cost": "3150",
+    "description": "",
+    "flavor": "",
+    "icon": "/images/items/barrieridol.png",
+    "components": [
+      {
+        "name": "Shaman's Headdress",
+        "cost": "2050",
+        "icon": "magicarmor2"
+      },
+      {
+        "name": "Astrolabe",
+        "cost": "1750",
+        "icon": "astrolabe"
+      }
+    ],
+    "upgrade": ""
+  },
+  "arcanebomb": {
+    "name": "Arcane Bomb",
+    "cost": "1900",
+    "description": "",
+    "flavor": "",
+    "icon": "/images/items/arcanebomb.png",
+    "components": [
+      {
+        "name": "Blood Ruby",
+        "cost": "550",
+        "icon": "bloodruby"
+      },
+      {
+        "name": "Ether Jewel",
+        "cost": "450",
+        "icon": "etherjewel"
+      },
+      {
+        "name": "Recipe",
+        "cost": "900",
+        "icon": "recipe"
+      }
+    ],
+    "upgrade": ""
+  },
+  "item_arcanebomb": {
+    "name": "Arcane Bomb",
+    "cost": "1900",
+    "description": "",
+    "flavor": "",
+    "icon": "/images/items/arcanebomb.png",
+    "components": [
+      {
+        "name": "Blood Ruby",
+        "cost": "550",
+        "icon": "bloodruby"
+      },
+      {
+        "name": "Ether Jewel",
+        "cost": "450",
+        "icon": "etherjewel"
+      },
+      {
+        "name": "Recipe",
+        "cost": "900",
+        "icon": "recipe"
+      }
+    ],
+    "upgrade": ""
+  },
+  "nomeswisdom": {
+    "name": "Nome's Wisdom",
+    "cost": "2050",
+    "description": "",
+    "flavor": "",
+    "icon": "/images/items/nomeswisdom.png",
+    "components": [
+      {
+        "name": "Ring of the Teacher",
+        "cost": "550",
+        "icon": "manaregen3"
+      },
+      {
+        "name": "Major Totem",
+        "cost": "540",
+        "icon": "majortotem"
+      },
+      {
+        "name": "Recipe",
+        "cost": "960",
+        "icon": "recipe"
+      }
+    ],
+    "upgrade": ""
+  },
+  "item_nomeswisdom": {
+    "name": "Nome's Wisdom",
+    "cost": "2050",
+    "description": "",
+    "flavor": "",
+    "icon": "/images/items/nomeswisdom.png",
+    "components": [
+      {
+        "name": "Ring of the Teacher",
+        "cost": "550",
+        "icon": "manaregen3"
+      },
+      {
+        "name": "Major Totem",
+        "cost": "540",
+        "icon": "majortotem"
+      },
+      {
+        "name": "Recipe",
+        "cost": "960",
+        "icon": "recipe"
+      }
+    ],
+    "upgrade": ""
+  },
+  "lifesteal5": {
+    "name": "Abyssal Skull",
+    "cost": "2050",
+    "description": "",
+    "flavor": "",
+    "icon": "/images/items/lifesteal5.png",
+    "components": [
+      {
+        "name": "Hungry Spirit",
+        "cost": "900",
+        "icon": "lifesteal"
+      },
+      {
+        "name": "Ring of the Teacher",
+        "cost": "550",
+        "icon": "manaregen3"
+      },
+      {
+        "name": "Recipe",
+        "cost": "600",
+        "icon": "recipe"
+      }
+    ],
+    "upgrade": ""
+  },
+  "item_lifesteal5": {
+    "name": "Abyssal Skull",
+    "cost": "2050",
+    "description": "",
+    "flavor": "",
+    "icon": "/images/items/lifesteal5.png",
+    "components": [
+      {
+        "name": "Hungry Spirit",
+        "cost": "900",
+        "icon": "lifesteal"
+      },
+      {
+        "name": "Ring of the Teacher",
+        "cost": "550",
+        "icon": "manaregen3"
+      },
+      {
+        "name": "Recipe",
+        "cost": "600",
+        "icon": "recipe"
+      }
+    ],
+    "upgrade": ""
+  },
+  "abyssalskull": {
+    "name": "Abyssal Skull",
+    "cost": "2050",
+    "description": "",
+    "flavor": "",
+    "icon": "/images/items/lifesteal5.png",
+    "components": [
+      {
+        "name": "Hungry Spirit",
+        "cost": "900",
+        "icon": "lifesteal"
+      },
+      {
+        "name": "Ring of the Teacher",
+        "cost": "550",
+        "icon": "manaregen3"
+      },
+      {
+        "name": "Recipe",
+        "cost": "600",
+        "icon": "recipe"
+      }
+    ],
+    "upgrade": ""
+  },
+  "daemonicbreastplate": {
+    "name": "Daemonic Breastplate",
+    "cost": "5600",
+    "description": "",
+    "flavor": "",
+    "icon": "/images/items/daemonicbreastplate.png",
+    "components": [
+      {
+        "name": "Sol's Bulwark",
+        "cost": "2000",
+        "icon": "solsbulwark"
+      },
+      {
+        "name": "Alacrity Band",
+        "cost": "1200",
+        "icon": "alacrityband"
+      },
+      {
+        "name": "Recipe",
+        "cost": "2400",
+        "icon": "recipe"
+      }
+    ],
+    "upgrade": "Ultimate armor & attack speed aura."
+  },
+  "item_daemonicbreastplate": {
+    "name": "Daemonic Breastplate",
+    "cost": "5600",
+    "description": "",
+    "flavor": "",
+    "icon": "/images/items/daemonicbreastplate.png",
+    "components": [
+      {
+        "name": "Sol's Bulwark",
+        "cost": "2000",
+        "icon": "solsbulwark"
+      },
+      {
+        "name": "Alacrity Band",
+        "cost": "1200",
+        "icon": "alacrityband"
+      },
+      {
+        "name": "Recipe",
+        "cost": "2400",
+        "icon": "recipe"
+      }
+    ],
+    "upgrade": "Ultimate armor & attack speed aura."
+  },
+  "portalkey": {
+    "name": "Portal Key",
+    "cost": "2250",
+    "description": "",
+    "flavor": "",
+    "icon": "/images/items/portalkey.png",
+    "components": [],
+    "upgrade": "Core mobility item for all roles."
+  },
+  "item_portalkey": {
+    "name": "Portal Key",
+    "cost": "2250",
+    "description": "",
+    "flavor": "",
+    "icon": "/images/items/portalkey.png",
+    "components": [],
+    "upgrade": "Core mobility item for all roles."
+  },
+  "shrunkenhead": {
+    "name": "Shrunken Head",
+    "cost": "2800",
+    "description": "",
+    "flavor": "",
+    "icon": "/images/items/immunity.png",
+    "components": [
+      {
+        "name": "Warhammer",
+        "cost": "1600",
+        "icon": "warhammer"
+      },
+      {
+        "name": "Mighty Blade",
+        "cost": "1000",
+        "icon": "mightyblade"
+      },
+      {
+        "name": "Recipe",
+        "cost": "200",
+        "icon": "recipe"
+      }
+    ],
+    "upgrade": "Essential spell immunity artifact."
+  },
+  "item_shrunkenhead": {
+    "name": "Shrunken Head",
+    "cost": "2800",
+    "description": "",
+    "flavor": "",
+    "icon": "/images/items/immunity.png",
+    "components": [
+      {
+        "name": "Warhammer",
+        "cost": "1600",
+        "icon": "warhammer"
+      },
+      {
+        "name": "Mighty Blade",
+        "cost": "1000",
+        "icon": "mightyblade"
+      },
+      {
+        "name": "Recipe",
+        "cost": "200",
+        "icon": "recipe"
+      }
+    ],
+    "upgrade": "Essential spell immunity artifact."
+  },
+  "immunity": {
+    "name": "Shrunken Head",
+    "cost": "2800",
+    "description": "",
+    "flavor": "",
+    "icon": "/images/items/immunity.png",
+    "components": [
+      {
+        "name": "Warhammer",
+        "cost": "1600",
+        "icon": "warhammer"
+      },
+      {
+        "name": "Mighty Blade",
+        "cost": "1000",
+        "icon": "mightyblade"
+      },
+      {
+        "name": "Recipe",
+        "cost": "200",
+        "icon": "recipe"
+      }
+    ],
+    "upgrade": "Essential spell immunity artifact."
+  },
+  "item_immunity": {
+    "name": "Shrunken Head",
+    "cost": "2800",
+    "description": "",
+    "flavor": "",
+    "icon": "/images/items/immunity.png",
+    "components": [
+      {
+        "name": "Warhammer",
+        "cost": "1600",
+        "icon": "warhammer"
+      },
+      {
+        "name": "Mighty Blade",
+        "cost": "1000",
+        "icon": "mightyblade"
+      },
+      {
+        "name": "Recipe",
+        "cost": "200",
+        "icon": "recipe"
+      }
+    ],
+    "upgrade": "Essential spell immunity artifact."
+  },
+  "silence": {
+    "name": "Hellflower",
+    "cost": "4725",
+    "description": "",
+    "flavor": "",
+    "icon": "/images/items/silence.png",
+    "components": [
+      {
+        "name": "Great Arcana",
+        "cost": "1575",
+        "icon": "acolytesstaff"
+      },
+      {
+        "name": "Great Arcana",
+        "cost": "1575",
+        "icon": "acolytesstaff"
+      },
+      {
+        "name": "Great Arcana",
+        "cost": "1575",
+        "icon": "acolytesstaff"
+      }
+    ],
+    "upgrade": "Core silence artifact for spellcasters (3x Great Arcana)."
+  },
+  "item_silence": {
+    "name": "Hellflower",
+    "cost": "4725",
+    "description": "",
+    "flavor": "",
+    "icon": "/images/items/silence.png",
+    "components": [
+      {
+        "name": "Great Arcana",
+        "cost": "1575",
+        "icon": "acolytesstaff"
+      },
+      {
+        "name": "Great Arcana",
+        "cost": "1575",
+        "icon": "acolytesstaff"
+      },
+      {
+        "name": "Great Arcana",
+        "cost": "1575",
+        "icon": "acolytesstaff"
+      }
+    ],
+    "upgrade": "Core silence artifact for spellcasters (3x Great Arcana)."
+  },
+  "hellflower": {
+    "name": "Hellflower",
+    "cost": "4725",
+    "description": "",
+    "flavor": "",
+    "icon": "/images/items/silence.png",
+    "components": [
+      {
+        "name": "Great Arcana",
+        "cost": "1575",
+        "icon": "acolytesstaff"
+      },
+      {
+        "name": "Great Arcana",
+        "cost": "1575",
+        "icon": "acolytesstaff"
+      },
+      {
+        "name": "Great Arcana",
+        "cost": "1575",
+        "icon": "acolytesstaff"
+      }
+    ],
+    "upgrade": "Core silence artifact for spellcasters (3x Great Arcana)."
+  },
+  "item_hellflower": {
+    "name": "Hellflower",
+    "cost": "4725",
+    "description": "",
+    "flavor": "",
+    "icon": "/images/items/silence.png",
+    "components": [
+      {
+        "name": "Great Arcana",
+        "cost": "1575",
+        "icon": "acolytesstaff"
+      },
+      {
+        "name": "Great Arcana",
+        "cost": "1575",
+        "icon": "acolytesstaff"
+      },
+      {
+        "name": "Great Arcana",
+        "cost": "1575",
+        "icon": "acolytesstaff"
+      }
+    ],
+    "upgrade": "Core silence artifact for spellcasters (3x Great Arcana)."
+  },
+  "protect": {
+    "name": "Null Stone",
+    "cost": "4550",
+    "description": "",
+    "flavor": "",
+    "icon": "/images/items/protect.png",
+    "components": [
+      {
+        "name": "Blessed Orb",
+        "cost": "2100",
+        "icon": "blessedorb"
+      },
+      {
+        "name": "Sustainer",
+        "cost": "1750",
+        "icon": "sustainer"
+      },
+      {
+        "name": "Recipe",
+        "cost": "700",
+        "icon": "recipe"
+      }
+    ],
+    "upgrade": "Passively blocks single-target enemy spells."
+  },
+  "item_protect": {
+    "name": "Null Stone",
+    "cost": "4550",
+    "description": "",
+    "flavor": "",
+    "icon": "/images/items/protect.png",
+    "components": [
+      {
+        "name": "Blessed Orb",
+        "cost": "2100",
+        "icon": "blessedorb"
+      },
+      {
+        "name": "Sustainer",
+        "cost": "1750",
+        "icon": "sustainer"
+      },
+      {
+        "name": "Recipe",
+        "cost": "700",
+        "icon": "recipe"
+      }
+    ],
+    "upgrade": "Passively blocks single-target enemy spells."
+  },
+  "nullstone": {
+    "name": "Null Stone",
+    "cost": "4550",
+    "description": "",
+    "flavor": "",
+    "icon": "/images/items/protect.png",
+    "components": [
+      {
+        "name": "Blessed Orb",
+        "cost": "2100",
+        "icon": "blessedorb"
+      },
+      {
+        "name": "Sustainer",
+        "cost": "1750",
+        "icon": "sustainer"
+      },
+      {
+        "name": "Recipe",
+        "cost": "700",
+        "icon": "recipe"
+      }
+    ],
+    "upgrade": "Passively blocks single-target enemy spells."
+  },
+  "item_nullstone": {
+    "name": "Null Stone",
+    "cost": "4550",
+    "description": "",
+    "flavor": "",
+    "icon": "/images/items/protect.png",
+    "components": [
+      {
+        "name": "Blessed Orb",
+        "cost": "2100",
+        "icon": "blessedorb"
+      },
+      {
+        "name": "Sustainer",
+        "cost": "1750",
+        "icon": "sustainer"
+      },
+      {
+        "name": "Recipe",
+        "cost": "700",
+        "icon": "recipe"
+      }
+    ],
+    "upgrade": "Passively blocks single-target enemy spells."
+  },
+  "sustainer": {
+    "name": "Sustainer",
+    "cost": "1750",
+    "description": "",
+    "flavor": "",
+    "icon": "/images/items/sustainer.png",
+    "components": [
+      {
+        "name": "Lifetube",
+        "cost": "875",
+        "icon": "lifetube"
+      },
+      {
+        "name": "Manatube",
+        "cost": "875",
+        "icon": "manatube"
+      }
+    ],
+    "upgrade": "Builds into Null Stone and Restoration Stone."
+  },
+  "item_sustainer": {
+    "name": "Sustainer",
+    "cost": "1750",
+    "description": "",
+    "flavor": "",
+    "icon": "/images/items/sustainer.png",
+    "components": [
+      {
+        "name": "Lifetube",
+        "cost": "875",
+        "icon": "lifetube"
+      },
+      {
+        "name": "Manatube",
+        "cost": "875",
+        "icon": "manatube"
+      }
+    ],
+    "upgrade": "Builds into Null Stone and Restoration Stone."
+  },
+  "steamboots": {
+    "name": "Steamboots",
+    "cost": "1450",
+    "description": "",
+    "flavor": "",
+    "icon": "/images/items/steamboots.png",
+    "components": [
+      {
+        "name": "Marchers",
+        "cost": "500",
+        "icon": "marchers"
+      },
+      {
+        "name": "Gloves of Swiftness",
+        "cost": "500",
+        "icon": "glovesofhaste"
+      },
+      {
+        "name": "Blessed Armband",
+        "cost": "450",
+        "icon": "blessedarmband"
+      }
+    ],
+    "upgrade": "Core attribute toggling boots."
+  },
+  "item_steamboots": {
+    "name": "Steamboots",
+    "cost": "1450",
+    "description": "",
+    "flavor": "",
+    "icon": "/images/items/steamboots.png",
+    "components": [
+      {
+        "name": "Marchers",
+        "cost": "500",
+        "icon": "marchers"
+      },
+      {
+        "name": "Gloves of Swiftness",
+        "cost": "500",
+        "icon": "glovesofhaste"
+      },
+      {
+        "name": "Blessed Armband",
+        "cost": "450",
+        "icon": "blessedarmband"
+      }
+    ],
+    "upgrade": "Core attribute toggling boots."
+  },
+  "striders": {
+    "name": "Striders",
+    "cost": "700",
+    "description": "",
+    "flavor": "",
+    "icon": "/images/items/striders.png",
+    "components": [
+      {
+        "name": "Marchers",
+        "cost": "500",
+        "icon": "marchers"
+      },
+      {
+        "name": "Recipe",
+        "cost": "200",
+        "icon": "recipe"
+      }
+    ],
+    "upgrade": ""
+  },
+  "item_striders": {
+    "name": "Striders",
+    "cost": "700",
+    "description": "",
+    "flavor": "",
+    "icon": "/images/items/striders.png",
+    "components": [
+      {
+        "name": "Marchers",
+        "cost": "500",
+        "icon": "marchers"
+      },
+      {
+        "name": "Recipe",
+        "cost": "200",
+        "icon": "recipe"
+      }
+    ],
+    "upgrade": ""
+  },
+  "powersupply": {
+    "name": "Power Supply",
+    "cost": "540",
+    "description": "",
+    "flavor": "",
+    "icon": "/images/items/powersupply.png",
+    "components": [
+      {
+        "name": "Mana Battery",
+        "cost": "200",
+        "icon": "manabattery"
+      },
+      {
+        "name": "Minor Totem",
+        "cost": "50",
+        "icon": "minortotem"
+      }
+    ],
+    "upgrade": ""
+  },
+  "item_powersupply": {
+    "name": "Power Supply",
+    "cost": "540",
+    "description": "",
+    "flavor": "",
+    "icon": "/images/items/powersupply.png",
+    "components": [
+      {
+        "name": "Mana Battery",
+        "cost": "200",
+        "icon": "manabattery"
+      },
+      {
+        "name": "Minor Totem",
+        "cost": "50",
+        "icon": "minortotem"
+      }
+    ],
+    "upgrade": ""
+  },
+  "loggershatchet": {
+    "name": "Logger's Hatchet",
+    "cost": "150",
+    "description": "",
+    "flavor": "",
+    "icon": "/images/items/loggershatchet.png",
+    "components": [],
+    "upgrade": ""
+  },
+  "item_loggershatchet": {
+    "name": "Logger's Hatchet",
+    "cost": "150",
+    "description": "",
+    "flavor": "",
+    "icon": "/images/items/loggershatchet.png",
+    "components": [],
+    "upgrade": ""
+  },
+  "spellshards": {
+    "name": "Spellshards",
+    "cost": "2000",
+    "description": "",
+    "flavor": "",
+    "icon": "/images/items/spellshards.png",
+    "components": [
+      {
+        "name": "Perpetual Cogwheel",
+        "cost": "1325",
+        "icon": "perpetualcogwheel"
+      },
+      {
+        "name": "Recipe",
+        "cost": "675",
+        "icon": "recipe"
+      }
+    ],
+    "upgrade": "Upgradable up to Level 3 for +1,000 Gold per recipe scroll (+15% magic armor pierce per tier)."
+  },
+  "item_spellshards": {
+    "name": "Spellshards",
+    "cost": "2000",
+    "description": "",
+    "flavor": "",
+    "icon": "/images/items/spellshards.png",
+    "components": [
+      {
+        "name": "Perpetual Cogwheel",
+        "cost": "1325",
+        "icon": "perpetualcogwheel"
+      },
+      {
+        "name": "Recipe",
+        "cost": "675",
+        "icon": "recipe"
+      }
+    ],
+    "upgrade": "Upgradable up to Level 3 for +1,000 Gold per recipe scroll (+15% magic armor pierce per tier)."
+  },
+  "harkonsblade": {
+    "name": "Harkon's Blade",
+    "cost": "5000",
+    "description": "",
+    "flavor": "",
+    "icon": "/images/items/harkonsblade.png",
+    "components": [
+      {
+        "name": "Lightbrand",
+        "cost": "2100",
+        "icon": "lightbrand"
+      },
+      {
+        "name": "Staff of the Master",
+        "cost": "4200",
+        "icon": "intelligence7"
+      },
+      {
+        "name": "Recipe",
+        "cost": "0",
+        "icon": "recipe"
+      }
+    ],
+    "upgrade": ""
+  },
+  "item_harkonsblade": {
+    "name": "Harkon's Blade",
+    "cost": "5000",
+    "description": "",
+    "flavor": "",
+    "icon": "/images/items/harkonsblade.png",
+    "components": [
+      {
+        "name": "Lightbrand",
+        "cost": "2100",
+        "icon": "lightbrand"
+      },
+      {
+        "name": "Staff of the Master",
+        "cost": "4200",
+        "icon": "intelligence7"
+      },
+      {
+        "name": "Recipe",
+        "cost": "0",
+        "icon": "recipe"
+      }
+    ],
+    "upgrade": ""
+  },
+  "restorationstone": {
+    "name": "Restoration Stone",
+    "cost": "5150",
+    "description": "",
+    "flavor": "",
+    "icon": "/images/items/restorationstone.png",
+    "components": [
+      {
+        "name": "Lifetube",
+        "cost": "875",
+        "icon": "lifetube"
+      },
+      {
+        "name": "Acolyte Staff",
+        "cost": "2700",
+        "icon": "acolytesstaff"
+      },
+      {
+        "name": "Recipe",
+        "cost": "1600",
+        "icon": "recipe"
+      }
+    ],
+    "upgrade": "Ultimate cooldown reset artifact."
+  },
+  "item_restorationstone": {
+    "name": "Restoration Stone",
+    "cost": "5150",
+    "description": "",
+    "flavor": "",
+    "icon": "/images/items/restorationstone.png",
+    "components": [
+      {
+        "name": "Lifetube",
+        "cost": "875",
+        "icon": "lifetube"
+      },
+      {
+        "name": "Acolyte Staff",
+        "cost": "2700",
+        "icon": "acolytesstaff"
+      },
+      {
+        "name": "Recipe",
+        "cost": "1600",
+        "icon": "recipe"
+      }
+    ],
+    "upgrade": "Ultimate cooldown reset artifact."
+  },
+  "voidtalisman": {
+    "name": "Void Talisman",
+    "cost": "1600",
+    "description": "",
+    "flavor": "",
+    "icon": "/images/items/voidtalisman.png",
+    "components": [],
+    "upgrade": "Provides physical immunity in emergency situations."
+  },
+  "item_voidtalisman": {
+    "name": "Void Talisman",
+    "cost": "1600",
+    "description": "",
+    "flavor": "",
+    "icon": "/images/items/voidtalisman.png",
+    "components": [],
+    "upgrade": "Provides physical immunity in emergency situations."
+  },
+  "veiledrot": {
+    "name": "Veiled Rot",
+    "cost": "2200",
+    "description": "",
+    "flavor": "",
+    "icon": "/images/items/veiledrot.png",
+    "components": [
+      {
+        "name": "Corrosive Vial",
+        "cost": "1200",
+        "icon": "veiledrot"
+      },
+      {
+        "name": "Recipe",
+        "cost": "1000",
+        "icon": "recipe"
+      }
+    ],
+    "upgrade": ""
+  },
+  "item_veiledrot": {
+    "name": "Veiled Rot",
+    "cost": "2200",
+    "description": "",
+    "flavor": "",
+    "icon": "/images/items/veiledrot.png",
+    "components": [
+      {
+        "name": "Corrosive Vial",
+        "cost": "1200",
+        "icon": "veiledrot"
+      },
+      {
+        "name": "Recipe",
+        "cost": "1000",
+        "icon": "recipe"
+      }
+    ],
+    "upgrade": ""
+  },
+  "jadespire": {
+    "name": "Jade Spire",
+    "cost": "1900",
+    "description": "",
+    "flavor": "",
+    "icon": "/images/items/jadespire.png",
+    "components": [
+      {
+        "name": "Pickled Brain",
+        "cost": "950",
+        "icon": "pickledbrain"
+      },
+      {
+        "name": "Manatube",
+        "cost": "875",
+        "icon": "manatube"
+      },
+      {
+        "name": "Recipe",
+        "cost": "75",
+        "icon": "recipe"
+      }
+    ],
+    "upgrade": ""
+  },
+  "item_jadespire": {
+    "name": "Jade Spire",
+    "cost": "1900",
+    "description": "",
+    "flavor": "",
+    "icon": "/images/items/jadespire.png",
+    "components": [
+      {
+        "name": "Pickled Brain",
+        "cost": "950",
+        "icon": "pickledbrain"
+      },
+      {
+        "name": "Manatube",
+        "cost": "875",
+        "icon": "manatube"
+      },
+      {
+        "name": "Recipe",
+        "cost": "75",
+        "icon": "recipe"
+      }
+    ],
+    "upgrade": ""
+  },
+  "opheliaspact": {
+    "name": "Ophelia's Pact",
+    "cost": "80",
+    "description": "",
+    "flavor": "",
+    "icon": "/images/items/opheliaspact.png",
+    "components": [],
+    "upgrade": ""
+  },
+  "item_opheliaspact": {
+    "name": "Ophelia's Pact",
+    "cost": "80",
+    "description": "",
+    "flavor": "",
+    "icon": "/images/items/opheliaspact.png",
+    "components": [],
+    "upgrade": ""
+  },
+  "pegasusboots": {
+    "name": "Pegasus Boots",
+    "cost": "2400",
+    "description": "",
+    "flavor": "",
+    "icon": "/images/items/pegasusboots.png",
+    "components": [
+      {
+        "name": "Marchers",
+        "cost": "500",
+        "icon": "marchers"
+      },
+      {
+        "name": "Winged Boots",
+        "cost": "1900",
+        "icon": "pegasusboots"
+      }
+    ],
+    "upgrade": ""
+  },
+  "item_pegasusboots": {
+    "name": "Pegasus Boots",
+    "cost": "2400",
+    "description": "",
+    "flavor": "",
+    "icon": "/images/items/pegasusboots.png",
+    "components": [
+      {
+        "name": "Marchers",
+        "cost": "500",
+        "icon": "marchers"
+      },
+      {
+        "name": "Winged Boots",
+        "cost": "1900",
+        "icon": "pegasusboots"
+      }
+    ],
+    "upgrade": ""
+  },
+  "madfreds_brassknuckles": {
+    "name": "Madfred's Brass Knuckles",
+    "cost": "1750",
+    "description": "",
+    "flavor": "",
+    "icon": "/images/items/madfreds_brassknuckles.png",
+    "components": [
+      {
+        "name": "Iron Knuckles",
+        "cost": "950",
+        "icon": "madfreds_brassknuckles"
+      },
+      {
+        "name": "Recipe",
+        "cost": "800",
+        "icon": "recipe"
+      }
+    ],
+    "upgrade": ""
+  },
+  "madfredsbrassknuckles": {
+    "name": "Madfred's Brass Knuckles",
+    "cost": "1750",
+    "description": "",
+    "flavor": "",
+    "icon": "/images/items/madfreds_brassknuckles.png",
+    "components": [
+      {
+        "name": "Iron Knuckles",
+        "cost": "950",
+        "icon": "madfreds_brassknuckles"
+      },
+      {
+        "name": "Recipe",
+        "cost": "800",
+        "icon": "recipe"
+      }
+    ],
+    "upgrade": ""
+  },
+  "item_madfreds_brassknuckles": {
+    "name": "Madfred's Brass Knuckles",
+    "cost": "1750",
+    "description": "",
+    "flavor": "",
+    "icon": "/images/items/madfreds_brassknuckles.png",
+    "components": [
+      {
+        "name": "Iron Knuckles",
+        "cost": "950",
+        "icon": "madfreds_brassknuckles"
+      },
+      {
+        "name": "Recipe",
+        "cost": "800",
+        "icon": "recipe"
+      }
+    ],
+    "upgrade": ""
+  },
+  "sasuke": {
+    "name": "Genjuro",
+    "cost": "6100",
+    "description": "",
+    "flavor": "",
+    "icon": "/images/items/genjuro.png",
+    "components": [
+      {
+        "name": "Assassin's Shroud",
+        "cost": "3200",
+        "icon": "stealth"
+      },
+      {
+        "name": "Firebrand",
+        "cost": "2100",
+        "icon": "firebrand"
+      }
+    ],
+    "upgrade": "Advanced stealth & break attack sword."
+  },
+  "item_sasuke": {
+    "name": "Genjuro",
+    "cost": "6100",
+    "description": "",
+    "flavor": "",
+    "icon": "/images/items/genjuro.png",
+    "components": [
+      {
+        "name": "Assassin's Shroud",
+        "cost": "3200",
+        "icon": "stealth"
+      },
+      {
+        "name": "Firebrand",
+        "cost": "2100",
+        "icon": "firebrand"
+      }
+    ],
+    "upgrade": "Advanced stealth & break attack sword."
+  },
+  "genjuro": {
+    "name": "Genjuro",
+    "cost": "6100",
+    "description": "",
+    "flavor": "",
+    "icon": "/images/items/genjuro.png",
+    "components": [
+      {
+        "name": "Assassin's Shroud",
+        "cost": "3200",
+        "icon": "stealth"
+      },
+      {
+        "name": "Firebrand",
+        "cost": "2100",
+        "icon": "firebrand"
+      }
+    ],
+    "upgrade": "Advanced stealth & break attack sword."
+  },
+  "item_genjuro": {
+    "name": "Genjuro",
+    "cost": "6100",
+    "description": "",
+    "flavor": "",
+    "icon": "/images/items/genjuro.png",
+    "components": [
+      {
+        "name": "Assassin's Shroud",
+        "cost": "3200",
+        "icon": "stealth"
+      },
+      {
+        "name": "Firebrand",
+        "cost": "2100",
+        "icon": "firebrand"
+      }
+    ],
+    "upgrade": "Advanced stealth & break attack sword."
+  },
+  "critical1": {
+    "name": "Riftshards",
+    "cost": "3325",
+    "description": "",
+    "flavor": "",
+    "icon": "/images/items/critical1.png",
+    "components": [
+      {
+        "name": "Broadsword",
+        "cost": "1200",
+        "icon": "broadsword"
+      },
+      {
+        "name": "Broadsword",
+        "cost": "1200",
+        "icon": "broadsword"
+      },
+      {
+        "name": "Recipe",
+        "cost": "925",
+        "icon": "recipe"
+      }
+    ],
+    "upgrade": "Upgradable up to Level 4 for +925 Gold per recipe scroll (+0.2x critical multiplier per tier)."
+  },
+  "item_critical1": {
+    "name": "Riftshards",
+    "cost": "3325",
+    "description": "",
+    "flavor": "",
+    "icon": "/images/items/critical1.png",
+    "components": [
+      {
+        "name": "Broadsword",
+        "cost": "1200",
+        "icon": "broadsword"
+      },
+      {
+        "name": "Broadsword",
+        "cost": "1200",
+        "icon": "broadsword"
+      },
+      {
+        "name": "Recipe",
+        "cost": "925",
+        "icon": "recipe"
+      }
+    ],
+    "upgrade": "Upgradable up to Level 4 for +925 Gold per recipe scroll (+0.2x critical multiplier per tier)."
+  },
+  "riftshards": {
+    "name": "Riftshards",
+    "cost": "3325",
+    "description": "",
+    "flavor": "",
+    "icon": "/images/items/critical1.png",
+    "components": [
+      {
+        "name": "Broadsword",
+        "cost": "1200",
+        "icon": "broadsword"
+      },
+      {
+        "name": "Broadsword",
+        "cost": "1200",
+        "icon": "broadsword"
+      },
+      {
+        "name": "Recipe",
+        "cost": "925",
+        "icon": "recipe"
+      }
+    ],
+    "upgrade": "Upgradable up to Level 4 for +925 Gold per recipe scroll (+0.2x critical multiplier per tier)."
+  },
+  "item_riftshards": {
+    "name": "Riftshards",
+    "cost": "3325",
+    "description": "",
+    "flavor": "",
+    "icon": "/images/items/critical1.png",
+    "components": [
+      {
+        "name": "Broadsword",
+        "cost": "1200",
+        "icon": "broadsword"
+      },
+      {
+        "name": "Broadsword",
+        "cost": "1200",
+        "icon": "broadsword"
+      },
+      {
+        "name": "Recipe",
+        "cost": "925",
+        "icon": "recipe"
+      }
+    ],
+    "upgrade": "Upgradable up to Level 4 for +925 Gold per recipe scroll (+0.2x critical multiplier per tier)."
+  },
+  "lightning1": {
+    "name": "Thunderclaw",
+    "cost": "2750",
+    "description": "",
+    "flavor": "",
+    "icon": "/images/items/lightning1.png",
+    "components": [
+      {
+        "name": "Gloves of Swiftness",
+        "cost": "500",
+        "icon": "glovesofhaste"
+      },
+      {
+        "name": "Warhammer",
+        "cost": "1600",
+        "icon": "warhammer"
+      },
+      {
+        "name": "Recipe",
+        "cost": "650",
+        "icon": "recipe"
+      }
+    ],
+    "upgrade": ""
+  },
+  "item_lightning1": {
+    "name": "Thunderclaw",
+    "cost": "2750",
+    "description": "",
+    "flavor": "",
+    "icon": "/images/items/lightning1.png",
+    "components": [
+      {
+        "name": "Gloves of Swiftness",
+        "cost": "500",
+        "icon": "glovesofhaste"
+      },
+      {
+        "name": "Warhammer",
+        "cost": "1600",
+        "icon": "warhammer"
+      },
+      {
+        "name": "Recipe",
+        "cost": "650",
+        "icon": "recipe"
+      }
+    ],
+    "upgrade": ""
+  },
+  "thunderclaw": {
+    "name": "Thunderclaw",
+    "cost": "2750",
+    "description": "",
+    "flavor": "",
+    "icon": "/images/items/lightning1.png",
+    "components": [
+      {
+        "name": "Gloves of Swiftness",
+        "cost": "500",
+        "icon": "glovesofhaste"
+      },
+      {
+        "name": "Warhammer",
+        "cost": "1600",
+        "icon": "warhammer"
+      },
+      {
+        "name": "Recipe",
+        "cost": "650",
+        "icon": "recipe"
+      }
+    ],
+    "upgrade": ""
+  },
+  "item_thunderclaw": {
+    "name": "Thunderclaw",
+    "cost": "2750",
+    "description": "",
+    "flavor": "",
+    "icon": "/images/items/lightning1.png",
+    "components": [
+      {
+        "name": "Gloves of Swiftness",
+        "cost": "500",
+        "icon": "glovesofhaste"
+      },
+      {
+        "name": "Warhammer",
+        "cost": "1600",
+        "icon": "warhammer"
+      },
+      {
+        "name": "Recipe",
+        "cost": "650",
+        "icon": "recipe"
+      }
+    ],
+    "upgrade": ""
+  },
+  "freeze": {
+    "name": "Frostwolf's Skull",
+    "cost": "6100",
+    "description": "",
+    "flavor": "",
+    "icon": "/images/items/freeze.png",
+    "components": [
+      {
+        "name": "Frostbrand",
+        "cost": "2100",
+        "icon": "frostbrand"
+      },
+      {
+        "name": "Health Crystal",
+        "cost": "2200",
+        "icon": "healthcrystal"
+      },
+      {
+        "name": "Recipe",
+        "cost": "1800",
+        "icon": "recipe"
+      }
+    ],
+    "upgrade": ""
+  },
+  "item_freeze": {
+    "name": "Frostwolf's Skull",
+    "cost": "6100",
+    "description": "",
+    "flavor": "",
+    "icon": "/images/items/freeze.png",
+    "components": [
+      {
+        "name": "Frostbrand",
+        "cost": "2100",
+        "icon": "frostbrand"
+      },
+      {
+        "name": "Health Crystal",
+        "cost": "2200",
+        "icon": "healthcrystal"
+      },
+      {
+        "name": "Recipe",
+        "cost": "1800",
+        "icon": "recipe"
+      }
+    ],
+    "upgrade": ""
+  },
+  "frostwolfskull": {
+    "name": "Frostwolf's Skull",
+    "cost": "6100",
+    "description": "",
+    "flavor": "",
+    "icon": "/images/items/freeze.png",
+    "components": [
+      {
+        "name": "Frostbrand",
+        "cost": "2100",
+        "icon": "frostbrand"
+      },
+      {
+        "name": "Health Crystal",
+        "cost": "2200",
+        "icon": "healthcrystal"
+      },
+      {
+        "name": "Recipe",
+        "cost": "1800",
+        "icon": "recipe"
+      }
+    ],
+    "upgrade": ""
+  },
+  "evasion": {
+    "name": "Wingbow",
+    "cost": "5600",
+    "description": "",
+    "flavor": "",
+    "icon": "/images/items/evasion.png",
+    "components": [
+      {
+        "name": "Evasion Talisman",
+        "cost": "1800",
+        "icon": "evasion"
+      },
+      {
+        "name": "Alacrity Band",
+        "cost": "1200",
+        "icon": "alacrityband"
+      },
+      {
+        "name": "Recipe",
+        "cost": "2600",
+        "icon": "recipe"
+      }
+    ],
+    "upgrade": "Ultimate agility & evasion artifact."
+  },
+  "item_evasion": {
+    "name": "Wingbow",
+    "cost": "5600",
+    "description": "",
+    "flavor": "",
+    "icon": "/images/items/evasion.png",
+    "components": [
+      {
+        "name": "Evasion Talisman",
+        "cost": "1800",
+        "icon": "evasion"
+      },
+      {
+        "name": "Alacrity Band",
+        "cost": "1200",
+        "icon": "alacrityband"
+      },
+      {
+        "name": "Recipe",
+        "cost": "2600",
+        "icon": "recipe"
+      }
+    ],
+    "upgrade": "Ultimate agility & evasion artifact."
+  },
+  "wingbow": {
+    "name": "Wingbow",
+    "cost": "5600",
+    "description": "",
+    "flavor": "",
+    "icon": "/images/items/evasion.png",
+    "components": [
+      {
+        "name": "Evasion Talisman",
+        "cost": "1800",
+        "icon": "evasion"
+      },
+      {
+        "name": "Alacrity Band",
+        "cost": "1200",
+        "icon": "alacrityband"
+      },
+      {
+        "name": "Recipe",
+        "cost": "2600",
+        "icon": "recipe"
+      }
+    ],
+    "upgrade": "Ultimate agility & evasion artifact."
+  },
+  "damage10": {
+    "name": "Mock of Brilliance",
+    "cost": "5150",
+    "description": "",
+    "flavor": "",
+    "icon": "/images/items/damage10.png",
+    "components": [
+      {
+        "name": "Radiant Gem",
+        "cost": "3300",
+        "icon": "damage10"
+      },
+      {
+        "name": "Recipe",
+        "cost": "1850",
+        "icon": "recipe"
+      }
+    ],
+    "upgrade": ""
+  },
+  "item_damage10": {
+    "name": "Mock of Brilliance",
+    "cost": "5150",
+    "description": "",
+    "flavor": "",
+    "icon": "/images/items/damage10.png",
+    "components": [
+      {
+        "name": "Radiant Gem",
+        "cost": "3300",
+        "icon": "damage10"
+      },
+      {
+        "name": "Recipe",
+        "cost": "1850",
+        "icon": "recipe"
+      }
+    ],
+    "upgrade": ""
+  },
+  "mockofbrilliance": {
+    "name": "Mock of Brilliance",
+    "cost": "5150",
+    "description": "",
+    "flavor": "",
+    "icon": "/images/items/damage10.png",
+    "components": [
+      {
+        "name": "Radiant Gem",
+        "cost": "3300",
+        "icon": "damage10"
+      },
+      {
+        "name": "Recipe",
+        "cost": "1850",
+        "icon": "recipe"
+      }
+    ],
+    "upgrade": ""
+  },
+  "damage9": {
+    "name": "Doom Bringer",
+    "cost": "6200",
+    "description": "",
+    "flavor": "",
+    "icon": "/images/items/damage9.png",
+    "components": [
+      {
+        "name": "Sacred Relic",
+        "cost": "3800",
+        "icon": "damage9"
+      },
+      {
+        "name": "Warhammer",
+        "cost": "1600",
+        "icon": "warhammer"
+      }
+    ],
+    "upgrade": "Drops on ground upon hero death!"
+  },
+  "item_damage9": {
+    "name": "Doom Bringer",
+    "cost": "6200",
+    "description": "",
+    "flavor": "",
+    "icon": "/images/items/damage9.png",
+    "components": [
+      {
+        "name": "Sacred Relic",
+        "cost": "3800",
+        "icon": "damage9"
+      },
+      {
+        "name": "Warhammer",
+        "cost": "1600",
+        "icon": "warhammer"
+      }
+    ],
+    "upgrade": "Drops on ground upon hero death!"
+  },
+  "doombringer": {
+    "name": "Doom Bringer",
+    "cost": "6200",
+    "description": "",
+    "flavor": "",
+    "icon": "/images/items/damage9.png",
+    "components": [
+      {
+        "name": "Sacred Relic",
+        "cost": "3800",
+        "icon": "damage9"
+      },
+      {
+        "name": "Warhammer",
+        "cost": "1600",
+        "icon": "warhammer"
+      }
+    ],
+    "upgrade": "Drops on ground upon hero death!"
+  },
+  "lifesteal4": {
+    "name": "Symbol of Rage",
+    "cost": "6150",
+    "description": "",
+    "flavor": "",
+    "icon": "/images/items/lifesteal4.png",
+    "components": [
+      {
+        "name": "Hungry Spirit",
+        "cost": "900",
+        "icon": "lifesteal"
+      },
+      {
+        "name": "Mighty Blade",
+        "cost": "1000",
+        "icon": "mightyblade"
+      },
+      {
+        "name": "Recipe",
+        "cost": "4250",
+        "icon": "recipe"
+      }
+    ],
+    "upgrade": ""
+  },
+  "item_lifesteal4": {
+    "name": "Symbol of Rage",
+    "cost": "6150",
+    "description": "",
+    "flavor": "",
+    "icon": "/images/items/lifesteal4.png",
+    "components": [
+      {
+        "name": "Hungry Spirit",
+        "cost": "900",
+        "icon": "lifesteal"
+      },
+      {
+        "name": "Mighty Blade",
+        "cost": "1000",
+        "icon": "mightyblade"
+      },
+      {
+        "name": "Recipe",
+        "cost": "4250",
+        "icon": "recipe"
+      }
+    ],
+    "upgrade": ""
+  },
+  "symbolofrage": {
+    "name": "Symbol of Rage",
+    "cost": "6150",
+    "description": "",
+    "flavor": "",
+    "icon": "/images/items/lifesteal4.png",
+    "components": [
+      {
+        "name": "Hungry Spirit",
+        "cost": "900",
+        "icon": "lifesteal"
+      },
+      {
+        "name": "Mighty Blade",
+        "cost": "1000",
+        "icon": "mightyblade"
+      },
+      {
+        "name": "Recipe",
+        "cost": "4250",
+        "icon": "recipe"
+      }
+    ],
+    "upgrade": ""
+  },
+  "nuke": {
+    "name": "Codex",
+    "cost": "3000",
+    "description": "",
+    "flavor": "",
+    "icon": "/images/items/nuke.png",
+    "components": [
+      {
+        "name": "Neophyte Book",
+        "cost": "1000",
+        "icon": "neophytebook"
+      },
+      {
+        "name": "Apprentice Robe",
+        "cost": "450",
+        "icon": "apprenticesrobe"
+      },
+      {
+        "name": "Recipe",
+        "cost": "1550",
+        "icon": "recipe"
+      }
+    ],
+    "upgrade": "Upgradable up to Level 5 for +1,000 Gold per recipe scroll (+100 Magic Damage per tier)."
+  },
+  "item_nuke": {
+    "name": "Codex",
+    "cost": "3000",
+    "description": "",
+    "flavor": "",
+    "icon": "/images/items/nuke.png",
+    "components": [
+      {
+        "name": "Neophyte Book",
+        "cost": "1000",
+        "icon": "neophytebook"
+      },
+      {
+        "name": "Apprentice Robe",
+        "cost": "450",
+        "icon": "apprenticesrobe"
+      },
+      {
+        "name": "Recipe",
+        "cost": "1550",
+        "icon": "recipe"
+      }
+    ],
+    "upgrade": "Upgradable up to Level 5 for +1,000 Gold per recipe scroll (+100 Magic Damage per tier)."
+  },
+  "codex": {
+    "name": "Codex",
+    "cost": "3000",
+    "description": "",
+    "flavor": "",
+    "icon": "/images/items/nuke.png",
+    "components": [
+      {
+        "name": "Neophyte Book",
+        "cost": "1000",
+        "icon": "neophytebook"
+      },
+      {
+        "name": "Apprentice Robe",
+        "cost": "450",
+        "icon": "apprenticesrobe"
+      },
+      {
+        "name": "Recipe",
+        "cost": "1550",
+        "icon": "recipe"
+      }
+    ],
+    "upgrade": "Upgradable up to Level 5 for +1,000 Gold per recipe scroll (+100 Magic Damage per tier)."
+  },
+  "pierce": {
+    "name": "Shieldbreaker",
+    "cost": "2600",
+    "description": "",
+    "flavor": "",
+    "icon": "/images/items/pierce.png",
+    "components": [
+      {
+        "name": "Warhammer",
+        "cost": "1600",
+        "icon": "warhammer"
+      },
+      {
+        "name": "Recipe",
+        "cost": "1000",
+        "icon": "recipe"
+      }
+    ],
+    "upgrade": "Reduces target physical armor on basic attacks."
+  },
+  "item_pierce": {
+    "name": "Shieldbreaker",
+    "cost": "2600",
+    "description": "",
+    "flavor": "",
+    "icon": "/images/items/pierce.png",
+    "components": [
+      {
+        "name": "Warhammer",
+        "cost": "1600",
+        "icon": "warhammer"
+      },
+      {
+        "name": "Recipe",
+        "cost": "1000",
+        "icon": "recipe"
+      }
+    ],
+    "upgrade": "Reduces target physical armor on basic attacks."
+  },
+  "shieldbreaker": {
+    "name": "Shieldbreaker",
+    "cost": "2600",
+    "description": "",
+    "flavor": "",
+    "icon": "/images/items/pierce.png",
+    "components": [
+      {
+        "name": "Warhammer",
+        "cost": "1600",
+        "icon": "warhammer"
+      },
+      {
+        "name": "Recipe",
+        "cost": "1000",
+        "icon": "recipe"
+      }
+    ],
+    "upgrade": "Reduces target physical armor on basic attacks."
+  },
+  "weapon3": {
+    "name": "Savage Mace",
+    "cost": "4300",
+    "description": "",
+    "flavor": "",
+    "icon": "/images/items/weapon3.png",
+    "components": [
+      {
+        "name": "Heavy Flail",
+        "cost": "3800",
+        "icon": "weapon3"
+      },
+      {
+        "name": "Warhammer",
+        "cost": "1600",
+        "icon": "warhammer"
+      }
+    ],
+    "upgrade": ""
+  },
+  "item_weapon3": {
+    "name": "Savage Mace",
+    "cost": "4300",
+    "description": "",
+    "flavor": "",
+    "icon": "/images/items/weapon3.png",
+    "components": [
+      {
+        "name": "Heavy Flail",
+        "cost": "3800",
+        "icon": "weapon3"
+      },
+      {
+        "name": "Warhammer",
+        "cost": "1600",
+        "icon": "warhammer"
+      }
+    ],
+    "upgrade": ""
+  },
+  "savagemace": {
+    "name": "Savage Mace",
+    "cost": "4300",
+    "description": "",
+    "flavor": "",
+    "icon": "/images/items/weapon3.png",
+    "components": [
+      {
+        "name": "Heavy Flail",
+        "cost": "3800",
+        "icon": "weapon3"
+      },
+      {
+        "name": "Warhammer",
+        "cost": "1600",
+        "icon": "warhammer"
+      }
+    ],
+    "upgrade": ""
+  },
+  "replenish": {
+    "name": "Ring of Sorcery",
+    "cost": "1415",
+    "description": "",
+    "flavor": "",
+    "icon": "/images/items/replenish.png",
+    "components": [
+      {
+        "name": "Mana Battery",
+        "cost": "200",
+        "icon": "manabattery"
+      },
+      {
+        "name": "Apprentice Robe",
+        "cost": "450",
+        "icon": "apprenticesrobe"
+      },
+      {
+        "name": "Recipe",
+        "cost": "765",
+        "icon": "recipe"
+      }
+    ],
+    "upgrade": ""
+  },
+  "item_replenish": {
+    "name": "Ring of Sorcery",
+    "cost": "1415",
+    "description": "",
+    "flavor": "",
+    "icon": "/images/items/replenish.png",
+    "components": [
+      {
+        "name": "Mana Battery",
+        "cost": "200",
+        "icon": "manabattery"
+      },
+      {
+        "name": "Apprentice Robe",
+        "cost": "450",
+        "icon": "apprenticesrobe"
+      },
+      {
+        "name": "Recipe",
+        "cost": "765",
+        "icon": "recipe"
+      }
+    ],
+    "upgrade": ""
+  },
+  "ringofsorcery": {
+    "name": "Ring of Sorcery",
+    "cost": "1415",
+    "description": "",
+    "flavor": "",
+    "icon": "/images/items/replenish.png",
+    "components": [
+      {
+        "name": "Mana Battery",
+        "cost": "200",
+        "icon": "manabattery"
+      },
+      {
+        "name": "Apprentice Robe",
+        "cost": "450",
+        "icon": "apprenticesrobe"
+      },
+      {
+        "name": "Recipe",
+        "cost": "765",
+        "icon": "recipe"
+      }
+    ],
+    "upgrade": ""
+  },
+  "shield2": {
+    "name": "Helm of the Black Legion",
+    "cost": "2175",
+    "description": "",
+    "flavor": "",
+    "icon": "/images/items/shield2.png",
+    "components": [
+      {
+        "name": "Iron Buckler",
+        "cost": "225",
+        "icon": "shield1"
+      },
+      {
+        "name": "Health Crystal",
+        "cost": "1100",
+        "icon": "healthcrystal"
+      },
+      {
+        "name": "Lifetube",
+        "cost": "875",
+        "icon": "lifetube"
+      }
+    ],
+    "upgrade": ""
+  },
+  "item_shield2": {
+    "name": "Helm of the Black Legion",
+    "cost": "2175",
+    "description": "",
+    "flavor": "",
+    "icon": "/images/items/shield2.png",
+    "components": [
+      {
+        "name": "Iron Buckler",
+        "cost": "225",
+        "icon": "shield1"
+      },
+      {
+        "name": "Health Crystal",
+        "cost": "1100",
+        "icon": "healthcrystal"
+      },
+      {
+        "name": "Lifetube",
+        "cost": "875",
+        "icon": "lifetube"
+      }
+    ],
+    "upgrade": ""
+  },
+  "helmoftheblacklegion": {
+    "name": "Helm of the Black Legion",
+    "cost": "2175",
+    "description": "",
+    "flavor": "",
+    "icon": "/images/items/shield2.png",
+    "components": [
+      {
+        "name": "Iron Buckler",
+        "cost": "225",
+        "icon": "shield1"
+      },
+      {
+        "name": "Health Crystal",
+        "cost": "1100",
+        "icon": "healthcrystal"
+      },
+      {
+        "name": "Lifetube",
+        "cost": "875",
+        "icon": "lifetube"
+      }
+    ],
+    "upgrade": ""
+  },
+  "splash": {
+    "name": "Runed Cleaver",
+    "cost": "4350",
+    "description": "",
+    "flavor": "",
+    "icon": "/images/items/splash.png",
+    "components": [
+      {
+        "name": "Broadsword",
+        "cost": "1200",
+        "icon": "broadsword"
+      },
+      {
+        "name": "Lifetube",
+        "cost": "875",
+        "icon": "lifetube"
+      },
+      {
+        "name": "Manatube",
+        "cost": "875",
+        "icon": "manatube"
+      },
+      {
+        "name": "Recipe",
+        "cost": "1450",
+        "icon": "recipe"
+      }
+    ],
+    "upgrade": ""
+  },
+  "item_splash": {
+    "name": "Runed Cleaver",
+    "cost": "4350",
+    "description": "",
+    "flavor": "",
+    "icon": "/images/items/splash.png",
+    "components": [
+      {
+        "name": "Broadsword",
+        "cost": "1200",
+        "icon": "broadsword"
+      },
+      {
+        "name": "Lifetube",
+        "cost": "875",
+        "icon": "lifetube"
+      },
+      {
+        "name": "Manatube",
+        "cost": "875",
+        "icon": "manatube"
+      },
+      {
+        "name": "Recipe",
+        "cost": "1450",
+        "icon": "recipe"
+      }
+    ],
+    "upgrade": ""
+  },
+  "runedcleaver": {
+    "name": "Runed Cleaver",
+    "cost": "4350",
+    "description": "",
+    "flavor": "",
+    "icon": "/images/items/splash.png",
+    "components": [
+      {
+        "name": "Broadsword",
+        "cost": "1200",
+        "icon": "broadsword"
+      },
+      {
+        "name": "Lifetube",
+        "cost": "875",
+        "icon": "lifetube"
+      },
+      {
+        "name": "Manatube",
+        "cost": "875",
+        "icon": "manatube"
+      },
+      {
+        "name": "Recipe",
+        "cost": "1450",
+        "icon": "recipe"
+      }
+    ],
+    "upgrade": ""
+  },
+  "stealth": {
+    "name": "Assassin's Shroud",
+    "cost": "3200",
+    "description": "",
+    "flavor": "",
+    "icon": "/images/items/stealth.png",
+    "components": [
+      {
+        "name": "Shadow Blade",
+        "cost": "1400",
+        "icon": "stealth"
+      },
+      {
+        "name": "Broadsword",
+        "cost": "1200",
+        "icon": "broadsword"
+      },
+      {
+        "name": "Recipe",
+        "cost": "600",
+        "icon": "recipe"
+      }
+    ],
+    "upgrade": "Can be upgraded into Genjuro when combined with Firebrand."
+  },
+  "item_stealth": {
+    "name": "Assassin's Shroud",
+    "cost": "3200",
+    "description": "",
+    "flavor": "",
+    "icon": "/images/items/stealth.png",
+    "components": [
+      {
+        "name": "Shadow Blade",
+        "cost": "1400",
+        "icon": "stealth"
+      },
+      {
+        "name": "Broadsword",
+        "cost": "1200",
+        "icon": "broadsword"
+      },
+      {
+        "name": "Recipe",
+        "cost": "600",
+        "icon": "recipe"
+      }
+    ],
+    "upgrade": "Can be upgraded into Genjuro when combined with Firebrand."
+  },
+  "assassinsshroud": {
+    "name": "Assassin's Shroud",
+    "cost": "3200",
+    "description": "",
+    "flavor": "",
+    "icon": "/images/items/stealth.png",
+    "components": [
+      {
+        "name": "Shadow Blade",
+        "cost": "1400",
+        "icon": "stealth"
+      },
+      {
+        "name": "Broadsword",
+        "cost": "1200",
+        "icon": "broadsword"
+      },
+      {
+        "name": "Recipe",
+        "cost": "600",
+        "icon": "recipe"
+      }
+    ],
+    "upgrade": "Can be upgraded into Genjuro when combined with Firebrand."
+  },
+  "summon": {
+    "name": "Puzzlebox",
+    "cost": "2550",
+    "description": "",
+    "flavor": "",
+    "icon": "/images/items/summon.png",
+    "components": [
+      {
+        "name": "Neophyte Book",
+        "cost": "1000",
+        "icon": "neophytebook"
+      },
+      {
+        "name": "Mighty Blade",
+        "cost": "1000",
+        "icon": "mightyblade"
+      },
+      {
+        "name": "Recipe",
+        "cost": "550",
+        "icon": "recipe"
+      }
+    ],
+    "upgrade": "Upgradable up to Level 3 for +700 Gold per recipe scroll."
+  },
+  "item_summon": {
+    "name": "Puzzlebox",
+    "cost": "2550",
+    "description": "",
+    "flavor": "",
+    "icon": "/images/items/summon.png",
+    "components": [
+      {
+        "name": "Neophyte Book",
+        "cost": "1000",
+        "icon": "neophytebook"
+      },
+      {
+        "name": "Mighty Blade",
+        "cost": "1000",
+        "icon": "mightyblade"
+      },
+      {
+        "name": "Recipe",
+        "cost": "550",
+        "icon": "recipe"
+      }
+    ],
+    "upgrade": "Upgradable up to Level 3 for +700 Gold per recipe scroll."
+  },
+  "puzzlebox": {
+    "name": "Puzzlebox",
+    "cost": "2550",
+    "description": "",
+    "flavor": "",
+    "icon": "/images/items/summon.png",
+    "components": [
+      {
+        "name": "Neophyte Book",
+        "cost": "1000",
+        "icon": "neophytebook"
+      },
+      {
+        "name": "Mighty Blade",
+        "cost": "1000",
+        "icon": "mightyblade"
+      },
+      {
+        "name": "Recipe",
+        "cost": "550",
+        "icon": "recipe"
+      }
+    ],
+    "upgrade": "Upgradable up to Level 3 for +700 Gold per recipe scroll."
+  },
+  "excruciator": {
+    "name": "Barbed Armor",
+    "cost": "2200",
+    "description": "",
+    "flavor": "",
+    "icon": "/images/items/excruciator.png",
+    "components": [
+      {
+        "name": "Chainmail",
+        "cost": "550",
+        "icon": "chainmail"
+      },
+      {
+        "name": "Broadsword",
+        "cost": "1200",
+        "icon": "broadsword"
+      },
+      {
+        "name": "Recipe",
+        "cost": "450",
+        "icon": "recipe"
+      }
+    ],
+    "upgrade": ""
+  },
+  "item_excruciator": {
+    "name": "Barbed Armor",
+    "cost": "2200",
+    "description": "",
+    "flavor": "",
+    "icon": "/images/items/excruciator.png",
+    "components": [
+      {
+        "name": "Chainmail",
+        "cost": "550",
+        "icon": "chainmail"
+      },
+      {
+        "name": "Broadsword",
+        "cost": "1200",
+        "icon": "broadsword"
+      },
+      {
+        "name": "Recipe",
+        "cost": "450",
+        "icon": "recipe"
+      }
+    ],
+    "upgrade": ""
+  },
+  "barbedarmor": {
+    "name": "Barbed Armor",
+    "cost": "2200",
+    "description": "",
+    "flavor": "",
+    "icon": "/images/items/excruciator.png",
+    "components": [
+      {
+        "name": "Chainmail",
+        "cost": "550",
+        "icon": "chainmail"
+      },
+      {
+        "name": "Broadsword",
+        "cost": "1200",
+        "icon": "broadsword"
+      },
+      {
+        "name": "Recipe",
+        "cost": "450",
+        "icon": "recipe"
+      }
+    ],
+    "upgrade": ""
+  },
+  "dawnbringer": {
+    "name": "Dawnbringer",
+    "cost": "6600",
+    "description": "",
+    "flavor": "",
+    "icon": "/images/items/dawnbringer.png",
+    "components": [
+      {
+        "name": "Lightbrand",
+        "cost": "2200",
+        "icon": "lightbrand"
+      },
+      {
+        "name": "Frostbrand",
+        "cost": "2200",
+        "icon": "frostbrand"
+      },
+      {
+        "name": "Firebrand",
+        "cost": "2200",
+        "icon": "firebrand"
+      }
+    ],
+    "upgrade": "Ultimate tri-sword combining Lightbrand, Frostbrand, and Firebrand."
+  },
+  "item_dawnbringer": {
+    "name": "Dawnbringer",
+    "cost": "6600",
+    "description": "",
+    "flavor": "",
+    "icon": "/images/items/dawnbringer.png",
+    "components": [
+      {
+        "name": "Lightbrand",
+        "cost": "2200",
+        "icon": "lightbrand"
+      },
+      {
+        "name": "Frostbrand",
+        "cost": "2200",
+        "icon": "frostbrand"
+      },
+      {
+        "name": "Firebrand",
+        "cost": "2200",
+        "icon": "firebrand"
+      }
+    ],
+    "upgrade": "Ultimate tri-sword combining Lightbrand, Frostbrand, and Firebrand."
+  },
+  "intelligence7": {
+    "name": "Staff of the Master",
+    "cost": "4200",
+    "description": "",
+    "flavor": "",
+    "icon": "/images/items/intelligence7.png",
+    "components": [
+      {
+        "name": "Mighty Blade",
+        "cost": "1000",
+        "icon": "mightyblade"
+      },
+      {
+        "name": "Quickblade",
+        "cost": "1000",
+        "icon": "quickblade"
+      },
+      {
+        "name": "Neophyte Book",
+        "cost": "1000",
+        "icon": "neophytebook"
+      },
+      {
+        "name": "Point Booster",
+        "cost": "1200",
+        "icon": "pointbooster"
+      }
+    ],
+    "upgrade": "Unlocks empowered effects for hero ultimate abilities."
+  },
+  "item_intelligence7": {
+    "name": "Staff of the Master",
+    "cost": "4200",
+    "description": "",
+    "flavor": "",
+    "icon": "/images/items/intelligence7.png",
+    "components": [
+      {
+        "name": "Mighty Blade",
+        "cost": "1000",
+        "icon": "mightyblade"
+      },
+      {
+        "name": "Quickblade",
+        "cost": "1000",
+        "icon": "quickblade"
+      },
+      {
+        "name": "Neophyte Book",
+        "cost": "1000",
+        "icon": "neophytebook"
+      },
+      {
+        "name": "Point Booster",
+        "cost": "1200",
+        "icon": "pointbooster"
+      }
+    ],
+    "upgrade": "Unlocks empowered effects for hero ultimate abilities."
+  },
+  "staffofthemaster": {
+    "name": "Staff of the Master",
+    "cost": "4200",
+    "description": "",
+    "flavor": "",
+    "icon": "/images/items/intelligence7.png",
+    "components": [
+      {
+        "name": "Mighty Blade",
+        "cost": "1000",
+        "icon": "mightyblade"
+      },
+      {
+        "name": "Quickblade",
+        "cost": "1000",
+        "icon": "quickblade"
+      },
+      {
+        "name": "Neophyte Book",
+        "cost": "1000",
+        "icon": "neophytebook"
+      },
+      {
+        "name": "Point Booster",
+        "cost": "1200",
+        "icon": "pointbooster"
+      }
+    ],
+    "upgrade": "Unlocks empowered effects for hero ultimate abilities."
+  },
+  "gloves3": {
+    "name": "Alchemist's Bones",
+    "cost": "1850",
+    "description": "",
+    "flavor": "",
+    "icon": "/images/items/gloves3.png",
+    "components": [
+      {
+        "name": "Gloves of Swiftness",
+        "cost": "500",
+        "icon": "glovesofhaste"
+      },
+      {
+        "name": "Recipe",
+        "cost": "1350",
+        "icon": "recipe"
+      }
+    ],
+    "upgrade": ""
+  },
+  "item_gloves3": {
+    "name": "Alchemist's Bones",
+    "cost": "1850",
+    "description": "",
+    "flavor": "",
+    "icon": "/images/items/gloves3.png",
+    "components": [
+      {
+        "name": "Gloves of Swiftness",
+        "cost": "500",
+        "icon": "glovesofhaste"
+      },
+      {
+        "name": "Recipe",
+        "cost": "1350",
+        "icon": "recipe"
+      }
+    ],
+    "upgrade": ""
+  },
+  "alchemistsbones": {
+    "name": "Alchemist's Bones",
+    "cost": "1850",
+    "description": "",
+    "flavor": "",
+    "icon": "/images/items/gloves3.png",
+    "components": [
+      {
+        "name": "Gloves of Swiftness",
+        "cost": "500",
+        "icon": "glovesofhaste"
+      },
+      {
+        "name": "Recipe",
+        "cost": "1350",
+        "icon": "recipe"
+      }
+    ],
+    "upgrade": ""
+  },
+  "healthmana2": {
+    "name": "Icon of the Goddess",
+    "cost": "5050",
+    "description": "",
+    "flavor": "",
+    "icon": "/images/items/healthmana2.png",
+    "components": [
+      {
+        "name": "Health Crystal",
+        "cost": "2200",
+        "icon": "healthcrystal"
+      },
+      {
+        "name": "Mana Tube",
+        "cost": "2000",
+        "icon": "manatube"
+      },
+      {
+        "name": "Recipe",
+        "cost": "850",
+        "icon": "recipe"
+      }
+    ],
+    "upgrade": ""
+  },
+  "item_healthmana2": {
+    "name": "Icon of the Goddess",
+    "cost": "5050",
+    "description": "",
+    "flavor": "",
+    "icon": "/images/items/healthmana2.png",
+    "components": [
+      {
+        "name": "Health Crystal",
+        "cost": "2200",
+        "icon": "healthcrystal"
+      },
+      {
+        "name": "Mana Tube",
+        "cost": "2000",
+        "icon": "manatube"
+      },
+      {
+        "name": "Recipe",
+        "cost": "850",
+        "icon": "recipe"
+      }
+    ],
+    "upgrade": ""
+  },
+  "iconofthegoddess": {
+    "name": "Icon of the Goddess",
+    "cost": "5050",
+    "description": "",
+    "flavor": "",
+    "icon": "/images/items/healthmana2.png",
+    "components": [
+      {
+        "name": "Health Crystal",
+        "cost": "2200",
+        "icon": "healthcrystal"
+      },
+      {
+        "name": "Mana Tube",
+        "cost": "2000",
+        "icon": "manatube"
+      },
+      {
+        "name": "Recipe",
+        "cost": "850",
+        "icon": "recipe"
+      }
+    ],
+    "upgrade": ""
+  },
+  "magicarmor2": {
+    "name": "Shaman's Headdress",
+    "cost": "2050",
+    "description": "",
+    "flavor": "",
+    "icon": "/images/items/magicarmor2.png",
+    "components": [
+      {
+        "name": "Magic Vestments",
+        "cost": "550",
+        "icon": "magicarmor1"
+      },
+      {
+        "name": "Lifetube",
+        "cost": "875",
+        "icon": "lifetube"
+      },
+      {
+        "name": "Recipe",
+        "cost": "650",
+        "icon": "recipe"
+      }
+    ],
+    "upgrade": "Can be upgraded into Barrier Idol."
+  },
+  "item_magicarmor2": {
+    "name": "Shaman's Headdress",
+    "cost": "2050",
+    "description": "",
+    "flavor": "",
+    "icon": "/images/items/magicarmor2.png",
+    "components": [
+      {
+        "name": "Magic Vestments",
+        "cost": "550",
+        "icon": "magicarmor1"
+      },
+      {
+        "name": "Lifetube",
+        "cost": "875",
+        "icon": "lifetube"
+      },
+      {
+        "name": "Recipe",
+        "cost": "650",
+        "icon": "recipe"
+      }
+    ],
+    "upgrade": "Can be upgraded into Barrier Idol."
+  },
+  "shamansheaddress": {
+    "name": "Shaman's Headdress",
+    "cost": "2050",
+    "description": "",
+    "flavor": "",
+    "icon": "/images/items/magicarmor2.png",
+    "components": [
+      {
+        "name": "Magic Vestments",
+        "cost": "550",
+        "icon": "magicarmor1"
+      },
+      {
+        "name": "Lifetube",
+        "cost": "875",
+        "icon": "lifetube"
+      },
+      {
+        "name": "Recipe",
+        "cost": "650",
+        "icon": "recipe"
+      }
+    ],
+    "upgrade": "Can be upgraded into Barrier Idol."
+  },
+  "manaregen3": {
+    "name": "Ring of the Teacher",
+    "cost": "550",
+    "description": "",
+    "flavor": "",
+    "icon": "/images/items/manaregen3.png",
+    "components": [
+      {
+        "name": "Scarab",
+        "cost": "325",
+        "icon": "scarab"
+      },
+      {
+        "name": "Guardian Ring",
+        "cost": "175",
+        "icon": "guardianring"
+      }
+    ],
+    "upgrade": "Can be upgraded into Abyssal Skull, Dreamcatcher, or Nome's Wisdom."
+  },
+  "item_manaregen3": {
+    "name": "Ring of the Teacher",
+    "cost": "550",
+    "description": "",
+    "flavor": "",
+    "icon": "/images/items/manaregen3.png",
+    "components": [
+      {
+        "name": "Scarab",
+        "cost": "325",
+        "icon": "scarab"
+      },
+      {
+        "name": "Guardian Ring",
+        "cost": "175",
+        "icon": "guardianring"
+      }
+    ],
+    "upgrade": "Can be upgraded into Abyssal Skull, Dreamcatcher, or Nome's Wisdom."
+  },
+  "ringoftheteacher": {
+    "name": "Ring of the Teacher",
+    "cost": "550",
+    "description": "",
+    "flavor": "",
+    "icon": "/images/items/manaregen3.png",
+    "components": [
+      {
+        "name": "Scarab",
+        "cost": "325",
+        "icon": "scarab"
+      },
+      {
+        "name": "Guardian Ring",
+        "cost": "175",
+        "icon": "guardianring"
+      }
+    ],
+    "upgrade": "Can be upgraded into Abyssal Skull, Dreamcatcher, or Nome's Wisdom."
+  },
+  "greatarcana": {
+    "name": "Great Arcana",
+    "cost": "1575",
+    "description": "",
+    "flavor": "",
+    "icon": "/images/items/acolytesstaff.png",
+    "components": [
+      {
+        "name": "Steamstaff",
+        "cost": "800",
+        "icon": "steamstaff"
+      },
+      {
+        "name": "Apprentice Robe",
+        "cost": "450",
+        "icon": "apprenticesrobe"
+      },
+      {
+        "name": "Scarab",
+        "cost": "325",
+        "icon": "scarab"
+      }
+    ],
+    "upgrade": "Builds into Hellflower."
+  },
+  "steamstaff": {
+    "name": "Steamstaff",
+    "cost": "800",
+    "description": "",
+    "flavor": "",
+    "icon": "/images/items/steamstaff.png",
+    "components": [],
+    "upgrade": "Builds into Great Arcana."
+  }
+}

@@ -1,0 +1,18 @@
+{
+  ServerName: kongor,
+  ServerVersion: 5.0.2,
+  VfsPrecedenceHierarchy: [
+    override,
+    base,
+    game,
+    ClientPackageFiles,
+    shared,
+    KONGOR/*
+  ],
+  HasHealthCheckTool: true,
+  HasVfsResolveTool: true,
+  HasAssertVisualTool: true,
+  HealthCheckCategory: ReadOnly,
+  VfsResolveCategory: ReadOnly,
+  AssertVisualCategory: Default
+}

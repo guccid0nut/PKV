@@ -1,0 +1,1559 @@
+@{
+    ViewData["Title"] = "HoN Text Color & Message Generator";
+}
+
+<div class="w-full max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+    <!-- Header Banner -->
+    <div
+        class="relative overflow-hidden rounded-3xl bg-gradient-to-r from-purple-900/60 via-slate-900/80 to-slate-950 p-6 sm:p-8 border border-purple-500/30 shadow-2xl">
+        <div
+            class="absolute -right-10 -bottom-10 w-72 h-72 bg-gradient-to-tr from-purple-500/20 to-pink-500/20 rounded-full blur-3xl pointer-events-none"></div>
+        <div class="relative z-10 space-y-3">
+            <div
+                class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-purple-500/15 border border-purple-500/30 text-purple-300 text-xs font-bold uppercase tracking-wider">
+                <span>🎨 Public Tool</span>
+                <span class="text-purple-400">•</span>
+                <span>HoN ^RGB & ^code Format</span>
+            </div>
+            <h1 class="text-3xl sm:text-4xl font-black text-white tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-purple-300 via-pink-300 to-amber-200">
+                HoN Text Color & Message Generator
+            </h1>
+            <p class="text-slate-300 text-sm sm:text-base max-w-3xl leading-relaxed">
+                Create fun, eye-catching, colorful messages for Heroes of Newerth in-game chat, match lobbies, and clan
+                channels. Supports native 3-digit <code
+                    class="text-emerald-300 font-mono font-bold bg-slate-900 px-1.5 py-0.5 rounded">^RGB</code>
+                numerical codes (like <code
+                    class="text-emerald-400 font-mono font-bold bg-slate-900 px-1.5 py-0.5 rounded">^091</code> Matrix
+                Green) and classic <code class="text-pink-300 font-mono font-bold bg-slate-900 px-1.5 py-0.5 rounded">^code</code>
+                formats!
+            </p>
+        </div>
+    </div>
+
+    <!-- Main Tool Navigation Tabs -->
+    <div class="flex flex-wrap items-center gap-3 p-1.5 bg-slate-950/80 rounded-2xl border border-slate-800 shadow-xl">
+        <button type="button" id="tabBtnGenerator" onclick="switchMainTab('generator')"
+                class="flex-1 min-w-[240px] px-5 py-3 rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-2.5 bg-gradient-to-r from-purple-600/30 to-pink-600/30 text-white border border-purple-500/50 shadow-md cursor-pointer">
+            <i class="fa-solid fa-wand-magic-sparkles text-pink-400"></i>
+            <span>Text & Gradient Generator</span>
+        </button>
+        <button type="button" id="tabBtnMacros" onclick="switchMainTab('macros')"
+                class="flex-1 min-w-[240px] px-5 py-3 rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-2.5 bg-slate-900/60 text-slate-400 border border-slate-800/80 hover:text-slate-200 cursor-pointer">
+            <i class="fa-solid fa-skull-crossbones text-amber-400"></i>
+            <span>ASCII Kill Macro Studio & AHK Exporter</span>
+            <span class="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-amber-500/20 text-amber-300 border border-amber-500/40 uppercase tracking-wider">
+                15 Macros
+            </span>
+        </button>
+    </div>
+
+    <!-- TAB 1: Single-Line Text & Gradient Generator -->
+    <div id="tabContentGenerator" class="space-y-8">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        <!-- Left Panel: Text & Controls (7 Cols) -->
+        <div class="lg:col-span-7 space-y-6">
+            <!-- Text Input Card -->
+            <div class="glass-panel p-6 rounded-3xl border border-slate-800 space-y-4">
+                <div class="flex items-center justify-between">
+                    <label for="rawTextInput" class="text-sm font-bold text-slate-200 flex items-center gap-2">
+                        <i class="fa-solid fa-pen-to-square text-purple-400"></i>
+                        <span>Your Message</span>
+                    </label>
+                    <span id="charCounter"
+                          class="text-xs font-semibold text-slate-400 bg-slate-900/80 px-2.5 py-1 rounded-full border border-slate-800">
+                        0 characters
+                    </span>
+                </div>
+
+                <textarea id="rawTextInput" rows="3"
+                          class="w-full bg-slate-950/90 border border-slate-700/80 rounded-2xl p-4 text-white text-base font-medium focus:outline-none focus:border-purple-500/80 focus:ring-2 focus:ring-purple-500/20 transition-all placeholder-slate-500"
+                          placeholder="Type your message here..."></textarea>
+
+                <!-- Format Output Mode Toggle -->
+                <div
+                    class="pt-2 flex items-center justify-between flex-wrap gap-3 bg-slate-950/60 p-3 rounded-2xl border border-slate-800">
+                    <span class="text-xs font-bold text-slate-300 flex items-center gap-1.5">
+                        <i class="fa-solid fa-sliders text-amber-400"></i>
+                        <span>HoN Color Encoding Mode:</span>
+                    </span>
+                    <div class="flex items-center gap-2">
+                        <button type="button" id="btnModeNumeric" onclick="setMode('numeric')"
+                                class="px-3 py-1.5 rounded-xl text-xs font-bold transition-all border bg-emerald-500/20 text-emerald-300 border-emerald-500/50 shadow-sm cursor-pointer">
+                            <span>^RGB 3-Digit (1000 Colors)</span>
+                        </button>
+                        <button type="button" id="btnModeLetter" onclick="setMode('letter')"
+                                class="px-3 py-1.5 rounded-xl text-xs font-bold transition-all border bg-slate-900 text-slate-400 border-slate-800 hover:text-slate-200 cursor-pointer">
+                            <span>^x 1-Letter Classic</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Quick Preset Templates -->
+                <div class="space-y-2 pt-1">
+                    <span class="text-xs font-semibold text-slate-400">Quick Templates:</span>
+                    <div class="flex flex-wrap gap-2">
+                        <button type="button" onclick="setTemplate('MID OR FEED!')"
+                                class="px-2.5 py-1 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700/60 text-xs font-semibold text-slate-300 hover:text-amber-300 transition-all cursor-pointer">
+                            🔥 MID OR FEED!
+                        </button>
+                        <button type="button" onclick="setTemplate('GL HF ALL!')"
+                                class="px-2.5 py-1 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700/60 text-xs font-semibold text-slate-300 hover:text-cyan-300 transition-all cursor-pointer">
+                            🌈 GL HF ALL!
+                        </button>
+                        <button type="button" onclick="setTemplate('GG WP ALL!')"
+                                class="px-2.5 py-1 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700/60 text-xs font-semibold text-slate-300 hover:text-emerald-300 transition-all cursor-pointer">
+                            ✨ GG WP ALL!
+                        </button>
+                        <button type="button" onclick="setTemplate('KONGOR IS MINE')"
+                                class="px-2.5 py-1 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700/60 text-xs font-semibold text-slate-300 hover:text-purple-300 transition-all cursor-pointer">
+                            👑 KONGOR IS MINE
+                        </button>
+                        <button type="button" onclick="setTemplate('PENTAKILL!!!')"
+                                class="px-2.5 py-1 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700/60 text-xs font-semibold text-slate-300 hover:text-red-400 transition-all cursor-pointer">
+                            💀 PENTAKILL!!!
+                        </button>
+                        <button type="button" onclick="setTemplate('LANECALL: TOP')"
+                                class="px-2.5 py-1 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700/60 text-xs font-semibold text-slate-300 hover:text-blue-300 transition-all cursor-pointer">
+                            🛡️ LANECALL: TOP
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Gradient & Style Presets Card -->
+            <div class="glass-panel p-6 rounded-3xl border border-slate-800 space-y-5">
+                <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                    <h3 class="text-sm font-bold text-slate-200 flex items-center gap-2">
+                        <i class="fa-solid fa-wand-magic-sparkles text-pink-400"></i>
+                        <span>Gradient & Color Themes</span>
+                    </h3>
+                </div>
+
+                <!-- Presets Grid -->
+                <div class="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
+                    <button type="button" onclick="applyPreset('matrix')"
+                            class="p-3 rounded-2xl bg-slate-900/90 hover:bg-slate-800 border border-slate-700/70 hover:border-emerald-500/50 flex items-center gap-2.5 text-xs font-bold transition-all text-left group cursor-pointer">
+                        <span
+                            class="w-4 h-4 rounded-full bg-gradient-to-r from-emerald-600 via-green-400 to-lime-300 flex-shrink-0"></span>
+                        <span class="text-slate-200 group-hover:text-emerald-300">Matrix Green (^091)</span>
+                    </button>
+
+                    <button type="button" onclick="applyPreset('rainbow')"
+                            class="p-3 rounded-2xl bg-slate-900/90 hover:bg-slate-800 border border-slate-700/70 hover:border-purple-500/50 flex items-center gap-2.5 text-xs font-bold transition-all text-left group cursor-pointer">
+                        <span
+                            class="w-4 h-4 rounded-full bg-gradient-to-r from-red-500 via-green-500 via-cyan-500 to-purple-500 flex-shrink-0"></span>
+                        <span class="text-slate-200 group-hover:text-white">Rainbow Spectrum</span>
+                    </button>
+
+                    <button type="button" onclick="applyPreset('fire')"
+                            class="p-3 rounded-2xl bg-slate-900/90 hover:bg-slate-800 border border-slate-700/70 hover:border-amber-500/50 flex items-center gap-2.5 text-xs font-bold transition-all text-left group cursor-pointer">
+                        <span
+                            class="w-4 h-4 rounded-full bg-gradient-to-r from-red-600 via-orange-500 to-yellow-400 flex-shrink-0"></span>
+                        <span class="text-slate-200 group-hover:text-amber-300">Inferno Fire</span>
+                    </button>
+
+                    <button type="button" onclick="applyPreset('ice')"
+                            class="p-3 rounded-2xl bg-slate-900/90 hover:bg-slate-800 border border-slate-700/70 hover:border-cyan-500/50 flex items-center gap-2.5 text-xs font-bold transition-all text-left group cursor-pointer">
+                        <span
+                            class="w-4 h-4 rounded-full bg-gradient-to-r from-blue-500 via-cyan-400 to-white flex-shrink-0"></span>
+                        <span class="text-slate-200 group-hover:text-cyan-300">Frost Ice</span>
+                    </button>
+
+                    <button type="button" onclick="applyPreset('toxic')"
+                            class="p-3 rounded-2xl bg-slate-900/90 hover:bg-slate-800 border border-slate-700/70 hover:border-emerald-500/50 flex items-center gap-2.5 text-xs font-bold transition-all text-left group cursor-pointer">
+                        <span
+                            class="w-4 h-4 rounded-full bg-gradient-to-r from-lime-400 via-emerald-500 to-teal-400 flex-shrink-0"></span>
+                        <span class="text-slate-200 group-hover:text-emerald-300">Toxic Neon</span>
+                    </button>
+
+                    <button type="button" onclick="applyPreset('gold')"
+                            class="p-3 rounded-2xl bg-slate-900/90 hover:bg-slate-800 border border-slate-700/70 hover:border-amber-500/50 flex items-center gap-2.5 text-xs font-bold transition-all text-left group cursor-pointer">
+                        <span
+                            class="w-4 h-4 rounded-full bg-gradient-to-r from-yellow-300 via-amber-500 to-orange-600 flex-shrink-0"></span>
+                        <span class="text-slate-200 group-hover:text-amber-200">Gold Sunset</span>
+                    </button>
+
+                    <button type="button" onclick="applyPreset('void')"
+                            class="p-3 rounded-2xl bg-slate-900/90 hover:bg-slate-800 border border-slate-700/70 hover:border-purple-500/50 flex items-center gap-2.5 text-xs font-bold transition-all text-left group cursor-pointer">
+                        <span
+                            class="w-4 h-4 rounded-full bg-gradient-to-r from-purple-600 via-violet-500 to-blue-600 flex-shrink-0"></span>
+                        <span class="text-slate-200 group-hover:text-purple-300">Void Shadow</span>
+                    </button>
+
+                    <button type="button" onclick="applyPreset('candy')"
+                            class="p-3 rounded-2xl bg-slate-900/90 hover:bg-slate-800 border border-slate-700/70 hover:border-pink-500/50 flex items-center gap-2.5 text-xs font-bold transition-all text-left group cursor-pointer">
+                        <span
+                            class="w-4 h-4 rounded-full bg-gradient-to-r from-pink-500 via-fuchsia-400 to-purple-400 flex-shrink-0"></span>
+                        <span class="text-slate-200 group-hover:text-pink-300">Candy Pink</span>
+                    </button>
+
+                    <button type="button" onclick="applyPreset('monochrome')"
+                            class="p-3 rounded-2xl bg-slate-900/90 hover:bg-slate-800 border border-slate-700/70 hover:border-slate-500/50 flex items-center gap-2.5 text-xs font-bold transition-all text-left group cursor-pointer">
+                        <span
+                            class="w-4 h-4 rounded-full bg-gradient-to-r from-slate-100 via-slate-400 to-slate-800 flex-shrink-0"></span>
+                        <span class="text-slate-200 group-hover:text-slate-300">Monochrome</span>
+                    </button>
+                </div>
+
+                <!-- Custom RGB Color Picker Section -->
+                <div class="pt-4 border-t border-slate-800 space-y-3">
+                    <span class="text-xs font-bold text-slate-300 flex items-center gap-2">
+                        <i class="fa-solid fa-palette text-cyan-400"></i>
+                        <span>Custom Multi-Color Gradient</span>
+                    </span>
+                    <div class="flex items-center gap-3 flex-wrap">
+                        <div class="flex items-center gap-2 bg-slate-950 p-2 rounded-xl border border-slate-800">
+                            <label for="colorStart" class="text-xs text-slate-400 font-semibold">Start:</label>
+                            <input type="color" id="colorStart" value="#00FF1C"
+                                   class="w-7 h-7 rounded-lg border-0 cursor-pointer bg-transparent"/>
+                        </div>
+                        <div class="flex items-center gap-2 bg-slate-950 p-2 rounded-xl border border-slate-800">
+                            <label for="colorMid" class="text-xs text-slate-400 font-semibold">Mid:</label>
+                            <input type="color" id="colorMid" value="#00E5FF"
+                                   class="w-7 h-7 rounded-lg border-0 cursor-pointer bg-transparent"/>
+                        </div>
+                        <div class="flex items-center gap-2 bg-slate-950 p-2 rounded-xl border border-slate-800">
+                            <label for="colorEnd" class="text-xs text-slate-400 font-semibold">End:</label>
+                            <input type="color" id="colorEnd" value="#FF00A0"
+                                   class="w-7 h-7 rounded-lg border-0 cursor-pointer bg-transparent"/>
+                        </div>
+
+                        <button type="button" onclick="applyCustomGradient()"
+                                class="px-4 py-2.5 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-bold text-xs shadow-md transition-all flex items-center gap-1.5 cursor-pointer">
+                            <i class="fa-solid fa-check"></i>
+                            <span>Apply Gradient</span>
+                        </button>
+
+                        <button type="button" onclick="randomizeGradient()"
+                                class="px-4 py-2.5 rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white font-bold text-xs shadow-md transition-all flex items-center gap-1.5 cursor-pointer">
+                            <i class="fa-solid fa-dice text-amber-300"></i>
+                            <span>Randomize Gradient</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Verified Single Color Quick Palette -->
+                <div class="pt-4 border-t border-slate-800 space-y-2">
+                    <span class="text-xs font-bold text-slate-300">Verified Single Color Palette (Apply Code):</span>
+                    <div class="flex flex-wrap gap-1.5">
+                        <button type="button" onclick="applySolidCode('091')"
+                                class="px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-black shadow cursor-pointer"
+                                title="^091 Matrix Green">^091 Matrix
+                        </button>
+                        <button type="button" onclick="applySolidCode('r')"
+                                class="px-2.5 py-1 rounded-lg bg-red-600 hover:bg-red-500 text-white text-xs font-black shadow cursor-pointer"
+                                title="^r Red">^r Red
+                        </button>
+                        <button type="button" onclick="applySolidCode('g')"
+                                class="px-2.5 py-1 rounded-lg bg-green-600 hover:bg-green-500 text-white text-xs font-black shadow cursor-pointer"
+                                title="^g Green">^g Green
+                        </button>
+                        <button type="button" onclick="applySolidCode('b')"
+                                class="px-2.5 py-1 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-xs font-black shadow cursor-pointer"
+                                title="^b Blue">^b Blue
+                        </button>
+                        <button type="button" onclick="applySolidCode('y')"
+                                class="px-2.5 py-1 rounded-lg bg-yellow-500 hover:bg-yellow-400 text-slate-950 text-xs font-black shadow cursor-pointer"
+                                title="^y Yellow">^y Yellow
+                        </button>
+                        <button type="button" onclick="applySolidCode('c')"
+                                class="px-2.5 py-1 rounded-lg bg-cyan-500 hover:bg-cyan-400 text-slate-950 text-xs font-black shadow cursor-pointer"
+                                title="^c Cyan">^c Cyan
+                        </button>
+                        <button type="button" onclick="applySolidCode('m')"
+                                class="px-2.5 py-1 rounded-lg bg-purple-600 hover:bg-purple-500 text-white text-xs font-black shadow cursor-pointer"
+                                title="^m Magenta">^m Magenta
+                        </button>
+                        <button type="button" onclick="applySolidCode('o')"
+                                class="px-2.5 py-1 rounded-lg bg-orange-500 hover:bg-orange-400 text-white text-xs font-black shadow cursor-pointer"
+                                title="^o Orange">^o Orange
+                        </button>
+                        <button type="button" onclick="applySolidCode('p')"
+                                class="px-2.5 py-1 rounded-lg bg-pink-500 hover:bg-pink-400 text-white text-xs font-black shadow cursor-pointer"
+                                title="^p Pink">^p Pink
+                        </button>
+                        <button type="button" onclick="applySolidCode('w')"
+                                class="px-2.5 py-1 rounded-lg bg-white hover:bg-slate-200 text-slate-950 text-xs font-black shadow cursor-pointer"
+                                title="^w White">^w White
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Panel: Live Preview & Formatted Output (5 Cols) -->
+        <div class="lg:col-span-5 space-y-6">
+            <!-- In-Game Chat Visual Preview Card -->
+            <div class="glass-panel p-6 rounded-3xl border border-slate-800 space-y-4">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-sm font-bold text-slate-200 flex items-center gap-2">
+                        <i class="fa-solid fa-display text-cyan-400"></i>
+                        <span>Live In-Game Chat Preview</span>
+                    </h3>
+                    <span
+                        class="text-[11px] font-semibold text-slate-400 bg-slate-900 px-2 py-0.5 rounded-md border border-slate-800">
+                        HoN UI Match Style
+                    </span>
+                </div>
+
+                <!-- Simulated HoN Chat Box -->
+                <div
+                    class="w-full min-h-[140px] bg-slate-950/95 rounded-2xl p-4 border border-cyan-500/20 shadow-inner flex flex-col justify-end space-y-2 relative overflow-hidden">
+                    <div
+                        class="absolute top-2 right-2 text-[10px] uppercase tracking-wider font-bold text-slate-600 select-none">
+                        ALL CHAT
+                    </div>
+
+                    <!-- Chat Message Stream Simulation -->
+                    <div class="text-xs text-slate-500 select-none font-mono">
+                        [ALL] System: Welcome to Newerth!
+                    </div>
+
+                    <div id="liveChatPreview"
+                         class="text-sm font-bold leading-relaxed font-sans transition-all break-words"
+                         style="text-shadow: 1px 1px 2px #000, 0 0 5px rgba(0,0,0,0.9);">
+                        <!-- Rendered colored spans will go here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Formatted Code Output Card -->
+            <div
+                class="glass-panel p-6 rounded-3xl border border-purple-500/30 shadow-xl space-y-4 relative overflow-hidden">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-sm font-bold text-slate-200 flex items-center gap-2">
+                        <i class="fa-solid fa-code text-amber-400"></i>
+                        <span>Formatted HoN Code</span>
+                    </h3>
+                </div>
+
+                <textarea id="formattedCodeOutput" readonly rows="4"
+                          class="w-full bg-slate-950 font-mono text-xs text-purple-300 border border-purple-500/30 rounded-2xl p-4 focus:outline-none select-all break-all"
+                          placeholder="^091M^092I^093D ^094O^095R ^096F..."></textarea>
+
+                <div class="flex items-center gap-3">
+                    <button type="button" id="btnCopyCode" onclick="copyFormattedCode()"
+                            class="flex-1 py-3 px-4 rounded-2xl bg-gradient-to-r from-purple-600 via-pink-600 to-amber-500 hover:from-purple-500 hover:to-amber-400 text-white font-bold text-sm shadow-lg shadow-purple-950/50 transition-all flex items-center justify-center gap-2 cursor-pointer">
+                        <i class="fa-solid fa-copy"></i>
+                        <span id="copyBtnText">Copy Formatted Text</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Reverse Decoder Card -->
+            <div class="glass-panel p-6 rounded-3xl border border-slate-800 space-y-4">
+                <h3 class="text-xs font-bold text-slate-300 flex items-center gap-2">
+                    <i class="fa-solid fa-code-compare text-emerald-400"></i>
+                    <span>Paste & Decode Existing ^code / ^RGB String</span>
+                </h3>
+                <div class="flex gap-2">
+                    <input type="text" id="decodeInput" placeholder="Paste e.g. ^091Matrix^099Cyan or ^rRed^gGreen"
+                           class="flex-1 bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs font-mono text-slate-200 focus:outline-none focus:border-emerald-500/50"/>
+                    <button type="button" onclick="loadFromDecode()"
+                            class="px-4 py-2 rounded-xl bg-emerald-600/20 hover:bg-emerald-600/30 border border-emerald-500/40 text-xs font-bold text-emerald-300 transition-all cursor-pointer">
+                        Decode
+                    </button>
+                </div>
+
+                <!-- Decoded Result Container (Shown when Decode is clicked) -->
+                <div id="decodeResultBox" class="hidden space-y-3 pt-3 border-t border-slate-800">
+                    <div class="space-y-1">
+                        <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Decoded Visual Preview:</span>
+                        <div id="decodedVisualPreview"
+                             class="p-3 rounded-xl bg-slate-950/90 border border-emerald-500/30 text-sm font-bold break-words"
+                             style="text-shadow: 1px 1px 2px #000;"></div>
+                    </div>
+
+                    <div class="space-y-1">
+                        <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Clean Plain Text (No ^ Codes):</span>
+                        <div class="flex gap-2">
+                            <input type="text" id="decodedPlainText" readonly
+                                   class="flex-1 bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs font-medium text-slate-200 focus:outline-none"/>
+                            <button type="button" id="btnCopyDecoded" onclick="copyDecodedText()"
+                                    class="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-xs font-bold text-slate-200 transition-all cursor-pointer">
+                                Copy Plain Text
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="pt-1">
+                        <button type="button" onclick="loadDecodedToEditor()"
+                                class="text-xs text-purple-400 hover:text-purple-300 font-semibold underline underline-offset-4 flex items-center gap-1 cursor-pointer">
+                            <span>Load raw code into Editor to modify</span>
+                            <i class="fa-solid fa-arrow-right text-[10px]"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    </div>
+    <!-- END TAB 1: Single-Line Text & Gradient Generator -->
+
+    <!-- TAB 2: ASCII Kill Macro Studio & AutoHotkey Exporter -->
+    <div id="tabContentMacros" class="space-y-8 hidden">
+        <!-- Top Toolbar: Search & Category Filters -->
+        <div class="glass-panel p-5 rounded-3xl border border-slate-800 flex flex-wrap items-center justify-between gap-4">
+            <div class="flex items-center gap-2 flex-wrap">
+                <span class="text-xs font-bold text-slate-400 uppercase tracking-wider mr-1">
+                    <i class="fa-solid fa-filter text-amber-400 mr-1"></i> Filter:
+                </span>
+                <button type="button" onclick="filterMacroCategory('all')" id="filterBtn-all"
+                        class="macro-filter-btn px-3 py-1.5 rounded-xl text-xs font-bold transition-all border bg-amber-500/20 text-amber-300 border-amber-500/50 shadow-sm cursor-pointer">
+                    All (15)
+                </button>
+                <button type="button" onclick="filterMacroCategory('kill')" id="filterBtn-kill"
+                        class="macro-filter-btn px-3 py-1.5 rounded-xl text-xs font-bold transition-all border bg-slate-900 text-slate-400 border-slate-800 hover:text-slate-200 cursor-pointer">
+                    💀 Kills & Taunts
+                </button>
+                <button type="button" onclick="filterMacroCategory('meme')" id="filterBtn-meme"
+                        class="macro-filter-btn px-3 py-1.5 rounded-xl text-xs font-bold transition-all border bg-slate-900 text-slate-400 border-slate-800 hover:text-slate-200 cursor-pointer">
+                    🔥 Memes & Trolls
+                </button>
+                <button type="button" onclick="filterMacroCategory('classic')" id="filterBtn-classic"
+                        class="macro-filter-btn px-3 py-1.5 rounded-xl text-xs font-bold transition-all border bg-slate-900 text-slate-400 border-slate-800 hover:text-slate-200 cursor-pointer">
+                    ✈️ Classic HoN
+                </button>
+            </div>
+
+            <!-- Search input -->
+            <div class="relative w-full sm:w-64">
+                <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500 text-xs"></i>
+                <input type="text" id="macroSearchInput" oninput="onMacroSearchInput(this.value)"
+                       placeholder="Search macros..."
+                       class="w-full bg-slate-950/90 border border-slate-800 rounded-xl pl-9 pr-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-amber-500/50" />
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            <!-- Left Column: Macro Cards & AHK Generator (7 Cols) -->
+            <div class="lg:col-span-7 space-y-6">
+                <!-- Macro Cards Grid -->
+                <div class="space-y-3">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-bold text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
+                            <i class="fa-solid fa-list text-amber-400"></i> Select Macro to Preview & Configure:
+                        </span>
+                        <span id="macroCountBadge" class="text-xs font-semibold text-slate-400 bg-slate-900 px-2 py-0.5 rounded-md border border-slate-800">
+                            15 available
+                        </span>
+                    </div>
+
+                    <div id="macroCardsContainer" class="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-[460px] overflow-y-auto pr-1">
+                        <!-- Dynamically populated by JavaScript -->
+                    </div>
+                </div>
+
+                <!-- AutoHotkey Generator & Hotkey Binding Box -->
+                <div class="glass-panel p-6 rounded-3xl border border-amber-500/30 shadow-2xl space-y-5 bg-gradient-to-b from-slate-900/90 to-slate-950">
+                    <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                        <div class="space-y-1">
+                            <h3 class="text-base font-black text-white flex items-center gap-2">
+                                <i class="fa-solid fa-keyboard text-amber-400"></i>
+                                <span>AutoHotkey (.ahk) Macro Suite Generator</span>
+                            </h3>
+                            <p class="text-xs text-slate-400">
+                                Assign hotkeys to your favorite macros and download a ready-to-run Windows script.
+                            </p>
+                        </div>
+                        <span class="px-2.5 py-1 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 text-[11px] font-bold">
+                            Zero Install Script
+                        </span>
+                    </div>
+
+                    <!-- Hotkey assignment list -->
+                    <div class="space-y-2">
+                        <span class="text-xs font-bold text-slate-300">Hotkey Bindings:</span>
+                        <div id="hotkeyConfigList" class="space-y-2 max-h-[220px] overflow-y-auto pr-1 bg-slate-950/60 p-3 rounded-2xl border border-slate-800">
+                            <!-- Dynamically populated by JavaScript -->
+                        </div>
+                    </div>
+
+                    <!-- Delay & Window Settings -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-slate-950/40 p-3.5 rounded-2xl border border-slate-800">
+                        <div class="space-y-1">
+                            <div class="flex items-center justify-between">
+                                <label for="ahkDelaySlider" class="text-xs font-bold text-slate-300">
+                                    Line Delay (ms):
+                                </label>
+                                <span id="ahkDelayValue" class="text-xs font-mono font-bold text-amber-300">65ms</span>
+                            </div>
+                            <input type="range" id="ahkDelaySlider" min="40" max="150" value="65" step="5"
+                                   oninput="updateAhkDelay(this.value)"
+                                   class="w-full accent-amber-400 cursor-pointer" />
+                            <p class="text-[10px] text-slate-500">65ms prevents HoN chat flood filters from dropping lines.</p>
+                        </div>
+
+                        <div class="space-y-2 flex flex-col justify-center">
+                            <label class="flex items-center gap-2 cursor-pointer text-xs font-semibold text-slate-300">
+                                <input type="checkbox" id="ahkWindowGuard" checked class="accent-amber-400 rounded cursor-pointer" />
+                                <span>Lock to HoN Window (<code class="text-amber-300 font-mono text-[10px]">hon_x64.exe</code>)</span>
+                            </label>
+                            <p class="text-[10px] text-slate-500">Prevents macros from accidentally firing while in Discord or browser.</p>
+                        </div>
+                    </div>
+
+                    <!-- Download & Copy Action Buttons -->
+                    <div class="flex flex-wrap items-center gap-3 pt-2">
+                        <button type="button" onclick="downloadFullAhkScript()"
+                                class="flex-1 min-w-[200px] py-3.5 px-5 rounded-2xl bg-gradient-to-r from-amber-500 via-orange-500 to-red-500 hover:from-amber-400 hover:to-red-400 text-slate-950 font-black text-xs sm:text-sm shadow-lg shadow-amber-950/50 transition-all flex items-center justify-center gap-2 cursor-pointer">
+                            <i class="fa-solid fa-download text-slate-950"></i>
+                            <span id="btnDownloadAhkText">Download Full .AHK Suite</span>
+                        </button>
+                        <button type="button" onclick="copyFullAhkCode()" id="btnCopyAhk"
+                                class="py-3.5 px-5 rounded-2xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-white font-bold text-xs sm:text-sm transition-all flex items-center justify-center gap-2 cursor-pointer">
+                            <i class="fa-solid fa-copy text-amber-400"></i>
+                            <span id="btnCopyAhkText">Copy Script</span>
+                        </button>
+                    </div>
+
+                    <!-- How to use instructions accordion/card -->
+                    <div class="p-3.5 rounded-2xl bg-slate-950/80 border border-slate-800 text-xs text-slate-400 space-y-1.5">
+                        <div class="font-bold text-slate-300 flex items-center gap-1.5">
+                            <i class="fa-solid fa-circle-question text-cyan-400"></i>
+                            <span>How to use this script in 30 seconds:</span>
+                        </div>
+                        <ol class="list-decimal list-inside space-y-1 text-[11px] text-slate-400 pl-1 leading-relaxed">
+                            <li>Install <a href="https://www.autohotkey.com/" target="_blank" rel="noopener noreferrer" class="text-amber-300 underline font-semibold">AutoHotkey (v1.1 or v2)</a> if you don't have it.</li>
+                            <li>Click <span class="text-amber-300 font-semibold">Download Full .AHK Suite</span> above to get <code class="text-cyan-300 bg-slate-900 px-1 py-0.5 rounded">hon_chat_macros.ahk</code>.</li>
+                            <li>Double-click the <code class="text-cyan-300 bg-slate-900 px-1 py-0.5 rounded">.ahk</code> file to run it in your Windows system tray.</li>
+                            <li>In HoN match/lobby, hit your hotkey (<code class="text-amber-300 bg-slate-900 px-1 py-0.5 rounded">Numpad 1</code>, etc.) to instantly blast the macro!</li>
+                        </ol>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column: Live Chat Preview & Selected Macro Inspector (5 Cols) -->
+            <div class="lg:col-span-5 space-y-6">
+                <!-- Authentic In-Game Chat Box Simulation -->
+                <div class="glass-panel p-6 rounded-3xl border border-slate-800 space-y-4">
+                    <div class="flex items-center justify-between">
+                        <h3 class="text-sm font-bold text-slate-200 flex items-center gap-2">
+                            <i class="fa-solid fa-display text-cyan-400"></i>
+                            <span id="previewMacroTitle">Live In-Game Chat Preview</span>
+                        </h3>
+                        <span id="previewMacroBadge" class="text-[10px] font-bold uppercase tracking-wider text-amber-300 bg-amber-500/15 border border-amber-500/30 px-2 py-0.5 rounded-md">
+                            6 Lines
+                        </span>
+                    </div>
+
+                    <!-- Simulated HoN Chat Container -->
+                    <div class="w-full min-h-[220px] bg-black/95 rounded-2xl p-4 border border-cyan-500/20 shadow-inner flex flex-col justify-end space-y-1.5 relative overflow-hidden font-mono select-none">
+                        <div class="absolute top-2.5 right-3 text-[10px] uppercase tracking-wider font-extrabold text-slate-600 flex items-center gap-1">
+                            <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                            <span>ALL CHAT (In-Game)</span>
+                        </div>
+
+                        <div class="text-[11px] text-slate-600 font-mono pb-1 border-b border-slate-900">
+                            [ALL] Match Host: Good luck, have fun!
+                        </div>
+
+                        <!-- Rendered lines of the macro -->
+                        <div id="macroChatPreviewLines" class="space-y-1 font-mono text-xs sm:text-sm font-bold leading-tight break-all"
+                             style="text-shadow: 1px 1px 2px #000, 0 0 5px rgba(0,0,0,0.9); white-space: pre-wrap;">
+                            <!-- Populated dynamically -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Selected Macro Code Box & Action Buttons -->
+                <div class="glass-panel p-6 rounded-3xl border border-purple-500/30 shadow-xl space-y-4">
+                    <div class="flex items-center justify-between">
+                        <h3 class="text-xs font-bold text-slate-300 flex items-center gap-1.5">
+                            <i class="fa-solid fa-code text-pink-400"></i>
+                            <span>Macro Raw Code (/emote & ^Color Tags):</span>
+                        </h3>
+                        <span id="selectedMacroKeyBadge" class="text-[11px] font-bold text-amber-300 font-mono bg-slate-900 px-2 py-0.5 rounded border border-slate-800">
+                            Key: Numpad 1
+                        </span>
+                    </div>
+
+                    <textarea id="selectedMacroCodeOutput" readonly rows="7"
+                              class="w-full bg-slate-950 font-mono text-xs text-purple-300 border border-purple-500/30 rounded-2xl p-4 focus:outline-none select-all break-all leading-relaxed"
+                              placeholder="Macro code..."></textarea>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1">
+                        <button type="button" onclick="copySelectedMacroCode()" id="btnCopyMacroOnly"
+                                class="py-2.5 px-4 rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white font-bold text-xs shadow-md transition-all flex items-center justify-center gap-1.5 cursor-pointer">
+                            <i class="fa-solid fa-copy"></i>
+                            <span id="btnCopyMacroOnlyText">Copy Macro</span>
+                        </button>
+                        <button type="button" onclick="downloadSelectedMacroAhk()"
+                                class="py-2.5 px-4 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-amber-300 font-bold text-xs shadow-md transition-all flex items-center justify-center gap-1.5 cursor-pointer">
+                            <i class="fa-solid fa-file-arrow-down"></i>
+                            <span>Download .AHK</span>
+                        </button>
+                    </div>
+
+                    <div class="pt-2 border-t border-slate-800/80 flex items-center justify-between">
+                        <button type="button" onclick="sendSelectedMacroToGenerator()"
+                                class="text-xs text-purple-400 hover:text-purple-300 font-semibold underline underline-offset-4 flex items-center gap-1.5 cursor-pointer">
+                            <i class="fa-solid fa-pen-nib text-xs"></i>
+                            <span>Customize text in Generator</span>
+                            <i class="fa-solid fa-arrow-right text-[10px]"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Pro-Tips Card for In-Game HoN -->
+                <div class="glass-panel p-5 rounded-3xl border border-slate-800 text-xs space-y-2.5">
+                    <span class="font-bold text-slate-300 flex items-center gap-1.5">
+                        <i class="fa-solid fa-lightbulb text-amber-400"></i>
+                        <span>Pro-Tips for HoN In-Game Macros:</span>
+                    </span>
+                    <ul class="space-y-1.5 text-[11px] text-slate-400 leading-relaxed list-disc list-inside">
+                        <li><span class="text-slate-300 font-semibold">Emote Wrapper</span>: Using <code class="text-emerald-300 bg-slate-900 px-1 py-0.5 rounded">/emote ^:</code> allows multi-line text to render without truncation and avoids chat prefix conflicts.</li>
+                        <li><span class="text-slate-300 font-semibold">Clipboard Delivery</span>: Pasting via clipboard in AutoHotkey (<code class="text-cyan-300 bg-slate-900 px-1 py-0.5 rounded">^v</code>) guarantees 100% character fidelity and bypasses Windows caret-accent bugs.</li>
+                        <li><span class="text-slate-300 font-semibold">Special Characters</span>: Avoid raw <code class="text-pink-300 bg-slate-900 px-1 py-0.5 rounded">{}</code> brackets inside macros as K2 interprets them as expressions. Use <code class="text-slate-300">()</code> or <code class="text-slate-300">[]</code> instead.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- END TAB 2: ASCII Kill Macro Studio -->
+</div>
+
+<!-- Custom Client Script -->
+<script>
+    // Verified 1-letter HoN colors
+    const HON_VERIFIED_LETTER_MAP = {
+        'r': '#FF3333', // Red
+        'g': '#33FF33', // Green
+        'b': '#3388FF', // Blue
+        'y': '#FFFF33', // Yellow
+        'c': '#33FFFF', // Cyan
+        'm': '#FF33FF', // Magenta
+        'w': '#FFFFFF', // White
+        'k': '#222222', // Black
+        'o': '#FF9933', // Orange
+        'p': '#FF66AA', // Pink
+        '*': '#FFFFFF', // Reset / White
+        'n': '#FFFFFF'  // Normal / White
+    };
+
+    // Preset palettes for 3-Digit ^RGB mode (native K2 1000-color format)
+    const PRESET_PALETTES_NUMERIC = {
+        'matrix': ['091', '081', '071', '092', '190', '090'],
+        'rainbow': ['900', '950', '990', '090', '099', '009', '509', '909'],
+        'fire': ['900', '920', '950', '980', '930', '900'],
+        'ice': ['999', '099', '059', '009', '059', '099'],
+        'toxic': ['590', '090', '095', '090', '590'],
+        'gold': ['990', '980', '960', '940', '970', '990'],
+        'void': ['909', '509', '209', '009', '509', '909'],
+        'candy': ['947', '907', '905', '959', '999'],
+        'monochrome': ['999', '666', '333', '666', '999']
+    };
+
+    // Preset palettes for 1-Letter ^x mode
+    const PRESET_PALETTES_LETTER = {
+        'matrix': ['g', 'c', 'g', 'w', 'g'],
+        'rainbow': ['r', 'o', 'y', 'g', 'c', 'b', 'p', 'm'],
+        'fire': ['r', 'o', 'y', 'o', 'r'],
+        'ice': ['w', 'c', 'b', 'c', 'w'],
+        'toxic': ['g', 'c', 'g', 'w'],
+        'gold': ['y', 'o', 'm', 'o', 'y'],
+        'void': ['m', 'b', 'p', 'b', 'm'],
+        'candy': ['p', 'm', 'w', 'm', 'p'],
+        'monochrome': ['w', 'k', 'w']
+    };
+
+    let currentMode = 'numeric'; // 'numeric' (^RGB 3-digit) or 'letter' (^x classic)
+    let activePreset = 'matrix';
+
+    document.addEventListener('DOMContentLoaded', () => {
+        const rawInput = document.getElementById('rawTextInput');
+        rawInput.value = "MID OR FEED! GL HF ALL!";
+        rawInput.addEventListener('input', updateFormattedOutput);
+        updateFormattedOutput();
+    });
+
+    function setMode(mode) {
+        currentMode = mode;
+        const btnNum = document.getElementById('btnModeNumeric');
+        const btnLet = document.getElementById('btnModeLetter');
+
+        if (mode === 'numeric') {
+            btnNum.className = "px-3 py-1.5 rounded-xl text-xs font-bold transition-all border bg-emerald-500/20 text-emerald-300 border-emerald-500/50 shadow-sm cursor-pointer";
+            btnLet.className = "px-3 py-1.5 rounded-xl text-xs font-bold transition-all border bg-slate-900 text-slate-400 border-slate-800 hover:text-slate-200 cursor-pointer";
+        } else {
+            btnLet.className = "px-3 py-1.5 rounded-xl text-xs font-bold transition-all border bg-pink-500/20 text-pink-300 border-pink-500/50 shadow-sm cursor-pointer";
+            btnNum.className = "px-3 py-1.5 rounded-xl text-xs font-bold transition-all border bg-slate-900 text-slate-400 border-slate-800 hover:text-slate-200 cursor-pointer";
+        }
+
+        updateFormattedOutput();
+    }
+
+    function setTemplate(text) {
+        const rawInput = document.getElementById('rawTextInput');
+        rawInput.value = text;
+        updateFormattedOutput();
+    }
+
+    function applyPreset(presetKey) {
+        activePreset = presetKey;
+        updateFormattedOutput();
+    }
+
+    function applySolidCode(codeStr) {
+        const rawInput = document.getElementById('rawTextInput');
+        let text = rawInput.value.replace(/\^\d{3}|\^[a-zA-Z*]/g, ''); // strip existing ^ codes
+        if (!text) text = "YOUR MESSAGE";
+        rawInput.value = text;
+
+        const formatted = `^${codeStr}${text}`;
+        document.getElementById('formattedCodeOutput').value = formatted;
+        renderLivePreview(formatted);
+        updateCharCount(text.length);
+    }
+
+    function updateFormattedOutput() {
+        const rawInput = document.getElementById('rawTextInput');
+        let text = rawInput.value;
+
+        // If input contains ^ codes already, parse and render directly
+        if (text.includes('^')) {
+            document.getElementById('formattedCodeOutput').value = text;
+            renderLivePreview(text);
+            updateCharCount(text.replace(/\^\d{3}|\^[a-zA-Z*]/g, '').length);
+            return;
+        }
+
+        if (!text) {
+            document.getElementById('formattedCodeOutput').value = '';
+            document.getElementById('liveChatPreview').innerHTML = '<span class="text-slate-600 italic">Preview will appear here...</span>';
+            updateCharCount(0);
+            return;
+        }
+
+        const palettes = currentMode === 'numeric' ? PRESET_PALETTES_NUMERIC : PRESET_PALETTES_LETTER;
+        const codes = palettes[activePreset] || palettes['matrix'];
+        let result = '';
+        let cleanCharIndex = 0;
+
+        for (let i = 0; i < text.length; i++) {
+            const char = text[i];
+            if (char === ' ') {
+                result += ' ';
+            } else {
+                const codeIndex = cleanCharIndex % codes.length;
+                const code = codes[codeIndex];
+                result += `^${code}${char}`;
+                cleanCharIndex++;
+            }
+        }
+
+        document.getElementById('formattedCodeOutput').value = result;
+        renderLivePreview(result);
+        updateCharCount(text.length);
+    }
+
+    function hexToRgb(hex) {
+        hex = hex.replace('#', '');
+        if (hex.length === 3) {
+            hex = hex.split('').map(c => c + c).join('');
+        }
+        const num = parseInt(hex, 16);
+        return {
+            r: (num >> 16) & 255,
+            g: (num >> 8) & 255,
+            b: num & 255
+        };
+    }
+
+    // Converts RGB (0-255) to 3-digit ^RGB HoN code (^000 to ^999)
+    function rgbToHon3DigitCode(rgb) {
+        const rDigit = Math.min(9, Math.max(0, Math.round(rgb.r / 255 * 9)));
+        const gDigit = Math.min(9, Math.max(0, Math.round(rgb.g / 255 * 9)));
+        const bDigit = Math.min(9, Math.max(0, Math.round(rgb.b / 255 * 9)));
+        return `${rDigit}${gDigit}${bDigit}`;
+    }
+
+    // Converts RGB (0-255) to closest verified 1-letter HoN code
+    function findClosestHonLetterCode(rgb) {
+        let minDistance = Infinity;
+        let bestCode = 'w';
+
+        for (const [code, hexColor] of Object.entries(HON_VERIFIED_LETTER_MAP)) {
+            if (code !== '*' && code !== 'n') {
+                const targetRgb = hexToRgb(hexColor);
+                const dist = Math.pow(rgb.r - targetRgb.r, 2) +
+                    Math.pow(rgb.g - targetRgb.g, 2) +
+                    Math.pow(rgb.b - targetRgb.b, 2);
+                if (dist < minDistance) {
+                    minDistance = dist;
+                    bestCode = code;
+                }
+            }
+        }
+        return bestCode;
+    }
+
+    function applyCustomGradient() {
+        const rawInput = document.getElementById('rawTextInput');
+        let text = rawInput.value.replace(/\^\d{3}|\^[a-zA-Z*]/g, '');
+        if (!text) text = "CUSTOM GRADIENT";
+        rawInput.value = text;
+
+        const startRgb = hexToRgb(document.getElementById('colorStart').value);
+        const midRgb = hexToRgb(document.getElementById('colorMid').value);
+        const endRgb = hexToRgb(document.getElementById('colorEnd').value);
+
+        let result = '';
+        let cleanChars = text.split('').filter(c => c !== ' ');
+        let total = cleanChars.length;
+        let charCounter = 0;
+
+        for (let i = 0; i < text.length; i++) {
+            const char = text[i];
+            if (char === ' ') {
+                result += ' ';
+            } else {
+                let t = total > 1 ? charCounter / (total - 1) : 0;
+                let currentRgb;
+                if (t <= 0.5) {
+                    let factor = t * 2;
+                    currentRgb = {
+                        r: Math.round(startRgb.r + (midRgb.r - startRgb.r) * factor),
+                        g: Math.round(startRgb.g + (midRgb.g - startRgb.g) * factor),
+                        b: Math.round(startRgb.b + (midRgb.b - startRgb.b) * factor)
+                    };
+                } else {
+                    let factor = (t - 0.5) * 2;
+                    currentRgb = {
+                        r: Math.round(midRgb.r + (endRgb.r - midRgb.r) * factor),
+                        g: Math.round(midRgb.g + (endRgb.g - midRgb.g) * factor),
+                        b: Math.round(midRgb.b + (endRgb.b - midRgb.b) * factor)
+                    };
+                }
+
+                const code = currentMode === 'numeric' ? rgbToHon3DigitCode(currentRgb) : findClosestHonLetterCode(currentRgb);
+                result += `^${code}${char}`;
+                charCounter++;
+            }
+        }
+
+        document.getElementById('formattedCodeOutput').value = result;
+        renderLivePreview(result);
+        updateCharCount(text.length);
+    }
+
+    function randomizeGradient() {
+        const randomBrightHex = () => {
+            const hue = Math.floor(Math.random() * 360);
+            return hslToHex(hue, 85, 55);
+        };
+
+        document.getElementById('colorStart').value = randomBrightHex();
+        document.getElementById('colorMid').value = randomBrightHex();
+        document.getElementById('colorEnd').value = randomBrightHex();
+        applyCustomGradient();
+    }
+
+    function hslToHex(h, s, l) {
+        l /= 100;
+        const a = s * Math.min(l, 1 - l) / 100;
+        const f = n => {
+            const k = (n + h / 30) % 12;
+            const color = l - a * Math.max(Math.min(k - 3, 9 - k, 1), -1);
+            return Math.round(255 * color).toString(16).padStart(2, '0');
+        };
+        return `#${f(0)}${f(8)}${f(4)}`;
+    }
+
+    // Full HoN color parser supporting ^RGB (3 digits) and ^x (1 letter)
+    function parseHonFormattedString(formattedText) {
+        let html = '';
+        let currentColor = '#FFFFFF';
+        let i = 0;
+
+        while (i < formattedText.length) {
+            if (formattedText[i] === '^' && i + 1 < formattedText.length) {
+                // Check 3-digit numerical code ^RGB
+                if (i + 3 < formattedText.length && /^\d{3}$/.test(formattedText.substring(i + 1, i + 4))) {
+                    const r = Math.round(parseInt(formattedText[i + 1]) * 255 / 9);
+                    const g = Math.round(parseInt(formattedText[i + 2]) * 255 / 9);
+                    const b = Math.round(parseInt(formattedText[i + 3]) * 255 / 9);
+                    currentColor = `rgb(${r}, ${g}, ${b})`;
+                    i += 4;
+                    continue;
+                }
+
+                // Check 1-letter code ^x
+                const codeChar = formattedText[i + 1].toLowerCase();
+                if (HON_VERIFIED_LETTER_MAP[codeChar]) {
+                    currentColor = HON_VERIFIED_LETTER_MAP[codeChar];
+                    i += 2;
+                    continue;
+                }
+
+                // Fallback for unhandled ^
+                i += 2;
+            } else {
+                const char = formattedText[i];
+                const escapedChar = char === '&' ? '&amp;' : (char === '<' ? '&lt;' : (char === '>' ? '&gt;' : char));
+                html += `<span style="color: ${currentColor}">${escapedChar}</span>`;
+                i++;
+            }
+        }
+        return html;
+    }
+
+    function renderLivePreview(formattedText) {
+        const previewContainer = document.getElementById('liveChatPreview');
+        if (!formattedText) {
+            previewContainer.innerHTML = '';
+            return;
+        }
+
+        const html = parseHonFormattedString(formattedText);
+        previewContainer.innerHTML = html || '<span class="text-slate-600 italic">Empty message</span>';
+    }
+
+    function updateCharCount(count) {
+        document.getElementById('charCounter').textContent = `${count} characters`;
+    }
+
+    function copyFormattedCode() {
+        const outputField = document.getElementById('formattedCodeOutput');
+        if (!outputField.value) return;
+
+        navigator.clipboard.writeText(outputField.value).then(() => {
+            const copyBtnText = document.getElementById('copyBtnText');
+            const btn = document.getElementById('btnCopyCode');
+            const oldText = copyBtnText.textContent;
+
+            copyBtnText.textContent = "Copied to Clipboard! ✨";
+            btn.classList.remove('from-purple-600', 'to-amber-500');
+            btn.classList.add('from-emerald-600', 'to-teal-500');
+
+            setTimeout(() => {
+                copyBtnText.textContent = oldText;
+                btn.classList.remove('from-emerald-600', 'to-teal-500');
+                btn.classList.add('from-purple-600', 'to-amber-500');
+            }, 2500);
+        }).catch(err => {
+            console.error("Failed to copy:", err);
+        });
+    }
+
+    function loadFromDecode() {
+        const decodeVal = document.getElementById('decodeInput').value;
+        if (!decodeVal) return;
+
+        // Clean plain text without ^ codes
+        const plainText = decodeVal.replace(/\^\d{3}|\^[a-zA-Z*]/g, '');
+
+        const resultBox = document.getElementById('decodeResultBox');
+        resultBox.classList.remove('hidden');
+
+        document.getElementById('decodedPlainText').value = plainText;
+
+        // Render visual preview inside decode section
+        const previewEl = document.getElementById('decodedVisualPreview');
+        const html = parseHonFormattedString(decodeVal);
+        previewEl.innerHTML = html || '<span class="text-slate-600 italic">Empty string</span>';
+    }
+
+    function copyDecodedText() {
+        const field = document.getElementById('decodedPlainText');
+        if (!field.value) return;
+
+        navigator.clipboard.writeText(field.value).then(() => {
+            const btn = document.getElementById('btnCopyDecoded');
+            const oldText = btn.textContent;
+            btn.textContent = "Copied! ✨";
+            setTimeout(() => {
+                btn.textContent = oldText;
+            }, 2000);
+        });
+    }
+
+    function loadDecodedToEditor() {
+        const decodeVal = document.getElementById('decodeInput').value;
+        if (!decodeVal) return;
+        document.getElementById('rawTextInput').value = decodeVal;
+        updateFormattedOutput();
+    }
+
+    // =========================================================================
+    // TAB SWITCHING
+    // =========================================================================
+    function switchMainTab(tab) {
+        const btnGen = document.getElementById('tabBtnGenerator');
+        const btnMac = document.getElementById('tabBtnMacros');
+        const contentGen = document.getElementById('tabContentGenerator');
+        const contentMac = document.getElementById('tabContentMacros');
+
+        if (tab === 'generator') {
+            btnGen.className = "flex-1 min-w-[240px] px-5 py-3 rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-2.5 bg-gradient-to-r from-purple-600/30 to-pink-600/30 text-white border border-purple-500/50 shadow-md cursor-pointer";
+            btnMac.className = "flex-1 min-w-[240px] px-5 py-3 rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-2.5 bg-slate-900/60 text-slate-400 border border-slate-800/80 hover:text-slate-200 cursor-pointer";
+            contentGen.classList.remove('hidden');
+            contentMac.classList.add('hidden');
+        } else {
+            btnMac.className = "flex-1 min-w-[240px] px-5 py-3 rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-2.5 bg-gradient-to-r from-amber-500/30 via-orange-500/20 to-red-500/30 text-amber-200 border border-amber-500/50 shadow-md cursor-pointer";
+            btnGen.className = "flex-1 min-w-[240px] px-5 py-3 rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-2.5 bg-slate-900/60 text-slate-400 border border-slate-800/80 hover:text-slate-200 cursor-pointer";
+            contentMac.classList.remove('hidden');
+            contentGen.classList.add('hidden');
+            // Ensure cards & preview are rendered
+            renderMacroCards();
+            selectMacro(selectedMacroId);
+        }
+    }
+
+    // =========================================================================
+    // CURATED HON MACRO LIBRARY
+    // =========================================================================
+    const HON_MACRO_LIBRARY = [
+        {
+            id: 'tombstone',
+            title: 'RIP Noob Tombstone',
+            emoji: '⚰️',
+            category: 'kill',
+            tags: ['kill', 'taunt', 'rip', 'noob', 'tombstone', 'pub', 'trash'],
+            description: 'The definitive post-kill taunt. Erects a full RIP NOOB stone with PUB TRASH DOWN.',
+            defaultKey: 'Numpad1',
+            lines: [
+                "/emote ^:   ^w  ___",
+                "/emote ^:   ^w /   \\",
+                "/emote ^:  ^w| ^rRIP ^w |   ^cPUB",
+                "/emote ^:  ^w| ^rNOOB^w|  ^cTRASH",
+                "/emote ^:  ^w|     |   ^yDOWN",
+                "/emote ^:  ^w|_____|"
+            ]
+        },
+        {
+            id: 'siren',
+            title: 'Big Play Siren Alert',
+            emoji: '🚨',
+            category: 'kill',
+            tags: ['kill', 'siren', 'play', 'alert', 'taunt'],
+            description: 'Sound the emergency big play alert with audio meter scale.',
+            defaultKey: 'Numpad2',
+            lines: [
+                "/emote ^:^r**SOUND THE BIG PLAY SIREN**",
+                "/emote ^:^y   _.-'\"\"'-._",
+                "/emote ^:^y  /  ^r.---.  ^y\\",
+                "/emote ^:^c |'|'|'|'|'|'|'|'|'|'|'|",
+                "/emote ^:^o  1  2  3  4  5  6  7",
+                "/emote ^:^r** BIG ****ING PLAY ALERT **"
+            ]
+        },
+        {
+            id: 'ambulance',
+            title: 'Dumped On Ambulance',
+            emoji: '🚑',
+            category: 'kill',
+            tags: ['kill', 'ambulance', 'dumped', 'gg', 'truck'],
+            description: 'Medical assistance dispatched! LOL YOU JUST GOT DUMPED ON.',
+            defaultKey: 'Numpad3',
+            lines: [
+                "/emote ^:^r      .-.      ^gLOL YOU JUST",
+                "/emote ^:^w     |===|     ^gGOT DUMPED ON",
+                "/emote ^:^w    [| ^rGG ^w|]     ^y-----------",
+                "/emote ^:^w     |___|------------\\",
+                "/emote ^:^w     O---O------------\\"
+            ]
+        },
+        {
+            id: 'getgood',
+            title: 'GET GOOD Scrolling Wave',
+            emoji: '🌊',
+            category: 'kill',
+            tags: ['kill', 'wave', 'good', 'nothing', 'gradient'],
+            description: 'Hypnotic multi-line alternating color wave of GET GOOD YOU\'RE NOTHING.',
+            defaultKey: 'Numpad4',
+            lines: [
+                "/emote ^:^yGET GOOD ^oYOU'RE NOTHING",
+                "/emote ^:^oGET GOOD ^yYOU'RE NOTHING",
+                "/emote ^:^yGET GOOD ^oYOU'RE NOTHING",
+                "/emote ^:^oGET GOOD ^yYOU'RE NOTHING",
+                "/emote ^:^yGET GOOD ^oYOU'RE NOTHING"
+            ]
+        },
+        {
+            id: 'codex_airlines',
+            title: 'Codex Airlines Flight',
+            emoji: '✈️',
+            category: 'classic',
+            tags: ['classic', 'codex', 'plane', 'airlines', 'flight'],
+            description: 'First class ticket straight to the fountain courtesy of Codex Airlines.',
+            defaultKey: 'Numpad5',
+            lines: [
+                "/emote    ^C^:_  ^P__  ^C_ ^949      CODEX ^w- ^cAIRLINES",
+                "/emote ^C  ^:|/ ^P`^C;;^P` ^C\\| ^922    ENJOY YOUR FLIGHT",
+                "/emote ^P  ^:|  ^N=^Y[]^N= ^P |                            ^w _          .---",
+                "/emote ^C  ^:|\\ ^P.,^C::^P,. ^C/|       ^w__________/  |__--'^949@@^w/  ^c-",
+                "/emote  ^C  ^:^P^C     ^w(__^949CODEX^w /__|__==-c  ^c-"
+            ]
+        },
+        {
+            id: 'pub_train',
+            title: 'Pub Train Running Over You',
+            emoji: '🚂',
+            category: 'classic',
+            tags: ['classic', 'train', 'choo', 'ragequit', 'pub'],
+            description: 'CHOO CHOO! The Pub Train running over the opposing team until rage quit.',
+            defaultKey: 'Numpad6',
+            lines: [
+                "/emote ^:          ^wo O O O ^921CH^wOO ^921CH^wOO ^921M^w*^921THERF^w*^921CKER",
+                "/emote ^:         ^wo             ^r_____",
+                "/emote ^:  ^rc---U---^--'^yo^r     [_   ^gPUB TRAIN ^970RUNNING",
+                "/emote ^:  ^r|   ^o----------------^r'_|  ^cOVER YOU ^mUNTIL YOU",
+                "/emote ^: ^r/__(^wo^r)(^wo^r)-----(^wo^r)(^wo^r)     ^rRAGE^oQQQQQQQ^yQUIT"
+            ]
+        },
+        {
+            id: 'shruggie',
+            title: 'Shruggie ¯\\_(ツ)_/¯',
+            emoji: '🤷',
+            category: 'meme',
+            tags: ['meme', 'shrug', 'shruggie', 'what', 'happen'],
+            description: 'The immortal K2 ASCII shrug. Perfect after a blind hook or accidental kill.',
+            defaultKey: 'Numpad0',
+            lines: [
+                "/emote ^:^099   _",
+                "/emote ^:^099  / \\   ^w¯\\_(^091ツ^w)_/¯",
+                "/emote ^:^099 |   |  ^yWHAT HAPPENED?",
+                "/emote ^:^099  \\ /"
+            ]
+        },
+        {
+            id: 'someone_die',
+            title: 'Someone Going to Die',
+            emoji: '💀',
+            category: 'kill',
+            tags: ['kill', 'die', 'soon', 'omen'],
+            description: 'Ominous skull portrait: SOMEONE IS GOING TO DIE REALLY SOON.',
+            defaultKey: 'Numpad7',
+            lines: [
+                "/emote  ^:^w    .-'\"\"\"'-.     ^ySOMEONE",
+                "/emote  ^:^w  /   _   _  \\    ^gIS GOING",
+                "/emote  ^:^w  ]  (_' '^w_) [   ^cTO DIE",
+                "/emote  ^:^w  `- .  N  , -'   ^oREALLY",
+                "/emote  ^:^w       |||||      ^mSOON"
+            ]
+        },
+        {
+            id: 'sidestep',
+            title: 'Side Step God',
+            emoji: '🏹',
+            category: 'classic',
+            tags: ['classic', 'sidestep', 'dodge', 'god', 'feet'],
+            description: 'Celebrating an impossible skillshot dodge. Footprints and SIDE STEP GOD.',
+            defaultKey: 'Numpad8',
+            lines: [
+                "/emote ^:^875.oooO Oooo.",
+                "/emote ^:^875(         ) (         )    ^g______|^\\  ^ySIDE",
+                "/emote ^:  ^875\\      (    )      /    ^g|______  | ^oSTEP",
+                "/emote ^:    ^875\\__)    (__/                   ^g|/  ^cGOD",
+                "/emote ^:^r> ^w> ^r> ^w> ^r> ^w> ^r> ^w> ^r> ^w> ^r> ^w> ^r> ^w> ^r>"
+            ]
+        },
+        {
+            id: 'ducks',
+            title: 'Get In Line Noob (Ducks)',
+            emoji: '🦆',
+            category: 'meme',
+            tags: ['meme', 'ducks', 'line', 'noob', 'mama'],
+            description: 'Mother duck and ducklings: GET BACK IN LINE NOOB!',
+            defaultKey: 'Numpad9',
+            lines: [
+                "/emote  ^:^RGET ^:^BBACK ^:    ^G                        __",
+                "/emote  ^:^OIN ^:^GLINE ^:^CNOOB!                 ^:^G(  ^:^000o ^:^G)^:^Y-_,",
+                "/emote      ^:^Y_           _          _    ^:^720(\\____^:^G)^:^W==^:^Y'",
+                "/emote ^:^Y__( .)^:^O ^:^Y__( .)^:^O=    ^:^720\\  .      )  )",
+                "/emote ^:^Y\\___)   \\___)   \\___)         ^:^720\\  `-'  /"
+            ]
+        },
+        {
+            id: 'pikachu',
+            title: 'Surprised Pikachu',
+            emoji: '⚡',
+            category: 'meme',
+            tags: ['meme', 'pikachu', 'pokemon', 'omg'],
+            description: 'Classic yellow ASCII Pikachu with red cheeks: OMG IT\'S A PIKACHU!',
+            defaultKey: 'F9',
+            lines: [
+                "/emote  ^:^Y(^\\_(^\\    / \\  ^:^699 OMG",
+                "/emote ^:^Y(^Ro^K w^Y)^:^630/  .^:^Y-' ^:^O IT'S A",
+                "/emote  ^:^Y(  (^K\"^Y)(^K\"^Y)       ^:^909 PIKACHU!"
+            ]
+        },
+        {
+            id: 'tetris',
+            title: 'Go Back To Tetris',
+            emoji: '🧱',
+            category: 'kill',
+            tags: ['kill', 'tetris', 'stop', 'back'],
+            description: 'Colorful falling Tetris blocks: STOP HON GO BACK TO TETRIS.',
+            defaultKey: 'F10',
+            lines: [
+                "/emote ^:^r■^g■^c■^y■^m■ ^pSTOP",
+                "/emote ^:^r■^g■^c■^y■^m■ ^pHON",
+                "/emote ^:^r■^g■^c■^y■^m■ ^pGO BACK",
+                "/emote ^:^r■^g■^c■^y■^m■ ^pTO",
+                "/emote ^:^r■^g■^c■^y■^m■ ^pTETRIS"
+            ]
+        },
+        {
+            id: 'gameboy',
+            title: 'Retro Game Boy',
+            emoji: '🎮',
+            category: 'classic',
+            tags: ['classic', 'gameboy', 'nintendo', 'power'],
+            description: 'Retro handheld console: YOU SIMPLY CANNOT BEAT OLD SKOOL POWER.',
+            defaultKey: 'F11',
+            lines: [
+                "/emote ^:^y|       ^555__   ^wGAME BOY         ^y|   ^gYOU SIMPLY",
+                "/emote ^:^y|   ^555_|    |_                    ,-.      ^y|   ^cCAN NOT",
+                "/emote ^:^y| ^555|_  O  _|           ,-. \"._,\"   ^y|   ^949BEAT",
+                "/emote ^:^y|     ^555|__|            \"._,\"   ^wA    ^y|   ^rOLD SKOOL",
+                "/emote ^:^y|               ^555__    __   ^wB            ^y|   POWER"
+            ]
+        },
+        {
+            id: 'gingerbread',
+            title: 'Gingerbread Man',
+            emoji: '🍪',
+            category: 'meme',
+            tags: ['meme', 'gingerbread', 'fear', 'cookie'],
+            description: 'HAVE NO FEAR, GINGERBREAD MAN IS HERE!',
+            defaultKey: 'F12',
+            lines: [
+                "/emote ^:         ^930,---.",
+                "/emote   ^: ^930__(^w*_*^930)__    ^rHave NO",
+                "/emote ^: ^930(__    ^ro    ^930__)  ^wFear",
+                "/emote ^:     ^930/    ^ro   ^930\\       ^rGingerbread man",
+                "/emote ^:    ^930(__/ \\__)      ^wIs here"
+            ]
+        },
+        {
+            id: 'why_so_mad',
+            title: 'Why So Mad Owl',
+            emoji: '🦉',
+            category: 'kill',
+            tags: ['kill', 'owl', 'mad', 'taunt'],
+            description: 'Staring owl taunt: U MAD BRO?',
+            defaultKey: 'Alt+1',
+            lines: [
+                "/emote  ^:^730^____^ ^:^R WHY",
+                "/emote ^:^730(O ^:^yv ^:^730O) ^:^OSO ^:",
+                "/emote ^:^730|)____)  ^:^Y MAD?",
+                "/emote  ^:^730 -^:^Y\"^:^730-^:^Y\"^:^730-"
+            ]
+        }
+    ];
+
+    const AVAILABLE_HOTKEYS = [
+        'Numpad1', 'Numpad2', 'Numpad3', 'Numpad4', 'Numpad5',
+        'Numpad6', 'Numpad7', 'Numpad8', 'Numpad9', 'Numpad0',
+        'F9', 'F10', 'F11', 'F12',
+        'Alt+1', 'Alt+2', 'Alt+3', 'Alt+4', 'Alt+5',
+        'None'
+    ];
+
+    let currentMacroCategory = 'all';
+    let currentMacroSearch = '';
+    let selectedMacroId = 'tombstone';
+    let userMacroKeybindings = {};
+
+    // Initialize default hotkeys
+    HON_MACRO_LIBRARY.forEach(m => {
+        userMacroKeybindings[m.id] = m.defaultKey || 'None';
+    });
+
+    document.addEventListener('DOMContentLoaded', () => {
+        renderMacroCards();
+        selectMacro('tombstone');
+        renderHotkeyConfigList();
+    });
+
+    function filterMacroCategory(cat) {
+        currentMacroCategory = cat;
+        document.querySelectorAll('.macro-filter-btn').forEach(btn => {
+            btn.className = "macro-filter-btn px-3 py-1.5 rounded-xl text-xs font-bold transition-all border bg-slate-900 text-slate-400 border-slate-800 hover:text-slate-200 cursor-pointer";
+        });
+        const activeBtn = document.getElementById(`filterBtn-${cat}`);
+        if (activeBtn) {
+            activeBtn.className = "macro-filter-btn px-3 py-1.5 rounded-xl text-xs font-bold transition-all border bg-amber-500/20 text-amber-300 border-amber-500/50 shadow-sm cursor-pointer";
+        }
+        renderMacroCards();
+    }
+
+    function onMacroSearchInput(term) {
+        currentMacroSearch = (term || '').trim().toLowerCase();
+        renderMacroCards();
+    }
+
+    function getFilteredMacros() {
+        return HON_MACRO_LIBRARY.filter(m => {
+            const matchesCat = currentMacroCategory === 'all' || m.category === currentMacroCategory;
+            const matchesSearch = !currentMacroSearch ||
+                m.title.toLowerCase().includes(currentMacroSearch) ||
+                m.description.toLowerCase().includes(currentMacroSearch) ||
+                m.tags.some(t => t.toLowerCase().includes(currentMacroSearch));
+            return matchesCat && matchesSearch;
+        });
+    }
+
+    function renderMacroCards() {
+        const container = document.getElementById('macroCardsContainer');
+        if (!container) return;
+
+        const filtered = getFilteredMacros();
+        document.getElementById('macroCountBadge').textContent = `${filtered.length} available`;
+
+        if (filtered.length === 0) {
+            container.innerHTML = `
+                <div class="col-span-2 py-8 text-center text-slate-500 text-xs">
+                    <i class="fa-solid fa-ghost text-2xl mb-2 text-slate-600 block"></i>
+                    No macros matched your filter or search query.
+                </div>
+            `;
+            return;
+        }
+
+        container.innerHTML = filtered.map(m => {
+            const isSelected = m.id === selectedMacroId;
+            const cardBg = isSelected
+                ? "bg-slate-800/90 border-amber-500/70 shadow-lg shadow-amber-950/30 ring-1 ring-amber-500/30"
+                : "bg-slate-900/80 border-slate-800/90 hover:border-slate-700 hover:bg-slate-850";
+
+            const assignedKey = userMacroKeybindings[m.id] || 'None';
+
+            return `
+                <div onclick="selectMacro('${m.id}')"
+                     class="p-3.5 rounded-2xl border transition-all cursor-pointer flex flex-col justify-between space-y-2.5 group ${cardBg}">
+                    <div class="flex items-start justify-between gap-2">
+                        <div class="flex items-center gap-2 min-w-0">
+                            <span class="text-xl flex-shrink-0">${m.emoji}</span>
+                            <div class="min-w-0">
+                                <h4 class="text-xs font-bold text-slate-200 group-hover:text-amber-300 transition-colors truncate">
+                                    ${m.title}
+                                </h4>
+                                <span class="text-[10px] text-slate-400 capitalize">
+                                    ${m.category === 'kill' ? '💀 Kill & Taunt' : (m.category === 'meme' ? '🔥 Meme' : '✈️ Classic')}
+                                </span>
+                            </div>
+                        </div>
+                        <span class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-slate-950 border border-slate-800 text-amber-300 font-bold flex-shrink-0">
+                            ${assignedKey}
+                        </span>
+                    </div>
+
+                    <p class="text-[11px] text-slate-400 line-clamp-2 leading-relaxed">
+                        ${m.description}
+                    </p>
+
+                    <div class="flex items-center justify-between pt-1 border-t border-slate-800/60 text-[10px] text-slate-500 font-semibold">
+                        <span>${m.lines.length} lines</span>
+                        <span class="text-amber-400/80 group-hover:text-amber-300 flex items-center gap-1">
+                            Preview <i class="fa-solid fa-angle-right text-[9px]"></i>
+                        </span>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+
+    function selectMacro(macroId) {
+        selectedMacroId = macroId;
+        const macro = HON_MACRO_LIBRARY.find(m => m.id === macroId) || HON_MACRO_LIBRARY[0];
+
+        // Update titles and badges
+        document.getElementById('previewMacroTitle').textContent = `${macro.emoji} ${macro.title}`;
+        document.getElementById('previewMacroBadge').textContent = `${macro.lines.length} Lines`;
+        const key = userMacroKeybindings[macro.id] || 'None';
+        document.getElementById('selectedMacroKeyBadge').textContent = `Key: ${key}`;
+
+        // Populate textarea
+        document.getElementById('selectedMacroCodeOutput').value = macro.lines.join('\n');
+
+        // Render In-Game Chat Simulation lines
+        const previewContainer = document.getElementById('macroChatPreviewLines');
+        if (previewContainer) {
+            previewContainer.innerHTML = macro.lines.map(line => {
+                // Strip the leading "/emote " or "/all " for clean visual in-game chat rendering
+                let displayLine = line;
+                if (displayLine.startsWith('/emote ')) displayLine = displayLine.substring(7);
+                else if (displayLine.startsWith('/all ')) displayLine = displayLine.substring(5);
+
+                const coloredHtml = parseHonFormattedString(displayLine);
+                return `<div><span class="text-purple-400 select-none">[ALL] You: </span>${coloredHtml}</div>`;
+            }).join('');
+        }
+
+        // Highlight active card
+        renderMacroCards();
+    }
+
+    function renderHotkeyConfigList() {
+        const list = document.getElementById('hotkeyConfigList');
+        if (!list) return;
+
+        list.innerHTML = HON_MACRO_LIBRARY.map(m => {
+            const currentKey = userMacroKeybindings[m.id] || 'None';
+
+            const optionsHtml = AVAILABLE_HOTKEYS.map(k => {
+                const isSelected = k === currentKey ? 'selected' : '';
+                return `<option value="${k}" ${isSelected}>${k}</option>`;
+            }).join('');
+
+            return `
+                <div class="flex items-center justify-between gap-2 py-1 px-2 rounded-xl bg-slate-900/60 border border-slate-800 text-xs">
+                    <span class="font-medium text-slate-300 truncate flex items-center gap-1.5 min-w-0">
+                        <span>${m.emoji}</span>
+                        <span class="truncate">${m.title}</span>
+                    </span>
+                    <select onchange="onKeybindChanged('${m.id}', this.value)"
+                            class="bg-slate-950 border border-slate-800 rounded-lg px-2 py-1 text-xs font-mono font-bold text-amber-300 focus:outline-none focus:border-amber-500/60 cursor-pointer">
+                        ${optionsHtml}
+                    </select>
+                </div>
+            `;
+        }).join('');
+    }
+
+    function onKeybindChanged(macroId, newKey) {
+        userMacroKeybindings[macroId] = newKey;
+        if (selectedMacroId === macroId) {
+            document.getElementById('selectedMacroKeyBadge').textContent = `Key: ${newKey}`;
+        }
+        renderMacroCards();
+    }
+
+    function updateAhkDelay(val) {
+        document.getElementById('ahkDelayValue').textContent = `${val}ms`;
+    }
+
+    function copySelectedMacroCode() {
+        const text = document.getElementById('selectedMacroCodeOutput').value;
+        if (!text) return;
+
+        navigator.clipboard.writeText(text).then(() => {
+            const btnText = document.getElementById('btnCopyMacroOnlyText');
+            const old = btnText.textContent;
+            btnText.textContent = "Copied Macro! ✨";
+            setTimeout(() => { btnText.textContent = old; }, 2000);
+        });
+    }
+
+    function sendSelectedMacroToGenerator() {
+        const macro = HON_MACRO_LIBRARY.find(m => m.id === selectedMacroId);
+        if (!macro) return;
+
+        switchMainTab('generator');
+        const rawInput = document.getElementById('rawTextInput');
+        rawInput.value = macro.lines.join('\n');
+        updateFormattedOutput();
+        rawInput.focus();
+    }
+
+    function buildAhkScriptContent(singleMacroId = null) {
+        const delay = document.getElementById('ahkDelaySlider').value || 65;
+        const useWindowGuard = document.getElementById('ahkWindowGuard').checked;
+
+        const targetMacros = singleMacroId
+            ? HON_MACRO_LIBRARY.filter(m => m.id === singleMacroId)
+            : HON_MACRO_LIBRARY.filter(m => (userMacroKeybindings[m.id] || 'None') !== 'None');
+
+        let script = `; ==============================================================================\n`;
+        script += `; Heroes of Newerth - ASCII Kill Macro Assist Suite\n`;
+        script += `; Generated by ProjectKongor Dawnbringer Web Portal\n`;
+        script += `; ==============================================================================\n`;
+        script += `#NoEnv\n`;
+        script += `#SingleInstance Force\n`;
+        script += `SendMode Input\n`;
+        script += `SetWorkingDir %A_ScriptDir%\n\n`;
+
+        if (useWindowGuard) {
+            script += `; Only active when Heroes of Newerth is in focus\n`;
+            script += `#IfWinActive ahk_exe hon_x64.exe\n\n`;
+        }
+
+        script += `; Robust macro sender via Windows clipboard\n`;
+        script += `SendHonMacro(lines) {\n`;
+        script += `    ClipSaved := ClipboardAll\n`;
+        script += `    for index, line in lines {\n`;
+        script += `        Clipboard := line\n`;
+        script += `        SendInput, {Enter}^v{Enter}\n`;
+        script += `        Sleep, ${delay} ; Safe delay to avoid packet flood\n`;
+        script += `    }\n`;
+        script += `    Clipboard := ClipSaved\n`;
+        script += `}\n\n`;
+
+        targetMacros.forEach(m => {
+            const key = singleMacroId ? (userMacroKeybindings[m.id] || m.defaultKey || 'Numpad1') : userMacroKeybindings[m.id];
+            if (!key || key === 'None') return;
+
+            // Format hotkey for AHK
+            let ahkKey = key;
+            if (ahkKey.startsWith('Alt+')) {
+                ahkKey = '!' + ahkKey.substring(4);
+            }
+
+            script += `; ${m.emoji} ${m.title}\n`;
+            script += `${ahkKey}::\n`;
+            script += `SendHonMacro([ `;
+
+            m.lines.forEach((line, idx) => {
+                // Escape quotes inside line for AHK
+                const escaped = line.replace(/"/g, '""');
+                if (idx === 0) {
+                    script += `"${escaped}"\n`;
+                } else {
+                    script += `             , "${escaped}"\n`;
+                }
+            });
+
+            script += `             ])\n`;
+            script += `return\n\n`;
+        });
+
+        if (useWindowGuard) {
+            script += `#IfWinActive\n`;
+        }
+
+        return script;
+    }
+
+    function triggerFileDownload(filename, textContent) {
+        const blob = new Blob([textContent], { type: 'text/plain;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    }
+
+    function downloadFullAhkScript() {
+        const ahkContent = buildAhkScriptContent();
+        triggerFileDownload('hon_chat_macros.ahk', ahkContent);
+
+        const btnText = document.getElementById('btnDownloadAhkText');
+        const old = btnText.textContent;
+        btnText.textContent = "Downloaded hon_chat_macros.ahk! ✨";
+        setTimeout(() => { btnText.textContent = old; }, 2500);
+    }
+
+    function copyFullAhkCode() {
+        const ahkContent = buildAhkScriptContent();
+        navigator.clipboard.writeText(ahkContent).then(() => {
+            const btnText = document.getElementById('btnCopyAhkText');
+            const old = btnText.textContent;
+            btnText.textContent = "Copied Script! ✨";
+            setTimeout(() => { btnText.textContent = old; }, 2500);
+        });
+    }
+
+    function downloadSelectedMacroAhk() {
+        const macro = HON_MACRO_LIBRARY.find(m => m.id === selectedMacroId);
+        if (!macro) return;
+        const ahkContent = buildAhkScriptContent(macro.id);
+        const safeName = macro.id.replace(/[^a-z0-9_]/gi, '_').toLowerCase();
+        triggerFileDownload(`hon_macro_${safeName}.ahk`, ahkContent);
+    }
+</script>
